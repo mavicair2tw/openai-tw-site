@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>每日咖啡新聞</title>
+    <style>
+      :root { --bg:#0b1020; --panel:#121a2f; --line:#1f2a44; --text:#e6edf3; --muted:#9fb0c3; }
+      *{box-sizing:border-box}
+      body{margin:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,#0b1020 0%,#0a1226 100%);color:var(--text)}
+      .wrap{max-width:1000px;margin:0 auto}
+      .top-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+      .logo{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;border:1px solid #2a3a5e;background:#101a33;color:#dbeafe;font-weight:800;font-size:13px}
+      .sub{color:var(--muted);margin-bottom:12px}
+      .top-tags{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+      .nav-item{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+      .tag{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid #2a3a5e;color:#cfe2ff;text-decoration:none;font-size:12px;font-weight:700}
+      .tag-sub{color:#8fa3bf;font-size:11px;line-height:1;padding-left:8px}
+      .tag.active{border-color:#60a5fa;background:#1a315f;color:#fff}
+      .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;line-height:1.7;margin-bottom:12px}
+      .item{padding:10px 0;border-bottom:1px dashed #2a3556}
+      .item:last-child{border-bottom:none}
+      h3{margin:0 0 6px}
+      p{margin:6px 0}
+      a{color:#93c5fd}
+    
+      .site-link { margin-top: 20px; color: var(--muted); font-size: 13px; }
+      .site-link a{ color:#93c5fd; text-decoration:none; }
+      .site-link a:hover{ text-decoration:underline; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="top-bar">
+        <div class="logo">openai-tw.com</div>
+        <div class="top-tags">
+          <div class="nav-item"><a class="tag" href="/">Home</a><span class="tag-sub">Main Portal</span></div>
+          <div class="nav-item"><a class="tag" href="https://openai-tw.com/tw/">台股</a><span class="tag-sub">TW Market</span></div>
+          <div class="nav-item"><a class="tag" href="https://openai-tw.com/us/">美股</a><span class="tag-sub">US Market</span></div>
+          <div class="nav-item"><a class="tag active" href="/coffee-news/">咖啡新聞</a><span class="tag-sub">Coffee News</span></div>
+        <form class="quick-search" action="/chat/" method="get" style="display:flex;gap:8px;align-items:center;">
+          <input name="q" type="text" placeholder="Search keyword..." style="width:220px;max-width:42vw;background:#0f1730;color:#e6edf3;border:1px solid #223055;border-radius:999px;padding:6px 10px;font-size:12px;" />
+          <button type="submit" style="padding:6px 10px;border-radius:999px;border:1px solid #35558d;background:#1a315f;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">Search</button>
+        </form>
+        </div>
+      </div>
+      <h1 id="title">每日咖啡新聞</h1>
+      <div class="sub" id="updated">載入中...</div>
+      <div class="card" id="summary">載入摘要中...</div>
+      <div class="card" id="list">載入新聞中...</div>
+      <div class="site-link"><a href="https://openai-tw.com/">openai-tw.com</a></div>
+    </div>
+
+    <script>
+      const lang = new URLSearchParams(location.search).get('lang') || 'zh';
+      const i18n = {
+        zh: { title:'每日咖啡新聞', updated:'更新時間', loading:'載入中...', fail:'載入失敗', loadFail:'讀取每日咖啡新聞失敗。', empty:'目前無資料，請稍後再試。', source:'來源', fallback:'今日咖啡市場與產業重點整理。' },
+        en: { title:'Daily Coffee News', updated:'Updated', loading:'Loading...', fail:'Load failed', loadFail:'Failed to load daily coffee news.', empty:'No data for now.', source:'Source', fallback:'Today’s key updates on coffee market and industry.' },
+        ja: { title:'毎日コーヒーニュース', updated:'更新時間', loading:'読み込み中...', fail:'読み込み失敗', loadFail:'毎日コーヒーニュースの読み込みに失敗しました。', empty:'現在データはありません。', source:'情報源', fallback:'本日のコーヒー市場・業界の要点です。' }
+      };
+      const t = i18n[lang] || i18n.zh;
+      document.getElementById('title').textContent = t.title;
+      document.getElementById('updated').textContent = t.loading;
+
+      fetch('./data/coffee_news.json?ts='+Date.now())
+        .then(r=>r.json())
+        .then(d=>{
+          document.getElementById('updated').textContent = `${t.updated}：${d.updatedAt} (${d.timezone})`;
+          document.getElementById('summary').innerHTML = `${d.summary || t.fallback}`;
+          const list = document.getElementById('list');
+          const zhNews = (d.newsZh || []).slice(0, 5);
+          const enNews = (d.newsEn || []).slice(0, 5);
+
+          function section(title, items, useZh){
+            if(!items.length) return `<p>${t.empty}</p>`;
+            return `
+              <h3 style="margin:8px 0 8px">${title}</h3>
+              ${items.map((n, i) => {
+                const name = useZh ? (n.titleZh || n.title || 'Untitled') : (n.titleEn || n.title || 'Untitled');
+                return `
+                  <div class="item">
+                    <h3>${i+1}. ${name}</h3>
+                    ${n.note ? `<p>${n.note}</p>` : ''}
+                    ${n.url ? `<p><a href="${n.url}" target="_blank">${t.source}</a></p>` : ''}
+                  </div>
+                `;
+              }).join('')}
+            `;
+          }
+
+          list.innerHTML = `${section('中文咖啡新聞（5則）', zhNews, true)}<hr style="border:0;border-top:1px dashed #2a3556;margin:14px 0;">${section('English Coffee News (5)', enNews, false)}`;
+        })
+        .catch(()=>{
+          document.getElementById('updated').textContent = t.fail;
+          document.getElementById('summary').innerHTML = t.loadFail;
+          document.getElementById('list').innerHTML = `<p>${t.empty}</p>`;
+        });
+    </script>
+  </body>
+</html>

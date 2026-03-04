@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Forum</title>
+    <style>
+      :root { --bg:#0b1020; --panel:#121a2f; --line:#1f2a44; --text:#e6edf3; --muted:#9fb0c3; }
+      *{box-sizing:border-box}
+      body{margin:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,#0b1020 0%,#0a1226 100%);color:var(--text)}
+      .wrap{max-width:1000px;margin:0 auto}
+      .top-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+      .logo{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;border:1px solid #2a3a5e;background:#101a33;color:#dbeafe;font-weight:800;font-size:13px}
+      .top-tags{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+      .nav-item{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+      .tag{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid #2a3a5e;color:#cfe2ff;text-decoration:none;font-size:12px;font-weight:700}
+      .tag-sub{color:#8fa3bf;font-size:11px;line-height:1;padding-left:8px}
+      .tag.active{border-color:#60a5fa;background:#1a315f;color:#fff}
+      .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+      .row{display:flex;gap:8px;align-items:flex-start}
+      textarea{flex:1;min-height:72px;background:#0f1730;color:var(--text);border:1px solid #223055;border-radius:10px;padding:10px;resize:vertical}
+      button{padding:10px 14px;border-radius:10px;border:1px solid #35558d;background:#1a315f;color:#fff;font-weight:700;cursor:pointer}
+      .list{max-height:420px;overflow:auto}
+      .item{padding:10px 0;border-bottom:1px dashed #2a3556}
+      .item:last-child{border-bottom:none}
+      .meta{font-size:12px;color:var(--muted)}
+      .text{margin-top:6px;white-space:pre-wrap}
+      .actions{display:flex;gap:8px;margin-top:8px}
+      .action-btn{padding:6px 10px;font-size:12px;border-radius:8px;border:1px solid #35558d;background:#162443;color:#dbeafe;cursor:pointer}
+      .embed{margin-top:8px;max-width:640px}
+      .embed img{max-width:640px;max-height:360px;width:auto;height:auto;border-radius:10px;border:1px solid #2a3556;display:block}
+      .embed iframe{width:640px;max-width:100%;height:360px;border:0;border-radius:10px}
+      .comments{margin-top:10px;padding-top:8px;border-top:1px dashed #2a3556}
+      .comment-item{padding:6px 0;border-bottom:1px dashed #22324f}
+      .comment-item:last-child{border-bottom:none}
+      .comment-meta{font-size:11px;color:var(--muted)}
+      .comment-text{font-size:13px;margin-top:2px;white-space:pre-wrap}
+      .comment-row{display:flex;gap:6px;margin-top:8px}
+      .comment-input{flex:1;min-height:38px;background:#0f1730;color:var(--text);border:1px solid #223055;border-radius:8px;padding:8px;resize:vertical}
+      .comment-btn{padding:8px 10px;font-size:12px;border-radius:8px;border:1px solid #35558d;background:#1a315f;color:#fff;cursor:pointer}
+      .pager{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:10px;color:var(--muted);font-size:13px}
+      .pager button{padding:6px 10px;font-size:12px}
+      .site-link{margin-top:18px;color:var(--muted);font-size:13px}
+      .site-link a{color:#93c5fd;text-decoration:none}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="top-bar">
+        <div class="logo">openai-tw.com</div>
+        <div class="top-tags">
+          <div class="nav-item"><a class="tag" href="/">Home</a><span class="tag-sub">Main Portal</span></div>
+          <div class="nav-item"><a class="tag active" href="/forum/">Forum</a><span class="tag-sub">Community</span></div>
+        <form class="quick-search" action="/chat/" method="get" style="display:flex;gap:8px;align-items:center;">
+          <input name="q" type="text" placeholder="Search keyword..." style="width:220px;max-width:42vw;background:#0f1730;color:#e6edf3;border:1px solid #223055;border-radius:999px;padding:6px 10px;font-size:12px;" />
+          <button type="submit" style="padding:6px 10px;border-radius:999px;border:1px solid #35558d;background:#1a315f;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">Search</button>
+        </form>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+        <h1 style="margin:0;">Forum</h1>
+        <div class="meta" style="background:#0f1730;border:1px solid #223055;border-radius:10px;padding:8px 10px;">
+          Total Like: <b id="totalLike">0</b> &nbsp;|&nbsp; Total Share: <b id="totalShare">0</b>
+        </div>
+      </div>
+      <div class="card">
+        <div class="row">
+          <textarea id="forumInput" placeholder="輸入留言內容，可貼上圖片網址或 YouTube 連結…"></textarea>
+          <button id="postBtn">發佈</button>
+        </div>
+        <div class="meta" style="margin-top:8px;">支援顯示：圖片網址（jpg/png/webp/gif）與 YouTube 連結。</div>
+      </div>
+
+      <div class="card list" id="forumList"></div>
+      <div class="pager">
+        <button id="prevPage" type="button">上一頁</button>
+        <span id="pageInfo">第 1 / 1 頁</span>
+        <button id="nextPage" type="button">下一頁</button>
+      </div>
+      <div class="meta" style="margin-top:8px;">雲端留言板（Cloudflare Worker）</div>
+      <div class="site-link"><a href="https://openai-tw.com/">openai-tw.com</a></div>
+    </div>
+
+    <script>
+      const API='https://openai-tw-forum.googselect.workers.dev/api/forum';
+      const input=document.getElementById('forumInput');
+      const btn=document.getElementById('postBtn');
+      const list=document.getElementById('forumList');
+      const prevPageBtn=document.getElementById('prevPage');
+      const nextPageBtn=document.getElementById('nextPage');
+      const pageInfo=document.getElementById('pageInfo');
+      const totalLikeEl=document.getElementById('totalLike');
+      const totalShareEl=document.getElementById('totalShare');
+      let data=[];
+      let currentPage=1;
+      const PAGE_SIZE=200;
+
+      function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+      function visibleText(s){
+        return esc(String(s).replace(/https?:\/\/[^\s]+/g, '').trim()).replace(/\n/g,'<br>');
+      }
+      function firstUrl(s){
+        const m = String(s).match(/https?:\/\/[^\s]+/i);
+        return m ? m[0] : '';
+      }
+      function youtubeEmbed(url){
+        try {
+          const u = new URL(url);
+          if (u.hostname.includes('youtu.be')) return `https://www.youtube.com/embed/${u.pathname.replace('/','')}`;
+          if (u.hostname.includes('youtube.com')) {
+            const v = u.searchParams.get('v');
+            if (v) return `https://www.youtube.com/embed/${v}`;
+          }
+        } catch {}
+        return '';
+      }
+      function isImageUrl(url){
+        return /\.(png|jpe?g|gif|webp|avif)(\?.*)?$/i.test(url);
+      }
+      function renderEmbed(text){
+        const url = firstUrl(text);
+        if (!url) return '';
+        const yt = youtubeEmbed(url);
+        if (yt) return `<div class="embed"><iframe src="${yt}" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`;
+        if (isImageUrl(url)) return `<div class="embed"><img src="${url}" alt="forum image" loading="lazy"/></div>`;
+        return '';
+      }
+      function shareUrl(id){ return `${location.origin}${location.pathname}#post-${id}`; }
+      function render(){
+
+        const total = data.length;
+        const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+
+        pageInfo.textContent = `第 ${currentPage} / ${totalPages} 頁`;
+        prevPageBtn.disabled = currentPage <= 1;
+        nextPageBtn.disabled = currentPage >= totalPages;
+
+        if(!total){
+          list.innerHTML='<div class="meta">目前沒有留言，歡迎第一則！</div>';
+          return;
+        }
+
+        const newestFirst = data.slice().reverse();
+        const start = (currentPage - 1) * PAGE_SIZE;
+        const pageItems = newestFirst.slice(start, start + PAGE_SIZE);
+        list.innerHTML=pageItems.map(x=>{
+          const id = x.id;
+          const likeCount = Number(x.likeCount||0);
+          const comments = Array.isArray(x.comments) ? x.comments : [];
+          const commentsHtml = comments.length
+            ? comments.map(c => `<div class="comment-item"><div class="comment-meta">訪客 · ${esc(c.time||'')} ${c.ip ? `· IP ${esc(c.ip)}` : ''} ${c.region ? `· ${esc(c.region)}` : ''}</div><div class="comment-text">${visibleText(c.text||'')}</div></div>`).join('')
+            : '<div class="comment-meta">目前沒有留言，歡迎回覆。</div>';
+          return `<div class="item" id="post-${id}"><div class="meta">訪客 · ${esc(x.time)} ${x.ip ? `· IP ${esc(x.ip)}` : ''} ${x.region ? `· ${esc(x.region)}` : ''}</div><div class="text">${visibleText(x.text)}</div>${renderEmbed(x.text)}<div class="actions"><button class="action-btn like-btn" data-id="${id}">👍 Like (${likeCount})</button><button class="action-btn share-btn" data-id="${id}">🔗 Share (${Number(x.shareCount||0)})</button></div><div class="comments"><div class="comment-meta">留言區（${comments.length}）</div>${commentsHtml}<div class="comment-row"><textarea class="comment-input" data-id="${id}" placeholder="留言回覆這篇貼文..."></textarea><button class="comment-btn" data-id="${id}">留言</button></div></div></div>`;
+        }).join('');
+      }
+
+      async function refresh(){
+        try{
+          const r=await fetch(API);
+          const j=await r.json();
+          data=Array.isArray(j?.posts)?j.posts:[];
+          totalLikeEl.textContent = Number(j?.totalLike || 0);
+          totalShareEl.textContent = Number(j?.totalShare || 0);
+          render();
+        }catch{
+          list.innerHTML='<div class="meta">讀取留言失敗，請稍後再試。</div>';
+        }
+      }
+
+      btn.addEventListener('click', async ()=>{
+        const t=input.value.trim(); if(!t) return;
+        btn.disabled=true;
+        try{
+          const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:t})});
+          if(!r.ok) throw new Error('post failed');
+          input.value='';
+          currentPage = 1;
+          await refresh();
+        }catch{
+          alert('留言失敗，請稍後再試');
+        }finally{ btn.disabled=false; }
+      });
+
+      prevPageBtn.addEventListener('click', () => { currentPage -= 1; render(); });
+      nextPageBtn.addEventListener('click', () => { currentPage += 1; render(); });
+
+      list.addEventListener('click', async (e) => {
+        const likeBtn = e.target.closest('.like-btn');
+        const shareBtn = e.target.closest('.share-btn');
+        const commentBtn = e.target.closest('.comment-btn');
+        if (likeBtn) {
+          const id = likeBtn.dataset.id;
+          try {
+            await fetch(API, {
+              method:'POST',
+              headers:{'Content-Type':'application/json'},
+              body: JSON.stringify({ action:'like', id })
+            });
+            await refresh();
+          } catch {}
+          return;
+        }
+        if (shareBtn) {
+          const id = shareBtn.dataset.id;
+          const url = shareUrl(id);
+          try {
+            await fetch(API, {
+              method:'POST',
+              headers:{'Content-Type':'application/json'},
+              body: JSON.stringify({ action:'share', id })
+            });
+            await refresh();
+          } catch {}
+          try {
+            if (navigator.share) {
+              await navigator.share({ title: 'Forum Post', url });
+            } else {
+              await navigator.clipboard.writeText(url);
+              alert('已複製分享連結');
+            }
+          } catch {}
+          return;
+        }
+        if (commentBtn) {
+          const id = commentBtn.dataset.id;
+          const input = list.querySelector(`.comment-input[data-id="${id}"]`);
+          const text = String(input?.value || '').trim();
+          if (!text) return;
+          commentBtn.disabled = true;
+          try {
+            const r = await fetch(API, {
+              method:'POST',
+              headers:{'Content-Type':'application/json'},
+              body: JSON.stringify({ action:'comment', id, text })
+            });
+            if (!r.ok) throw new Error('comment failed');
+            if (input) input.value = '';
+            await refresh();
+          } catch {
+            alert('留言失敗，請稍後再試');
+          } finally {
+            commentBtn.disabled = false;
+          }
+        }
+      });
+
+      refresh();
+      setInterval(refresh, 15000);
+    </script>
+  </body>
+</html>

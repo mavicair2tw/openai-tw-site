@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Built to Collect. Designed to Scale.</title>
+    <style>
+      :root {
+        --bg: #0b1020;
+        --bg2: #0a1226;
+        --panel: #121a2f;
+        --line: #253252;
+        --text: #e6edf3;
+        --muted: #9fb0c3;
+        --accent: #60a5fa;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+        color: var(--text);
+      }
+      .wrap { max-width: 1100px; margin: 0 auto; padding: 32px 20px; }
+      .top-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+      .logo{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;border:1px solid #35558d;background:linear-gradient(135deg,#132547 0%,#1c3563 100%);color:#dbeafe;font-weight:800;font-size:13px}
+      .weather-box{min-width:280px;max-width:360px;padding:10px 12px;border-radius:10px;border:1px solid #2a3a5e;background:#101a33;color:#dbeafe;font-size:13px}
+      .weather-meta{color:#b9cae6;line-height:1.45}
+      .top-tags{display:flex;flex-wrap:wrap;gap:10px}
+      .top-left{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
+      .top-right{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;justify-content:flex-end}
+      .quick-search{display:flex;gap:8px;align-items:center}
+      .quick-search-input{width:220px;max-width:42vw;background:#0f1730;color:#e6edf3;border:1px solid #223055;border-radius:999px;padding:6px 10px;font-size:12px}
+      .quick-search-btn{padding:6px 10px;border-radius:999px;border:1px solid #35558d;background:#1a315f;color:#fff;font-size:12px;font-weight:700;cursor:pointer}
+      .nav-item{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+      .tag{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid #35558d;color:#cfe2ff;text-decoration:none;font-size:12px;font-weight:700}
+      .tag-sub{color:#8fa3bf;font-size:11px;line-height:1;padding-left:8px}
+      .tag.active{border-color:#60a5fa;background:#1a315f;color:#fff}
+      .hero-tag {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        border: 1px solid #35558d;
+        background: linear-gradient(135deg, #132547 0%, #1c3563 100%);
+        color: #cfe2ff;
+        margin-bottom: 14px;
+      }
+      h1 {
+        margin: 0 0 10px;
+        font-size: 34px;
+        line-height: 1.2;
+        background: linear-gradient(90deg, #ffffff 0%, #b7d0ff 45%, #8ab4ff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .sub { margin: 0 0 20px; color: var(--muted); }
+      .counter { color: var(--muted); margin-bottom: 20px; }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 12px;
+      }
+      .card {
+        display: block;
+        text-decoration: none;
+        color: var(--text);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 16px;
+        background: var(--panel);
+        transition: transform .12s ease, border-color .12s ease;
+      }
+      .card:hover { transform: translateY(-2px); border-color: var(--accent); }
+      .card .embed {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        margin-top: 10px;
+      }
+      .card .embed iframe {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
+      .inline-link {
+        display: inline-flex;
+        margin-top: 12px;
+        font-size: 13px;
+        color: #93c5fd;
+        text-decoration: none;
+        font-weight: 600;
+        gap: 6px;
+        align-items: center;
+      }
+      .inline-link:hover { text-decoration: underline; }
+      .name { font-weight: 700; margin-bottom: 6px; }
+      .desc { color: var(--muted); font-size: 14px; }
+      .price-badge { margin-top: 6px; font-size: 13px; font-weight: 600; color: #93c5fd; }
+      .hero-image-wrap{margin:14px 0 18px}
+      .hero-image{width:100%;max-width:1100px;border-radius:14px;border:1px solid var(--line);display:block}
+      .line-invite{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin:24px 0;padding:18px;border:1px solid var(--line);border-radius:14px;background:#101a33}
+      .line-invite img{width:150px;height:150px;border-radius:12px;border:1px solid #2a3a5e;background:#fff;padding:6px}
+      .line-invite-text{flex:1;min-width:220px;font-size:14px;line-height:1.6;color:#dbeafe}
+      .foot { margin-top: 20px; color: var(--muted); font-size: 13px; }
+    
+      .site-link{margin-top:18px;color:var(--muted);font-size:13px}
+      .site-link a{color:#93c5fd;text-decoration:none}
+      .site-link a:hover{text-decoration:underline}
+
+      @media (max-width: 768px){
+        .wrap{padding:18px 14px}
+        h1{font-size:26px}
+        .top-bar{flex-direction:column;align-items:stretch}
+        .top-left,.top-right{width:100%;justify-content:flex-start}
+        .weather-box{min-width:0;max-width:100%;width:100%}
+        .quick-search{width:100%}
+        .quick-search-input{width:100%;max-width:100%;font-size:14px;padding:10px 12px}
+        .quick-search-btn{font-size:14px;padding:10px 14px}
+        .grid{grid-template-columns:1fr}
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <h1>Built to Collect. Designed to Scale.</h1>
+      <div class="top-bar">
+        <div class="top-left">
+          <div class="logo">openai-tw.com</div>
+          <div class="weather-box" id="weatherBox">
+            <div class="weather-meta" id="weatherMeta">讀取裝置位置中…</div>
+          </div>
+        </div>
+        <div class="top-right">
+          <form class="quick-search" action="/chat/" method="get">
+            <input class="quick-search-input" name="q" type="text" placeholder="Search keyword..." />
+            <button class="quick-search-btn" type="submit">Search</button>
+          </form>
+        </div>
+      </div>
+      <div class="top-tags">
+        <div class="nav-item">
+          <a class="tag" href="/prompt-builder/">Prompt Builder</a>
+          <span class="tag-sub">AI 提示詞工具</span>
+        </div>
+      </div>
+      <div class="hero-image-wrap">
+        <img class="hero-image" src="/assets/hero.jpg" alt="Main page visual" />
+      </div>
+      <div class="line-invite">
+        <img src="/assets/line-qr.png" alt="LINE QR Code" />
+        <div class="line-invite-text">加我的 Line ID <strong>@345jbhsp</strong> 並說「Hi」或貼圖就可接收最新資訊。</div>
+      </div>
+      <p class="sub">主入口：選擇你要看的報表與內容。</p>
+      <div class="counter" id="viewCounter">點閱數：--</div>
+
+      <section class="grid">
+        <a class="card" href="https://openai-tw.com/tw/">
+          <div class="name">台股 15 分鐘</div>
+          <div class="desc">台股即時報表、漲跌與摘要</div>
+          <div class="price-badge" id="twPrice">股價載入中...</div>
+        </a>
+        <a class="card" href="https://openai-tw.com/us/">
+          <div class="name">美股 15 分鐘</div>
+          <div class="desc">美股即時報表、漲跌與摘要</div>
+          <div class="price-badge" id="usPrice">股價載入中...</div>
+        </a>
+        <a class="card" href="/btc-hourly/">
+          <div class="name">BTC 每小時</div>
+          <div class="desc">比特幣價格與變化</div>
+        </a>
+        <a class="card" href="/tw-news/">
+          <div class="name">台股新聞</div>
+          <div class="desc">台股新聞整理</div>
+        </a>
+        <a class="card" href="/us-news/">
+          <div class="name">美股新聞</div>
+          <div class="desc">美股新聞整理</div>
+        </a>
+        <a class="card" href="/interesting-stories/">
+          <div class="name">每日有趣故事</div>
+          <div class="desc">每日輕鬆閱讀內容</div>
+        </a>
+        <a class="card" href="/coffee-news/">
+          <div class="name">每日咖啡新聞</div>
+          <div class="desc">咖啡相關資訊與趨勢</div>
+        </a>
+        <a class="card" href="/podcast/">
+          <div class="name">Podcast</div>
+          <div class="desc">音訊內容入口</div>
+        </a>
+        <a class="card" href="/chat/">
+          <div class="name">Chat</div>
+        </a>
+        <a class="card" href="/prompt-builder/">
+          <div class="name">Prompt Builder</div>
+          <div class="desc">AI 圖生影片提示詞組合器</div>
+        </a>
+        <a class="card" href="/music/">
+          <div class="name">Music</div>
+          <div class="desc">Spotify 音樂播放清單</div>
+        </a>
+        <a class="card" href="/stock-search/">
+          <div class="name">股市</div>
+          <div class="desc">現代化股票搜尋與 K 線分析頁面</div>
+        </a>
+        <a class="card" href="/forum/">
+          <div class="name">Forum</div>
+          <div class="desc">訪客可以留言討論或分享事物</div>
+        </a>
+        <a class="card" href="/tag-cloud/">
+          <div class="name">Tag Cloud</div>
+          <div class="desc">互動式關鍵字雲：字級、顏色、形狀與篩選</div>
+        </a>
+        <a class="card" href="/ziweidoushu/">
+          <div class="name">紫微斗數</div>
+          <div class="desc">命盤計算、運勢分析與 AI 解析</div>
+        </a>
+        <a class="card" href="/name-analysis/">
+          <div class="name">姓名學解析</div>
+          <div class="desc">五格數理、字義、五行、性格與綜合評分</div>
+        </a>
+        <a class="card" href="/health-triage/">
+          <div class="name">健康分級建議</div>
+          <div class="desc">健康勾選、風險分級、飲食注意與建議科別</div>
+        </a>
+
+      </section>
+
+      <div class="foot">提示：紅色 = 上漲，綠色 = 下跌。</div>
+          <div class="site-link"><a href="https://openai-tw.com/">openai-tw.com</a></div>
+    </main>
+
+    <script>
+      const pageKey = `views:${location.pathname}`;
+      const pageViews = Number(localStorage.getItem(pageKey) || '0') + 1;
+      localStorage.setItem(pageKey, String(pageViews));
+      const el = document.getElementById('viewCounter');
+      if (el) el.textContent = `點閱數：${pageViews}`;
+
+      function windDir(deg){
+        const dirs = ['北','東北','東','東南','南','西南','西','西北'];
+        return dirs[Math.round((((deg % 360) + 360) % 360) / 45) % 8];
+      }
+
+      async function reverseArea(lat, lon){
+        try {
+          // Prefer OSM reverse geocoding for district/city names (zh-TW)
+          const u = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&addressdetails=1&accept-language=zh-TW`;
+          const r = await fetch(u, { headers: { 'Accept': 'application/json' } });
+          const d = await r.json();
+          const a = d?.address || {};
+
+          const candidates = [
+            a.suburb,
+            a.city_district,
+            a.town,
+            a.city,
+            a.county,
+            a.state,
+            d?.name,
+            d?.display_name,
+          ].filter(Boolean);
+
+          let area = String(candidates[0] || '').split(',')[0].trim();
+          if (!area) return '';
+
+          // Avoid generic/airport-like names
+          if (/airport|機場/i.test(area) && candidates[1]) area = String(candidates[1]).trim();
+          if (/^songshan$/i.test(area)) area = '台北';
+          return area;
+        } catch {
+          return '';
+        }
+      }
+
+      function weatherIcon(code){
+        if (code === 0) return '☀️';
+        if ([1,2].includes(code)) return '🌤️';
+        if (code === 3) return '☁️';
+        if ([45,48].includes(code)) return '🌫️';
+        if ([51,53,55,56,57].includes(code)) return '🌦️';
+        if ([61,63,65,66,67,80,81,82].includes(code)) return '🌧️';
+        if ([71,73,75,77,85,86].includes(code)) return '🌨️';
+        if ([95,96,99].includes(code)) return '⛈️';
+        return '🌡️';
+      }
+
+      async function loadWeatherByLocation(lat, lon, areaHint = ''){
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_direction_10m,weather_code&timezone=auto`;
+        const res = await fetch(url);
+        const data = await res.json();
+
+        const current = data.current || {};
+        const meta = document.getElementById('weatherMeta');
+        if (!meta) return;
+        const area = areaHint || await reverseArea(lat, lon);
+        const icon = weatherIcon(current.weather_code);
+        const parts = [
+          ...(area ? [area] : []),
+          `${icon} 溫度 ${current.temperature_2m ?? 'N/A'}°C`,
+          `風向 ${windDir(current.wind_direction_10m ?? 0)} (${current.wind_direction_10m ?? 'N/A'}°)`,
+          `濕氣 ${current.relative_humidity_2m ?? 'N/A'}%`
+        ];
+        meta.textContent = parts.join(' ｜ ');
+      }
+
+      async function loadWeatherByIP(){
+        const r = await fetch('https://ipapi.co/json/');
+        const d = await r.json();
+        const lat = d?.latitude;
+        const lon = d?.longitude;
+        if (lat == null || lon == null) throw new Error('ip location unavailable');
+        const area = d?.city || d?.region || d?.country_name || '';
+        await loadWeatherByLocation(lat, lon, area);
+      }
+
+
+      function formatPrice(data){
+        if(!data || !Array.isArray(data.items) || !data.items.length) return null;
+        const main = data.items[0];
+        const price = typeof main.price === 'number' ? main.price.toLocaleString('en-US') : null;
+        const change = typeof main.changePercent === 'number' ? `${main.changePercent > 0 ? '+' : ''}${main.changePercent}%` : null;
+        if(!price) return null;
+        return change ? `${price} (${change})` : price;
+      }
+
+      async function loadCardPrice(elId, url){
+        const el = document.getElementById(elId);
+        if(!el) return;
+        try {
+          const res = await fetch(url + '?ts=' + Date.now());
+          const data = await res.json();
+          const formatted = formatPrice(data);
+          el.textContent = formatted ? `指數：${formatted}` : '指數資料暫無';
+        } catch {
+          el.textContent = '指數資料暫無';
+        }
+      }
+
+      loadCardPrice('twPrice', '/tw/data/latest.json');
+      loadCardPrice('usPrice', '/us/data/us_latest.json');
+
+      (function initWeather(){
+        const meta = document.getElementById('weatherMeta');
+        if (!meta) return;
+        if (!navigator.geolocation) {
+          loadWeatherByIP().catch(() => {
+            loadWeatherByLocation(25.0330, 121.5654, '台北市').catch(() => {
+              meta.textContent = '無法讀取天氣資料。';
+            });
+          });
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            loadWeatherByLocation(pos.coords.latitude, pos.coords.longitude).catch(() => {
+              meta.textContent = '天氣資料讀取失敗，請稍後再試。';
+            });
+          },
+          () => {
+            loadWeatherByIP().catch(() => {
+              loadWeatherByLocation(25.0330, 121.5654, '台北市').catch(() => {
+                meta.textContent = '未授權位置存取，且無法讀取替代天氣資料。';
+              });
+            });
+          },
+          { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
+        );
+      })();
+    </script>
+  </body>
+</html>

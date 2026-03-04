@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>股市 Search</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://s3.tradingview.com/tv.js"></script>
+  <style>body{background:#0b1020;color:#e5e7eb}</style>
+</head>
+<body class="min-h-screen">
+  <main class="max-w-7xl mx-auto p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h1 class="text-3xl font-bold">股市 Search</h1>
+      <div class="flex items-center gap-4"><a href="/chat/" class="text-sky-300 hover:underline">Chat</a><form action="/chat/" method="get" class="flex items-center gap-2"><input name="q" type="text" placeholder="Search keyword..." class="bg-slate-800 border border-slate-600 rounded-full px-3 py-1 text-slate-100 text-sm w-56" /><button type="submit" class="px-3 py-1 rounded-full border border-sky-500 bg-sky-900 text-sky-100 text-sm">Search</button></form><a href="/" class="text-sky-300 hover:underline">返回首頁</a></div>
+    </div>
+
+    <section class="bg-slate-900 border border-slate-700 rounded-xl p-4 mb-4">
+      <div class="relative">
+        <input id="q" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-slate-100" placeholder="輸入股票代號（AAPL、NVDA、2330.TW）" value="AAPL" />
+        <div id="suggest" class="absolute z-20 mt-2 w-full bg-slate-900 border border-slate-700 rounded-lg overflow-hidden hidden"></div>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mt-4 text-sm" id="meta"></div>
+
+      <div class="flex flex-wrap gap-2 mt-4" id="ranges"></div>
+      <div class="text-red-400 text-sm mt-3" id="err"></div>
+    </section>
+
+    <section class="bg-slate-900 border border-slate-700 rounded-xl p-2">
+      <div id="tvchart" style="height:520px"></div>
+    </section>
+  </main>
+
+<script>
+const COMMON = ['AAPL','MSFT','NVDA','TSLA','AMZN','META','GOOGL','AMD','NFLX','INTC','2330.TW','2317.TW','0050.TW'];
+const API_BASE = 'https://openai-tw-chat.googselect.workers.dev/api/stock';
+const RANGES = {
+  '1D': { interval: '5' },
+  '5D': { interval: '15' },
+  '1M': { interval: 'D' },
+  '3M': { interval: 'D' },
+  '1Y': { interval: 'W' },
+  '5Y': { interval: 'M' }
+};
+let symbol='AAPL', activeRange='1M', tvWidget=null;
+
+const qEl=document.getElementById('q');
+const suggestEl=document.getElementById('suggest');
+const metaEl=document.getElementById('meta');
+const rangesEl=document.getElementById('ranges');
+const errEl=document.getElementById('err');
+
+function info(label, value, cls='text-slate-100'){
+  return `<div class="bg-slate-800 rounded-lg p-3 border border-slate-700"><div class="text-slate-400">${label}</div><div class="font-semibold ${cls}">${value}</div></div>`;
+}
+function fmtNum(v){ return v==null ? 'N/A' : Number(v).toLocaleString(); }
+function fmtPct(v){ return v==null ? 'N/A' : `${Number(v)>=0?'+':''}${Number(v).toFixed(2)}%`; }
+function fmtCap(v){ if(v==null)return 'N/A'; const n=Number(v); if(n>=1e12)return `${(n/1e12).toFixed(2)}T`; if(n>=1e9)return `${(n/1e9).toFixed(2)}B`; if(n>=1e6)return `${(n/1e6).toFixed(2)}M`; return fmtNum(n); }
+
+function tvSymbolFromInput(raw){
+  const s = String(raw||'').trim().toUpperCase();
+  if (!s) return 'NASDAQ:AAPL';
+  if (s.includes(':')) return s;
+  if (s.endsWith('.TW')) return `TWSE:${s.replace('.TW','')}`;
+  if (/^\d{4}$/.test(s)) return `TWSE:${s}`;
+  return `NASDAQ:${s}`;
+}
+
+function candidates(raw){
+  const s = String(raw||'').trim().toUpperCase();
+  if(!s) return [];
+  if (s.includes(':')) return [s];
+  if (s.endsWith('.TW')) {
+    const t = s.replace('.TW','');
+    return [`TWSE:${t}`, `TPEX:${t}`];
+  }
+  if (/^\d{4}$/.test(s)) return [`TWSE:${s}`, `TPEX:${s}`];
+  return [`NASDAQ:${s}`, `NYSE:${s}`, `AMEX:${s}`];
+}
+
+async function loadQuote(raw){
+  const tries = [raw, ...candidates(raw).map(x => x.replace(/^NASDAQ:|^NYSE:|^AMEX:|^TWSE:|^TPEX:/,''))];
+  let lastErr;
+  for (const s of tries) {
+    try {
+      const res = await fetch(`${API_BASE}/quote?symbols=${encodeURIComponent(s)}`);
+      if(!res.ok) throw new Error('quote fetch failed');
+      const d = await res.json();
+      const row = d?.data?.find(x => Array.isArray(x.d) && x.d.some(v => v != null));
+      if(!row) throw new Error('symbol not found');
+      const [name, description, close, change, volume, mcap] = row.d;
+      return {
+        name: name || description || raw,
+        close,
+        change,
+        volume,
+        mcap,
+        tv: row.s || tvSymbolFromInput(raw)
+      };
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr || new Error('quote unavailable');
+}
+
+function renderMeta(q){
+  // hide all summary cards when key quote data is unavailable
+  if (q == null || q.close == null || q.change == null || q.volume == null || q.mcap == null) {
+    metaEl.innerHTML = '';
+    return;
+  }
+  const cls = (q.change||0) >= 0 ? 'text-emerald-400' : 'text-red-400';
+  metaEl.innerHTML = [
+    info('公司', symbol),
+    info('名稱', q.name || symbol),
+    info('價格', q.close),
+    info('漲跌幅', fmtPct(q.change), cls),
+    info('成交量', fmtNum(q.volume)),
+    info('市值', fmtCap(q.mcap)),
+  ].join('');
+}
+
+function renderTV(tvSymbol){
+  const interval = RANGES[activeRange].interval;
+  document.getElementById('tvchart').innerHTML = '';
+  tvWidget = new TradingView.widget({
+    container_id: 'tvchart',
+    autosize: true,
+    symbol: tvSymbol,
+    interval,
+    timezone: 'Asia/Taipei',
+    theme: 'dark',
+    style: '1',
+    locale: 'zh_TW',
+    toolbar_bg: '#0f172a',
+    enable_publishing: false,
+    allow_symbol_change: true,
+    hide_top_toolbar: false,
+    hide_legend: false,
+    studies: ['Volume@tv-basicstudies','MASimple@tv-basicstudies','MASimple@tv-basicstudies','MASimple@tv-basicstudies'],
+    studies_overrides: {
+      'volume.volume.color.0': '#ef4444',
+      'volume.volume.color.1': '#22c55e',
+      'masimple.plot.color': '#60a5fa'
+    }
+  });
+}
+
+async function loadAll(){
+  errEl.textContent='';
+  let q = null;
+  try{
+    q = await loadQuote(symbol);
+    renderMeta(q);
+  }catch(e){
+    metaEl.innerHTML = '';
+    errEl.textContent = '請輸入有效股票代號（例：AAPL、MSFT、2330.TW）。';
+  }
+
+  try{
+    renderTV((q && q.tv) ? q.tv : tvSymbolFromInput(symbol));
+  }catch{
+    if (!errEl.textContent) errEl.textContent = '圖表載入失敗，請稍後再試';
+  }
+}
+
+function renderRanges(){
+  rangesEl.innerHTML='';
+  Object.keys(RANGES).forEach(r=>{
+    const b=document.createElement('button');
+    b.className=`px-3 py-1 rounded-lg border ${activeRange===r?'bg-sky-600 border-sky-400':'bg-slate-800 border-slate-600'}`;
+    b.textContent=r;
+    b.onclick=()=>{ activeRange=r; renderRanges(); loadAll(); };
+    rangesEl.appendChild(b);
+  });
+}
+
+let tt;
+qEl.addEventListener('input', ()=>{
+  clearTimeout(tt);
+  tt=setTimeout(()=>{
+    const v=qEl.value.trim().toUpperCase();
+    const arr=COMMON.filter(x=>x.includes(v)).slice(0,8);
+    if(!arr.length){ suggestEl.classList.add('hidden'); suggestEl.innerHTML=''; return; }
+    suggestEl.innerHTML = arr.map(s=>`<button class="w-full text-left px-4 py-2 hover:bg-slate-800" data-s="${s}">${s}</button>`).join('');
+    suggestEl.classList.remove('hidden');
+    suggestEl.querySelectorAll('button').forEach(b=>b.onclick=()=>{ symbol=b.dataset.s; qEl.value=symbol; suggestEl.classList.add('hidden'); loadAll(); });
+  },150);
+});
+qEl.addEventListener('keydown', e=>{
+  if(e.key==='Enter'){
+    symbol=(qEl.value.trim()||'AAPL').toUpperCase();
+    suggestEl.classList.add('hidden');
+    loadAll();
+  }
+});
+
+renderRanges();
+loadAll();
+</script>
+</body>
+</html>

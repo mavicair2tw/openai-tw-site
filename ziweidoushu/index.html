@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>紫微斗數</title>
+    <style>
+      :root{--bg:#0b1020;--panel:#121a2f;--line:#1f2a44;--text:#e6edf3;--muted:#9fb0c3;--accent:#60a5fa}
+      *{box-sizing:border-box}
+      body{margin:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,#0b1020 0%,#0a1226 100%);color:var(--text)}
+      .wrap{max-width:1200px;margin:0 auto}
+      .top-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+      .logo{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;border:1px solid #2a3a5e;background:#101a33;color:#dbeafe;font-weight:800;font-size:13px}
+      .top-tags{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+      .nav-item{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+      .tag{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid #2a3a5e;color:#cfe2ff;text-decoration:none;font-size:12px;font-weight:700}
+      .tag-sub{color:#8fa3bf;font-size:11px;line-height:1;padding-left:8px}
+      .tag.active{border-color:#60a5fa;background:#1a315f;color:#fff}
+      .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;line-height:1.7;margin-bottom:12px}
+      .sub{color:var(--muted)}
+      .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+      @media (max-width: 900px){.grid{grid-template-columns:1fr}}
+      label{font-size:12px;color:#b9cae6;display:flex;flex-direction:column;gap:6px}
+      input,select,button,textarea{background:#0f1730;color:#e6edf3;border:1px solid #223055;border-radius:8px;padding:8px;font:inherit}
+      button{cursor:pointer}
+      .row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+      @media (max-width: 760px){.row{grid-template-columns:1fr}}
+      .chart{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+      .palace{border:1px solid #29406d;border-radius:10px;padding:8px;min-height:100px;background:#0f1730}
+      .palace h4{margin:0 0 4px;font-size:13px}
+      .stars{font-size:12px;color:#cfe2ff}
+      .active{outline:2px solid #60a5fa}
+      .site-link{margin-top:18px;color:var(--muted);font-size:13px}
+      .site-link a{color:#93c5fd;text-decoration:none}
+      .mono{font-family:ui-monospace, SFMono-Regular, Menlo, monospace}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="top-bar">
+        <div class="logo">openai-tw.com</div>
+        <div class="top-tags">
+          <div class="nav-item"><a class="tag" href="/">Home</a><span class="tag-sub">Main Portal</span></div>
+          <div class="nav-item"><a class="tag" href="/chat/">Chat</a><span class="tag-sub">Chat</span></div>
+          <div class="nav-item"><a class="tag active" href="/ziweidoushu/">紫微斗數</a><span class="tag-sub">Astrology</span></div>
+          <form class="quick-search" action="/chat/" method="get" style="display:flex;gap:8px;align-items:center;">
+            <input name="q" type="text" placeholder="Search keyword..." style="width:220px;max-width:42vw;background:#0f1730;color:#e6edf3;border:1px solid #223055;border-radius:999px;padding:6px 10px;font-size:12px;" />
+            <button type="submit" style="padding:6px 10px;border-radius:999px;border:1px solid #35558d;background:#1a315f;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">Search</button>
+          </form>
+        </div>
+      </div>
+
+      <h1>紫微斗數</h1>
+      <div class="sub" id="viewCounter">點閱數：--</div>
+
+      <div class="card">
+        <h3 style="margin-top:0">【紫微斗數簡介與說明】</h3>
+        <div class="sub">
+          紫微斗數是一門源自中國古代天文與命理學的預測學術，用來分析一個人的性格、人生方向與運勢變化。<br>
+          它結合天文星象、陰陽五行、干支曆法等理論，透過出生時間排出「命盤」，並依據星曜落宮位置來解析人生各方面發展。<br>
+          本系統可依據您的出生資料自動生成紫微斗數命盤並提供詳細解析。
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h3 style="margin-top:0">資料輸入 / 帳戶</h3>
+          <div class="row">
+            <label>Email
+              <input id="email" type="email" placeholder="name@example.com" />
+            </label>
+            <label>姓名
+              <input id="name" placeholder="姓名" />
+            </label>
+            <label>性別
+              <select id="gender"><option>男</option><option>女</option></select>
+            </label>
+            <label>出生日期
+              <input id="birthDate" type="date" />
+            </label>
+            <label>出生時間
+              <input id="birthTime" type="time" value="12:00" />
+            </label>
+            <label>時區
+              <select id="tz"><option value="Asia/Taipei">Asia/Taipei</option></select>
+            </label>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            <button id="aiBtn">AI 解析（全自動）</button>
+            <button id="mailBtn">寄送完整資料到 Email</button>
+          </div>
+          <div id="status" class="sub" style="margin-top:8px"></div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top:0">運勢分析</h3>
+          <div id="fortune" class="sub">請先計算命盤。</div>
+          <div id="interpretation" style="margin-top:8px"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">互動式命盤（點擊宮位查看解讀）</h3>
+        <div id="chart" class="chart"></div>
+      </div>
+
+      <div class="site-link"><a href="https://openai-tw.com/">openai-tw.com</a></div>
+    </div>
+
+    <script>
+      const pageKey = `views:${location.pathname}`;
+      const pageViews = Number(localStorage.getItem(pageKey) || '0') + 1;
+      localStorage.setItem(pageKey, String(pageViews));
+      const viewCounterEl = document.getElementById('viewCounter');
+      if (viewCounterEl) viewCounterEl.textContent = `點閱數：${pageViews}`;
+
+      const PALACES = ['命宮','兄弟宮','夫妻宮','子女宮','財帛宮','疾厄宮','遷移宮','朋友宮','官祿宮','田宅宮','福德宮','父母宮'];
+      const PALACE_TOPICS = {
+        '命宮':'個性、人生方向',
+        '兄弟宮':'手足、人際圈',
+        '夫妻宮':'婚姻與伴侶',
+        '子女宮':'子女、創作',
+        '財帛宮':'金錢與收入',
+        '疾厄宮':'健康',
+        '遷移宮':'外出、機會',
+        '朋友宮':'社交、人脈',
+        '官祿宮':'事業',
+        '田宅宮':'房產、家庭',
+        '福德宮':'精神、福氣',
+        '父母宮':'長輩、資源'
+      };
+      const PALACE_EXPLAIN = {
+        '命宮':'命宮是命盤中心，反映核心本性、性格特質與人生走勢，並會連動其他宮位解讀。',
+        '父母宮':'父母宮顯示與父母互動模式、支持程度與價值觀影響，也是家庭和諧重要指標。',
+        '福德宮':'福德宮反映精神追求、內在幸福感與生活態度，關係到心靈安定與人生觀。',
+        '田宅宮':'田宅宮對應房產、居住穩定度與家庭安全感，常影響生活品質與心理安定。',
+        '官祿宮':'官祿宮關乎事業方向、職場表現、升遷機會與社會地位，是職涯規劃關鍵。',
+        '朋友宮':'朋友宮（僕役宮）顯示朋友、同事與合作關係，反映人脈支援與團隊互動品質。',
+        '遷移宮':'遷移宮主外出、移動、異地發展與環境適應力，影響在外機會與變動運勢。',
+        '疾厄宮':'疾厄宮反映健康體質、疾病風險與壓力耐受度，是保健與生活習慣參考重點。',
+        '財帛宮':'財帛宮關係收入模式、資源管理與財務起伏，可看理財習慣與金錢機會。',
+        '子女宮':'子女宮象徵子女緣、教育互動與創作表現，也可延伸觀察成果培育能力。',
+        '夫妻宮':'夫妻宮對應感情與婚姻品質，反映伴侶互動、關係穩定性與情感課題。',
+        '兄弟宮':'兄弟宮呈現手足互助、競合與家庭情感氛圍，關係到人際信任基礎。'
+      };
+      const STARS = ['紫微','天機','太陽','武曲','天同','廉貞','天府','太陰','貪狼','巨門','天相','天梁','七殺','破軍'];
+      const STAR_TRAITS = {
+        '紫微':'象徵尊貴、領導力和權威，具管理與領導能力，代表高貴地位與核心統御力。',
+        '天機':'代表智慧、謀略與變通能力，特質靈活，善於計劃與分析。',
+        '太陽':'象徵外向、積極、熱情與感染力，具行動力及公眾影響力。',
+        '武曲':'代表剛毅、決斷與實幹，重視財富與物質管理，擅長理財與執行。',
+        '天同':'象徵和諧、享受與慈悲，親和力高、適應力佳，偏好和平穩定環境。',
+        '廉貞':'代表理想、道德與約束力，也帶挑戰精神，重視信念與判斷。',
+        '天府':'象徵穩定、守成與保守，重視物質保障與長期安全感。',
+        '太陰':'代表陰柔、內斂與敏感，心思細膩，重家庭與生活經營。',
+        '貪狼':'象徵慾望、創造力與冒險，探索力強，追求新鮮與突破。',
+        '巨門':'代表口才、辯論與思想影響力，擅表達與人際互動。',
+        '天相':'象徵公平、公正與責任，擅協調調解，重視秩序與平衡。',
+        '天梁':'代表庇護、慈悲與安定，與教育、哲思、守護能量相關。',
+        '七殺':'象徵勇敢、決斷與魄力，行動果敢，常在壓力情境中表現突出。',
+        '破軍':'代表變動、改革與顛覆，具創新突破能力，能在劇變中找方向。'
+      };
+      const STAR_WEIGHTS = {
+        '紫微': {lead:9, wealth:6, relation:6, health:5},
+        '天機': {lead:7, wealth:5, relation:5, health:6},
+        '太陽': {lead:8, wealth:6, relation:8, health:5},
+        '武曲': {lead:7, wealth:9, relation:4, health:5},
+        '天同': {lead:5, wealth:4, relation:8, health:7},
+        '廉貞': {lead:6, wealth:5, relation:6, health:5},
+        '天府': {lead:7, wealth:8, relation:6, health:6},
+        '太陰': {lead:5, wealth:7, relation:7, health:6},
+        '貪狼': {lead:6, wealth:7, relation:7, health:4},
+        '巨門': {lead:6, wealth:5, relation:4, health:5},
+        '天相': {lead:7, wealth:6, relation:8, health:6},
+        '天梁': {lead:7, wealth:5, relation:6, health:8},
+        '七殺': {lead:8, wealth:6, relation:4, health:4},
+        '破軍': {lead:8, wealth:7, relation:3, health:4}
+      };
+
+      let current = null;
+
+      const $ = (id) => document.getElementById(id);
+
+      function hashCode(s){let h=0; for(let i=0;i<s.length;i++) h=((h<<5)-h)+s.charCodeAt(i)|0; return Math.abs(h)}
+      function pad(n){return String(n).padStart(2,'0')}
+
+      function calcChart(data){
+        const seed = hashCode(`${data.name}|${data.gender}|${data.birthDate}|${data.birthTime}`);
+        const palaces = PALACES.map((p, i) => ({
+          name: p,
+          stars: [STARS[(seed + i*3) % STARS.length], STARS[(seed + i*7 + 2) % STARS.length]],
+          score: ((seed % 100) + i*9) % 100,
+        }));
+
+        const birthYear = Number((data.birthDate || '2000').slice(0,4));
+        const age = Math.max(1, new Date().getFullYear() - birthYear + 1);
+        const majorIndex = Math.floor((age-1)/10) % 12;
+        const minorIndex = (age-1) % 12;
+        const annualIndex = (new Date().getFullYear() + seed) % 12;
+
+        return {
+          data,
+          palaces,
+          major: `大限（${Math.floor((age-1)/10)*10+1}-${Math.floor((age-1)/10)*10+10}歲）：重點在「${PALACES[majorIndex]}宮」`,
+          minor: `小限（${age}歲）：重點在「${PALACES[minorIndex]}宮」`,
+          annual: `流年（${new Date().getFullYear()}）：重點在「${PALACES[annualIndex]}宮」`,
+          summary: buildInterpretation(palaces),
+        };
+      }
+
+      function buildInterpretation(palaces){
+        const top = [...palaces].sort((a,b)=>b.score-a.score).slice(0,3);
+        return `本命盤強勢宮位：${top.map(x=>`${x.name}（${x.stars.join('、')}）`).join('、')}。\n建議把重心放在優勢宮位的長期累積，弱勢宮位採取保守策略與風險管理。`;
+      }
+
+      function palaceFormulaScore(p){
+        const ws = p.stars.map(s => STAR_WEIGHTS[s] || {lead:5,wealth:5,relation:5,health:5});
+        const avg = (k) => ws.reduce((a,b)=>a+Number(b[k]||5),0) / Math.max(1, ws.length);
+        const lead = avg('lead');
+        const wealth = avg('wealth');
+        const relation = avg('relation');
+        const health = avg('health');
+
+        // 宮位解讀公式（簡化專業版）
+        // 綜合分 = 原始宮位分數*0.55 + 星曜能力分*4.5
+        const starPower = (lead + wealth + relation + health) / 4;
+        const total = Math.max(0, Math.min(100, p.score * 0.55 + starPower * 4.5));
+        return { total: Number(total.toFixed(1)), lead, wealth, relation, health };
+      }
+
+      function uniqueSentences(text=''){
+        const parts = String(text).split('。').map(s=>s.trim()).filter(Boolean);
+        const out = [];
+        const seen = new Set();
+        for (const p of parts){
+          if (seen.has(p)) continue;
+          seen.add(p);
+          out.push(p);
+        }
+        return out.join('。') + (out.length ? '。' : '');
+      }
+
+      function palaceDetailText(p){
+        const f = palaceFormulaScore(p);
+        const level = f.total>=80 ? '強勢' : f.total>=60 ? '偏強' : f.total>=40 ? '中性' : '偏弱';
+        const action = f.total>=80
+          ? '此宮位適合主動出擊，設定具體里程碑並提高資源投入，容易在短中期看到成果。'
+          : f.total>=60
+          ? '此宮位可穩健推進，建議採取小步快跑策略，持續優化與驗證。'
+          : f.total>=40
+          ? '此宮位屬平衡區，關鍵在節奏管理與風險控制。'
+          : '此宮位波動較高，宜先守後攻，優先補強基礎、降低風險。';
+
+        const traitText = p.stars.map(s => `${s}：${STAR_TRAITS[s] || ''}`).join('；');
+        const starHint = `主星為「${p.stars.join('、')}」，在領導/財務/關係/健康四維度約為 ${f.lead.toFixed(1)}/${f.wealth.toFixed(1)}/${f.relation.toFixed(1)}/${f.health.toFixed(1)}。星曜特質：${traitText}`;
+        const dimAdvice = `四維度解析：${f.lead>=7?'領導面向較強，可主導節奏；':'領導面向中性，宜先整合再推進；'}${f.wealth>=7?'財務面向偏強，適合重視資源效率與成果轉化；':'財務面向宜保守，先顧現金流與成本控管；'}${f.relation>=6?'關係面向較佳，透過合作可放大成果；':'關係面向較弱，溝通與界線管理需特別留意；'}${f.health>=6?'健康/耐力面向穩定，可維持長期節奏。':'健康面向需留意作息與壓力平衡。'}`;
+        const advice = `實務建議：未來3個月聚焦「${p.name}」主題，採取穩健節奏推進，並依情況彈性調整策略。`;
+
+        const topic = PALACE_TOPICS[p.name] || '綜合領域';
+        const palaceBase = PALACE_EXPLAIN[p.name] || '';
+        const formula = `公式：綜合分 = 宮位分(${p.score})×0.55 + 星曜能力均值×4.5 = ${f.total}`;
+        const text = `${p.name}（主題：${topic}；${level}，綜合分 ${f.total}）：${palaceBase}${formula}。${starHint}${dimAdvice}${action}${advice}`;
+        const deduped = uniqueSentences(text);
+        return deduped.length > 500 ? `${deduped.slice(0,500)}…` : deduped;
+      }
+
+      function renderChart(chart){
+        const box = $('chart');
+        box.innerHTML = '';
+        chart.palaces.forEach((p, idx) => {
+          const d = document.createElement('div');
+          d.className = 'palace';
+          d.innerHTML = `<h4>${idx+1}. ${p.name}</h4><div class="stars">${p.stars.join('、')}</div><div class="sub mono">Score: ${p.score}</div>`;
+          d.onclick = () => {
+            box.querySelectorAll('.palace').forEach(x=>x.classList.remove('active'));
+            d.classList.add('active');
+            $('interpretation').innerHTML = `<b>${p.name} 詳細解讀（500字內）：</b><br>${palaceDetailText(p).replace(/\n/g,'<br>')}`;
+          };
+          box.appendChild(d);
+        });
+      }
+
+      function renderFortune(chart){
+        $('fortune').innerHTML = `${chart.major}<br>${chart.minor}<br>${chart.annual}`;
+        $('interpretation').textContent = chart.summary;
+      }
+
+      function collectData(){
+        return {
+          email: $('email').value.trim(),
+          name: $('name').value.trim(),
+          gender: $('gender').value,
+          birthDate: $('birthDate').value,
+          birthTime: $('birthTime').value,
+          tz: $('tz').value,
+        };
+      }
+
+
+      function buildEmailBody(chart){
+        const d = chart.data || {};
+        const palaceLines = (chart.palaces || []).map((p,i)=> `${i+1}. ${p.name}｜主星：${p.stars.join('、')}｜Score: ${p.score}`);
+        const interp = ($('interpretation').innerText || chart.summary || '').trim();
+        const ming = (chart.palaces || []).find(p => p.name === '命宮');
+        const mingDetail = ming ? palaceDetailText(ming) : '（無命宮資料）';
+        return [
+          '【紫微斗數完整資料與解讀】',
+          '',
+          `姓名：${d.name || ''}`,
+          `Email：${d.email || ''}`,
+          `性別：${d.gender || ''}`,
+          `出生：${d.birthDate || ''} ${d.birthTime || ''} (${d.tz || ''})`,
+          '',
+          '【運勢】',
+          chart.major || '',
+          chart.minor || '',
+          chart.annual || '',
+          '',
+          '【命宮詳細解讀】',
+          mingDetail,
+          '',
+          '【命盤十二宮】',
+          ...palaceLines,
+          '',
+          '【解讀】',
+          interp,
+          '',
+          '— 由 openai-tw.com 紫微斗數系統產生 —'
+        ].join('\n');
+      }
+
+      function limit500(text=''){
+        const t = String(text).replace(/\s+/g, ' ').trim();
+        return t.length > 500 ? `${t.slice(0,500)}…` : t;
+      }
+
+      async function doAIParse(){
+        if(!current){ $('status').textContent='請先計算命盤。'; return false; }
+        $('status').textContent='AI 解析中...';
+
+        const fullPrompt = `你是專業紫微斗數老師。請以繁體中文提供完整但精煉的解析，限制在500字內，涵蓋：性格、事業、財運、感情、健康、未來一年建議。\n${JSON.stringify(current, null, 2)}`;
+        const litePrompt = `請用繁體中文解讀以下紫微斗數重點，500字內：\n姓名:${current?.data?.name||''}\n性別:${current?.data?.gender||''}\n大限:${current?.major||''}\n小限:${current?.minor||''}\n流年:${current?.annual||''}\n強勢宮位:${(current?.palaces||[]).sort((a,b)=>b.score-a.score).slice(0,3).map(p=>`${p.name}(${p.stars.join('、')})`).join('、')}`;
+
+        async function ask(prompt){
+          const r = await fetch('https://openai-tw-chat.googselect.workers.dev/api/chat', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({messages:[{role:'user', content: prompt}]})
+          });
+          const data = await r.json().catch(()=>({}));
+          return { ok: r.ok, data };
+        }
+
+        try {
+          let ret = await ask(fullPrompt);
+          if(!(ret.ok && ret.data?.reply)) ret = await ask(litePrompt);
+
+          if(ret.ok && ret.data?.reply){
+            const out = limit500(ret.data.reply);
+            $('interpretation').innerHTML = `<b>AI 解析（500字內）：</b><br>${String(out).replace(/\n/g,'<br>')}`;
+            $('status').textContent='AI 解析完成。';
+            return true;
+          }
+
+          $('interpretation').innerHTML = `<b>系統解讀（備援）：</b><br>${String(limit500(current.summary||'')).replace(/\n/g,'<br>')}`;
+          $('status').textContent='AI 服務忙碌，已切換系統解讀。';
+          return false;
+        } catch {
+          $('interpretation').innerHTML = `<b>系統解讀（備援）：</b><br>${String(limit500(current.summary||'')).replace(/\n/g,'<br>')}`;
+          $('status').textContent='AI 連線異常，已切換系統解讀。';
+          return false;
+        }
+      }
+
+      $('aiBtn').onclick = async () => {
+        const d = collectData();
+        if(!d.email || !d.name || !d.birthDate){
+          $('status').textContent='請先填寫 Email、姓名、出生日期。';
+          return;
+        }
+
+        $('status').textContent='AI 解析（全自動）執行中：計算 → 儲存 → 載入 → AI 解析';
+
+        // 1) 計算命盤
+        current = calcChart(d);
+        renderChart(current);
+        renderFortune(current);
+
+        // 2) 儲存命盤
+        localStorage.setItem(`ziweidoushu:${d.email}`, JSON.stringify(current));
+
+        // 3) 載入 Email 命盤
+        const raw = localStorage.getItem(`ziweidoushu:${d.email}`);
+        if(raw) current = JSON.parse(raw);
+
+        $('email').value = current.data.email || d.email;
+        $('name').value = current.data.name || '';
+        $('gender').value = current.data.gender || '男';
+        $('birthDate').value = current.data.birthDate || '';
+        $('birthTime').value = current.data.birthTime || '12:00';
+        renderChart(current);
+        renderFortune(current);
+
+        // 4) AI 解析
+        await doAIParse();
+      };
+
+      (function renderStarTraits(){
+        const box = $('starTraits');
+        if(!box) return;
+        box.innerHTML = STARS.map((s, i) => `${i+1}. <b>${s}星</b>：${STAR_TRAITS[s] || ''}`).join('<br>');
+      })();
+
+      (function renderPalaceExplain(){
+        const order = ['命宮','父母宮','福德宮','田宅宮','官祿宮','朋友宮','遷移宮','疾厄宮','財帛宮','子女宮','夫妻宮','兄弟宮'];
+        const box = $('palaceExplain');
+        if(!box) return;
+        box.innerHTML = order.map((p, i) => `紫微宮位${i+1}：<b>${p}</b>｜${PALACE_EXPLAIN[p] || ''}`).join('<br>');
+      })();
+
+      $('mailBtn').onclick = async () => {
+        const d = collectData();
+        if(!d.email){ $('status').textContent='請先輸入 Email。'; return; }
+        if(!current){ $('status').textContent='請先計算命盤。'; return; }
+        const subject = `紫微斗數完整命盤與解讀 - ${d.name || '使用者'}`;
+        const body = buildEmailBody(current);
+
+        // 1) Try local mail client via mailto
+        const mailto = `mailto:${encodeURIComponent(d.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        let opened = false;
+        try {
+          const w = window.open(mailto, '_self');
+          opened = !!w || document.hasFocus();
+        } catch {}
+
+        // 2) Fallback: open Gmail compose page (works on web-only environments)
+        if (!opened) {
+          const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(d.email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+          window.open(gmail, '_blank');
+        }
+
+        // 3) Always copy content as final fallback
+        try { await navigator.clipboard.writeText(`To: ${d.email}\nSubject: ${subject}\n\n${body}`); } catch {}
+
+        $('status').innerHTML = '已嘗試開啟寄信視窗；若仍無法寄送，內容已複製到剪貼簿，可直接貼到 Gmail/Outlook。';
+      };
+    </script>
+  </body>
+</html>

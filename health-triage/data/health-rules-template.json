@@ -1,0 +1,106 @@
+{
+  "symptomDict": {
+    "S_CHEST_PAIN": "胸痛/胸悶",
+    "S_SOB": "呼吸困難/喘",
+    "S_FAINT": "昏厥/意識改變",
+    "S_STROKE_SIGN": "口齒不清/單側無力/視力突變",
+    "S_FEVER": "發燒",
+    "S_COUGH": "咳嗽",
+    "S_SORE_THROAT": "喉嚨痛",
+    "S_RUNNY_NOSE": "流鼻水/鼻塞",
+    "S_NAUSEA": "噁心",
+    "S_VOMIT": "嘔吐",
+    "S_DIARRHEA": "腹瀉",
+    "S_CONSTIPATION": "便秘",
+    "S_ABD_PAIN": "腹痛",
+    "S_BLACK_STOOL": "黑便/血便",
+    "S_DIZZINESS": "頭暈/眩暈",
+    "S_HEADACHE": "頭痛",
+    "S_NUMBNESS": "麻木刺痛",
+    "S_PALPITATION": "心悸",
+    "S_RASH": "皮疹/蕁麻疹",
+    "S_URINE_PAIN": "排尿疼痛",
+    "S_BLOOD_URINE": "血尿",
+    "S_BACK_FLANK_PAIN": "腰/肋側痛",
+    "S_JOINT_SWELL": "關節腫痛",
+    "S_LOWER_BACK_PAIN": "下背痛/坐骨痛",
+    "S_SLEEP_ISSUE": "失眠",
+    "S_ANXIETY": "焦慮/恐慌"
+  },
+  "comorbDict": {
+    "C_HTN": "高血壓",
+    "C_DM": "糖尿病",
+    "C_CAD": "心臟病/冠心症",
+    "C_CKD": "腎臟病",
+    "C_LIVER": "肝病",
+    "C_ASTHMA": "氣喘/COPD",
+    "C_GERD": "胃食道逆流/胃潰瘍",
+    "C_ANTICOAG": "抗凝血/抗血小板",
+    "C_PREG": "懷孕/疑似懷孕",
+    "C_IMMUNO": "免疫低下",
+    "C_AGE65P": "65歲以上",
+    "C_AGE5M": "5歲以下"
+  },
+  "departmentMap": [
+    {"symptom":"S_COUGH","departments":["家醫科","胸腔內科"]},
+    {"symptom":"S_ABD_PAIN","departments":["家醫科","腸胃科"]},
+    {"symptom":"S_DIZZINESS","departments":["耳鼻喉科","神經內科"]},
+    {"symptom":"S_RASH","departments":["皮膚科","家醫科"]},
+    {"symptom":"S_URINE_PAIN","departments":["泌尿科","家醫科"]},
+    {"symptom":"S_LOWER_BACK_PAIN","departments":["骨科","復健科"]},
+    {"symptom":"S_PALPITATION","departments":["心臟內科","家醫科"]}
+  ],
+  "dietLibrary": [
+    {
+      "id": "D_GI_REST",
+      "title": "腸胃休養（清淡/少量多餐）",
+      "do": ["溫水少量多次", "白粥/吐司/蒸蛋/香蕉", "必要時補充電解質"],
+      "avoid": ["油炸辛辣", "酒精", "咖啡", "高糖飲料", "腹瀉時先減少乳製品"],
+      "notes": ["若持續無法進水或脫水徵象，建議就醫"]
+    },
+    {
+      "id": "D_LOW_SALT",
+      "title": "低鹽飲食",
+      "do": ["少醬料少加工品", "多蔬菜與原型食物", "水分足夠"],
+      "avoid": ["泡麵/鹹湯/滷味", "重口味零食"],
+      "notes": ["若血壓高合併胸悶/神經症狀，請就醫"]
+    },
+    {
+      "id": "D_GERD",
+      "title": "逆流/胃痛飲食",
+      "do": ["少量多餐", "飯後2-3小時再躺", "溫和蛋白質與非油膩食物"],
+      "avoid": ["辛辣油炸", "薄荷/巧克力", "咖啡酒精", "睡前大餐"],
+      "notes": ["黑便/吐血屬警訊"]
+    },
+    {
+      "id": "D_HYDRATION",
+      "title": "補水與電解質",
+      "do": ["水/電解質水少量多次", "觀察尿量與口乾"],
+      "avoid": ["含糖飲料（大量）", "酒精"],
+      "notes": ["尿量明顯變少、站起來暈：提高就醫優先度"]
+    },
+    {
+      "id": "D_GOUT_LOW_PURINE",
+      "title": "痛風/尿酸注意（低普林）",
+      "do": ["多喝水", "低普林飲食", "適量乳製品"],
+      "avoid": ["內臟/濃肉湯", "啤酒"],
+      "notes": []
+    }
+  ],
+  "triageRules": [
+    {"id":"R001_EMERGENCY_CHEST_PAIN","priority":1000},
+    {"id":"R002_EMERGENCY_STROKE","priority":990},
+    {"id":"R003_EMERGENCY_GI_BLEED","priority":980},
+    {"id":"R010_URGENCY_FEVER_HIGH","priority":800},
+    {"id":"R041_PYELONEPHRITIS_WARNING","priority":820},
+    {"id":"R030_GASTROENTERITIS","priority":400},
+    {"id":"R031_GERD_FLARE","priority":350},
+    {"id":"R040_UTI","priority":450},
+    {"id":"R050_VERTIGO","priority":420},
+    {"id":"R060_RASH_URTICARIA","priority":410},
+    {"id":"R070_LOW_BACK_SCIATICA","priority":360},
+    {"id":"R080_ANXIETY_SLEEP","priority":250},
+    {"id":"R020_COMMON_COLD","priority":300}
+  ],
+  "pipeline": "symptom/comorbidity -> level -> diet tags -> department -> next steps"
+}

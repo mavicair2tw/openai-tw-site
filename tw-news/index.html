@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>台股新聞</title>
+    <style>
+      :root { --bg:#0b1020; --panel:#121a2f; --line:#1f2a44; --text:#e6edf3; --muted:#9fb0c3; }
+      *{box-sizing:border-box}
+      body{margin:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,#0b1020 0%,#0a1226 100%);color:var(--text)}
+      .wrap{max-width:1000px;margin:0 auto}
+      .top-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+      .logo{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;border:1px solid #2a3a5e;background:#101a33;color:#dbeafe;font-weight:800;font-size:13px}
+      .sub{color:var(--muted);margin-bottom:12px}
+      .top-tags{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+      .nav-item{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+      .tag{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid #2a3a5e;color:#cfe2ff;text-decoration:none;font-size:12px;font-weight:700}
+      .tag-sub{color:#8fa3bf;font-size:11px;line-height:1;padding-left:8px}
+      .tag.active{border-color:#60a5fa;background:#1a315f;color:#fff}
+      .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;line-height:1.7;margin-bottom:12px}
+      .spotify-wrap{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:12px}
+      .spotify-wrap iframe{border-radius:10px}
+      a{color:#93c5fd}
+
+    
+      .site-link { margin-top: 20px; color: var(--muted); font-size: 13px; }
+      .site-link a{ color:#93c5fd; text-decoration:none; }
+      .site-link a:hover{ text-decoration:underline; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="top-bar">
+        <div class="logo">openai-tw.com</div>
+        <div class="top-tags">
+          <div class="nav-item"><a class="tag" href="/">Home</a><span class="tag-sub">Main Portal</span></div>
+          <div class="nav-item"><a class="tag" href="https://openai-tw.com/tw/">台股</a><span class="tag-sub">TW Market</span></div>
+          <div class="nav-item"><a class="tag" href="https://openai-tw.com/us/">美股</a><span class="tag-sub">US Market</span></div>
+          <div class="nav-item"><a class="tag active" href="/tw-news/">台股新聞</a><span class="tag-sub">TW News</span></div>
+        <form class="quick-search" action="/chat/" method="get" style="display:flex;gap:8px;align-items:center;">
+          <input name="q" type="text" placeholder="Search keyword..." style="width:220px;max-width:42vw;background:#0f1730;color:#e6edf3;border:1px solid #223055;border-radius:999px;padding:6px 10px;font-size:12px;" />
+          <button type="submit" style="padding:6px 10px;border-radius:999px;border:1px solid #35558d;background:#1a315f;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">Search</button>
+        </form>
+        </div>
+      </div>
+      <h1 id="title">台股新聞</h1>
+      <div class="sub" id="updated">載入中...</div>
+      <div class="sub" id="viewCounter">點閱數：--</div>
+
+      <div class="spotify-wrap">
+        <iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/3wNssuAFgx8ozrfBEsgCMs?utm_source=generator" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+      </div>
+      <div class="card" id="summary">載入摘要中...</div>
+      <div class="card">
+        <h3 style="margin-top:0" id="listTitle">新聞清單</h3>
+        <ol id="list"></ol>
+      </div>
+
+
+      <div class="site-link"><a href="https://openai-tw.com/">openai-tw.com</a></div>
+    </div>
+
+    <script>
+      const lang = new URLSearchParams(location.search).get('lang') || 'zh';
+      const i18n = {
+        zh: { title:'台股新聞', listTitle:'新聞清單', views:'點閱數', updated:'更新時間', source:'來源', loading:'載入中...', fail:'載入失敗', empty:'目前無資料' },
+        en: { title:'Taiwan Stock News', listTitle:'News List', views:'Views', updated:'Updated', source:'Source', loading:'Loading...', fail:'Load failed', empty:'No data available' },
+        ja: { title:'台湾株ニュース', listTitle:'ニュース一覧', views:'閲覧数', updated:'更新時間', source:'情報源', loading:'読み込み中...', fail:'読み込み失敗', empty:'データがありません' }
+      };
+      const t = i18n[lang] || i18n.zh;
+
+      document.getElementById('title').textContent = t.title;
+      document.getElementById('listTitle').textContent = t.listTitle;
+      document.getElementById('updated').textContent = t.loading;
+
+      const pageKey = `views:${location.pathname}`;
+      const pageViews = Number(localStorage.getItem(pageKey) || '0') + 1;
+      localStorage.setItem(pageKey, String(pageViews));
+      const viewCounterEl = document.getElementById('viewCounter');
+      if (viewCounterEl) viewCounterEl.textContent = `${t.views}：${pageViews}`;
+
+      fetch('./data/tw_news.json?ts='+Date.now())
+        .then(r=>r.json())
+        .then(d=>{
+          document.getElementById('updated').textContent = `${t.updated}：${d.updatedAt} (${d.timezone})`;
+          document.getElementById('summary').innerHTML = `${t.source}：<a href="${d.source}" target="_blank">cnyes 台股</a><br>${d.summary}`;
+          const list = document.getElementById('list');
+          list.innerHTML = (d.headlines||[]).map(h=>`<li><a href="${h.url}" target="_blank">${h.title}</a></li>`).join('') || `<li>${t.empty}</li>`;
+        })
+        .catch(()=>{
+          document.getElementById('updated').textContent = t.fail;
+        });
+    </script>
+  </body>
+</html>

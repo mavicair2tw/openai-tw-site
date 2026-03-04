@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>聊天 Chat</title>
+    <style>
+      :root { --bg:#0b1020; --panel:#121a2f; --line:#1f2a44; --text:#e6edf3; --muted:#9fb0c3; --accent:#60a5fa; }
+      *{box-sizing:border-box}
+      body{margin:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,#0b1020 0%,#0a1226 100%);color:var(--text)}
+      .wrap{max-width:1000px;margin:0 auto}
+      .top-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+      .logo{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;border:1px solid #2a3a5e;background:#101a33;color:#dbeafe;font-weight:800;font-size:13px}
+      .top-tags{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+      .nav-item{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+      .tag{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid #2a3a5e;color:#cfe2ff;text-decoration:none;font-size:12px;font-weight:700}
+      .tag-sub{color:#8fa3bf;font-size:11px;line-height:1;padding-left:8px}
+      .tag.active{border-color:#60a5fa;background:#1a315f;color:#fff}
+      .sub{color:var(--muted);margin-bottom:12px}
+      .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;line-height:1.7;margin-bottom:12px}
+      .chat-box{height:420px;overflow:auto;padding:12px;border-radius:10px;background:#0f1730;border:1px solid #223055}
+      .msg{margin:10px 0;display:flex}
+      .msg.user{justify-content:flex-end}
+      .bubble{max-width:78%;padding:10px 12px;border-radius:12px;white-space:pre-wrap;line-height:1.5}
+      .msg.user .bubble{background:#1e3a6b;color:#dbeafe}
+      .msg.bot .bubble{background:#1b243f;color:#e6edf3;border:1px solid #2a365c}
+      .bubble .embed{margin-top:8px;max-width:640px}
+      .bubble .embed img{max-width:640px;max-height:360px;width:auto;height:auto;border-radius:10px;border:1px solid #2a3556;display:block}
+      .bubble .embed iframe{width:640px;max-width:100%;height:360px;border:0;border-radius:10px}
+      .row{display:flex;gap:8px;margin-top:10px}
+      textarea{flex:1;min-height:64px;max-height:180px;background:#0f1730;color:var(--text);border:1px solid #223055;border-radius:10px;padding:10px;resize:vertical}
+      button{padding:10px 14px;border-radius:10px;border:1px solid #35558d;background:#1a315f;color:#fff;font-weight:700;cursor:pointer}
+      button:disabled{opacity:.6;cursor:not-allowed}
+      .btn-ghost{background:transparent;border-color:#2b3b5f;color:#bcd0ef}
+      .hint{font-size:12px;color:var(--muted);margin-top:8px}
+      .error{font-size:12px;color:#fca5a5;margin-top:8px;min-height:18px}
+      .site-link{margin-top:18px;color:var(--muted);font-size:13px}
+      .site-link a{color:#93c5fd;text-decoration:none}
+      .site-link a:hover{text-decoration:underline}
+      .title-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+      .health-pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid #2a3a5e;background:#101a33;color:#cfe2ff;font-size:12px}
+      .health-dot{width:9px;height:9px;border-radius:999px;background:#64748b;box-shadow:0 0 8px rgba(100,116,139,.6)}
+      .health-dot.green{background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,.7)}
+      .health-dot.yellow{background:#eab308;box-shadow:0 0 8px rgba(234,179,8,.7)}
+      .health-dot.red{background:#ef4444;box-shadow:0 0 8px rgba(239,68,68,.7)}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="top-bar">
+        <div class="logo">openai-tw.com</div>
+        <div class="top-tags">
+          <div class="nav-item"><a class="tag" href="/">Home</a><span class="tag-sub">Main Portal</span></div>
+          <div class="nav-item"><a class="tag" href="https://openai-tw.com/tw/">台股</a><span class="tag-sub">TW Market</span></div>
+          <div class="nav-item"><a class="tag" href="https://openai-tw.com/us/">美股</a><span class="tag-sub">US Market</span></div>
+        <form class="quick-search" action="/chat/" method="get" style="display:flex;gap:8px;align-items:center;">
+          <input name="q" type="text" placeholder="搜尋關鍵字 / Search keyword..." style="width:220px;max-width:42vw;background:#0f1730;color:#e6edf3;border:1px solid #223055;border-radius:999px;padding:6px 10px;font-size:12px;" />
+          <button type="submit" style="padding:6px 10px;border-radius:999px;border:1px solid #35558d;background:#1a315f;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">搜尋 Search</button>
+        </form>
+        </div>
+      </div>
+
+      <div class="title-row">
+        <h1 style="margin:0;">聊天 Chat</h1>
+        <div id="healthPill" class="health-pill" title="Provider health">
+          <span id="healthDot" class="health-dot"></span>
+          <span id="healthText">檢查中...</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div id="chat" class="chat-box"></div>
+        <div class="row">
+          <textarea id="input" placeholder="輸入訊息 / Type your message，Shift+Enter 換行，Enter 送出"></textarea>
+          <button id="send">送出 Send</button>
+          <button id="clear" class="btn-ghost" type="button">清除 Clear</button>
+        </div>
+      </div>
+
+      <div class="site-link"><a href="https://openai-tw.com/">openai-tw.com</a></div>
+    </div>
+
+    <script>
+      const chatEl = document.getElementById('chat');
+      const inputEl = document.getElementById('input');
+      const sendBtn = document.getElementById('send');
+      const clearBtn = document.getElementById('clear');
+      const errorEl = document.getElementById('error');
+      const healthDotEl = document.getElementById('healthDot');
+      const healthTextEl = document.getElementById('healthText');
+      const STORAGE_KEY = 'openai-tw-chat-history-v1';
+      const history = [];
+
+      function setError(msg = '') { if (errorEl) errorEl.textContent = msg; }
+
+      function setHealth(state, text, detail = '') {
+        if (!healthDotEl || !healthTextEl) return;
+        healthDotEl.classList.remove('green', 'yellow', 'red');
+        if (state) healthDotEl.classList.add(state);
+        healthTextEl.textContent = text || '未知';
+        const pill = document.getElementById('healthPill');
+        if (pill) pill.title = detail || 'Provider health';
+      }
+
+      async function updateProviderHealth() {
+        setHealth('', '檢查中... / Checking...');
+        try {
+          const res = await fetch('https://openai-tw-chat.googselect.workers.dev/api/chat/health');
+          const data = await res.json().catch(() => ({}));
+          const p = data?.providers || {};
+          const mode = String(data?.mode || '').toLowerCase();
+          const geminiOk = !!p.gemini?.ok;
+          const geminiErr = String(p.gemini?.error || '');
+          const geminiExpired = /api key expired/i.test(geminiErr);
+          const openaiOk = !!p.openai?.ok;
+          const usingChatGPT = /openai|chatgpt/.test(mode) || (!!p.openai && !geminiOk);
+
+          if (usingChatGPT) {
+            const detail = openaiOk ? 'ChatGPT: OK' : (p.openai?.error || 'ChatGPT: 檢查中');
+            if (openaiOk) {
+              setHealth('green', 'ChatGPT 正常 / ChatGPT Healthy', detail);
+            } else {
+              setHealth('yellow', 'ChatGPT 檢查中 / ChatGPT Checking', detail);
+            }
+            return;
+          }
+
+          const detail = geminiOk ? 'Gemini: OK' : 'Gemini: 僅提供搜尋結果';
+
+          if (geminiExpired) {
+            setHealth('red', '請更新 Gemini key / Renew Gemini key', detail);
+          } else if (geminiOk) {
+            setHealth('green', 'Gemini 正常 / Gemini Healthy', detail);
+          } else {
+            setHealth('yellow', 'Gemini 暫時提供搜尋摘要', detail);
+          }
+        } catch {
+          setHealth('red', '健康檢查失敗 / Health check failed', 'Health endpoint unreachable');
+        }
+      }
+
+      function saveHistory(){
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(history.slice(-40)));
+      }
+
+      function loadHistory(){
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if(!raw) return;
+          const arr = JSON.parse(raw);
+          if(!Array.isArray(arr)) return;
+          history.push(...arr.filter(m => m && typeof m.content === 'string' && (m.role === 'user' || m.role === 'assistant')));
+        } catch {}
+      }
+
+      function linkify(text){
+        // Remove raw HTML tags from content so users see normal text, not broken HTML code.
+        const cleaned = String(text).replace(/<[^>]+>/g, ' ');
+        let esc = cleaned
+          .replace(/&/g,'&amp;')
+          .replace(/</g,'&lt;')
+          .replace(/>/g,'&gt;');
+
+        const tokens = [];
+        esc = esc.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, (_, label, url) => {
+          const token = `__LINK_TOKEN_${tokens.length}__`;
+          tokens.push(`<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`);
+          return token;
+        });
+
+        esc = esc.replace(/(^|[\s：:>])(https?:\/\/[^\s<]+)/g, '$1<a href="$2" target="_blank" rel="noopener noreferrer">$2</a>');
+
+        esc = esc.replace(/__LINK_TOKEN_(\d+)__/g, (_, i) => tokens[Number(i)] || '');
+        return esc.replace(/\n/g, '<br>');
+      }
+
+      
+      function hasSimplifiedChinese(str=''){
+        const simplifiedChars = '万与丑专业丛东丝丢两严丧个临丽举义乌乐乔习乡书买乱争于亏云亚产亩亲亵仍从仓仪们价众优伙会伞伟传伤伦伪体余佛作佣来侄见贝观负风丽邮舰陈临东杰刘杨赵罗钟闽马东齐';
+        let chineseCount = 0;
+        let simplifiedCount = 0;
+        for(const ch of str){
+          const code = ch.charCodeAt(0);
+          if (code >= 0x4E00 && code <= 0x9FFF){
+            chineseCount++;
+            if (simplifiedChars.includes(ch)) simplifiedCount++;
+          }
+        }
+        return chineseCount > 0 && (simplifiedCount / chineseCount) > 0.25;
+      }
+
+      function allUrls(s){
+        return String(s).match(/https?:\/\/[^\s]+/ig) || [];
+      }
+      function youtubeEmbed(url){
+        try {
+          const u = new URL(url);
+          if (u.hostname.includes('youtu.be')) return `https://www.youtube.com/embed/${u.pathname.replace('/','')}`;
+          if (u.hostname.includes('youtube.com')) {
+            const v = u.searchParams.get('v');
+            if (v) return `https://www.youtube.com/embed/${v}`;
+          }
+        } catch {}
+        return '';
+      }
+      function isImageUrl(url){
+        return /\.(png|jpe?g|gif|webp|avif)(\?.*)?$/i.test(url);
+      }
+      function renderEmbed(text){
+        const urls = allUrls(text);
+        if (!urls.length) return '';
+
+        const blocks = [];
+        for (const u of urls){
+          const yt = youtubeEmbed(u);
+          if (yt) blocks.push(`<div class="embed"><iframe src="${yt}" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`);
+          else if (isImageUrl(u)) blocks.push(`<div class="embed"><img src="${u}" alt="embed image" loading="lazy"/></div>`);
+          if (blocks.length >= 6) break;
+        }
+
+        return blocks.join('');
+      }
+
+      function addMsg(role, text){
+        const wrap = document.createElement('div');
+        wrap.className = `msg ${role === 'user' ? 'user' : 'bot'}`;
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        bubble.innerHTML = `${linkify(text)}${renderEmbed(text)}`;
+        wrap.appendChild(bubble);
+        chatEl.appendChild(wrap);
+        chatEl.scrollTop = chatEl.scrollHeight;
+      }
+
+      function rerender(){
+        chatEl.innerHTML = '';
+        if(!history.length){
+          addMsg('bot', '嗨，我是你的 Chat 助手。');
+          return;
+        }
+        history.forEach(m => addMsg(m.role === 'user' ? 'user' : 'bot', m.content));
+      }
+
+      loadHistory();
+      rerender();
+
+      const FAQ = [
+        { k: ['台股', 'tw', '台灣股票'], a: '你可以查看「台股 15 分鐘」頁面：https://openai-tw.com/tw/' },
+        { k: ['美股', 'us', '美國股票'], a: '你可以查看「美股 15 分鐘」頁面：https://openai-tw.com/us/' },
+        { k: ['btc', '比特幣', '加密貨幣'], a: '你可以查看「BTC 每小時」頁面：https://openai-tw.com/btc-hourly/' },
+        { k: ['新聞', 'news'], a: '可看台股新聞：https://openai-tw.com/tw-news/ 與 美股新聞：https://openai-tw.com/us-news/' },
+        { k: ['podcast', '播客'], a: 'Podcast 頁面：https://openai-tw.com/podcast/' },
+        { k: ['網站', '官網', '首頁'], a: '網站首頁：https://openai-tw.com/' }
+      ];
+
+      function localAnswer(q){
+        const t = q.toLowerCase();
+        for(const item of FAQ){
+          if(item.k.some(x => t.includes(x.toLowerCase()))) return item.a;
+        }
+        return null;
+      }
+
+      function normalizeForumQuery(q=''){
+        return String(q)
+          .replace(/^\s*(forum|搜尋\s*forum)\s*:\s*/i, '')
+          .trim();
+      }
+
+      async function searchForum(q){
+        const keyword = normalizeForumQuery(q);
+        if (!keyword) return '請輸入 Forum 搜尋關鍵字。';
+        const api = `https://openai-tw-forum.googselect.workers.dev/api/forum?q=${encodeURIComponent(keyword)}`;
+        try {
+          const r = await fetch(api);
+          const d = await r.json();
+          const posts = Array.isArray(d?.posts) ? d.posts : [];
+          if (!posts.length) return `Forum 搜尋「${keyword}」：找不到結果。`;
+          const lines = posts.slice().reverse().map((p, i) => {
+            const text = String(p.text || '').trim();
+            const time = p.time ? `\n時間：${p.time}` : '';
+            return `#${i+1}${time}\n${text}`;
+          });
+          return `Forum 搜尋「${keyword}」共 ${posts.length} 筆（完整內容）：\n\n${lines.join('\n\n----------------\n\n')}`;
+        } catch {
+          return 'Forum 搜尋暫時失敗，請稍後再試。';
+        }
+      }
+
+      function googleReply(q){
+        const encoded = encodeURIComponent(q);
+        const link = `https://www.google.com/search?hl=zh-TW&gl=tw&lr=lang_zh-TW&q=${encoded}`;
+        return { query:q, link };
+      }
+
+      function isBlockedOrAbuseText(text=''){
+        const t = String(text).toLowerCase();
+        return t.includes('securitycompromiseerror') ||
+               t.includes('anonymous access to domain') ||
+               t.includes('previous abuse found') ||
+               t.includes('"code":451') ||
+               t.includes('"status":45102') ||
+               t.includes('code":451') ||
+               t.includes('status":45102');
+      }
+
+      function normalizeAssistantAnswer(text=''){
+        if (!isBlockedOrAbuseText(text)) return text;
+        return 'Google 來源目前被暫時封鎖（451），已自動切換其他來源。\n請稍後再試，或直接點搜尋連結查看結果。';
+      }
+
+      async function fetchSearchSummary(q){
+        const api = `https://openai-tw-chat.googselect.workers.dev/api/search/summary?q=${encodeURIComponent(q)}`;
+        try {
+          const r = await fetch(api);
+          const data = await r.json();
+          if (!r.ok || !data) return null;
+          if (data.summary && isBlockedOrAbuseText(data.summary)) return null;
+          const items = Array.isArray(data.items) ? data.items : [];
+          const filteredItems = items.filter(item => {
+            const lang = String(item.language || item.lang || '').toLowerCase();
+            if (lang && !lang.includes('zh') && !lang.includes('chinese')) return false;
+            const snippet = String(item.summary || item.snippet || '');
+            if (snippet && hasSimplifiedChinese(snippet)) return false;
+            return true;
+          });
+          return {
+            summary: data.summary || null,
+            media: data.media || null,
+            items: filteredItems
+          };
+        } catch {}
+        return null;
+      }
+
+      async function forumQuickResults(q){
+        const keyword = normalizeForumQuery(q);
+        if (!keyword) return '';
+        const api = `https://openai-tw-forum.googselect.workers.dev/api/forum?q=${encodeURIComponent(keyword)}`;
+        try {
+          const r = await fetch(api);
+          const d = await r.json();
+          const posts = Array.isArray(d?.posts) ? d.posts : [];
+          if (!posts.length) return '';
+          const lines = posts.slice().reverse().map((p, i) => {
+            const text = String(p.text || '').trim();
+            const time = p.time ? `\n時間：${p.time}` : '';
+            return `#${i+1}${time}\n${text}`;
+          });
+          return `Forum 結果（${posts.length} 筆，完整內容）：\n\n${lines.join('\n\n----------------\n\n')}`;
+        } catch {
+          return '';
+        }
+      }
+
+      async function enrichGoogle(q){
+        const forum = await forumQuickResults(q);
+        // If Forum has matches, return Forum content only (no Google link/summary noise).
+        if (forum) return forum;
+
+        const extra = await fetchSearchSummary(q);
+        const want10 = /(^|\s)(10|前\s*10|top\s*10)(\s|$)/i.test(String(q));
+        const topN = want10 ? 10 : 5;
+
+        if (extra?.items?.length) {
+          const lines = extra.items.slice(0, topN).map((x, i) => {
+            const title = typeof x === 'string' ? x : String(x?.title || '').trim();
+            const url = typeof x === 'object' ? String(x?.url || '').trim() : '';
+            return `${i+1}. ${url ? `[${title}](${url})` : title}`;
+          });
+          return `${lines.join('\n')}`;
+        }
+        if (extra?.summary) {
+          return `Google 搜尋摘要：${extra.summary}`;
+        }
+
+        const g = googleReply(q);
+        return `Google 搜尋連結：${g.link}`;
+      }
+
+      async function send(){
+        const text = inputEl.value.trim();
+        if(!text) return;
+        setError('');
+        inputEl.value = '';
+        history.push({ role:'user', content:text });
+        addMsg('user', text);
+        saveHistory();
+
+        sendBtn.disabled = true;
+        let ans = '';
+
+        const forumMatch = text.match(/^forum\s*:\s*(.+)$/i) || text.match(/^搜尋\s*forum\s*:\s*(.+)$/i);
+        if (forumMatch && forumMatch[1]) {
+          ans = await searchForum(forumMatch[1].trim());
+        } else {
+          const local = localAnswer(text);
+          if (local) {
+            ans = local;
+          } else {
+            try {
+              const res = await fetch('https://openai-tw-chat.googselect.workers.dev/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ messages: history })
+              });
+              const data = await res.json().catch(() => ({}));
+              if (res.ok && data?.reply) {
+                ans = data.reply;
+              } else {
+                ans = await enrichGoogle(text);
+              }
+            } catch {
+              ans = await enrichGoogle(text);
+            }
+          }
+        }
+
+        ans = normalizeAssistantAnswer(ans);
+        history.push({ role:'assistant', content: ans });
+        addMsg('bot', ans);
+        saveHistory();
+        sendBtn.disabled = false;
+        inputEl.focus();
+      }
+
+      clearBtn.addEventListener('click', () => {
+        history.length = 0;
+        localStorage.removeItem(STORAGE_KEY);
+        setError('');
+        rerender();
+      });
+
+      sendBtn.addEventListener('click', send);
+      inputEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          send();
+        }
+      });
+
+      // Support /chat/?q=keyword quick-search entry from other pages.
+      const initialQ = new URLSearchParams(location.search).get('q');
+      updateProviderHealth();
+      setInterval(updateProviderHealth, 60000);
+
+      if (initialQ && initialQ.trim()) {
+        inputEl.value = initialQ.trim();
+        setTimeout(() => send(), 0);
+      }
+
+    </script>
+  </body>
+</html>

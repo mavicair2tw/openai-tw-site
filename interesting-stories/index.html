@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>每日 5 則有趣故事</title>
+    <style>
+      :root { --bg:#0b1020; --panel:#121a2f; --line:#1f2a44; --text:#e6edf3; --muted:#9fb0c3; }
+      *{box-sizing:border-box}
+      body{margin:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,#0b1020 0%,#0a1226 100%);color:var(--text)}
+      .wrap{max-width:1000px;margin:0 auto}
+      .top-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+      .logo{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;border:1px solid #2a3a5e;background:#101a33;color:#dbeafe;font-weight:800;font-size:13px}
+      .sub{color:var(--muted);margin-bottom:12px}
+      .top-tags{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+      .nav-item{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+      .tag{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid #2a3a5e;color:#cfe2ff;text-decoration:none;font-size:12px;font-weight:700}
+      .tag-sub{color:#8fa3bf;font-size:11px;line-height:1;padding-left:8px}
+      .tag.active{border-color:#60a5fa;background:#1a315f;color:#fff}
+      .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;line-height:1.7;margin-bottom:12px}
+      .story{padding:10px 0;border-bottom:1px dashed #2a3556}
+      .story:last-child{border-bottom:none}
+      h3{margin:0 0 6px}
+      p{margin:6px 0}
+      a{color:#93c5fd}
+    
+      .site-link { margin-top: 20px; color: var(--muted); font-size: 13px; }
+      .site-link a{ color:#93c5fd; text-decoration:none; }
+      .site-link a:hover{ text-decoration:underline; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="top-bar">
+        <div class="logo">openai-tw.com</div>
+        <div class="top-tags">
+          <div class="nav-item"><a class="tag" href="/">Home</a><span class="tag-sub">Main Portal</span></div>
+          <div class="nav-item"><a class="tag" href="https://openai-tw.com/tw/">台股</a><span class="tag-sub">TW Market</span></div>
+          <div class="nav-item"><a class="tag" href="https://openai-tw.com/us/">美股</a><span class="tag-sub">US Market</span></div>
+          <div class="nav-item"><a class="tag active" href="/interesting-stories/">有趣故事</a><span class="tag-sub">Stories</span></div>
+        <form class="quick-search" action="/chat/" method="get" style="display:flex;gap:8px;align-items:center;">
+          <input name="q" type="text" placeholder="Search keyword..." style="width:220px;max-width:42vw;background:#0f1730;color:#e6edf3;border:1px solid #223055;border-radius:999px;padding:6px 10px;font-size:12px;" />
+          <button type="submit" style="padding:6px 10px;border-radius:999px;border:1px solid #35558d;background:#1a315f;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">Search</button>
+        </form>
+        </div>
+      </div>
+      <h1 id="title">每日有趣故事</h1>
+      <div class="sub" id="updated">載入中...</div>
+      <div class="card" id="list">載入故事中...</div>
+      <div class="site-link"><a href="https://openai-tw.com/">openai-tw.com</a></div>
+    </div>
+
+    <script>
+      const lang = new URLSearchParams(location.search).get('lang') || 'zh';
+      const i18n = {
+        zh: { title:'每日有趣故事', updated:'更新時間', loading:'載入中...', fail:'載入失敗', loadFail:'讀取每日故事失敗。', empty:'目前無資料，請稍後再試。', source:'來源', zhSec:'中文有趣故事（5則）', enSec:'English Interesting Stories (5)' },
+        en: { title:'Daily Interesting Stories', updated:'Updated', loading:'Loading...', fail:'Load failed', loadFail:'Failed to load daily stories.', empty:'No data for now.', source:'Source', zhSec:'Chinese Stories (5)', enSec:'English Stories (5)' },
+        ja: { title:'毎日の面白い話', updated:'更新時間', loading:'読み込み中...', fail:'読み込み失敗', loadFail:'毎日の話題の読み込みに失敗しました。', empty:'現在データはありません。', source:'情報源', zhSec:'中国語の話題（5件）', enSec:'英語の話題（5件）' }
+      };
+      const t = i18n[lang] || i18n.zh;
+      document.getElementById('title').textContent = t.title;
+      document.getElementById('updated').textContent = t.loading;
+
+      fetch('./data/interesting_stories.json?ts='+Date.now())
+        .then(r=>r.json())
+        .then(d=>{
+          document.getElementById('updated').textContent = `${t.updated}：${d.updatedAt} (${d.timezone})`;
+          const list = document.getElementById('list');
+          const zhStories = (d.storiesZh || []).slice(0, 5);
+          const enStories = (d.storiesEn || []).slice(0, 5);
+
+          function renderSection(sectionTitle, stories, useZh){
+            if (!stories.length) return `<p>${t.empty}</p>`;
+            return `
+              <h2 style="margin:8px 0 10px; font-size:20px;">${sectionTitle}</h2>
+              ${stories.map((s, i) => {
+                const title = useZh ? (s.titleZh || s.titleEn || 'Untitled') : (s.titleEn || s.titleZh || 'Untitled');
+                const summary = useZh ? (s.summaryZh || s.summaryEn || '') : (s.summaryEn || s.summaryZh || '');
+                return `
+                  <div class="story">
+                    <h3>${i+1}. ${title}</h3>
+                    ${summary ? `<p>${summary}</p>` : ''}
+                    ${s.url ? `<p><a href="${s.url}" target="_blank">${t.source}</a></p>` : ''}
+                  </div>
+                `;
+              }).join('')}
+            `;
+          }
+
+          list.innerHTML = `${renderSection(t.zhSec, zhStories, true)}<hr style="border:0;border-top:1px dashed #2a3556;margin:14px 0;">${renderSection(t.enSec, enStories, false)}`;
+        })
+        .catch(()=>{
+          document.getElementById('updated').textContent = t.fail;
+          document.getElementById('list').innerHTML = `<p>${t.loadFail}</p>`;
+        });
+    </script>
+  </body>
+</html>

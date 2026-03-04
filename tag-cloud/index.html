@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tag Cloud</title>
+    <style>
+      :root{--bg:#060b17;--bg2:#0a1226;--panel:#101a33;--line:#1f2a44;--text:#e6edf3;--muted:#9fb0c3}
+      *{box-sizing:border-box}
+      body{margin:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:radial-gradient(1200px 700px at 50% 20%, #0f1d3f 0%, #060b17 55%, #040811 100%);color:var(--text)}
+      .wrap{max-width:1200px;margin:0 auto}
+      .top-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+      .logo{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;border:1px solid #2a3a5e;background:#101a33;color:#dbeafe;font-weight:800;font-size:13px}
+      .top-tags{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+      .nav-item{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+      .tag{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid #2a3a5e;color:#cfe2ff;text-decoration:none;font-size:12px;font-weight:700}
+      .tag-sub{color:#8fa3bf;font-size:11px;line-height:1;padding-left:8px}
+      .tag.active{border-color:#60a5fa;background:#1a315f;color:#fff}
+      .sub{color:var(--muted);margin-bottom:10px}
+      .card{background:linear-gradient(180deg, rgba(16,26,51,.86) 0%, rgba(8,14,30,.9) 100%);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+      .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+      .controls label{font-size:12px;color:#b9cae6;display:flex;flex-direction:column;gap:6px}
+      .controls input,.controls select{background:#0f1730;color:#e6edf3;border:1px solid #223055;border-radius:8px;padding:8px}
+      #scene{position:relative;height:620px;border:1px solid #1e2c4d;border-radius:14px;overflow:hidden;background:radial-gradient(circle at 50% 40%, rgba(45,95,190,.26) 0%, rgba(12,20,42,.72) 38%, #060b17 100%)}
+      canvas{display:block;width:100%;height:100%}
+      .hint{position:absolute;left:12px;bottom:10px;font-size:12px;color:#9fb0c3;background:rgba(6,11,23,.55);padding:6px 8px;border-radius:8px;border:1px solid #1f2a44}
+      .tooltip{position:fixed;pointer-events:none;background:#0f1730;border:1px solid #2a3a5e;border-radius:8px;padding:6px 8px;font-size:12px;color:#dbeafe;display:none;z-index:20;max-width:280px}
+      .site-link{margin-top:18px;color:var(--muted);font-size:13px}
+      .site-link a{color:#93c5fd;text-decoration:none}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="top-bar">
+        <div class="logo">openai-tw.com</div>
+        <div class="top-tags">
+          <div class="nav-item"><a class="tag" href="/">Home</a><span class="tag-sub">Main Portal</span></div>
+          <div class="nav-item"><a class="tag" href="https://openai-tw.com/tw/">台股</a><span class="tag-sub">TW Market</span></div>
+          <div class="nav-item"><a class="tag" href="https://openai-tw.com/us/">美股</a><span class="tag-sub">US Market</span></div>
+          <div class="nav-item"><a class="tag active" href="/tag-cloud/">Tag Cloud</a><span class="tag-sub">Keywords</span></div>
+          <form class="quick-search" action="/chat/" method="get" style="display:flex;gap:8px;align-items:center;">
+            <input name="q" type="text" placeholder="Search keyword..." style="width:220px;max-width:42vw;background:#0f1730;color:#e6edf3;border:1px solid #223055;border-radius:999px;padding:6px 10px;font-size:12px;" />
+            <button type="submit" style="padding:6px 10px;border-radius:999px;border:1px solid #35558d;background:#1a315f;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">Search</button>
+          </form>
+        </div>
+      </div>
+
+      <h1>Tag Cloud</h1>
+      <div class="sub">Animated 3D constellation-style keyword cloud (click any tag to open Search topic).</div>
+
+      <div class="card">
+        <div class="controls">
+          <label>Tag Count
+            <input id="count" type="number" min="20" max="400" value="20" />
+          </label>
+          <label>Rotation Speed
+            <input id="speed" type="range" min="0.1" max="2.5" step="0.1" value="1.3" />
+          </label>
+          <label>Glow Intensity
+            <input id="glow" type="range" min="0" max="1" step="0.05" value="0.5" />
+          </label>
+          <label>Size Range
+            <select id="sizePreset">
+              <option value="normal" selected>Normal</option>
+              <option value="wide">Wide</option>
+              <option value="compact">Compact</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="card" style="padding:10px">
+        <div id="scene">
+          <canvas id="cloudCanvas"></canvas>
+          <div class="hint">Drag to rotate · hover for score · click to search topic</div>
+        </div>
+      </div>
+
+      <div class="site-link"><a href="https://openai-tw.com/">openai-tw.com</a></div>
+    </div>
+
+    <div id="tooltip" class="tooltip"></div>
+
+    <script>
+      const BASE = [
+        ['AI',98],['Data',95],['Cloud',93],['Automation',92],['Analytics',90],['Robotics',88],['Security',87],['MachineLearning',86],['LLM',85],['NLP',84],
+        ['人工智慧',90],['資料',85],['雲端',84],['自動化',83],['分析',82],['機器人',81],['資安',80],['演算法',79],['教育',76],['科學',78],
+        ['Philosophy',65],['Nature',70],['Travel',63],['Health',74],['Design',62],['Music',60],['Food',66],['Coffee',58],['Startups',69],['Innovation',77],
+        ['太空',72],['醫療',73],['文化',68],['心理學',67],['氣候',71],['天文',70],['生態',69],['Learning',74],['Finance',68],['Ethics',64]
+      ];
+
+      const canvas = document.getElementById('cloudCanvas');
+      const scene = document.getElementById('scene');
+      const tooltip = document.getElementById('tooltip');
+      const ctx = canvas.getContext('2d');
+
+      const controls = {
+        count: document.getElementById('count'),
+        speed: document.getElementById('speed'),
+        glow: document.getElementById('glow'),
+        sizePreset: document.getElementById('sizePreset'),
+      };
+
+      let tags = [];
+      let projected = [];
+      let hoverTag = null;
+      let pointer = {x:0,y:0,down:false,lastX:0,lastY:0};
+      let rotY = 0, rotX = 0;
+
+      function resize(){
+        const r = scene.getBoundingClientRect();
+        canvas.width = Math.floor(r.width * devicePixelRatio);
+        canvas.height = Math.floor(r.height * devicePixelRatio);
+        canvas.style.width = r.width + 'px';
+        canvas.style.height = r.height + 'px';
+        ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+      }
+
+      function sizeRange(){
+        const p = controls.sizePreset.value;
+        if (p === 'compact') return [12, 34];
+        if (p === 'wide') return [12, 58];
+        return [13, 44];
+      }
+
+      function buildTags(){
+        const wanted = Number(controls.count.value || 220);
+        const arr = [];
+        while (arr.length < wanted){
+          const [text, score] = BASE[arr.length % BASE.length];
+          const suffix = Math.floor(arr.length / BASE.length);
+          const label = suffix ? `${text}${suffix}` : text;
+          arr.push({text: label, baseText: text, score: Math.max(20, score - (suffix%6)*3)});
+        }
+
+        const min = Math.min(...arr.map(t=>t.score));
+        const max = Math.max(...arr.map(t=>t.score));
+        const [minS,maxS] = sizeRange();
+
+        const golden = Math.PI * (3 - Math.sqrt(5));
+        tags = arr.map((t,i)=>{
+          const y = 1 - (i / (arr.length - 1)) * 2;
+          const radius = Math.sqrt(1 - y*y);
+          const theta = golden * i;
+          const x = Math.cos(theta) * radius;
+          const z = Math.sin(theta) * radius;
+          const ratio = (t.score - min) / (max - min || 1);
+          return {
+            ...t,
+            x, y, z,
+            size: minS + (maxS-minS)*ratio,
+            color: `rgba(${90+Math.floor(80*ratio)}, ${180+Math.floor(50*ratio)}, 255, 1)`
+          }
+        });
+      }
+
+      function project(tag, w, h){
+        let {x,y,z} = tag;
+        const cx = Math.cos(rotY), sx = Math.sin(rotY);
+        const cy = Math.cos(rotX), sy = Math.sin(rotX);
+
+        let x1 = x*cx - z*sx;
+        let z1 = x*sx + z*cx;
+        let y1 = y*cy - z1*sy;
+        let z2 = y*sy + z1*cy;
+
+        const depth = 2.6;
+        const scale = 280 / (z2 + depth);
+        return {
+          ...tag,
+          sx: w/2 + x1*scale,
+          sy: h/2 + y1*scale,
+          sz: z2,
+          screenSize: Math.max(10, tag.size * (0.55 + scale/180)),
+          alpha: Math.max(0.25, Math.min(1, 0.4 + (z2+1.2)/2.4))
+        };
+      }
+
+      function draw(){
+        const w = scene.clientWidth;
+        const h = scene.clientHeight;
+        const speed = Number(controls.speed.value || 1) * 0.002;
+        const glow = Number(controls.glow.value || .75);
+
+        rotY += speed;
+        rotX += speed * 0.45;
+
+        ctx.clearRect(0,0,w,h);
+        projected = tags.map(t=>project(t,w,h)).sort((a,b)=>a.sz-b.sz);
+
+        hoverTag = null;
+        for(const p of projected){
+          const dx = pointer.x - p.sx;
+          const dy = pointer.y - p.sy;
+          const hit = Math.hypot(dx,dy) < Math.max(14, p.screenSize * 0.55);
+          if(hit) hoverTag = p;
+
+          ctx.save();
+          ctx.font = `${p.screenSize}px Inter, -apple-system, Segoe UI, Roboto, sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          const active = hoverTag && hoverTag.text === p.text;
+          const a = active ? 1 : p.alpha;
+          ctx.globalAlpha = a;
+          ctx.shadowColor = `rgba(94, 175, 255, ${0.5 * glow + (active?0.35:0)})`;
+          ctx.shadowBlur = 10 + (active ? 12 : 0) + 12*glow;
+          ctx.fillStyle = active ? '#d6edff' : p.color;
+          ctx.fillText(p.baseText, p.sx, p.sy);
+          ctx.restore();
+        }
+
+        if(hoverTag){
+          tooltip.style.display='block';
+          tooltip.style.left = (pointer.x + 20) + 'px';
+          tooltip.style.top = (pointer.y + 20) + 'px';
+          tooltip.textContent = `${hoverTag.baseText} · score ${hoverTag.score}`;
+          canvas.style.cursor = 'pointer';
+        } else {
+          tooltip.style.display='none';
+          canvas.style.cursor = pointer.down ? 'grabbing' : 'grab';
+        }
+
+        requestAnimationFrame(draw);
+      }
+
+      function onPointerMove(e){
+        const r = canvas.getBoundingClientRect();
+        pointer.x = e.clientX - r.left;
+        pointer.y = e.clientY - r.top;
+        if(pointer.down){
+          const dx = e.clientX - pointer.lastX;
+          const dy = e.clientY - pointer.lastY;
+          rotY += dx * 0.005;
+          rotX += dy * 0.005;
+          pointer.lastX = e.clientX;
+          pointer.lastY = e.clientY;
+        }
+      }
+
+      canvas.addEventListener('pointerdown',(e)=>{pointer.down=true; pointer.lastX=e.clientX; pointer.lastY=e.clientY; canvas.setPointerCapture(e.pointerId)});
+      canvas.addEventListener('pointerup',(e)=>{pointer.down=false; canvas.releasePointerCapture(e.pointerId)});
+      canvas.addEventListener('pointermove',onPointerMove);
+      canvas.addEventListener('click',()=>{
+        if(!hoverTag) return;
+        location.href = `/chat/?q=${encodeURIComponent(hoverTag.baseText)}`;
+      });
+
+      Object.values(controls).forEach(el=>el.addEventListener('input',()=>{buildTags();}));
+      window.addEventListener('resize',()=>{resize(); buildTags();});
+
+      resize();
+      buildTags();
+      draw();
+    </script>
+  </body>
+</html>
