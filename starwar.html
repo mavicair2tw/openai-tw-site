@@ -564,10 +564,12 @@
  const btnRight = document.getElementById('btnRight');
  const btnShoot = document.getElementById('btnShoot');
 
- // Touch screen control - tap left/right to move
+ // Touch screen control - tap left/right to move, tap on enemies to shoot
+ let touchStartTime = 0;
  canvas.addEventListener('touchstart', e => {
  e.preventDefault();
  getAudioContext();
+ touchStartTime = Date.now();
  const touch = e.touches[0];
  const rect = canvas.getBoundingClientRect();
  const x = touch.clientX - rect.left;
@@ -581,6 +583,10 @@
  e.preventDefault();
  keys['ArrowLeft'] = false;
  keys['ArrowRight'] = false;
+ // Quick tap = shoot
+ if (Date.now() - touchStartTime < 200) {
+ shoot();
+ }
  });
  canvas.addEventListener('touchmove', e => {
  e.preventDefault();
