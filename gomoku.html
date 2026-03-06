@@ -195,8 +195,17 @@
       document.getElementById('score').textContent = `Player: ${playerScore} | AI: ${aiScore}`;
     }
 
+    let audioCtx = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return audioCtx;
+    }
+
     function playWinSound() {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = getAudioContext();
       const now = ctx.currentTime;
       
       // Da Da! fanfare
@@ -216,7 +225,7 @@
     }
 
     function playLoseSound() {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = getAudioContext();
       const now = ctx.currentTime;
       
       // Sad descending tone
@@ -237,6 +246,9 @@
 
     function playerMove(r, c) {
       if (gameOver || board[r][c] || currentPlayer !== 'X' || isThinking) return;
+      
+      // Initialize audio on first interaction
+      getAudioContext();
       
       board[r][c] = 'X';
       
