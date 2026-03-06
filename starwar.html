@@ -138,6 +138,25 @@
  }
  }
 
+ function playWinSound() {
+ const ctx = getAudioContext();
+ const now = ctx.currentTime;
+ 
+ // 拍拍手 clapping sound
+ for (let i = 0; i < 6; i++) {
+ const osc = ctx.createOscillator();
+ const gain = ctx.createGain();
+ osc.connect(gain);
+ gain.connect(ctx.destination);
+ osc.frequency.value = 200 + Math.random() * 100;
+ osc.type = 'square';
+ gain.gain.setValueAtTime(0.15, now + i * 0.15);
+ gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.15 + 0.1);
+ osc.start(now + i * 0.15);
+ osc.stop(now + i * 0.15 + 0.1);
+ }
+ }
+
  const canvas = document.getElementById('game');
  const ctx = canvas.getContext('2d');
  const scoreEl = document.getElementById('score');
@@ -325,6 +344,7 @@
 
  if (enemies.every(e => !e.alive)) {
  level++;
+ playWinSound();
  enemyDirection = 1;
  bullets = [];
  enemyBullets = [];
