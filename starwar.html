@@ -31,21 +31,23 @@
 </head>
 <body>
  <div class="wrap">
- <h1>STAR WAR</h1>
- <p class="hint">Move with ← → or A D. Shoot with Space. Press R to restart.</p>
- <p class="hint mobile-hint">Tap buttons to move and shoot</p>
- <div class="hud">
+ <div class="hud" style="font-size:10px;">
  <div class="tag">Score: <span id="score" class="accent">0</span></div>
  <div class="tag">Lives: <span id="lives" class="danger">3</span></div>
  <div class="tag">Level: <span id="level">1</span></div>
  </div>
  <canvas id="game" width="720" height="720"></canvas>
- <p class="hint">Tiny arcade chaos, maximum laser drama.</p>
+ <p class="hint">Move with ← → or A D. Shoot with Space. Press R to restart.</p>
  <div class="mobile-controls">
  <button class="ctrl-btn" id="btnLeft">◀</button>
  <button class="shoot-btn" id="btnShoot">🔫</button>
  <button class="ctrl-btn" id="btnRight">▶</button>
  </div>
+ <div class="bottom-controls">
+ <button class="ctrl-btn" id="btnRestart" style="min-width:auto;padding:8px 16px;font-size:18px;">🔄</button>
+ <a href="/" class="home-link" style="position:static;font-size:12px;padding:4px 8px;">🏠 Home</a>
+ </div>
+ <p class="hint">Tiny arcade chaos, maximum laser drama.</p>
  </div>
  <script>
  const canvas = document.getElementById('game');
