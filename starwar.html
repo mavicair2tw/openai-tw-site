@@ -43,16 +43,12 @@
  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55), 0 0 30px rgba(88, 154, 255, 0.12);
  }
  .fullscreen-btn {
- position: fixed;
- top: 20px;
- right: 20px;
  font-size: 24px;
  background: rgba(255,255,255,0.1);
  border: 2px solid rgba(143, 211, 255, 0.4);
  border-radius: 8px;
  padding: 8px 12px;
  cursor: pointer;
- z-index: 100;
  }
  .hud {
  display: flex;
@@ -138,7 +134,6 @@
  </style>
 </head>
 <body>
- <button class="fullscreen-btn" id="fullscreenBtn">⛶</button>
  <div class="wrap">
  <h1>STAR WAR</h1>
  <canvas id="game" width="1280" height="720"></canvas>
@@ -155,6 +150,7 @@
  <div class="bottom-controls">
  <a href="/" class="home-link">🏠 Home</a>
  <button class="ctrl-btn" id="btnRestart" style="min-width:auto;padding:8px 16px;font-size:18px;">🔄</button>
+ <button class="fullscreen-btn" id="fullscreenBtn" style="position:static;">⛶</button>
  </div>
 
  <p class="hint">Tiny arcade chaos, maximum laser drama.</p>
