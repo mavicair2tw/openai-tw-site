@@ -157,6 +157,25 @@
  }
  }
 
+ function playCrazySound() {
+ const ctx = getAudioContext();
+ const now = ctx.currentTime;
+ 
+ // Crazy game over sound
+ for (let i = 0; i < 12; i++) {
+ const osc = ctx.createOscillator();
+ const gain = ctx.createGain();
+ osc.connect(gain);
+ gain.connect(ctx.destination);
+ osc.frequency.value = 150 + Math.random() * 400;
+ osc.type = i % 2 === 0 ? 'sawtooth' : 'square';
+ gain.gain.setValueAtTime(0.15, now + i * 0.1);
+ gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.15);
+ osc.start(now + i * 0.1);
+ osc.stop(now + i * 0.1 + 0.15);
+ }
+ }
+
  const canvas = document.getElementById('game');
  const ctx = canvas.getContext('2d');
  const scoreEl = document.getElementById('score');
@@ -324,7 +343,10 @@
  explode(player.x + player.w / 2, player.y + player.h / 2, '#ff7f98', 22);
  playExplodeSound();
  updateHUD();
- if (lives <= 0) gameOver = true;
+ if (lives <= 0) {
+ gameOver = true;
+ playCrazySound();
+ }
  }
  }
  enemyBullets = enemyBullets.filter(b => b.y < canvas.height + 50);
@@ -332,6 +354,7 @@
  for (const enemy of enemies) {
  if (enemy.alive && enemy.y + enemy.h >= player.y) {
  gameOver = true;
+ playCrazySound();
  }
  }
 
