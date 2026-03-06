@@ -92,6 +92,52 @@
  </div>
 
  <script>
+ let audioCtx = null;
+
+ function getAudioContext() {
+ if (!audioCtx) {
+ audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+ }
+ return audioCtx;
+ }
+
+ function playShootSound() {
+ const ctx = getAudioContext();
+ const now = ctx.currentTime;
+ 
+ // 咻 sound - quick high pitch sweep
+ const osc = ctx.createOscillator();
+ const gain = ctx.createGain();
+ osc.connect(gain);
+ gain.connect(ctx.destination);
+ osc.frequency.setValueAtTime(880, now);
+ osc.frequency.exponentialRampToValueAtTime(220, now + 0.1);
+ osc.type = 'sine';
+ gain.gain.setValueAtTime(0.15, now);
+ gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+ osc.start(now);
+ osc.stop(now + 0.1);
+ }
+
+ function playExplodeSound() {
+ const ctx = getAudioContext();
+ const now = ctx.currentTime;
+ 
+ // 爆炸 sound - noise-like
+ for (let i = 0; i < 8; i++) {
+ const osc = ctx.createOscillator();
+ const gain = ctx.createGain();
+ osc.connect(gain);
+ gain.connect(ctx.destination);
+ osc.frequency.value = 100 + Math.random() * 200;
+ osc.type = 'sawtooth';
+ gain.gain.setValueAtTime(0.2, now + i * 0.03);
+ gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.03 + 0.08);
+ osc.start(now + i * 0.03);
+ osc.stop(now + i * 0.03 + 0.08);
+ }
+ }
+
  const canvas = document.getElementById('game');
  const ctx = canvas.getContext('2d');
  const scoreEl = document.getElementById('score');
@@ -182,6 +228,7 @@
  speed: 9
  });
  player.cooldown = 14;
+ playShootSound();
  }
  }
 
@@ -243,6 +290,7 @@
  bullet.y = -999;
  score += 10;
  explode(enemy.x + enemy.w / 2, enemy.y + enemy.h / 2, enemy.type ? '#ff7f98' : '#ffe27a');
+ playExplodeSound();
  updateHUD();
  break;
  }
@@ -255,6 +303,7 @@
  bullet.y = canvas.height + 999;
  lives--;
  explode(player.x + player.w / 2, player.y + player.h / 2, '#ff7f98', 22);
+ playExplodeSound();
  updateHUD();
  if (lives <= 0) gameOver = true;
  }
@@ -391,6 +440,7 @@
 
  window.addEventListener('keydown', e => {
  keys[e.key] = true;
+ getAudioContext(); // Initialize audio on first interaction
  if (e.key === ' ' || e.code === 'Space') {
  e.preventDefault();
  shoot();
