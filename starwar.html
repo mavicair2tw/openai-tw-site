@@ -304,6 +304,40 @@ gameStarted = true;
  });
  window.addEventListener('keyup', e => { keys[e.key] = false; });
  
+ // Mobile touch on canvas
+ let touchStartTime = 0;
+ canvas.addEventListener('touchstart', e => {
+ e.preventDefault();
+ getAudioContext();
+ touchStartTime = Date.now();
+ const touch = e.touches[0];
+ const rect = canvas.getBoundingClientRect();
+ const x = touch.clientX - rect.left;
+ if (x < rect.width / 2) {
+ keys['ArrowLeft'] = true;
+ } else {
+ keys['ArrowRight'] = true;
+ }
+ });
+ canvas.addEventListener('touchend', e => {
+ e.preventDefault();
+ keys['ArrowLeft'] = false;
+ keys['ArrowRight'] = false;
+ if (gameOver && Date.now() - touchStartTime < 300) {
+ resetGame();
+ } else if (Date.now() - touchStartTime < 200) {
+ shoot();
+ }
+ });
+ canvas.addEventListener('touchmove', e => {
+ e.preventDefault();
+ const touch = e.touches[0];
+ const rect = canvas.getBoundingClientRect();
+ const x = touch.clientX - rect.left;
+ keys['ArrowLeft'] = x < rect.width / 2;
+ keys['ArrowRight'] = x >= rect.width / 2;
+ });
+
  // Mobile controls
  const btnLeft = document.getElementById('btnLeft');
  const btnRight = document.getElementById('btnRight');
