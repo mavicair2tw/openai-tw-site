@@ -532,6 +532,33 @@
  const btnRight = document.getElementById('btnRight');
  const btnShoot = document.getElementById('btnShoot');
 
+ // Touch screen control - tap left/right to move
+ canvas.addEventListener('touchstart', e => {
+ e.preventDefault();
+ getAudioContext();
+ const touch = e.touches[0];
+ const rect = canvas.getBoundingClientRect();
+ const x = touch.clientX - rect.left;
+ if (x < rect.width / 2) {
+ keys['ArrowLeft'] = true;
+ } else {
+ keys['ArrowRight'] = true;
+ }
+ });
+ canvas.addEventListener('touchend', e => {
+ e.preventDefault();
+ keys['ArrowLeft'] = false;
+ keys['ArrowRight'] = false;
+ });
+ canvas.addEventListener('touchmove', e => {
+ e.preventDefault();
+ const touch = e.touches[0];
+ const rect = canvas.getBoundingClientRect();
+ const x = touch.clientX - rect.left;
+ keys['ArrowLeft'] = x < rect.width / 2;
+ keys['ArrowRight'] = x >= rect.width / 2;
+ });
+
  btnLeft.addEventListener('touchstart', e => { e.preventDefault(); keys['ArrowLeft'] = true; });
  btnLeft.addEventListener('touchend', e => { e.preventDefault(); keys['ArrowLeft'] = false; });
  btnLeft.addEventListener('mousedown', () => keys['ArrowLeft'] = true);
