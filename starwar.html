@@ -620,7 +620,14 @@
  });
 
  document.addEventListener('fullscreenchange', () => {
- fullscreenBtn.textContent = document.fullscreenElement ? '⊠' : '⛶';
+ const isFull = !!document.fullscreenElement;
+ fullscreenBtn.textContent = isFull ? '⊠' : '⛶';
+ canvas.style.width = isFull ? '100vw' : '';
+ canvas.style.height = isFull ? '100vh' : '';
+ canvas.style.maxWidth = isFull ? '100vw' : '';
+ canvas.style.borderRadius = isFull ? '0' : '';
+ canvas.style.borderLeft = isFull ? 'none' : '';
+ canvas.style.borderRight = isFull ? 'none' : '';
  });
 
  resetGame();
