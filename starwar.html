@@ -1,79 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
- <meta charset="UTF-8" />
- <meta name="viewport" content="width=device-width, initial-scale=1.0" />
- <title>Star War</title>
- <style>
- * { box-sizing: border-box; margin: 0; padding: 0; }
- body { background: #000; color: #fff; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
- h1 { color: #8fd3ff; margin: 10px; }
- canvas { border: 2px solid #8fd3ff; background: #0b1026; display: block; }
- .hud { display: flex; gap: 20px; margin: 10px; font-size: 18px; }
- </style>
+<title>Star War</title>
 </head>
-<body>
- <h1>Star War</h1>
- <div class="hud">
- <span>Score: <span id="score">0</span></span>
- <span>Lives: <span id="lives">3</span></span>
- </div>
- <canvas id="game" width="400" height="500"></canvas>
- <p>Arrow keys to move, Space to shoot</p>
- <script>
- console.log('Script starting...');
- const canvas = document.getElementById('game');
- const ctx = canvas.getContext('2d');
- console.log('Canvas:', canvas.width, canvas.height);
- const scoreEl = document.getElementById('score');
- const livesEl = document.getElementById('lives');
-
- let player = { x: 180, y: 450, w: 30, h: 30 };
- let bullets = [];
- let enemies = [];
- let score = 0;
- let lives = 3;
- let keys = {};
-
- for (let i = 0; i < 3; i++) {
- for (let j = 0; j < 6; j++) {
- enemies.push({ x: 30 + j * 55, y: 30 + i * 40, w: 30, h: 25, alive: true });
- }
- }
-
- function draw() {
- ctx.fillStyle = '#0b1026';
- ctx.fillRect(0, 0, canvas.width, canvas.height);
- 
- ctx.fillStyle = '#ffffff';
- ctx.fillRect(100, 100, 10, 10);
- ctx.fillRect(200, 200, 10, 10);
- ctx.fillRect(300, 300, 10, 10);
- 
- ctx.fillStyle = '#8fd3ff';
- ctx.fillRect(player.x, player.y, player.w, player.h);
- 
- ctx.fillStyle = '#ff7f98';
- enemies.forEach(e => { if(e.alive) ctx.fillRect(e.x, e.y, e.w, e.h); });
- }
-
- function update() {
- if(keys['ArrowLeft']) player.x -= 5;
- if(keys['ArrowRight']) player.x += 5;
- player.x = Math.max(0, Math.min(canvas.width-player.w, player.x));
- }
-
- function loop() {
- update();
- draw();
- requestAnimationFrame(loop);
- }
- 
- document.addEventListener('keydown', e => { keys[e.key] = true; });
- document.addEventListener('keyup', e => { keys[e.key] = false; });
- 
- console.log('Starting loop...');
- loop();
- </script>
+<body style="background:black;color:white;font-family:Arial;text-align:center;">
+<h1>Star War</h1>
+<canvas id="c" width="400" height="400" style="border:2px solid cyan;background:#000;"></canvas>
+<script>
+var c=document.getElementById('c');
+var x=c.getContext('2d');
+x.fillStyle='red';
+x.fillRect(50,50,100,50);
+x.fillStyle='lime';
+x.fillRect(200,300,50,50);
+document.onkeydown=function(e){x.fillStyle='yellow';x.fillRect(180,350,30,30);};
+</script>
+<p>Press any key</p>
 </body>
 </html>
