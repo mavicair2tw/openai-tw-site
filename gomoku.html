@@ -117,6 +117,34 @@
       font-size: 0.9rem;
       opacity: 0.7;
     }
+    .level-select {
+      display: flex;
+      gap: 8px;
+      margin-top: 15px;
+      align-items: center;
+    }
+    .level-select label {
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+    .level-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 2px solid #4ecdc4;
+      background: transparent;
+      color: #4ecdc4;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .level-btn.active {
+      background: #4ecdc4;
+      color: #1a1a2e;
+    }
+    .level-btn:hover {
+      transform: scale(1.1);
+    }
     .score {
       margin-top: 10px;
       font-size: 1rem;
@@ -134,6 +162,14 @@
     <button class="mode-btn" onclick="toggleMode()">Mode: You go first</button>
   </div>
   <div class="score" id="score">Player: 0 | AI: 0</div>
+  <div class="level-select">
+    <label>Level:</label>
+    <button class="level-btn active" onclick="setLevel(1)">1</button>
+    <button class="level-btn" onclick="setLevel(2)">2</button>
+    <button class="level-btn" onclick="setLevel(3)">3</button>
+    <button class="level-btn" onclick="setLevel(4)">4</button>
+    <button class="level-btn" onclick="setLevel(5)">5</button>
+  </div>
   <div class="instructions">Get 5 in a row — horizontal, vertical, or diagonal!</div>
 
   <script>
@@ -147,6 +183,10 @@
     let playerScore = 0;
     let aiScore = 0;
     let isThinking = false;
+    let aiLevel = 1;
+
+    // AI delay by level (ms)
+    const aiDelays = [800, 600, 400, 200, 50];
 
     function initBoard() {
       board = Array(SIZE).fill(null).map(() => Array(SIZE).fill(''));
@@ -158,7 +198,7 @@
       render();
       
       if (!playerFirst && !gameOver) {
-        setTimeout(aiMove, 500);
+        setTimeout(aiMove, aiDelays[aiLevel - 1]);
       }
     }
 
@@ -294,7 +334,7 @@
         currentPlayer = 'O';
         isThinking = true;
         render();
-        setTimeout(aiMove, 300);
+        setTimeout(aiMove, aiDelays[aiLevel - 1]);
       }
       render();
     }
@@ -321,6 +361,9 @@
     }
 
     function findBestMove() {
+      // Higher level = more thorough search
+      const searchDepth = aiLevel;
+      
       // 1. Check if AI can win
       for (let r = 0; r < SIZE; r++) {
         for (let c = 0; c < SIZE; c++) {
@@ -345,6 +388,58 @@
               return {r, c};
             }
             board[r][c] = '';
+          }
+        }
+      }
+      
+      // Levels 4-5: Look 2 moves ahead
+      if (aiLevel >= 4) {
+        for (let r = 0; r < SIZE; r++) {
+          for (let c = 0; c < SIZE; c++) {
+            if (!board[r][c]) {
+              board[r][c] = 'O';
+              // Check if AI can win in 2 moves from here
+              for (let r2 = 0; r2 < SIZE; r2++) {
+                for (let c2 = 0; c2 < SIZE; c2++) {
+                  if (!board[r2][c2]) {
+                    board[r2][c2] = 'O';
+                    if (checkWin(r2, c2, 'O')) {
+                      board[r2][c2] = '';
+                      board[r][c] = '';
+                      return {r, c};
+                    }
+                    board[r2][c2] = '';
+                  }
+                }
+              }
+              board[r][c] = '';
+            }
+          }
+        }
+      }
+      
+      // Level 5: Block player's 2-move threats
+      if (aiLevel >= 5) {
+        for (let r = 0; r < SIZE; r++) {
+          for (let c = 0; c < SIZE; c++) {
+            if (!board[r][c]) {
+              board[r][c] = 'X';
+              // Check if player can win in 2 moves
+              for (let r2 = 0; r2 < SIZE; r2++) {
+                for (let c2 = 0; c2 < SIZE; c2++) {
+                  if (!board[r2][c2]) {
+                    board[r2][c2] = 'X';
+                    if (checkWin(r2, c2, 'X')) {
+                      board[r2][c2] = '';
+                      board[r][c] = '';
+                      return {r, c};
+                    }
+                    board[r2][c2] = '';
+                  }
+                }
+              }
+              board[r][c] = '';
+            }
           }
         }
       }
@@ -461,6 +556,13 @@
       playerFirst = !playerFirst;
       document.querySelector('.mode-btn').textContent = playerFirst ? 'Mode: You go first' : 'Mode: AI goes first';
       resetGame();
+    }
+
+    function setLevel(level) {
+      aiLevel = level;
+      document.querySelectorAll('.level-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', i + 1 === level);
+      });
     }
 
     initBoard();
