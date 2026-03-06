@@ -279,8 +279,9 @@
  requestAnimationFrame(loop);
  }
  window.addEventListener('keydown', e => {
+ if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); }
  keys[e.key] = true;
- if (e.key === ' ' || e.code === 'Space') { e.preventDefault(); shoot(); }
+ if (e.key === ' ' || e.code === 'Space') { shoot(); }
  if ((e.key === 'r' || e.key === 'R') && gameOver) resetGame();
  });
  window.addEventListener('keyup', e => { keys[e.key] = false; });
