@@ -85,6 +85,12 @@
  display: flex;
  justify-content: center;
  }
+ .mobile-hint {
+ display: block;
+ }
+ .hint:not(.mobile-hint) {
+ display: none;
+ }
  }
  .home-link {
  position: fixed;
@@ -108,7 +114,7 @@
  <a href="/" class="home-link">🏠 Home</a>
  <div class="wrap">
  <h1>STAR WAR</h1>
- <p>Move with <b>← →</b> or <b>A D</b>. Shoot with <b>Space</b>. Press <b>R</b> to restart.</p>
+ <p class="hint">Move with <b>← →</b> or <b>A D</b>. Shoot with <b>Space</b>. Press <b>R</b> to restart.</p>
  <div class="hud">
  <div class="tag">Score: <span id="score" class="accent">0</span></div>
  <div class="tag">Lives: <span id="lives" class="danger">3</span></div>
@@ -121,7 +127,9 @@
  <button class="ctrl-btn" id="btnShoot">🔫</button>
  <button class="ctrl-btn" id="btnRight">➡️</button>
  </div>
- <p class="hint">Tiny arcade chaos, maximum laser drama.</p>
+ <p class="hint" style="display:none;">Move with ← → or A D. Shoot with Space. Press R to restart.</p>
+ <p class="hint mobile-hint">Move with ← → or A D. Shoot with Space. Press R to restart.</p>
+ </div>
  </div>
 
  <script>
