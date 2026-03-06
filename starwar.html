@@ -60,7 +60,8 @@
  let lives = 3;
  let level = 1;
  let gameOver = false;
- let restartCountdown = 0;
+ let restartCountdown = 10;
+let gameStarted = false;
  let frame = 0;
  const stars = Array.from({ length: 140 }, () => ({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, size: Math.random() * 2 + 0.4, speed: Math.random() * 1.8 + 0.2 }));
  const player = { x: canvas.width / 2 - 22, y: canvas.height - 70, w: 44, h: 44, speed: 6, cooldown: 0 };
@@ -88,7 +89,8 @@
  lives = 3;
  level = 1;
  gameOver = false;
- restartCountdown = 0;
+ restartCountdown = 10;
+gameStarted = false;
  frame = 0;
  bullets = [];
  enemyBullets = [];
@@ -119,6 +121,14 @@
  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
  }
  function update() {
+ if (!gameStarted) {
+ restartCountdown--;
+ if (restartCountdown <= 0) {
+ gameStarted = true;
+ }
+ return;
+ }
+
  frame++;
  if (gameOver) {
  restartCountdown--;
@@ -171,7 +181,8 @@
  updateHUD();
  if (lives <= 0) {
  gameOver = true;
- restartCountdown = 600; // 10 seconds at 60fps
+ restartCountdown = 10;
+gameStarted = true;
  }
  }
  }
@@ -260,7 +271,14 @@
  ctx.fillRect(p.x, p.y, 3, 3);
  });
  ctx.globalAlpha = 1;
- if (gameOver) {
+ if (!gameStarted && restartCountdown > 0) {
+ ctx.fillStyle = 'rgba(0,0,0,0.5)';
+ ctx.fillRect(0, 0, canvas.width, canvas.height);
+ ctx.textAlign = 'center';
+ ctx.fillStyle = '#ffffff';
+ ctx.font = 'bold 48px Arial';
+ ctx.fillText('Starting in ' + restartCountdown + 's...', canvas.width / 2, canvas.height / 2);
+ } else if (gameOver) {
  ctx.fillStyle = 'rgba(0,0,0,0.55)';
  ctx.fillRect(0, 0, canvas.width, canvas.height);
  ctx.textAlign = 'center';
