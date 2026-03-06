@@ -141,6 +141,11 @@
  <div class="tag">Level: <span id="level">1</span></div>
  </div>
  <canvas id="game" width="720" height="720"></canvas>
+ <div class="mobile-controls">
+ <button class="ctrl-btn" id="btnLeft">⬅️</button>
+ <button class="ctrl-btn" id="btnShoot">🔫</button>
+ <button class="ctrl-btn" id="btnRight">➡️</button>
+ </div>
  <div class="bottom-controls">
  <button class="ctrl-btn" id="btnRestart" style="min-width:auto;padding:8px 16px;font-size:18px;">🔄</button>
  <a href="/" class="home-link" style="position:static;font-size:12px;padding:4px 8px;">🏠 Home</a>
@@ -610,6 +615,26 @@
  const btnRestart = document.getElementById('btnRestart');
  btnRestart.addEventListener('touchstart', e => { e.preventDefault(); getAudioContext(); resetGame(); });
  btnRestart.addEventListener('mousedown', () => { getAudioContext(); resetGame(); });
+
+ // Mobile button controls
+ const btnLeft = document.getElementById('btnLeft');
+ const btnRight = document.getElementById('btnRight');
+ const btnShoot = document.getElementById('btnShoot');
+
+ btnLeft.addEventListener('touchstart', e => { e.preventDefault(); keys['ArrowLeft'] = true; });
+ btnLeft.addEventListener('touchend', e => { e.preventDefault(); keys['ArrowLeft'] = false; });
+ btnLeft.addEventListener('mousedown', () => keys['ArrowLeft'] = true);
+ btnLeft.addEventListener('mouseup', () => keys['ArrowLeft'] = false);
+ btnLeft.addEventListener('mouseleave', () => keys['ArrowLeft'] = false);
+
+ btnRight.addEventListener('touchstart', e => { e.preventDefault(); keys['ArrowRight'] = true; });
+ btnRight.addEventListener('touchend', e => { e.preventDefault(); keys['ArrowRight'] = false; });
+ btnRight.addEventListener('mousedown', () => keys['ArrowRight'] = true);
+ btnRight.addEventListener('mouseup', () => keys['ArrowRight'] = false);
+ btnRight.addEventListener('mouseleave', () => keys['ArrowRight'] = false);
+
+ btnShoot.addEventListener('touchstart', e => { e.preventDefault(); getAudioContext(); shoot(); });
+ btnShoot.addEventListener('mousedown', () => { getAudioContext(); shoot(); });
 
  resetGame();
  loop();
