@@ -1,6 +1,13 @@
 {
-  "updatedAt": "2026-03-04T17:45:55.812493+08:00",
+  "updatedAt": "2026-03-06T19:26:42.078619+08:00",
   "timezone": "Asia/Taipei",
+  "dataDate": "2026-03-06",
+  "source": {
+    "name": "臺灣證券交易所 MIS",
+    "provider": "TWSE",
+    "url": "https://mis.twse.com.tw/stock/index.jsp",
+    "remarks": "官方撮合即時資料（約 5 秒延遲）"
+  },
   "market": {
     "name": "TWSE",
     "open": "09:00",
@@ -12,582 +19,141 @@
       "label": "加權指數",
       "symbol": "^TWII",
       "type": "Index",
-      "price": 32886.8,
-      "change": -1436.85,
-      "changePercent": -4.19,
+      "price": 33599.54,
+      "change": -73.4,
+      "changePercent": -0.22,
       "currency": "TWD",
       "trend": [
         {
-          "time": "09:00",
-          "close": 33263.15
+          "time": "前收",
+          "close": 33672.94
         },
         {
-          "time": "09:15",
-          "close": 33093.21
-        },
-        {
-          "time": "09:30",
-          "close": 33466.62
-        },
-        {
-          "time": "09:45",
-          "close": 33378.71
-        },
-        {
-          "time": "10:00",
-          "close": 33262.19
-        },
-        {
-          "time": "10:15",
-          "close": 33125.02
-        },
-        {
-          "time": "10:30",
-          "close": 33074.65
-        },
-        {
-          "time": "10:45",
-          "close": 33169.5
-        },
-        {
-          "time": "11:00",
-          "close": 33128.15
-        },
-        {
-          "time": "11:15",
-          "close": 33051.89
-        },
-        {
-          "time": "11:30",
-          "close": 33038.55
-        },
-        {
-          "time": "11:45",
-          "close": 33036.33
-        },
-        {
-          "time": "12:00",
-          "close": 33073.52
-        },
-        {
-          "time": "12:15",
-          "close": 33053.53
-        },
-        {
-          "time": "12:30",
-          "close": 32917.28
-        },
-        {
-          "time": "12:45",
-          "close": 33001.78
-        },
-        {
-          "time": "13:00",
-          "close": 32925.95
-        },
-        {
-          "time": "13:15",
-          "close": 32886.8
+          "time": "13:33",
+          "close": 33599.54
         }
-      ]
+      ],
+      "timestamp": "2026-03-06T13:33:00+08:00"
     },
     {
       "label": "台積電",
       "symbol": "2330.TW",
       "type": "Stock",
-      "price": 1870.0,
-      "change": -65.0,
-      "changePercent": -3.36,
+      "price": 1890.0,
+      "change": -10.0,
+      "changePercent": -0.53,
       "currency": "TWD",
       "trend": [
         {
-          "time": "09:00",
-          "close": 1885.0
+          "time": "前收",
+          "close": 1900.0
         },
         {
-          "time": "09:15",
-          "close": 1885.0
-        },
-        {
-          "time": "09:30",
-          "close": 1905.0
-        },
-        {
-          "time": "09:45",
-          "close": 1895.0
-        },
-        {
-          "time": "10:00",
-          "close": 1895.0
-        },
-        {
-          "time": "10:15",
-          "close": 1885.0
-        },
-        {
-          "time": "10:30",
-          "close": 1885.0
-        },
-        {
-          "time": "10:45",
-          "close": 1885.0
-        },
-        {
-          "time": "11:00",
-          "close": 1885.0
-        },
-        {
-          "time": "11:15",
-          "close": 1880.0
-        },
-        {
-          "time": "11:30",
-          "close": 1885.0
-        },
-        {
-          "time": "11:45",
-          "close": 1880.0
-        },
-        {
-          "time": "12:00",
-          "close": 1885.0
-        },
-        {
-          "time": "12:15",
-          "close": 1880.0
-        },
-        {
-          "time": "12:30",
-          "close": 1870.0
-        },
-        {
-          "time": "12:45",
-          "close": 1880.0
-        },
-        {
-          "time": "13:00",
-          "close": 1875.0
-        },
-        {
-          "time": "13:15",
-          "close": 1870.0
+          "time": "13:30",
+          "close": 1890.0
         }
-      ]
+      ],
+      "timestamp": "2026-03-06T13:30:00+08:00"
     },
     {
       "label": "富邦科技",
       "symbol": "0052.TW",
       "type": "ETF",
-      "price": 44.81,
-      "change": -2.0,
-      "changePercent": -4.27,
+      "price": 45.6,
+      "change": -0.25,
+      "changePercent": -0.55,
       "currency": "TWD",
       "trend": [
         {
-          "time": "09:00",
-          "close": 45.29
+          "time": "前收",
+          "close": 45.85
         },
         {
-          "time": "09:15",
-          "close": 45.1
-        },
-        {
-          "time": "09:30",
-          "close": 45.7
-        },
-        {
-          "time": "09:45",
-          "close": 45.48
-        },
-        {
-          "time": "10:00",
-          "close": 45.28
-        },
-        {
-          "time": "10:15",
-          "close": 45.1
-        },
-        {
-          "time": "10:30",
-          "close": 45.14
-        },
-        {
-          "time": "10:45",
-          "close": 45.16
-        },
-        {
-          "time": "11:00",
-          "close": 45.08
-        },
-        {
-          "time": "11:15",
-          "close": 45.01
-        },
-        {
-          "time": "11:30",
-          "close": 45.02
-        },
-        {
-          "time": "11:45",
-          "close": 45.04
-        },
-        {
-          "time": "12:00",
-          "close": 45.03
-        },
-        {
-          "time": "12:15",
-          "close": 44.97
-        },
-        {
-          "time": "12:30",
-          "close": 44.79
-        },
-        {
-          "time": "12:45",
-          "close": 44.9
-        },
-        {
-          "time": "13:00",
-          "close": 44.86
-        },
-        {
-          "time": "13:15",
-          "close": 44.81
+          "time": "13:30",
+          "close": 45.6
         }
-      ]
+      ],
+      "timestamp": "2026-03-06T13:30:00+08:00"
     },
     {
       "label": "元大台灣50",
       "symbol": "0050.TW",
       "type": "ETF",
-      "price": 75.65,
-      "change": -3.1,
-      "changePercent": -3.94,
+      "price": 76.85,
+      "change": -0.55,
+      "changePercent": -0.71,
       "currency": "TWD",
       "trend": [
         {
-          "time": "09:00",
-          "close": 76.3
+          "time": "前收",
+          "close": 77.4
         },
         {
-          "time": "09:15",
-          "close": 76.05
-        },
-        {
-          "time": "09:30",
-          "close": 76.8
-        },
-        {
-          "time": "09:45",
-          "close": 76.55
-        },
-        {
-          "time": "10:00",
-          "close": 76.2
-        },
-        {
-          "time": "10:15",
-          "close": 76.0
-        },
-        {
-          "time": "10:30",
-          "close": 76.1
-        },
-        {
-          "time": "10:45",
-          "close": 76.1
-        },
-        {
-          "time": "11:00",
-          "close": 76.05
-        },
-        {
-          "time": "11:15",
-          "close": 76.0
-        },
-        {
-          "time": "11:30",
-          "close": 75.9
-        },
-        {
-          "time": "11:45",
-          "close": 76.0
-        },
-        {
-          "time": "12:00",
-          "close": 76.05
-        },
-        {
-          "time": "12:15",
-          "close": 75.9
-        },
-        {
-          "time": "12:30",
-          "close": 75.65
-        },
-        {
-          "time": "12:45",
-          "close": 75.8
-        },
-        {
-          "time": "13:00",
-          "close": 75.7
-        },
-        {
-          "time": "13:15",
-          "close": 75.65
+          "time": "13:30",
+          "close": 76.85
         }
-      ]
+      ],
+      "timestamp": "2026-03-06T13:30:00+08:00"
     },
     {
       "label": "凱基台灣TOP50",
       "symbol": "009816.TW",
       "type": "ETF",
-      "price": 10.61,
-      "change": -0.45,
-      "changePercent": -4.07,
+      "price": 10.78,
+      "change": -0.05,
+      "changePercent": -0.46,
       "currency": "TWD",
       "trend": [
         {
-          "time": "09:00",
-          "close": 10.71
+          "time": "前收",
+          "close": 10.83
         },
         {
-          "time": "09:15",
-          "close": 10.65
-        },
-        {
-          "time": "09:30",
-          "close": 10.77
-        },
-        {
-          "time": "09:45",
-          "close": 10.73
-        },
-        {
-          "time": "10:00",
-          "close": 10.7
-        },
-        {
-          "time": "10:15",
-          "close": 10.65
-        },
-        {
-          "time": "10:30",
-          "close": 10.66
-        },
-        {
-          "time": "10:45",
-          "close": 10.68
-        },
-        {
-          "time": "11:00",
-          "close": 10.67
-        },
-        {
-          "time": "11:15",
-          "close": 10.66
-        },
-        {
-          "time": "11:30",
-          "close": 10.64
-        },
-        {
-          "time": "11:45",
-          "close": 10.65
-        },
-        {
-          "time": "12:00",
-          "close": 10.67
-        },
-        {
-          "time": "12:15",
-          "close": 10.63
-        },
-        {
-          "time": "12:30",
-          "close": 10.6
-        },
-        {
-          "time": "12:45",
-          "close": 10.63
-        },
-        {
-          "time": "13:00",
-          "close": 10.61
-        },
-        {
-          "time": "13:15",
-          "close": 10.61
+          "time": "13:30",
+          "close": 10.78
         }
-      ]
+      ],
+      "timestamp": "2026-03-06T13:30:00+08:00"
     },
     {
       "label": "群益台灣精選高息",
       "symbol": "00919.TW",
       "type": "ETF",
-      "price": 23.49,
-      "change": -0.82,
-      "changePercent": -3.37,
+      "price": 23.71,
+      "change": 0.0,
+      "changePercent": 0.0,
       "currency": "TWD",
       "trend": [
         {
-          "time": "09:00",
-          "close": 23.72
+          "time": "前收",
+          "close": 23.71
         },
         {
-          "time": "09:15",
-          "close": 23.56
-        },
-        {
-          "time": "09:30",
-          "close": 23.76
-        },
-        {
-          "time": "09:45",
-          "close": 23.68
-        },
-        {
-          "time": "10:00",
-          "close": 23.57
-        },
-        {
-          "time": "10:15",
-          "close": 23.5
-        },
-        {
-          "time": "10:30",
-          "close": 23.54
-        },
-        {
-          "time": "10:45",
-          "close": 23.65
-        },
-        {
-          "time": "11:00",
-          "close": 23.63
-        },
-        {
-          "time": "11:15",
-          "close": 23.59
-        },
-        {
-          "time": "11:30",
-          "close": 23.57
-        },
-        {
-          "time": "11:45",
-          "close": 23.6
-        },
-        {
-          "time": "12:00",
-          "close": 23.6
-        },
-        {
-          "time": "12:15",
-          "close": 23.55
-        },
-        {
-          "time": "12:30",
-          "close": 23.49
-        },
-        {
-          "time": "12:45",
-          "close": 23.57
-        },
-        {
-          "time": "13:00",
-          "close": 23.51
-        },
-        {
-          "time": "13:15",
-          "close": 23.49
+          "time": "13:30",
+          "close": 23.71
         }
-      ]
+      ],
+      "timestamp": "2026-03-06T13:30:00+08:00"
     },
     {
       "label": "國泰數位支付服務",
       "symbol": "00909.TW",
       "type": "ETF",
-      "price": 37.62,
-      "change": -1.0,
-      "changePercent": -2.59,
+      "price": 39.94,
+      "change": -0.28,
+      "changePercent": -0.7,
       "currency": "TWD",
       "trend": [
         {
-          "time": "09:00",
-          "close": 37.94
+          "time": "前收",
+          "close": 40.22
         },
         {
-          "time": "09:15",
-          "close": 37.87
-        },
-        {
-          "time": "09:30",
-          "close": 38.1
-        },
-        {
-          "time": "09:45",
-          "close": 38.04
-        },
-        {
-          "time": "10:00",
-          "close": 38.0
-        },
-        {
-          "time": "10:15",
-          "close": 37.93
-        },
-        {
-          "time": "10:30",
-          "close": 37.88
-        },
-        {
-          "time": "10:45",
-          "close": 37.99
-        },
-        {
-          "time": "11:00",
-          "close": 37.87
-        },
-        {
-          "time": "11:15",
-          "close": 37.81
-        },
-        {
-          "time": "11:30",
-          "close": 37.66
-        },
-        {
-          "time": "11:45",
-          "close": 37.67
-        },
-        {
-          "time": "12:00",
-          "close": 37.77
-        },
-        {
-          "time": "12:15",
-          "close": 37.67
-        },
-        {
-          "time": "12:30",
-          "close": 37.64
-        },
-        {
-          "time": "12:45",
-          "close": 37.65
-        },
-        {
-          "time": "13:00",
-          "close": 37.62
-        },
-        {
-          "time": "13:15",
-          "close": 37.62
+          "time": "13:30",
+          "close": 39.94
         }
-      ]
+      ],
+      "timestamp": "2026-03-06T13:30:00+08:00"
     }
   ]
 }

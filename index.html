@@ -152,10 +152,6 @@
           <a class="tag" href="/prompt-builder/">Prompt Builder</a>
           <span class="tag-sub">AI 提示詞工具</span>
         </div>
-        <div class="nav-item">
-          <a class="tag" href="/gomoku.html">5×5 Gomoku</a>
-          <span class="tag-sub">五子棋對戰 AI</span>
-        </div>
       </div>
       <div class="hero-image-wrap">
         <img class="hero-image" src="/assets/hero.jpg" alt="Main page visual" />
@@ -202,6 +198,10 @@
           <div class="name">Podcast</div>
           <div class="desc">音訊內容入口</div>
         </a>
+        <a class="card" id="tokenDashboardCard" href="/token-dashboard/" style="display:none">
+          <div class="name">Token Usage Dashboard</div>
+          <div class="desc">LLM 消耗、Cron 成本、Context 占用</div>
+        </a>
         <a class="card" href="/chat/">
           <div class="name">Chat</div>
         </a>
@@ -237,14 +237,6 @@
           <div class="name">健康分級建議</div>
           <div class="desc">健康勾選、風險分級、飲食注意與建議科別</div>
         </a>
-        <a class="card" href="/gomoku.html">
-          <div class="name">5×5 Gomoku</div>
-          <div class="desc">五子棋遊戲 — 對戰 AI</div>
-        </a>
-        <a class="card" href="/starwar.html">
-          <div class="name">Star War</div>
-          <div class="desc">太空射擊遊戲</div>
-        </a>
 
       </section>
 
@@ -253,6 +245,18 @@
     </main>
 
     <script>
+      (function gateInternalCard(){
+        const card = document.getElementById('tokenDashboardCard');
+        if (!card) return;
+        const host = (location.hostname || '').toLowerCase();
+        const isLocal = ['localhost', '127.0.0.1', '::1'].includes(host) || host.endsWith('.local');
+        if (isLocal) {
+          card.style.display = '';
+        } else {
+          card.remove();
+        }
+      })();
+
       const pageKey = `views:${location.pathname}`;
       const pageViews = Number(localStorage.getItem(pageKey) || '0') + 1;
       localStorage.setItem(pageKey, String(pageViews));
