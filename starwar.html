@@ -297,12 +297,16 @@ gameStarted = true;
  requestAnimationFrame(loop);
  }
  window.addEventListener('keydown', e => {
- if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); }
+ if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === ' ' || e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.code === 'Space') { e.preventDefault(); }
  keys[e.key] = true;
+ keys[e.code] = true;
  if (e.key === ' ' || e.code === 'Space') { shoot(); }
  if ((e.key === 'r' || e.key === 'R') && gameOver) resetGame();
  });
- window.addEventListener('keyup', e => { keys[e.key] = false; });
+ window.addEventListener('keyup', e => { 
+ keys[e.key] = false;
+ keys[e.code] = false;
+ });
  
  // Mobile touch on canvas
  let touchStartTime = 0;
