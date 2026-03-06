@@ -204,6 +204,23 @@
       return audioCtx;
     }
 
+    function playClickSound() {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+      
+      // Short "ter" click sound
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 800;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0.15, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+      osc.start(now);
+      osc.stop(now + 0.08);
+    }
+
     function playWinSound() {
       const ctx = getAudioContext();
       const now = ctx.currentTime;
@@ -251,6 +268,7 @@
       getAudioContext();
       
       board[r][c] = 'X';
+      playClickSound();
       
       if (checkWin(r, c, 'X')) {
         gameOver = true;
@@ -271,6 +289,7 @@
       const move = findBestMove();
       if (move) {
         board[move.r][move.c] = 'O';
+        playClickSound();
         
         if (checkWin(move.r, move.c, 'O')) {
           gameOver = true;
