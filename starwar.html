@@ -6,23 +6,10 @@
  <title>Star War</title>
  <style>
  * { box-sizing: border-box; margin: 0; padding: 0; }
- body {
- background: #000;
- color: #fff;
- font-family: Arial, sans-serif;
- display: flex;
- flex-direction: column;
- align-items: center;
- justify-content: center;
- min-height: 100vh;
- overflow: hidden;
- }
- h1 { color: #8fd3ff; margin: 10px 0; }
- canvas {
- border: 2px solid #8fd3ff;
- background: #0b1026;
- }
- .hud { display: flex; gap: 20px; margin: 10px 0; font-size: 18px; }
+ body { background: #000; color: #fff; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
+ h1 { color: #8fd3ff; margin: 10px; }
+ canvas { border: 2px solid #8fd3ff; background: #0b1026; display: block; }
+ .hud { display: flex; gap: 20px; margin: 10px; font-size: 18px; }
  </style>
 </head>
 <body>
@@ -34,8 +21,10 @@
  <canvas id="game" width="400" height="500"></canvas>
  <p>Arrow keys to move, Space to shoot</p>
  <script>
+ console.log('Script starting...');
  const canvas = document.getElementById('game');
  const ctx = canvas.getContext('2d');
+ console.log('Canvas:', canvas.width, canvas.height);
  const scoreEl = document.getElementById('score');
  const livesEl = document.getElementById('lives');
 
@@ -46,46 +35,44 @@
  let lives = 3;
  let keys = {};
 
- for (let i = 0; i < 5; i++) {
- for (let j = 0; j < 8; j++) {
- enemies.push({ x: 30 + j * 45, y: 30 + i * 35, w: 25, h: 20, alive: true });
+ for (let i = 0; i < 3; i++) {
+ for (let j = 0; j < 6; j++) {
+ enemies.push({ x: 30 + j * 55, y: 30 + i * 40, w: 30, h: 25, alive: true });
  }
  }
 
  function draw() {
  ctx.fillStyle = '#0b1026';
  ctx.fillRect(0, 0, canvas.width, canvas.height);
- ctx.fillStyle = '#fff';
- for (let i = 0; i < 50; i++) { ctx.fillRect((i*73)%canvas.width, (i*97)%canvas.height, 2, 2); }
+ 
+ ctx.fillStyle = '#ffffff';
+ ctx.fillRect(100, 100, 10, 10);
+ ctx.fillRect(200, 200, 10, 10);
+ ctx.fillRect(300, 300, 10, 10);
+ 
  ctx.fillStyle = '#8fd3ff';
- ctx.beginPath(); ctx.moveTo(player.x+player.w/2,player.y); ctx.lineTo(player.x+player.w,player.y+player.h); ctx.lineTo(player.x,player.y+player.h); ctx.fill();
- ctx.fillStyle = '#7ef9a9';
- bullets.forEach(b => ctx.fillRect(b.x,b.y,4,10));
+ ctx.fillRect(player.x, player.y, player.w, player.h);
+ 
  ctx.fillStyle = '#ff7f98';
- enemies.forEach(e => { if(e.alive) ctx.fillRect(e.x,e.y,e.w,e.h); });
+ enemies.forEach(e => { if(e.alive) ctx.fillRect(e.x, e.y, e.w, e.h); });
  }
 
  function update() {
  if(keys['ArrowLeft']) player.x -= 5;
  if(keys['ArrowRight']) player.x += 5;
  player.x = Math.max(0, Math.min(canvas.width-player.w, player.x));
- bullets.forEach(b => b.y -= 7);
- bullets = bullets.filter(b => b.y>0);
- enemies.forEach(e => { if(e.alive && Math.random()<0.01) bullets.push({x:e.x+e.w/2, y:e.y+e.h, vy:3, enemy:true}); });
- bullets.forEach(b => {
- if(b.enemy) {
- enemies.forEach(e => { if(e.alive && b.x>e.x && b.x<e.x+e.w && b.y>e.y && b.y<e.y+e.h) { e.alive=false; score+=10; scoreEl.textContent=score; } });
- } else {
- if(b.x>player.x && b.x<player.x+player.w && b.y>player.y && b.y<player.y+player.h) { lives--; livesEl.textContent=lives; bullets=b; }
- }
- });
- if(enemies.filter(e=>e.alive).length===0) { alert('You win! Score: '+score); location.reload(); }
- if(lives<=0) { alert('Game Over!'); location.reload(); }
  }
 
- function loop() { update(); draw(); requestAnimationFrame(loop); }
- document.addEventListener('keydown', e => { keys[e.key]=true; if(e.key===' ') bullets.push({x:player.x+player.w/2-2,y:player.y}); });
- document.addEventListener('keyup', e => keys[e.key]=false);
+ function loop() {
+ update();
+ draw();
+ requestAnimationFrame(loop);
+ }
+ 
+ document.addEventListener('keydown', e => { keys[e.key] = true; });
+ document.addEventListener('keyup', e => { keys[e.key] = false; });
+ 
+ console.log('Starting loop...');
  loop();
  </script>
 </body>
