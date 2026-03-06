@@ -119,6 +119,7 @@
  <button class="ctrl-btn" id="btnLeft">⬅️</button>
  <button class="ctrl-btn" id="btnShoot">🔫</button>
  <button class="ctrl-btn" id="btnRight">➡️</button>
+ <button class="ctrl-btn" id="btnRestart">🔄</button>
  </div>
  <p class="hint">Tiny arcade chaos, maximum laser drama.</p>
  </div>
@@ -573,6 +574,10 @@
 
  btnShoot.addEventListener('touchstart', e => { e.preventDefault(); getAudioContext(); shoot(); });
  btnShoot.addEventListener('mousedown', () => { getAudioContext(); shoot(); });
+
+ const btnRestart = document.getElementById('btnRestart');
+ btnRestart.addEventListener('touchstart', e => { e.preventDefault(); getAudioContext(); resetGame(); });
+ btnRestart.addEventListener('mousedown', () => { getAudioContext(); resetGame(); });
 
  resetGame();
  loop();
