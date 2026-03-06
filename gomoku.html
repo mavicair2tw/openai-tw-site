@@ -18,6 +18,22 @@
       padding: 20px;
     }
     h1 { margin-bottom: 10px; }
+    .home-link {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      color: #4ecdc4;
+      text-decoration: none;
+      font-size: 1.2rem;
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .home-link:hover {
+      background: rgba(255,255,255,0.2);
+      transform: scale(1.05);
+    }
     .status {
       font-size: 1.3rem;
       margin-bottom: 20px;
@@ -109,6 +125,7 @@
   </style>
 </head>
 <body>
+  <a href="/" class="home-link">🏠 Home</a>
   <h1>🤖 5×5 Gomoku vs AI</h1>
   <div class="status" id="status">You are X — Your turn!</div>
   <div class="board" id="board"></div>
