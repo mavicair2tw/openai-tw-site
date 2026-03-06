@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>5×5 Gomoku vs AI</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 { margin-bottom: 10px; }
+    .status {
+      font-size: 1.3rem;
+      margin-bottom: 20px;
+      padding: 12px 24px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      text-align: center;
+    }
+    .status.thinking {
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(5, 70px);
+      grid-template-rows: repeat(5, 70px);
+      gap: 2px;
+      background: #333;
+      padding: 2px;
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .cell {
+      width: 70px;
+      height: 70px;
+      background: #1a1a2e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .cell:hover:not(.taken):not(.disabled) {
+      background: #2a2a4e;
+    }
+    .cell.x { color: #ff6b6b; }
+    .cell.o { color: #4ecdc4; }
+    .cell.ai { color: #ffd700; }
+    .cell.winner { 
+      background: #ffd700 !important;
+      color: #1a1a2e !important;
+      animation: pulse 0.5s infinite alternate;
+    }
+    @keyframes pulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.05); }
+    }
+    .cell.disabled {
+      cursor: not-allowed;
+    }
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      padding: 12px 24px;
+      font-size: 1rem;
+      background: #4ecdc4;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      color: #1a1a2e;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+    button:hover { background: #3dbdb5; transform: scale(1.05); }
+    button.mode-btn {
+      background: #ff6b6b;
+    }
+    button.mode-btn:hover {
+      background: #ff5252;
+    }
+    .instructions {
+      margin-top: 15px;
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+    .score {
+      margin-top: 10px;
+      font-size: 1rem;
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <h1>🤖 5×5 Gomoku vs AI</h1>
+  <div class="status" id="status">You are X — Your turn!</div>
+  <div class="board" id="board"></div>
+  <div class="controls">
+    <button onclick="resetGame()">🔄 Restart</button>
+    <button class="mode-btn" onclick="toggleMode()">Mode: You go first</button>
+  </div>
+  <div class="score" id="score">Player: 0 | AI: 0</div>
+  <div class="instructions">Get 5 in a row — horizontal, vertical, or diagonal!</div>
+
+  <script>
+    const SIZE = 5;
+    let board = [];
+    let currentPlayer = 'X';
+    let gameOver = false;
+    let winner = null;
+    let winCells = [];
+    let playerFirst = true;
+    let playerScore = 0;
+    let aiScore = 0;
+    let isThinking = false;
+
+    function initBoard() {
+      board = Array(SIZE).fill(null).map(() => Array(SIZE).fill(''));
+      currentPlayer = 'X';
+      gameOver = false;
+      winner = null;
+      winCells = [];
+      isThinking = false;
+      render();
+      
+      if (!playerFirst && !gameOver) {
+        setTimeout(aiMove, 500);
+      }
+    }
+
+    function render() {
+      const boardEl = document.getElementById('board');
+      boardEl.innerHTML = '';
+      
+      for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          const cell = document.createElement('div');
+          let cellClass = 'cell';
+          if (board[r][c]) {
+            cellClass += ' ' + board[r][c].toLowerCase();
+            if (board[r][c] === 'O') cellClass += ' ai';
+          }
+          if (winCells.some(wc => wc.r === r && wc.c === c)) {
+            cellClass += ' winner';
+          }
+          if (isThinking || currentPlayer === 'O') {
+            cellClass += ' disabled';
+          }
+          cell.className = cellClass;
+          cell.textContent = board[r][c];
+          cell.onclick = () => playerMove(r, c);
+          boardEl.appendChild(cell);
+        }
+      }
+
+      const statusEl = document.getElementById('status');
+      if (gameOver) {
+        if (winner === 'X') {
+          statusEl.textContent = '🎉 You win!';
+          playerScore++;
+        } else {
+          statusEl.textContent = '💀 AI wins!';
+          aiScore++;
+        }
+        updateScore();
+      } else if (isThinking) {
+        statusEl.textContent = '🤔 AI is thinking...';
+        statusEl.classList.add('thinking');
+      } else {
+        statusEl.textContent = currentPlayer === 'X' ? '�️ Your turn (X)' : '🤖 AI thinking...';
+        statusEl.classList.remove('thinking');
+      }
+    }
+
+    function updateScore() {
+      document.getElementById('score').textContent = `Player: ${playerScore} | AI: ${aiScore}`;
+    }
+
+    function playerMove(r, c) {
+      if (gameOver || board[r][c] || currentPlayer !== 'X' || isThinking) return;
+      
+      board[r][c] = 'X';
+      
+      if (checkWin(r, c, 'X')) {
+        gameOver = true;
+        winner = 'X';
+      } else {
+        currentPlayer = 'O';
+        isThinking = true;
+        render();
+        setTimeout(aiMove, 300);
+      }
+      render();
+    }
+
+    function aiMove() {
+      if (gameOver) return;
+      
+      // Simple AI: find best move
+      const move = findBestMove();
+      if (move) {
+        board[move.r][move.c] = 'O';
+        
+        if (checkWin(move.r, move.c, 'O')) {
+          gameOver = true;
+          winner = 'O';
+        } else {
+          currentPlayer = 'X';
+        }
+      }
+      
+      isThinking = false;
+      render();
+    }
+
+    function findBestMove() {
+      // 1. Check if AI can win
+      for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          if (!board[r][c]) {
+            board[r][c] = 'O';
+            if (checkWin(r, c, 'O')) {
+              board[r][c] = '';
+              return {r, c};
+            }
+            board[r][c] = '';
+          }
+        }
+      }
+      
+      // 2. Block player's winning move
+      for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          if (!board[r][c]) {
+            board[r][c] = 'X';
+            if (checkWin(r, c, 'X')) {
+              board[r][c] = '';
+              return {r, c};
+            }
+            board[r][c] = '';
+          }
+        }
+      }
+      
+      // 3. Take center if available
+      const center = Math.floor(SIZE / 2);
+      if (!board[center][center]) {
+        return {r: center, c: center};
+      }
+      
+      // 4. Take corners
+      const corners = [[0,0], [0,SIZE-1], [SIZE-1,0], [SIZE-1,SIZE-1]];
+      for (const [r, c] of corners) {
+        if (!board[r][c]) return {r, c};
+      }
+      
+      // 5. Take edges near existing pieces
+      const moves = [];
+      for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          if (!board[r][c] && hasNeighbor(r, c)) {
+            const score = evaluatePosition(r, c);
+            moves.push({r, c, score});
+          }
+        }
+      }
+      
+      if (moves.length > 0) {
+        moves.sort((a, b) => b.score - a.score);
+        return moves[0];
+      }
+      
+      // 6. First available
+      for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          if (!board[r][c]) return {r, c};
+        }
+      }
+      
+      return null;
+    }
+
+    function hasNeighbor(r, c) {
+      for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+          if (dr === 0 && dc === 0) continue;
+          const nr = r + dr, nc = c + dc;
+          if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && board[nr][nc]) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    function evaluatePosition(r, c) {
+      let score = 0;
+      const directions = [[0,1], [1,0], [1,1], [1,-1]];
+      
+      for (const [dr, dc] of directions) {
+        let playerCount = 0, aiCount = 0, emptyCount = 0;
+        
+        for (let d = -4; d <= 4; d++) {
+          const nr = r + dr * d, nc = c + dc * d;
+          if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE) {
+            if (board[nr][nc] === 'X') playerCount++;
+            else if (board[nr][nc] === 'O') aiCount++;
+            else emptyCount++;
+          }
+        }
+        
+        if (playerCount === 0) score += aiCount * 10;
+        if (aiCount === 0) score += playerCount * 5;
+      }
+      
+      return score;
+    }
+
+    function checkWin(r, c, player) {
+      const directions = [
+        [[0, 1], [0, -1]],
+        [[1, 0], [-1, 0]],
+        [[1, 1], [-1, -1]],
+        [[1, -1], [-1, 1]]
+      ];
+
+      for (const [d1, d2] of directions) {
+        let cells = [{r, c}];
+        let count = 1;
+
+        for (const [dr, dc] of [d1, d2]) {
+          let nr = r + dr, nc = c + dc;
+          while (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && board[nr][nc] === player) {
+            cells.push({r: nr, c: nc});
+            count++;
+            nr += dr;
+            nc += dc;
+          }
+        }
+
+        if (count >= 5) {
+          winCells = cells;
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function resetGame() {
+      initBoard();
+    }
+
+    function toggleMode() {
+      playerFirst = !playerFirst;
+      document.querySelector('.mode-btn').textContent = playerFirst ? 'Mode: You go first' : 'Mode: AI goes first';
+      resetGame();
+    }
+
+    initBoard();
+  </script>
+</body>
+</html>
