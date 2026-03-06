@@ -59,6 +59,33 @@
  .accent { color: #7ef9a9; }
  .danger { color: #ff7f98; }
  .hint { font-size: 14px; opacity: .9; }
+ .mobile-controls {
+ display: none;
+ margin-top: 16px;
+ gap: 20px;
+ }
+ .ctrl-btn {
+ width: 80px;
+ height: 60px;
+ font-size: 28px;
+ background: rgba(255,255,255,0.1);
+ border: 2px solid rgba(143, 211, 255, 0.4);
+ border-radius: 12px;
+ color: #8fd3ff;
+ cursor: pointer;
+ user-select: none;
+ -webkit-user-select: none;
+ touch-action: manipulation;
+ }
+ .ctrl-btn:active {
+ background: rgba(143, 211, 255, 0.3);
+ }
+ @media (max-width: 600px) {
+ .mobile-controls {
+ display: flex;
+ justify-content: center;
+ }
+ }
  .home-link {
  position: fixed;
  top: 20px;
@@ -88,6 +115,11 @@
  <div class="tag">Level: <span id="level">1</span></div>
  </div>
  <canvas id="game" width="920" height="560"></canvas>
+ <div class="mobile-controls">
+ <button class="ctrl-btn" id="btnLeft">⬅️</button>
+ <button class="ctrl-btn" id="btnShoot">🔫</button>
+ <button class="ctrl-btn" id="btnRight">➡️</button>
+ </div>
  <p class="hint">Tiny arcade chaos, maximum laser drama.</p>
  </div>
 
@@ -494,6 +526,26 @@
  window.addEventListener('keyup', e => {
  keys[e.key] = false;
  });
+
+ // Mobile controls
+ const btnLeft = document.getElementById('btnLeft');
+ const btnRight = document.getElementById('btnRight');
+ const btnShoot = document.getElementById('btnShoot');
+
+ btnLeft.addEventListener('touchstart', e => { e.preventDefault(); keys['ArrowLeft'] = true; });
+ btnLeft.addEventListener('touchend', e => { e.preventDefault(); keys['ArrowLeft'] = false; });
+ btnLeft.addEventListener('mousedown', () => keys['ArrowLeft'] = true);
+ btnLeft.addEventListener('mouseup', () => keys['ArrowLeft'] = false);
+ btnLeft.addEventListener('mouseleave', () => keys['ArrowLeft'] = false);
+
+ btnRight.addEventListener('touchstart', e => { e.preventDefault(); keys['ArrowRight'] = true; });
+ btnRight.addEventListener('touchend', e => { e.preventDefault(); keys['ArrowRight'] = false; });
+ btnRight.addEventListener('mousedown', () => keys['ArrowRight'] = true);
+ btnRight.addEventListener('mouseup', () => keys['ArrowRight'] = false);
+ btnRight.addEventListener('mouseleave', () => keys['ArrowRight'] = false);
+
+ btnShoot.addEventListener('touchstart', e => { e.preventDefault(); getAudioContext(); shoot(); });
+ btnShoot.addEventListener('mousedown', () => { getAudioContext(); shoot(); });
 
  resetGame();
  loop();
