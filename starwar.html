@@ -58,6 +58,7 @@
  let lives = 3;
  let level = 1;
  let gameOver = false;
+ let restartCountdown = 0;
  let frame = 0;
  const stars = Array.from({ length: 140 }, () => ({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, size: Math.random() * 2 + 0.4, speed: Math.random() * 1.8 + 0.2 }));
  const player = { x: canvas.width / 2 - 22, y: canvas.height - 70, w: 44, h: 44, speed: 6, cooldown: 0 };
@@ -85,6 +86,7 @@
  lives = 3;
  level = 1;
  gameOver = false;
+ restartCountdown = 0;
  frame = 0;
  bullets = [];
  enemyBullets = [];
@@ -116,6 +118,13 @@
  }
  function update() {
  frame++;
+ if (gameOver) {
+ restartCountdown--;
+ if (restartCountdown <= 0) {
+ resetGame();
+ }
+ return;
+ }
  if (keys['ArrowLeft'] || keys['a'] || keys['A']) player.x -= player.speed;
  if (keys['ArrowRight'] || keys['d'] || keys['D']) player.x += player.speed;
  player.x = Math.max(12, Math.min(canvas.width - player.w - 12, player.x));
@@ -158,13 +167,17 @@
  lives--;
  explode(player.x + player.w / 2, player.y + player.h / 2, '#ff7f98', 22);
  updateHUD();
- if (lives <= 0) gameOver = true;
+ if (lives <= 0) {
+ gameOver = true;
+ restartCountdown = 600; // 10 seconds at 60fps
+ }
  }
  }
  enemyBullets = enemyBullets.filter(b => b.y < canvas.height + 50);
  for (const enemy of enemies) {
  if (enemy.alive && enemy.y + enemy.h >= player.y) {
  gameOver = true;
+ restartCountdown = 600;
  }
  }
  particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.life -= 1; });
@@ -254,7 +267,8 @@
  ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 18);
  ctx.font = '24px Arial';
  ctx.fillStyle = '#b5c8e8';
- ctx.fillText('Press R to fight again', canvas.width / 2, canvas.height / 2 + 28);
+ const seconds = Math.ceil(restartCountdown / 60);
+ ctx.fillText('Restarting in ' + seconds + 's...', canvas.width / 2, canvas.height / 2 + 28);
  }
  }
  function loop() {
