@@ -233,10 +233,13 @@
           statusEl.textContent = '🎉 You win!';
           playerScore++;
           playWinSound();
-        } else {
+        } else if (winner === 'O') {
           statusEl.textContent = '💀 AI wins!';
           aiScore++;
           playLoseSound();
+        } else if (winner === 'Draw') {
+          statusEl.textContent = '🤝 Draw! Ha Ha Ha~';
+          playDrawSound();
         }
         updateScore();
       } else if (isThinking) {
@@ -318,6 +321,35 @@
       });
     }
 
+    function playDrawSound() {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+      
+      // Ha Ha Ha laugh
+      const notes = [523.25, 523.25, 523.25]; // C5 C5 C5
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = freq + (i * 50);
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.2, now + i * 0.25);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.25 + 0.2);
+        osc.start(now + i * 0.25);
+        osc.stop(now + i * 0.25 + 0.2);
+      });
+    }
+
+    function checkDraw() {
+      for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          if (!board[r][c]) return false;
+        }
+      }
+      return true;
+    }
+
     function playerMove(r, c) {
       if (gameOver || board[r][c] || currentPlayer !== 'X' || isThinking) return;
       
@@ -330,6 +362,9 @@
       if (checkWin(r, c, 'X')) {
         gameOver = true;
         winner = 'X';
+      } else if (checkDraw()) {
+        gameOver = true;
+        winner = 'Draw';
       } else {
         currentPlayer = 'O';
         isThinking = true;
@@ -351,6 +386,9 @@
         if (checkWin(move.r, move.c, 'O')) {
           gameOver = true;
           winner = 'O';
+        } else if (checkDraw()) {
+          gameOver = true;
+          winner = 'Draw';
         } else {
           currentPlayer = 'X';
         }
