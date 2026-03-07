@@ -1,29 +1,29 @@
 {
-  "updatedAt": "2026-03-07T12:14:52.012797+08:00",
+  "updatedAt": "2026-03-07T13:08:29.583785+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://news.cnyes.com/news/cat/tw_stock_news",
   "ok": true,
-  "summary": "今日台股新聞重點：1. 1.〈美股早盤〉中東戰事有望降溫 主要指數開高、油價回吐漲幅；2. 2.濕製程設備廠敘豐去年EPS 5.9元 暫訂上櫃承銷價120元；3. 3.中東能源通道陷癱瘓！航商憂：美軍護航難擋伊朗奇襲；4. 4.你好，Neo！蘋果推出平價MacBook Neo 搶攻入門筆電市場；5. 5.OpenAI衝IPO！黃仁勳：輝達300億美元投資恐成「最後一次」。建議優先關注權值股、ETF 資金流向與政策面消息。",
+  "summary": "今日台股新聞重點：1. 1.〈美股早盤〉中東戰事有望降溫 主要指數開高、油價回吐漲幅；2. 2.〈美股盤後〉國際油價持穩 那指回升超1.2% 費半勁揚約2%；3. 3.OpenAI衝IPO！黃仁勳：輝達300億美元投資恐成「最後一次」；4. 4.英特爾重新評估18A製程 陳立武考慮對外開放代工；5. 5.濕製程設備廠敘豐去年EPS 5.9元 暫訂上櫃承銷價120元。建議優先關注權值股、ETF 資金流向與政策面消息。",
   "headlines": [
     {
       "title": "1.〈美股早盤〉中東戰事有望降溫 主要指數開高、油價回吐漲幅",
       "url": "https://www.cnyes.com/news/id/6363612"
     },
     {
-      "title": "2.濕製程設備廠敘豐去年EPS 5.9元 暫訂上櫃承銷價120元",
-      "url": "https://www.cnyes.com/news/id/6363858"
+      "title": "2.〈美股盤後〉國際油價持穩 那指回升超1.2% 費半勁揚約2%",
+      "url": "https://www.cnyes.com/news/id/6364027"
     },
     {
-      "title": "3.中東能源通道陷癱瘓！航商憂：美軍護航難擋伊朗奇襲",
-      "url": "https://www.cnyes.com/news/id/6362764"
-    },
-    {
-      "title": "4.你好，Neo！蘋果推出平價MacBook Neo 搶攻入門筆電市場",
-      "url": "https://www.cnyes.com/news/id/6363886"
-    },
-    {
-      "title": "5.OpenAI衝IPO！黃仁勳：輝達300億美元投資恐成「最後一次」",
+      "title": "3.OpenAI衝IPO！黃仁勳：輝達300億美元投資恐成「最後一次」",
       "url": "https://www.cnyes.com/news/id/6363993"
+    },
+    {
+      "title": "4.英特爾重新評估18A製程 陳立武考慮對外開放代工",
+      "url": "https://www.cnyes.com/news/id/6363975"
+    },
+    {
+      "title": "5.濕製程設備廠敘豐去年EPS 5.9元 暫訂上櫃承銷價120元",
+      "url": "https://www.cnyes.com/news/id/6363858"
     }
   ],
   "error": null
