@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-07T15:16:50.703856+08:00",
+  "updatedAt": "2026-03-07T15:48:00.294051+08:00",
   "timezone": "Asia/Taipei",
   "market": "US",
   "items": [
@@ -113,9 +113,9 @@
       "label": "Google",
       "symbol": "GOOG",
       "type": "Stock",
-      "price": 298.07,
-      "change": -2.84,
-      "changePercent": -0.94,
+      "price": 298.17,
+      "change": -2.74,
+      "changePercent": -0.91,
       "trend": [
         {
           "time": "23:00",
@@ -211,7 +211,7 @@
         },
         {
           "time": "04:45",
-          "close": 298.07
+          "close": 298.17
         }
       ]
     },
@@ -749,22 +749,10 @@
       "label": "比特幣",
       "symbol": "BTC-USD",
       "type": "Crypto",
-      "price": 67630.53,
-      "change": -505.96,
-      "changePercent": -0.74,
+      "price": 67790.23,
+      "change": -346.27,
+      "changePercent": -0.51,
       "trend": [
-        {
-          "time": "09:15",
-          "close": 68205.59
-        },
-        {
-          "time": "09:30",
-          "close": 68239.9
-        },
-        {
-          "time": "09:45",
-          "close": 68280.62
-        },
         {
           "time": "10:00",
           "close": 68277.66
@@ -848,6 +836,18 @@
         {
           "time": "15:00",
           "close": 67630.53
+        },
+        {
+          "time": "15:15",
+          "close": 67729.37
+        },
+        {
+          "time": "15:30",
+          "close": 67784.07
+        },
+        {
+          "time": "15:45",
+          "close": 67790.23
         }
       ]
     },
