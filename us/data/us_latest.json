@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-08T17:59:17.671558+08:00",
+  "updatedAt": "2026-03-08T18:33:50.604668+08:00",
   "timezone": "Asia/Taipei",
   "market": "US",
   "items": [
@@ -113,9 +113,9 @@
       "label": "Google",
       "symbol": "GOOG",
       "type": "Stock",
-      "price": 298.17,
-      "change": -2.74,
-      "changePercent": -0.91,
+      "price": 298.07,
+      "change": -2.84,
+      "changePercent": -0.94,
       "trend": [
         {
           "time": "23:00",
@@ -211,7 +211,7 @@
         },
         {
           "time": "04:45",
-          "close": 298.17
+          "close": 298.07
         }
       ]
     },
@@ -325,9 +325,9 @@
       "label": "NVIDIA",
       "symbol": "NVDA",
       "type": "Stock",
-      "price": 177.69,
-      "change": -5.65,
-      "changePercent": -3.08,
+      "price": 177.73,
+      "change": -5.61,
+      "changePercent": -3.06,
       "trend": [
         {
           "time": "23:00",
@@ -423,7 +423,7 @@
         },
         {
           "time": "04:45",
-          "close": 177.69
+          "close": 177.73
         }
       ]
     },
@@ -431,8 +431,8 @@
       "label": "Tesla",
       "symbol": "TSLA",
       "type": "Stock",
-      "price": 396.56,
-      "change": -8.99,
+      "price": 396.55,
+      "change": -9.0,
       "changePercent": -2.22,
       "trend": [
         {
@@ -529,7 +529,7 @@
         },
         {
           "time": "04:45",
-          "close": 396.56
+          "close": 396.55
         }
       ]
     },
@@ -643,9 +643,9 @@
       "label": "美國費城半導體指數",
       "symbol": "^SOX",
       "type": "Index",
-      "price": 7512.99,
-      "change": -308.77,
-      "changePercent": -3.95,
+      "price": 7513.79,
+      "change": -307.97,
+      "changePercent": -3.94,
       "trend": [
         {
           "time": "23:00",
@@ -733,15 +733,15 @@
         },
         {
           "time": "04:15",
-          "close": 7500.88
+          "close": 7501.15
         },
         {
           "time": "04:30",
-          "close": 7523.27
+          "close": 7523.14
         },
         {
           "time": "04:45",
-          "close": 7512.99
+          "close": 7513.79
         }
       ]
     },
@@ -749,22 +749,10 @@
       "label": "比特幣",
       "symbol": "BTC-USD",
       "type": "Crypto",
-      "price": 67727.52,
-      "change": 454.93,
-      "changePercent": 0.68,
+      "price": 68030.48,
+      "change": 757.88,
+      "changePercent": 1.13,
       "trend": [
-        {
-          "time": "12:00",
-          "close": 66986.98
-        },
-        {
-          "time": "12:15",
-          "close": 67032.84
-        },
-        {
-          "time": "12:30",
-          "close": 66955.25
-        },
         {
           "time": "12:45",
           "close": 66647.52
@@ -803,7 +791,7 @@
         },
         {
           "time": "15:00",
-          "close": 67361.29
+          "close": 67383.23
         },
         {
           "time": "15:15",
@@ -847,7 +835,19 @@
         },
         {
           "time": "17:45",
-          "close": 67727.52
+          "close": 67733.98
+        },
+        {
+          "time": "18:00",
+          "close": 67864.67
+        },
+        {
+          "time": "18:15",
+          "close": 68135.84
+        },
+        {
+          "time": "18:30",
+          "close": 68030.48
         }
       ]
     },
