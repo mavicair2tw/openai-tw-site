@@ -1,173 +1,21 @@
 {
-  "updatedAt": "2026-03-09 01:47",
+  "updatedAt": "2026-03-09 02:30",
   "timezone": "Asia/Taipei",
-  "summary": "今日咖啡新聞重點｜中文：1. 如果來台的是藍瓶而不是瑞幸 台灣咖啡市場會出現什麼變化？ - PChome Online 新聞；2. 南台灣咖啡展今天登場 吸引咖啡老饕聞香而來 - 經濟日報｜English: 1. Colombia’s coffee industry well placed but wary as EU deforestation rule looms - Mongabay；2. \"A Brown, Stale, Forgettable Shelf\": Refinery29's Co-Founder Wants To Disrupt The Coffee CPG Sector - Sprudge",
-  "newsZh": [
-    {
-      "title": "如果來台的是藍瓶而不是瑞幸 台灣咖啡市場會出現什麼變化？ - PChome Online 新聞",
-      "titleZh": "如果來台的是藍瓶而不是瑞幸 台灣咖啡市場會出現什麼變化？ - PChome Online 新聞",
-      "titleEn": "",
-      "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxOSTc2bTlnMU1CWHpUcWpMajE4REliLW02Ykl0MzVZcVl4UlE4amVTeGd1YWwwMnVBTHFJOTBESXdNVUNSQy1tM0NHYzVUdjhwU0l1TG5OUFVKMHV5bWRtNFBjdWlQc01lWlNJUWZBTmpBM3QwWEZrcjZHZ3pXRlJPRW14Uy1OSGVIaFdn?oc=5",
-      "lang": "zh"
-    },
-    {
-      "title": "南台灣咖啡展今天登場 吸引咖啡老饕聞香而來 - 經濟日報",
-      "titleZh": "南台灣咖啡展今天登場 吸引咖啡老饕聞香而來 - 經濟日報",
-      "titleEn": "",
-      "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTFA5azJOeG1MeUVfWkFxNFlQU1p5Ty1GYUo1NjNfZnhfQy1BdHFfa0ptYTdZX3BuZW92TjZnaXlnX0IxdXVrODhqMVJRUGVIVEFoSHBqd0Y4ejhBUdIBX0FVX3lxTE04eFB1Q2NQOWNzMEJSWXhUSWhaSy03cGVGWDc1bFdnd0Vwb2tUM2VYZXhBamtSbU9VLTk2VHFJeEdmWmNnaFpGRzhVYTZnaGFIa1A0Z2QwTWp1UWI1QzBZ?oc=5",
-      "lang": "zh"
-    },
-    {
-      "title": "高雄精品咖啡、酒飲展同步登場 打造南台灣年度飲品盛會 | 新頭殼 - LINE TODAY",
-      "titleZh": "高雄精品咖啡、酒飲展同步登場 打造南台灣年度飲品盛會 | 新頭殼 - LINE TODAY",
-      "titleEn": "",
-      "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE5kLU5VcndWbWFzUDFpc0VkajY1VG1HbzJodkFKb24tMWtGbkEyaHYwN2laLTBNZWc4UTdueHFJemdNY3M4MTJxRUpXN0VsRTEtSzBNUVJn?oc=5",
-      "lang": "zh"
-    },
-    {
-      "title": "2026高雄精品咖啡、酒飲展登場！精品咖啡成長破10% 產業鏈集結搶市 | 徐炳文 | 地方新聞 - 風傳媒",
-      "titleZh": "2026高雄精品咖啡、酒飲展登場！精品咖啡成長破10% 產業鏈集結搶市 | 徐炳文 | 地方新聞 - 風傳媒",
-      "titleEn": "",
-      "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMiTkFVX3lxTE1XYnBkRTB3S21xeC1aVGliQmZlVFBiQU53NFBlUUltWTRvZHpleEVXNE94VzlfbVBJaERfNjNvV1liSVhNWDhEQkQtQ2JEdw?oc=5",
-      "lang": "zh"
-    },
-    {
-      "title": "串聯咖啡、酒飲與茶產業 2026高雄國際飲品展助攻城市產業能量 - Yahoo新聞",
-      "titleZh": "串聯咖啡、酒飲與茶產業 2026高雄國際飲品展助攻城市產業能量 - Yahoo新聞",
-      "titleEn": "",
-      "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMihwNBVV95cUxPLVo4OTVfX0o0anpYaHlWRWg1eFBoX205NmdqeDlyV2xCUnc3RVp1STdUUU16T2oxR0lJYmxVVEdWdDZtU1dsMXBaQUJyekhJVXphcG43YWg0MzRfUVFPMEt5d0FUamM5QUZhcEwtSmNxOXdWdHczRmw2ZDEzOVRtM01PY0R6WFdBRWZwX1FKZllQakxRQndEckxFa0s0TkdWY3M4QUdnWENKQ1ZlUHpQMXZ0S0k3QmdGbGNuUmIxR3N0eHVvMWEyUVZ4Z1VpZXdLZWcweEVqS1BVdGt1SFZ2Mm5qMUdzNmVWc2dXTGJVbENQamNrVU5hdnhCN0dXQ01EM21NMWJIdHd1RTVCdVNfZ2dFZG9nY3hfa0c5NzNHQlBvVTktZ1lITHpWSFVjM21ySG5IMWNWaXZhekpERDhUblhZbUZBTkItQUU5LTlOYkxYblRIdHA0VVUxVWlsekZlbzRCNV9XMVVla09QUmNPSW9kRGRjUlJ3YUtQWXN6ZC16Zzlwd3k4?oc=5",
-      "lang": "zh"
-    }
-  ],
-  "newsEn": [
-    {
-      "title": "Colombia’s coffee industry well placed but wary as EU deforestation rule looms - Mongabay",
-      "titleZh": "",
-      "titleEn": "Colombia’s coffee industry well placed but wary as EU deforestation rule looms - Mongabay",
-      "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxNOXdMWVBacVdkNjNaVG1lWEZOQndiaEluNHI5aEQ4YUQ4STV1U2w5MmpBZmppVmdqTWxxU3RsMm12Zm96ZThHTVdWZEd2dGUtcm01Yjd6VGk0OXVhY2EtbTNRZVRVcjM5c1M1YU4wcWZPbEItZ2Vqc1EwSW80eTM5VVVCMnN0Z1lWdGpBUHRUNFUyQU1naTRCWEJzdHhYWTFyWnlGb0t5Uzd2UEpPWktTejVR0gG3AUFVX3lxTE9CT2V4QjJFcFpYV1JydFlYXzB1bVVIcWNZcFRJYnFYaU5pTF92NzIxMGE4Z1pjYXdCWUJXV0lIakplSmhnM1NacmY1VVFnTG1wNElXMS1XajdqUFhBQmM3NzRxUnNZekJsUUhseVhQSXZkdldoXzRxb3NjTm9odGlZbmpiT05YOWJ2NEJOWTVmRTRjSDJQcGR4bm9HdzlnVVM3dXdPbjFGS1RaS1d0ako5d0xMZERZVQ?oc=5",
-      "lang": "en"
-    },
-    {
-      "title": "\"A Brown, Stale, Forgettable Shelf\": Refinery29's Co-Founder Wants To Disrupt The Coffee CPG Sector - Sprudge",
-      "titleZh": "",
-      "titleEn": "\"A Brown, Stale, Forgettable Shelf\": Refinery29's Co-Founder Wants To Disrupt The Coffee CPG Sector - Sprudge",
-      "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxOOXFyRGdfSF9vQVVST3paTmV2TWhueGtGSXFKY0tBbHgwRGtOVjdlek5heV9KWmRHU0UxZzhLSEJUMVl1c2h6VElOWU43VXdYdjh5UzQtZlhUZkJxYzZndy1ITEwyZ1M2VmZMQXphbnJmWE14NkRwVG1kYUpzWm8yYnRPaGdKcktyVWk3dG42eTZPdEkydkJvdDJBZ2w0VmNPeV8tdzBqdG5sdHA5ME4zenNlY3Q0aEZua0dxRzVoR21VUEU?oc=5",
-      "lang": "en"
-    },
-    {
-      "title": "Opinion: On Sugar-Laden Coffee in the MAHA Crosshairs - Daily Coffee News by Roast Magazine",
-      "titleZh": "",
-      "titleEn": "Opinion: On Sugar-Laden Coffee in the MAHA Crosshairs - Daily Coffee News by Roast Magazine",
-      "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxOekMyZkVDTlFBX29yZ2pKWnhJSEdSa0FUUnlBb2QxVWxVWXVtUmhiV1JmZ2MyQXZhV1NBYjBvVlpUUV9pcWw0SEQzTkNCbW5DOWhoNzJtV0tZbHhxUnhwN1Q2aFBfMVhhb3RRbUJmWnp0SzJiRU05N3RhRTlMeUpqbWhZNG83eVExNDU5cUVXaTZwYnY5RHRF?oc=5",
-      "lang": "en"
-    },
-    {
-      "title": "Brazil Plants Tomorrow’s Coffee as Heat Threatens Latin America’s Cup - LatinAmerican Post",
-      "titleZh": "",
-      "titleEn": "Brazil Plants Tomorrow’s Coffee as Heat Threatens Latin America’s Cup - LatinAmerican Post",
-      "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxNbGJYZkNSSUptcW5PTkgyaXh4NFhZRkgzdlM1V05Id252Rm5DU01HYmo0aG9hMVdRdVQwYkhwTm1CV1EzOEpPaUxkZGNuenMyQXFsNWZFNGZma3BKQ0M4aTVCSE9SakdfdGJQTlc4Q2ROb2Z0Z1A3S0ZsZjdTRnl4NFR4c1lBSGRlM2VWdUNEV01vZGRPbV91WmJ6TmJWYV9TYzAwWktFLTdGVGlrNE1DV2hMbUV6WDh2Ylcw?oc=5",
-      "lang": "en"
-    },
-    {
-      "title": "Vietnam’s coffee crisis threatens to upend global supply chains - BeverageDaily.com",
-      "titleZh": "",
-      "titleEn": "Vietnam’s coffee crisis threatens to upend global supply chains - BeverageDaily.com",
-      "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxNd2UwdlV3T2lhZzEwQ01xQV9VeVRyWWhnUTBnYW1QRjN4cFlTd0x4QU0tRTVTTHdZZTFrelVJSGNEazRGUzNyTzNFMjdOVnM1bzZtXzdYUEZ0UVYxeS1lcVlUb1JmdHlleHN6dUV1bW5mY09tNUxMNUR1WGp0c2hQNkJtYXhTaGJQMFVPS3Z1c0NFR29UMTBYWkpSZE1CUQ?oc=5",
-      "lang": "en"
-    }
-  ],
-  "news": [
-    {
-      "title": "如果來台的是藍瓶而不是瑞幸 台灣咖啡市場會出現什麼變化？ - PChome Online 新聞",
-      "titleZh": "如果來台的是藍瓶而不是瑞幸 台灣咖啡市場會出現什麼變化？ - PChome Online 新聞",
-      "titleEn": "",
-      "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxOSTc2bTlnMU1CWHpUcWpMajE4REliLW02Ykl0MzVZcVl4UlE4amVTeGd1YWwwMnVBTHFJOTBESXdNVUNSQy1tM0NHYzVUdjhwU0l1TG5OUFVKMHV5bWRtNFBjdWlQc01lWlNJUWZBTmpBM3QwWEZrcjZHZ3pXRlJPRW14Uy1OSGVIaFdn?oc=5",
-      "lang": "zh"
-    },
-    {
-      "title": "南台灣咖啡展今天登場 吸引咖啡老饕聞香而來 - 經濟日報",
-      "titleZh": "南台灣咖啡展今天登場 吸引咖啡老饕聞香而來 - 經濟日報",
-      "titleEn": "",
-      "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTFA5azJOeG1MeUVfWkFxNFlQU1p5Ty1GYUo1NjNfZnhfQy1BdHFfa0ptYTdZX3BuZW92TjZnaXlnX0IxdXVrODhqMVJRUGVIVEFoSHBqd0Y4ejhBUdIBX0FVX3lxTE04eFB1Q2NQOWNzMEJSWXhUSWhaSy03cGVGWDc1bFdnd0Vwb2tUM2VYZXhBamtSbU9VLTk2VHFJeEdmWmNnaFpGRzhVYTZnaGFIa1A0Z2QwTWp1UWI1QzBZ?oc=5",
-      "lang": "zh"
-    },
-    {
-      "title": "高雄精品咖啡、酒飲展同步登場 打造南台灣年度飲品盛會 | 新頭殼 - LINE TODAY",
-      "titleZh": "高雄精品咖啡、酒飲展同步登場 打造南台灣年度飲品盛會 | 新頭殼 - LINE TODAY",
-      "titleEn": "",
-      "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE5kLU5VcndWbWFzUDFpc0VkajY1VG1HbzJodkFKb24tMWtGbkEyaHYwN2laLTBNZWc4UTdueHFJemdNY3M4MTJxRUpXN0VsRTEtSzBNUVJn?oc=5",
-      "lang": "zh"
-    },
-    {
-      "title": "2026高雄精品咖啡、酒飲展登場！精品咖啡成長破10% 產業鏈集結搶市 | 徐炳文 | 地方新聞 - 風傳媒",
-      "titleZh": "2026高雄精品咖啡、酒飲展登場！精品咖啡成長破10% 產業鏈集結搶市 | 徐炳文 | 地方新聞 - 風傳媒",
-      "titleEn": "",
-      "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMiTkFVX3lxTE1XYnBkRTB3S21xeC1aVGliQmZlVFBiQU53NFBlUUltWTRvZHpleEVXNE94VzlfbVBJaERfNjNvV1liSVhNWDhEQkQtQ2JEdw?oc=5",
-      "lang": "zh"
-    },
-    {
-      "title": "串聯咖啡、酒飲與茶產業 2026高雄國際飲品展助攻城市產業能量 - Yahoo新聞",
-      "titleZh": "串聯咖啡、酒飲與茶產業 2026高雄國際飲品展助攻城市產業能量 - Yahoo新聞",
-      "titleEn": "",
-      "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMihwNBVV95cUxPLVo4OTVfX0o0anpYaHlWRWg1eFBoX205NmdqeDlyV2xCUnc3RVp1STdUUU16T2oxR0lJYmxVVEdWdDZtU1dsMXBaQUJyekhJVXphcG43YWg0MzRfUVFPMEt5d0FUamM5QUZhcEwtSmNxOXdWdHczRmw2ZDEzOVRtM01PY0R6WFdBRWZwX1FKZllQakxRQndEckxFa0s0TkdWY3M4QUdnWENKQ1ZlUHpQMXZ0S0k3QmdGbGNuUmIxR3N0eHVvMWEyUVZ4Z1VpZXdLZWcweEVqS1BVdGt1SFZ2Mm5qMUdzNmVWc2dXTGJVbENQamNrVU5hdnhCN0dXQ01EM21NMWJIdHd1RTVCdVNfZ2dFZG9nY3hfa0c5NzNHQlBvVTktZ1lITHpWSFVjM21ySG5IMWNWaXZhekpERDhUblhZbUZBTkItQUU5LTlOYkxYblRIdHA0VVUxVWlsekZlbzRCNV9XMVVla09QUmNPSW9kRGRjUlJ3YUtQWXN6ZC16Zzlwd3k4?oc=5",
-      "lang": "zh"
-    },
-    {
-      "title": "Colombia’s coffee industry well placed but wary as EU deforestation rule looms - Mongabay",
-      "titleZh": "",
-      "titleEn": "Colombia’s coffee industry well placed but wary as EU deforestation rule looms - Mongabay",
-      "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxNOXdMWVBacVdkNjNaVG1lWEZOQndiaEluNHI5aEQ4YUQ4STV1U2w5MmpBZmppVmdqTWxxU3RsMm12Zm96ZThHTVdWZEd2dGUtcm01Yjd6VGk0OXVhY2EtbTNRZVRVcjM5c1M1YU4wcWZPbEItZ2Vqc1EwSW80eTM5VVVCMnN0Z1lWdGpBUHRUNFUyQU1naTRCWEJzdHhYWTFyWnlGb0t5Uzd2UEpPWktTejVR0gG3AUFVX3lxTE9CT2V4QjJFcFpYV1JydFlYXzB1bVVIcWNZcFRJYnFYaU5pTF92NzIxMGE4Z1pjYXdCWUJXV0lIakplSmhnM1NacmY1VVFnTG1wNElXMS1XajdqUFhBQmM3NzRxUnNZekJsUUhseVhQSXZkdldoXzRxb3NjTm9odGlZbmpiT05YOWJ2NEJOWTVmRTRjSDJQcGR4bm9HdzlnVVM3dXdPbjFGS1RaS1d0ako5d0xMZERZVQ?oc=5",
-      "lang": "en"
-    },
-    {
-      "title": "\"A Brown, Stale, Forgettable Shelf\": Refinery29's Co-Founder Wants To Disrupt The Coffee CPG Sector - Sprudge",
-      "titleZh": "",
-      "titleEn": "\"A Brown, Stale, Forgettable Shelf\": Refinery29's Co-Founder Wants To Disrupt The Coffee CPG Sector - Sprudge",
-      "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxOOXFyRGdfSF9vQVVST3paTmV2TWhueGtGSXFKY0tBbHgwRGtOVjdlek5heV9KWmRHU0UxZzhLSEJUMVl1c2h6VElOWU43VXdYdjh5UzQtZlhUZkJxYzZndy1ITEwyZ1M2VmZMQXphbnJmWE14NkRwVG1kYUpzWm8yYnRPaGdKcktyVWk3dG42eTZPdEkydkJvdDJBZ2w0VmNPeV8tdzBqdG5sdHA5ME4zenNlY3Q0aEZua0dxRzVoR21VUEU?oc=5",
-      "lang": "en"
-    },
-    {
-      "title": "Opinion: On Sugar-Laden Coffee in the MAHA Crosshairs - Daily Coffee News by Roast Magazine",
-      "titleZh": "",
-      "titleEn": "Opinion: On Sugar-Laden Coffee in the MAHA Crosshairs - Daily Coffee News by Roast Magazine",
-      "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxOekMyZkVDTlFBX29yZ2pKWnhJSEdSa0FUUnlBb2QxVWxVWXVtUmhiV1JmZ2MyQXZhV1NBYjBvVlpUUV9pcWw0SEQzTkNCbW5DOWhoNzJtV0tZbHhxUnhwN1Q2aFBfMVhhb3RRbUJmWnp0SzJiRU05N3RhRTlMeUpqbWhZNG83eVExNDU5cUVXaTZwYnY5RHRF?oc=5",
-      "lang": "en"
-    },
-    {
-      "title": "Brazil Plants Tomorrow’s Coffee as Heat Threatens Latin America’s Cup - LatinAmerican Post",
-      "titleZh": "",
-      "titleEn": "Brazil Plants Tomorrow’s Coffee as Heat Threatens Latin America’s Cup - LatinAmerican Post",
-      "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxNbGJYZkNSSUptcW5PTkgyaXh4NFhZRkgzdlM1V05Id252Rm5DU01HYmo0aG9hMVdRdVQwYkhwTm1CV1EzOEpPaUxkZGNuenMyQXFsNWZFNGZma3BKQ0M4aTVCSE9SakdfdGJQTlc4Q2ROb2Z0Z1A3S0ZsZjdTRnl4NFR4c1lBSGRlM2VWdUNEV01vZGRPbV91WmJ6TmJWYV9TYzAwWktFLTdGVGlrNE1DV2hMbUV6WDh2Ylcw?oc=5",
-      "lang": "en"
-    },
-    {
-      "title": "Vietnam’s coffee crisis threatens to upend global supply chains - BeverageDaily.com",
-      "titleZh": "",
-      "titleEn": "Vietnam’s coffee crisis threatens to upend global supply chains - BeverageDaily.com",
-      "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxNd2UwdlV3T2lhZzEwQ01xQV9VeVRyWWhnUTBnYW1QRjN4cFlTd0x4QU0tRTVTTHdZZTFrelVJSGNEazRGUzNyTzNFMjdOVnM1bzZtXzdYUEZ0UVYxeS1lcVlUb1JmdHlleHN6dUV1bW5mY09tNUxMNUR1WGp0c2hQNkJtYXhTaGJQMFVPS3Z1c0NFR29UMTBYWkpSZE1CUQ?oc=5",
-      "lang": "en"
-    }
-  ],
-  "ok": true,
-  "errors": null
+  "summary": "今日咖啡新聞暫時無法更新，請稍後再試。",
+  "newsZh": [],
+  "newsEn": [],
+  "news": [],
+  "ok": false,
+  "errors": [
+    "zh:咖啡 產業: HTTP Error 503: Service Unavailable",
+    "zh:咖啡 豆 價格: HTTP Error 503: Service Unavailable",
+    "zh:咖啡 市場: HTTP Error 503: Service Unavailable",
+    "zh:精品咖啡: HTTP Error 503: Service Unavailable",
+    "zh:咖啡 連鎖: HTTP Error 503: Service Unavailable",
+    "en:coffee industry: HTTP Error 503: Service Unavailable",
+    "en:coffee prices: HTTP Error 503: Service Unavailable",
+    "en:arabica futures: HTTP Error 503: Service Unavailable",
+    "en:specialty coffee: HTTP Error 503: Service Unavailable",
+    "en:coffee chain: HTTP Error 503: Service Unavailable"
+  ]
 }
