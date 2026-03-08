@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-09T04:22:55.589967+08:00",
+  "updatedAt": "2026-03-09T04:48:42.003461+08:00",
   "timezone": "Asia/Taipei",
   "market": "US",
   "items": [
@@ -643,9 +643,9 @@
       "label": "美國費城半導體指數",
       "symbol": "^SOX",
       "type": "Index",
-      "price": 7512.99,
-      "change": -308.77,
-      "changePercent": -3.95,
+      "price": 7513.79,
+      "change": -307.97,
+      "changePercent": -3.94,
       "trend": [
         {
           "time": "23:00",
@@ -733,15 +733,15 @@
         },
         {
           "time": "04:15",
-          "close": 7500.88
+          "close": 7501.15
         },
         {
           "time": "04:30",
-          "close": 7523.27
+          "close": 7523.14
         },
         {
           "time": "04:45",
-          "close": 7512.99
+          "close": 7513.79
         }
       ]
     },
@@ -749,18 +749,10 @@
       "label": "比特幣",
       "symbol": "BTC-USD",
       "type": "Crypto",
-      "price": 67194.08,
-      "change": -78.52,
-      "changePercent": -0.12,
+      "price": 67358.03,
+      "change": 85.44,
+      "changePercent": 0.13,
       "trend": [
-        {
-          "time": "22:30",
-          "close": 67081.12
-        },
-        {
-          "time": "22:45",
-          "close": 67291.86
-        },
         {
           "time": "23:00",
           "close": 67305.26
@@ -847,7 +839,15 @@
         },
         {
           "time": "04:15",
-          "close": 67194.08
+          "close": 67085.56
+        },
+        {
+          "time": "04:30",
+          "close": 67388.06
+        },
+        {
+          "time": "04:45",
+          "close": 67358.03
         }
       ]
     },
