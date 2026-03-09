@@ -50,6 +50,31 @@ body {
   margin-bottom: 1.5rem;
 }
 
+.gomoku-top-tags {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.gomoku-top-tags .tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fdfdfd;
+  font-size: 0.78rem;
+  text-decoration: none;
+  letter-spacing: 0.03em;
+}
+
+.gomoku-top-tags .tag:hover {
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
 .title-block h1 {
   margin: 0;
   font-size: clamp(2rem, 2.4vw, 2.6rem);
