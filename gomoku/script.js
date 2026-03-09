@@ -514,6 +514,7 @@ function primeAudio() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  renderBoard();
   document.body.addEventListener('pointerdown', primeAudio, { once: true });
   document.body.addEventListener('keydown', primeAudio, { once: true });
   undoButton.addEventListener('click', undoMove);
