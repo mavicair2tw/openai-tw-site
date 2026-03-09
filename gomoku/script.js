@@ -257,8 +257,9 @@ function toggleSound() {
 
 function toggleAi() {
   aiEnabled = !aiEnabled;
-  if (!aiEnabled) {
-    cancelAiMove();
+  cancelAiMove();
+  if (!aiEnabled && !gameEnded && currentPlayer === -1) {
+    currentPlayer = 1;
   }
   refreshInfoPanel();
   maybeScheduleAi();
