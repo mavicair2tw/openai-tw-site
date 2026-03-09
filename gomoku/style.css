@@ -277,6 +277,19 @@ body {
   width: min(92vw, 720px);
   padding: clamp(1rem, 3vw, 1.4rem);
   border-radius: 28px;
+  font-size: 0.85rem;
+}
+
+body.mobile-ui {
+  font-size: 14px;
+}
+
+body.mobile-ui .value {
+  font-size: 1rem;
+}
+
+body.mobile-ui .title-block h1 {
+  font-size: 2rem;
 }
 
 .board {

@@ -12,6 +12,7 @@ const aiLevelStatus = document.getElementById('ai-level-status');
 const currentPlayerIndicator = document.getElementById('current-player');
 const deviceModeButtons = document.querySelectorAll('[data-device-mode]');
 const boardFrame = document.querySelector('.board-frame');
+const bodyElement = document.body;
 let deviceMode = 'pc';
 const moveCounter = document.getElementById('move-counter');
 const gameStatusEl = document.getElementById('game-status');
@@ -302,6 +303,9 @@ function applyDeviceMode(mode) {
   deviceMode = normalized;
   if (boardFrame) {
     boardFrame.classList.toggle('mobile', deviceMode === 'mobile');
+  }
+  if (bodyElement) {
+    bodyElement.classList.toggle('mobile-ui', deviceMode === 'mobile');
   }
   deviceModeButtons.forEach((btn) => {
     if (btn.dataset.deviceMode) {
