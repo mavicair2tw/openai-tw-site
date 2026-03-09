@@ -102,12 +102,8 @@ body {
   border-color: rgba(255, 255, 255, 0.9);
 }
 
-.tag-sub-link {
-  font-size: 0.7rem;
-  letter-spacing: 0.05em;
-  color: rgba(255, 255, 255, 0.85);
-  text-transform: uppercase;
-  text-decoration: underline;
+.tag-home {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .info-tag {
