@@ -1,16 +1,36 @@
 {
-  "updatedAt": "2026-03-09T20:56:52.806777+08:00",
+  "updatedAt": "2026-03-09T22:06:30.513249+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 油價破百衝擊全球市場 Yardeni警告美股崩盤機率增至35%；3. 11:40華爾街動量股遭遇「三重打擊」：恐慌拋售後 市場是否已接近臨界點？；4. 09:47德儀攜手輝達加速實體AI 推動人形機器人開發；5. 09:30真金白銀挺AI 「史上最強散戶」大買200萬股輝達股票。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 〈美股早盤〉國際油價衝破100美元引通膨疑慮 主要指數開低；3. 13:30中東戰火蔓延 新興市場資產慘遭拋售 貨幣抹去年初至今漲幅；4. 13:10中東戰火打亂市場！今年五大熱門投資劇本被改寫；5. 13:00減重藥市場又多一個競爭者？AbbVie新型長效藥物一期試驗展現顯著減重效果。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "油價破百衝擊全球市場 Yardeni警告美股崩盤機率增至35%",
+      "title": "〈美股早盤〉國際油價衝破100美元引通膨疑慮 主要指數開低",
+      "url": "https://news.cnyes.com/news/id/6372346"
+    },
+    {
+      "title": "13:30中東戰火蔓延 新興市場資產慘遭拋售 貨幣抹去年初至今漲幅",
+      "url": "https://news.cnyes.com/news/id/6372345"
+    },
+    {
+      "title": "13:10中東戰火打亂市場！今年五大熱門投資劇本被改寫",
+      "url": "https://news.cnyes.com/news/id/6372683"
+    },
+    {
+      "title": "13:00減重藥市場又多一個競爭者？AbbVie新型長效藥物一期試驗展現顯著減重效果",
+      "url": "https://news.cnyes.com/news/id/6372692"
+    },
+    {
+      "title": "13:00摩根士丹利看好美股前景：回調接近尾聲、未來一年走勢樂觀",
+      "url": "https://news.cnyes.com/news/id/6372515"
+    },
+    {
+      "title": "12:10油價破百衝擊全球市場 Yardeni警告美股崩盤機率增至35%",
       "url": "https://news.cnyes.com/news/id/6372334"
     },
     {
@@ -32,26 +52,6 @@
     {
       "title": "07:50AI 巨頭：未來十年最大贏家將是農場、礦場與卡車 而非純軟體公司",
       "url": "https://news.cnyes.com/news/id/6370986"
-    },
-    {
-      "title": "05:30避險基金上周加碼做空！高盛：中東緊張局勢未解 投機者大舉押注美股回檔",
-      "url": "https://news.cnyes.com/news/id/6369905"
-    },
-    {
-      "title": "04:05抄底時機未到！小摩：能源危機擊碎2026順週期共識、揭秘影響戰事「3M」關鍵",
-      "url": "https://news.cnyes.com/news/id/6370651"
-    },
-    {
-      "title": "03:10GPU霸權鬆動！代理AI讓CPU翻身 HSBC喊伺服器超級周期：2026出貨增兩成 潛在需求60%",
-      "url": "https://news.cnyes.com/news/id/6369781"
-    },
-    {
-      "title": "02:40記憶體業正處超級周期！美銀：中東衝突影響近乎零 供需錯配將持續多年",
-      "url": "https://news.cnyes.com/news/id/6369788"
-    },
-    {
-      "title": "02:00美伊戰爭暴露市場集中風險 但標普問題不大",
-      "url": "https://news.cnyes.com/news/id/6369086"
     }
   ],
   "error": null
