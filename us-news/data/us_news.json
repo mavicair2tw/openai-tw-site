@@ -1,16 +1,24 @@
 {
-  "updatedAt": "2026-03-10T06:54:22.922748+08:00",
+  "updatedAt": "2026-03-10T07:25:43.960785+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 〈紐約匯市〉川普表示伊朗戰爭基本上已結束 美元由升轉貶；3. 22:01AI版Siri卡關！蘋果傳延遲發布智慧家居顯示器；4. 22:00油價飆破110美元、就業轉弱！華爾街警告：戰爭恐引爆「停滯性通貨膨脹」；5. 21:50砲轟川普造成國際油價飆漲！《大賣空》本尊：股市下跌是他的致命弱點。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 黃仁勳豪言：DRAM工廠儘管擴產 輝達全部買單！；3. 23:00策略轉向確定！OpenAI再度推遲ChatGPT「成人模式」上線 將優先提升產品能力；4. 22:34〈紐約匯市〉川普表示伊朗戰爭基本上已結束 美元由升轉貶；5. 22:01AI版Siri卡關！蘋果傳延遲發布智慧家居顯示器。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "〈紐約匯市〉川普表示伊朗戰爭基本上已結束 美元由升轉貶",
+      "title": "黃仁勳豪言：DRAM工廠儘管擴產 輝達全部買單！",
+      "url": "https://news.cnyes.com/news/id/6372972"
+    },
+    {
+      "title": "23:00策略轉向確定！OpenAI再度推遲ChatGPT「成人模式」上線 將優先提升產品能力",
+      "url": "https://news.cnyes.com/news/id/6369463"
+    },
+    {
+      "title": "22:34〈紐約匯市〉川普表示伊朗戰爭基本上已結束 美元由升轉貶",
       "url": "https://news.cnyes.com/news/id/6373000"
     },
     {
@@ -44,14 +52,6 @@
     {
       "title": "18:00債市風向轉變？摩根大通看好投資級公司債 預期利差收窄",
       "url": "https://news.cnyes.com/news/id/6372906"
-    },
-    {
-      "title": "16:46AI軍事紅線爆衝突！Anthropic提告五角大廈",
-      "url": "https://news.cnyes.com/news/id/6372888"
-    },
-    {
-      "title": "16:43油價飆破100美元 川普擬動用戰略儲油、限制美國石油出口",
-      "url": "https://news.cnyes.com/news/id/6372899"
     }
   ],
   "error": null
