@@ -1,16 +1,24 @@
 {
-  "updatedAt": "2026-03-09T17:07:44.930535+08:00",
+  "updatedAt": "2026-03-09T18:06:48.517836+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 下載量僅3周就超越Linux 30年成就！黃仁勳：OpenClaw是這個時代最重要的軟體；3. 07:50AI 巨頭：未來十年最大贏家將是農場、礦場與卡車 而非純軟體公司；4. 05:30避險基金上周加碼做空！高盛：中東緊張局勢未解 投機者大舉押注美股回檔；5. 04:05抄底時機未到！小摩：能源危機擊碎2026順週期共識、揭秘影響戰事「3M」關鍵。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 德儀攜手輝達加速實體AI 推動人形機器人開發；3. 09:30真金白銀挺AI 「史上最強散戶」大買200萬股輝達股票；4. 08:00下載量僅3周就超越Linux 30年成就！黃仁勳：OpenClaw是這個時代最重要的軟體；5. 07:50AI 巨頭：未來十年最大贏家將是農場、礦場與卡車 而非純軟體公司。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "下載量僅3周就超越Linux 30年成就！黃仁勳：OpenClaw是這個時代最重要的軟體",
+      "title": "德儀攜手輝達加速實體AI 推動人形機器人開發",
+      "url": "https://news.cnyes.com/news/id/6371607"
+    },
+    {
+      "title": "09:30真金白銀挺AI 「史上最強散戶」大買200萬股輝達股票",
+      "url": "https://news.cnyes.com/news/id/6371108"
+    },
+    {
+      "title": "08:00下載量僅3周就超越Linux 30年成就！黃仁勳：OpenClaw是這個時代最重要的軟體",
       "url": "https://news.cnyes.com/news/id/6370929"
     },
     {
@@ -44,14 +52,6 @@
     {
       "title": "00:03伊朗衝突急速升溫！布蘭特今開盤狂飆逾18% 紐約原油一度暴漲逾22% 齊破100美元大關",
       "url": "https://news.cnyes.com/news/id/6369844"
-    },
-    {
-      "title": "03/08「HALO交易」掀市場資金輪動！創始人直言華爾街誤解真正含義",
-      "url": "https://news.cnyes.com/news/id/6369688"
-    },
-    {
-      "title": "03/08美股動盪後迎反彈契機！Jefferies揭股市上漲的「6大」關鍵訊號",
-      "url": "https://news.cnyes.com/news/id/6369687"
     }
   ],
   "error": null
