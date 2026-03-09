@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Gomoku | 五子棋</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="background-shell">
+    <main class="app-shell">
+      <section class="info-panel">
+        <div class="title-block">
+          <p class="badge">Classic</p>
+          <h1>五子棋 / Gomoku</h1>
+          <p class="subtitle">Sharpen your focus, place five in a row.</p>
+        </div>
+        <div class="status-grid">
+          <div class="status-card">
+            <span class="label">Current Player</span>
+            <div class="value current-player-value" id="current-player">
+              <span class="player-badge black"></span>
+              <span class="player-text">Black</span>
+            </div>
+          </div>
+          <div class="status-card">
+            <span class="label">Move Count</span>
+            <div class="value" id="move-counter">0</div>
+          </div>
+          <div class="status-card">
+            <span class="label">Game Status</span>
+            <div class="value" id="game-status">Game in progress</div>
+          </div>
+          <div class="status-card">
+            <span class="label">Sound</span>
+            <div class="value" id="sound-indicator">On</div>
+          </div>
+        </div>
+        <div class="controls">
+          <button id="undo-button" class="control-btn">Undo</button>
+          <button id="restart-button" class="control-btn primary">Restart</button>
+          <button id="sound-toggle" class="control-btn toggle">Sound: On</button>
+        </div>
+      </section>
+      <section class="board-area">
+        <div class="board-frame">
+          <div id="board" class="board" aria-label="Gomoku board"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
