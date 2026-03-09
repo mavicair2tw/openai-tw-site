@@ -1,16 +1,20 @@
 {
-  "updatedAt": "2026-03-10T07:25:43.960785+08:00",
+  "updatedAt": "2026-03-10T07:50:59.418755+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 黃仁勳豪言：DRAM工廠儘管擴產 輝達全部買單！；3. 23:00策略轉向確定！OpenAI再度推遲ChatGPT「成人模式」上線 將優先提升產品能力；4. 22:34〈紐約匯市〉川普表示伊朗戰爭基本上已結束 美元由升轉貶；5. 22:01AI版Siri卡關！蘋果傳延遲發布智慧家居顯示器。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 遭五角大廈封殺 Anthropic怒告美國政府 專家憂美軍失去關鍵AI工具；3. 23:12黃仁勳豪言：DRAM工廠儘管擴產 輝達全部買單！；4. 23:00策略轉向確定！OpenAI再度推遲ChatGPT「成人模式」上線 將優先提升產品能力；5. 22:34〈紐約匯市〉川普表示伊朗戰爭基本上已結束 美元由升轉貶。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "黃仁勳豪言：DRAM工廠儘管擴產 輝達全部買單！",
+      "title": "遭五角大廈封殺 Anthropic怒告美國政府 專家憂美軍失去關鍵AI工具",
+      "url": "https://news.cnyes.com/news/id/6373005"
+    },
+    {
+      "title": "23:12黃仁勳豪言：DRAM工廠儘管擴產 輝達全部買單！",
       "url": "https://news.cnyes.com/news/id/6372972"
     },
     {
@@ -48,10 +52,6 @@
     {
       "title": "18:51油價飆升航空業拉警報！新機訂單與租賃談判暫停",
       "url": "https://news.cnyes.com/news/id/6372912"
-    },
-    {
-      "title": "18:00債市風向轉變？摩根大通看好投資級公司債 預期利差收窄",
-      "url": "https://news.cnyes.com/news/id/6372906"
     }
   ],
   "error": null
