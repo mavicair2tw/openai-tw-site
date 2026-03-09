@@ -1,16 +1,28 @@
 {
-  "updatedAt": "2026-03-10T00:13:08.604305+08:00",
+  "updatedAt": "2026-03-10T01:10:33.176006+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 微軟導入Anthropic技術 推出Copilot Cowork搶攻AI代理市場；3. 14:10摩根大通示警：油價破百與戰事升溫 標普500恐回檔10%；4. 13:40〈美股早盤〉國際油價衝破100美元引通膨疑慮 主要指數開低；5. 13:30中東戰火蔓延 新興市場資產慘遭拋售 貨幣抹去年初至今漲幅。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. AI軍事紅線爆衝突！Anthropic提告五角大廈；3. 16:43油價飆破100美元 川普擬動用戰略儲油、限制美國石油出口；4. 16:33紐約Fed調查：通膨預期持穩 就業市場信心分歧；5. 16:10微軟導入Anthropic技術 推出Copilot Cowork搶攻AI代理市場。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "微軟導入Anthropic技術 推出Copilot Cowork搶攻AI代理市場",
+      "title": "AI軍事紅線爆衝突！Anthropic提告五角大廈",
+      "url": "https://news.cnyes.com/news/id/6372888"
+    },
+    {
+      "title": "16:43油價飆破100美元 川普擬動用戰略儲油、限制美國石油出口",
+      "url": "https://news.cnyes.com/news/id/6372899"
+    },
+    {
+      "title": "16:33紐約Fed調查：通膨預期持穩 就業市場信心分歧",
+      "url": "https://news.cnyes.com/news/id/6372889"
+    },
+    {
+      "title": "16:10微軟導入Anthropic技術 推出Copilot Cowork搶攻AI代理市場",
       "url": "https://news.cnyes.com/news/id/6372831"
     },
     {
@@ -40,18 +52,6 @@
     {
       "title": "12:10油價破百衝擊全球市場 Yardeni警告美股崩盤機率增至35%",
       "url": "https://news.cnyes.com/news/id/6372334"
-    },
-    {
-      "title": "11:40華爾街動量股遭遇「三重打擊」：恐慌拋售後 市場是否已接近臨界點？",
-      "url": "https://news.cnyes.com/news/id/6372299"
-    },
-    {
-      "title": "09:47德儀攜手輝達加速實體AI 推動人形機器人開發",
-      "url": "https://news.cnyes.com/news/id/6371607"
-    },
-    {
-      "title": "09:30真金白銀挺AI 「史上最強散戶」大買200萬股輝達股票",
-      "url": "https://news.cnyes.com/news/id/6371108"
     }
   ],
   "error": null
