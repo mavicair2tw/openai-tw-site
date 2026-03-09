@@ -48,6 +48,36 @@ body {
 
 .title-block {
   margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.title-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.home-pill {
+  margin-left: auto;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  padding: 0.35rem 0.95rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  text-decoration: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.home-pill:hover {
+  border-color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .gomoku-top-tags {
