@@ -8,6 +8,9 @@ const aiLevelSlider = document.getElementById('ai-level-slider');
 const aiLevelDisplay = document.getElementById('ai-level-display');
 const aiLevelStatus = document.getElementById('ai-level-status');
 const currentPlayerIndicator = document.getElementById('current-player');
+const deviceModeButtons = document.querySelectorAll('[data-device-mode]');
+const boardFrame = document.querySelector('.board-frame');
+let deviceMode = 'pc';
 const moveCounter = document.getElementById('move-counter');
 const gameStatusEl = document.getElementById('game-status');
 const soundIndicator = document.getElementById('sound-indicator');
@@ -290,6 +293,19 @@ function toggleAi() {
   maybeScheduleAi();
 }
 
+function applyDeviceMode(mode) {
+  const normalized = mode === 'mobile' ? 'mobile' : 'pc';
+  deviceMode = normalized;
+  if (boardFrame) {
+    boardFrame.classList.toggle('mobile', deviceMode === 'mobile');
+  }
+  deviceModeButtons.forEach((btn) => {
+    if (btn.dataset.deviceMode) {
+      btn.classList.toggle('active', btn.dataset.deviceMode === deviceMode);
+    }
+  });
+}
+
 function setAiLevel(value) {
   aiLevel = Math.max(0, Math.min(5, Number(value)));
   refreshInfoPanel();
@@ -498,6 +514,12 @@ document.addEventListener('DOMContentLoaded', () => {
   restartButton.addEventListener('click', restartGame);
   soundToggle.addEventListener('click', toggleSound);
   aiToggle.addEventListener('click', toggleAi);
+  deviceModeButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      applyDeviceMode(btn.dataset.deviceMode);
+    });
+  });
+  applyDeviceMode('pc');
   if (aiLevelSlider) {
     aiLevelSlider.addEventListener('input', (event) => {
       setAiLevel(event.target.value);
