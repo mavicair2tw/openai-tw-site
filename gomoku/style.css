@@ -274,9 +274,9 @@ body {
 }
 
 .board-frame.mobile {
-  width: min(80vw, 420px);
-  padding: clamp(0.8rem, 3vw, 1.2rem);
-  border-radius: 26px;
+  width: min(92vw, 720px);
+  padding: clamp(1rem, 3vw, 1.4rem);
+  border-radius: 28px;
 }
 
 .board {
