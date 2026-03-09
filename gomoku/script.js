@@ -4,6 +4,9 @@ const undoButton = document.getElementById('undo-button');
 const restartButton = document.getElementById('restart-button');
 const soundToggle = document.getElementById('sound-toggle');
 const aiToggle = document.getElementById('ai-toggle');
+const aiLevelSlider = document.getElementById('ai-level-slider');
+const aiLevelDisplay = document.getElementById('ai-level-display');
+const aiLevelStatus = document.getElementById('ai-level-status');
 const currentPlayerIndicator = document.getElementById('current-player');
 const moveCounter = document.getElementById('move-counter');
 const gameStatusEl = document.getElementById('game-status');
@@ -17,6 +20,8 @@ const DIRECTIONS = [
   { dr: -1, dc: 1 },
 ];
 
+const AI_LEVEL_NAMES = ['Easy', 'Novice', 'Balanced', 'Strategic', 'Tactical', 'Master'];
+
 let boardState = [];
 let history = [];
 let currentPlayer = 1; // 1 = Black (human), -1 = White (AI)
@@ -26,6 +31,7 @@ let winningLine = [];
 let gameEnded = false;
 let aiEnabled = true;
 let aiTimer = null;
+let aiLevel = 3;
 
 const audioState = {
   context: null,
@@ -217,6 +223,7 @@ function undoMove() {
   playUndoSound();
   updateStatus('Move undone.');
   refreshInfoPanel();
+  maybeScheduleAi();
 }
 
 function restartGame() {
@@ -235,11 +242,22 @@ function refreshInfoPanel() {
     label.textContent = playerLabels[currentPlayer];
   }
 
+  const levelLabel = `Level ${aiLevel} · ${getAiLevelName()}`;
+  const indicatorText = aiEnabled ? `AI opponent (Level ${aiLevel})` : 'Human only';
   moveCounter.textContent = moveCount;
   soundIndicator.textContent = audioState.enabled ? 'On' : 'Off';
-  aiIndicator.textContent = aiEnabled ? 'AI opponent' : 'Human only';
-  soundToggle.textContent = `Sound: ${audioState.enabled ? 'On' : 'Off'}`;
+  aiIndicator.textContent = indicatorText;
   aiToggle.textContent = `AI: ${aiEnabled ? 'On' : 'Off'}`;
+  soundToggle.textContent = `Sound: ${audioState.enabled ? 'On' : 'Off'}`;
+  if (aiLevelStatus) {
+    aiLevelStatus.textContent = levelLabel;
+  }
+  if (aiLevelDisplay) {
+    aiLevelDisplay.textContent = levelLabel;
+  }
+  if (aiLevelSlider) {
+    aiLevelSlider.value = aiLevel;
+  }
   undoButton.disabled = history.length === 0;
 }
 
@@ -263,6 +281,16 @@ function toggleAi() {
   }
   refreshInfoPanel();
   maybeScheduleAi();
+}
+
+function setAiLevel(value) {
+  aiLevel = Math.max(0, Math.min(5, Number(value)));
+  refreshInfoPanel();
+  maybeScheduleAi();
+}
+
+function getAiLevelName() {
+  return AI_LEVEL_NAMES[aiLevel] || 'Balanced';
 }
 
 function maybeScheduleAi() {
@@ -296,35 +324,36 @@ function pickAiMove() {
     return immediateWin;
   }
 
-  const block = findImmediateWinningCell(1);
-  if (block) {
-    return block;
-  }
-
-  let best = null;
-  let bestScore = -Infinity;
-  for (let row = 0; row < BOARD_SIZE; row += 1) {
-    for (let col = 0; col < BOARD_SIZE; col += 1) {
-      if (boardState[row][col] !== 0) continue;
-      const score = evaluateCell(row, col);
-      if (score > bestScore) {
-        bestScore = score;
-        best = { row, col };
-      }
+  if (aiLevel >= 1) {
+    const block = findImmediateWinningCell(1);
+    if (block) {
+      return block;
     }
   }
 
-  if (best) return best;
-  const empties = history.length > 0 ? [] : [{ row: Math.floor(BOARD_SIZE / 2), col: Math.floor(BOARD_SIZE / 2) }];
-  for (let row = 0; row < BOARD_SIZE; row += 1) {
-    for (let col = 0; col < BOARD_SIZE; col += 1) {
-      if (boardState[row][col] === 0) {
-        empties.push({ row, col });
-      }
-    }
-  }
+  const empties = getEmptyCells();
   if (!empties.length) return null;
-  return empties[Math.floor(Math.random() * empties.length)];
+
+  if (aiLevel <= 1) {
+    return empties[Math.floor(Math.random() * empties.length)];
+  }
+
+  let bestScore = -Infinity;
+  const candidates = [];
+  empties.forEach((cell) => {
+    const score = evaluateCell(cell.row, cell.col) * (1 + aiLevel * 0.12);
+    if (score > bestScore + 1e-6) {
+      bestScore = score;
+      candidates.length = 0;
+      candidates.push(cell);
+    } else if (Math.abs(score - bestScore) < 1e-6) {
+      candidates.push(cell);
+    }
+  });
+
+  const pool = aiLevel <= 3 ? candidates : [candidates[0]];
+  if (!pool.length) return null;
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 function findImmediateWinningCell(player) {
@@ -345,14 +374,19 @@ function findImmediateWinningCell(player) {
 function evaluateCell(row, col) {
   let score = 0;
   for (const { dr, dc } of DIRECTIONS) {
-    const aiCount = countInDirection(row, col, dr, dc, -1) + countInDirection(row, col, -dr, -dc, -1);
-    const humanCount = countInDirection(row, col, dr, dc, 1) + countInDirection(row, col, -dr, -dc, 1);
-    score += aiCount * 7;
-    score += humanCount * 5;
+    const aiCount =
+      countInDirection(row, col, dr, dc, -1) + countInDirection(row, col, -dr, -dc, -1);
+    const humanCount =
+      countInDirection(row, col, dr, dc, 1) + countInDirection(row, col, -dr, -dc, 1);
+    score += aiCount * (6 + aiLevel * 1.1);
+    score += humanCount * (5 + aiLevel * 0.8);
   }
-  const centerBonus = 7 - Math.hypot(row - Math.floor(BOARD_SIZE / 2), col - Math.floor(BOARD_SIZE / 2));
-  score += centerBonus * 0.35;
-  return score + Math.random();
+
+  score += countNeighbors(row, col) * (0.6 + aiLevel * 0.25);
+  const distanceToCenter = Math.hypot(row - (BOARD_SIZE - 1) / 2, col - (BOARD_SIZE - 1) / 2);
+  score += (7 - distanceToCenter) * (0.35 + aiLevel * 0.12);
+  const noise = (5 - aiLevel) * 0.14;
+  return score + noise * Math.random();
 }
 
 function countInDirection(row, col, dr, dc, player) {
@@ -365,6 +399,33 @@ function countInDirection(row, col, dr, dc, player) {
     c += dc;
   }
   return count;
+}
+
+function countNeighbors(row, col) {
+  let count = 0;
+  for (let dr = -1; dr <= 1; dr += 1) {
+    for (let dc = -1; dc <= 1; dc += 1) {
+      if (dr === 0 && dc === 0) continue;
+      const r = row + dr;
+      const c = col + dc;
+      if (isInside(r, c) && boardState[r][c] !== 0) {
+        count += 1;
+      }
+    }
+  }
+  return count;
+}
+
+function getEmptyCells() {
+  const empties = [];
+  for (let row = 0; row < BOARD_SIZE; row += 1) {
+    for (let col = 0; col < BOARD_SIZE; col += 1) {
+      if (boardState[row][col] === 0) {
+        empties.push({ row, col });
+      }
+    }
+  }
+  return empties;
 }
 
 function initializeAudio() {
@@ -422,6 +483,7 @@ function primeAudio() {
 
 document.addEventListener('DOMContentLoaded', () => {
   renderBoard();
+  setAiLevel(aiLevel);
   initializeGame();
   document.body.addEventListener('pointerdown', primeAudio, { once: true });
   document.body.addEventListener('keydown', primeAudio, { once: true });
@@ -429,4 +491,9 @@ document.addEventListener('DOMContentLoaded', () => {
   restartButton.addEventListener('click', restartGame);
   soundToggle.addEventListener('click', toggleSound);
   aiToggle.addEventListener('click', toggleAi);
+  if (aiLevelSlider) {
+    aiLevelSlider.addEventListener('input', (event) => {
+      setAiLevel(event.target.value);
+    });
+  }
 });

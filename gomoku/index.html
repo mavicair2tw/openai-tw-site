@@ -37,7 +37,11 @@
           </div>
           <div class="status-card">
             <span class="label">Opponent</span>
-            <div class="value" id="ai-indicator">AI</div>
+            <div class="value" id="ai-indicator">AI opponent</div>
+          </div>
+          <div class="status-card">
+            <span class="label">AI Level</span>
+            <div class="value" id="ai-level-status">Level 3 · Balanced</div>
           </div>
         </div>
         <div class="controls">
@@ -45,6 +49,13 @@
           <button id="restart-button" class="control-btn primary">Restart</button>
           <button id="sound-toggle" class="control-btn toggle">Sound: On</button>
           <button id="ai-toggle" class="control-btn toggle">AI: On</button>
+        </div>
+        <div class="ai-level-control">
+          <label for="ai-level-slider">
+            AI Level
+            <span id="ai-level-display">Level 3 · Balanced</span>
+          </label>
+          <input id="ai-level-slider" type="range" min="0" max="5" step="1" value="3">
         </div>
       </section>
       <section class="board-area">
