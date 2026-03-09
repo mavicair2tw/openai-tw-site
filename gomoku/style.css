@@ -102,6 +102,14 @@ body {
   border-color: rgba(255, 255, 255, 0.9);
 }
 
+.tag-sub-link {
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.85);
+  text-transform: uppercase;
+  text-decoration: underline;
+}
+
 .info-tag {
   border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: 999px;
