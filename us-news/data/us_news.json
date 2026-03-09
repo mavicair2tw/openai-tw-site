@@ -1,16 +1,28 @@
 {
-  "updatedAt": "2026-03-10T05:46:40.115456+08:00",
+  "updatedAt": "2026-03-10T06:25:33.142683+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 挑戰Waymo！亞馬遜加速robotaxi布局 Zoox進軍達拉斯、鳳凰城 版圖擴至10座美國城市；3. 21:18〈美股盤後〉川普稱美伊戰爭「基本已結束」三大指數豬羊變色 油價衝破100美元後回落；4. 20:33川普稱美伊戰爭「基本上已結束」對穆吉塔巴「無話可說」；5. 18:51油價飆升航空業拉警報！新機訂單與租賃談判暫停。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. AI版Siri卡關！蘋果傳延遲發布智慧家居顯示器；3. 22:00油價飆破110美元、就業轉弱！華爾街警告：戰爭恐引爆「停滯性通貨膨脹」；4. 21:50砲轟川普造成國際油價飆漲！《大賣空》本尊：股市下跌是他的致命弱點；5. 21:20挑戰Waymo！亞馬遜加速robotaxi布局 Zoox進軍達拉斯、鳳凰城 版圖擴至10座美國城市。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "挑戰Waymo！亞馬遜加速robotaxi布局 Zoox進軍達拉斯、鳳凰城 版圖擴至10座美國城市",
+      "title": "AI版Siri卡關！蘋果傳延遲發布智慧家居顯示器",
+      "url": "https://news.cnyes.com/news/id/6372962"
+    },
+    {
+      "title": "22:00油價飆破110美元、就業轉弱！華爾街警告：戰爭恐引爆「停滯性通貨膨脹」",
+      "url": "https://news.cnyes.com/news/id/6371608"
+    },
+    {
+      "title": "21:50砲轟川普造成國際油價飆漲！《大賣空》本尊：股市下跌是他的致命弱點",
+      "url": "https://news.cnyes.com/news/id/6372924"
+    },
+    {
+      "title": "21:20挑戰Waymo！亞馬遜加速robotaxi布局 Zoox進軍達拉斯、鳳凰城 版圖擴至10座美國城市",
       "url": "https://news.cnyes.com/news/id/6372916"
     },
     {
@@ -40,18 +52,6 @@
     {
       "title": "16:33紐約Fed調查：通膨預期持穩 就業市場信心分歧",
       "url": "https://news.cnyes.com/news/id/6372889"
-    },
-    {
-      "title": "16:10微軟導入Anthropic技術 推出Copilot Cowork搶攻AI代理市場",
-      "url": "https://news.cnyes.com/news/id/6372831"
-    },
-    {
-      "title": "14:10摩根大通示警：油價破百與戰事升溫 標普500恐回檔10%",
-      "url": "https://news.cnyes.com/news/id/6372723"
-    },
-    {
-      "title": "13:40〈美股早盤〉國際油價衝破100美元引通膨疑慮 主要指數開低",
-      "url": "https://news.cnyes.com/news/id/6372346"
     }
   ],
   "error": null
