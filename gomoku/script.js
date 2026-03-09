@@ -3,18 +3,29 @@ const boardElement = document.getElementById('board');
 const undoButton = document.getElementById('undo-button');
 const restartButton = document.getElementById('restart-button');
 const soundToggle = document.getElementById('sound-toggle');
+const aiToggle = document.getElementById('ai-toggle');
 const currentPlayerIndicator = document.getElementById('current-player');
 const moveCounter = document.getElementById('move-counter');
 const gameStatusEl = document.getElementById('game-status');
 const soundIndicator = document.getElementById('sound-indicator');
+const aiIndicator = document.getElementById('ai-indicator');
+
+const DIRECTIONS = [
+  { dr: 0, dc: 1 },
+  { dr: 1, dc: 0 },
+  { dr: 1, dc: 1 },
+  { dr: -1, dc: 1 },
+];
 
 let boardState = [];
 let history = [];
-let currentPlayer = 1; // 1 = Black, -1 = White
-let gameEnded = false;
+let currentPlayer = 1; // 1 = Black (human), -1 = White (AI)
 let moveCount = 0;
 let cellElements = [];
 let winningLine = [];
+let gameEnded = false;
+let aiEnabled = true;
+let aiTimer = null;
 
 const audioState = {
   context: null,
@@ -46,6 +57,7 @@ function renderBoard() {
 }
 
 function initializeGame() {
+  cancelAiMove();
   boardState = Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(0));
   history = [];
   currentPlayer = 1;
@@ -66,11 +78,15 @@ function initializeGame() {
 }
 
 function handleCellClick(event) {
+  if (gameEnded || currentPlayer !== 1) {
+    return;
+  }
+
   const cell = event.currentTarget;
   const row = Number(cell.dataset.row);
   const col = Number(cell.dataset.col);
 
-  if (gameEnded || boardState[row][col] !== 0) {
+  if (boardState[row][col] !== 0) {
     return;
   }
 
@@ -97,6 +113,7 @@ function placeStone(row, col) {
   }
 
   refreshInfoPanel();
+  maybeScheduleAi();
 }
 
 function renderStone(row, col, player) {
@@ -118,18 +135,9 @@ function renderStone(row, col, player) {
 
 function checkWin(row, col) {
   const player = boardState[row][col];
-  if (!player) {
-    return null;
-  }
+  if (!player) return null;
 
-  const directions = [
-    { dr: 0, dc: 1 },
-    { dr: 1, dc: 0 },
-    { dr: 1, dc: 1 },
-    { dr: -1, dc: 1 },
-  ];
-
-  for (const { dr, dc } of directions) {
+  for (const { dr, dc } of DIRECTIONS) {
     const line = getWinningLine(row, col, dr, dc, player);
     if (line.length >= 5) {
       return line;
@@ -185,10 +193,9 @@ function clearWinningHighlight() {
 }
 
 function undoMove() {
-  if (!history.length) {
-    return;
-  }
+  if (!history.length) return;
 
+  cancelAiMove();
   const lastMove = history.pop();
   const { row, col, player } = lastMove;
   boardState[row][col] = 0;
@@ -200,8 +207,12 @@ function undoMove() {
 
   winningLine = [];
   gameEnded = false;
-  currentPlayer = player;
   moveCount -= 1;
+  currentPlayer = player;
+  if (aiEnabled && player === -1) {
+    currentPlayer = 1;
+  }
+
   clearWinningHighlight();
   playUndoSound();
   updateStatus('Move undone.');
@@ -209,6 +220,7 @@ function undoMove() {
 }
 
 function restartGame() {
+  cancelAiMove();
   initializeGame();
   playResetSound();
 }
@@ -225,7 +237,9 @@ function refreshInfoPanel() {
 
   moveCounter.textContent = moveCount;
   soundIndicator.textContent = audioState.enabled ? 'On' : 'Off';
+  aiIndicator.textContent = aiEnabled ? 'AI opponent' : 'Human only';
   soundToggle.textContent = `Sound: ${audioState.enabled ? 'On' : 'Off'}`;
+  aiToggle.textContent = `AI: ${aiEnabled ? 'On' : 'Off'}`;
   undoButton.disabled = history.length === 0;
 }
 
@@ -241,16 +255,121 @@ function toggleSound() {
   refreshInfoPanel();
 }
 
+function toggleAi() {
+  aiEnabled = !aiEnabled;
+  if (!aiEnabled) {
+    cancelAiMove();
+  }
+  refreshInfoPanel();
+  maybeScheduleAi();
+}
+
+function maybeScheduleAi() {
+  if (aiEnabled && !gameEnded && currentPlayer === -1) {
+    scheduleAiMove();
+  } else {
+    cancelAiMove();
+  }
+}
+
+function scheduleAiMove() {
+  cancelAiMove();
+  aiTimer = setTimeout(() => {
+    const move = pickAiMove();
+    if (move && !gameEnded && currentPlayer === -1) {
+      placeStone(move.row, move.col);
+    }
+  }, 360);
+}
+
+function cancelAiMove() {
+  if (aiTimer) {
+    clearTimeout(aiTimer);
+    aiTimer = null;
+  }
+}
+
+function pickAiMove() {
+  const immediateWin = findImmediateWinningCell(-1);
+  if (immediateWin) {
+    return immediateWin;
+  }
+
+  const block = findImmediateWinningCell(1);
+  if (block) {
+    return block;
+  }
+
+  let best = null;
+  let bestScore = -Infinity;
+  for (let row = 0; row < BOARD_SIZE; row += 1) {
+    for (let col = 0; col < BOARD_SIZE; col += 1) {
+      if (boardState[row][col] !== 0) continue;
+      const score = evaluateCell(row, col);
+      if (score > bestScore) {
+        bestScore = score;
+        best = { row, col };
+      }
+    }
+  }
+
+  if (best) return best;
+  const empties = history.length > 0 ? [] : [{ row: Math.floor(BOARD_SIZE / 2), col: Math.floor(BOARD_SIZE / 2) }];
+  for (let row = 0; row < BOARD_SIZE; row += 1) {
+    for (let col = 0; col < BOARD_SIZE; col += 1) {
+      if (boardState[row][col] === 0) {
+        empties.push({ row, col });
+      }
+    }
+  }
+  if (!empties.length) return null;
+  return empties[Math.floor(Math.random() * empties.length)];
+}
+
+function findImmediateWinningCell(player) {
+  for (let row = 0; row < BOARD_SIZE; row += 1) {
+    for (let col = 0; col < BOARD_SIZE; col += 1) {
+      if (boardState[row][col] !== 0) continue;
+      boardState[row][col] = player;
+      const win = checkWin(row, col);
+      boardState[row][col] = 0;
+      if (win) {
+        return { row, col };
+      }
+    }
+  }
+  return null;
+}
+
+function evaluateCell(row, col) {
+  let score = 0;
+  for (const { dr, dc } of DIRECTIONS) {
+    const aiCount = countInDirection(row, col, dr, dc, -1) + countInDirection(row, col, -dr, -dc, -1);
+    const humanCount = countInDirection(row, col, dr, dc, 1) + countInDirection(row, col, -dr, -dc, 1);
+    score += aiCount * 7;
+    score += humanCount * 5;
+  }
+  const centerBonus = 7 - Math.hypot(row - Math.floor(BOARD_SIZE / 2), col - Math.floor(BOARD_SIZE / 2));
+  score += centerBonus * 0.35;
+  return score + Math.random();
+}
+
+function countInDirection(row, col, dr, dc, player) {
+  let count = 0;
+  let r = row + dr;
+  let c = col + dc;
+  while (isInside(r, c) && boardState[r][c] === player) {
+    count += 1;
+    r += dr;
+    c += dc;
+  }
+  return count;
+}
+
 function initializeAudio() {
-  if (audioState.context) {
-    return;
-  }
-
+  if (audioState.context) return;
   const AudioContext = window.AudioContext || window.webkitAudioContext;
-  if (!AudioContext) {
-    return;
-  }
-
+  if (!AudioContext) return;
   audioState.context = new AudioContext();
 }
 
@@ -258,22 +377,17 @@ function playTone(freq, duration = 0.15, type = 'sine', volume = 0.2) {
   if (!audioState.enabled || !audioState.context) {
     return;
   }
-
   if (audioState.context.state === 'suspended') {
     audioState.context.resume();
   }
-
   const oscillator = audioState.context.createOscillator();
   const gainNode = audioState.context.createGain();
-
   oscillator.type = type;
   oscillator.frequency.value = freq;
-
   const now = audioState.context.currentTime;
   gainNode.gain.setValueAtTime(0.001, now);
   gainNode.gain.exponentialRampToValueAtTime(volume, now + 0.02);
   gainNode.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-
   oscillator.connect(gainNode).connect(audioState.context.destination);
   oscillator.start();
   oscillator.stop(now + duration);
@@ -313,4 +427,5 @@ document.addEventListener('DOMContentLoaded', () => {
   undoButton.addEventListener('click', undoMove);
   restartButton.addEventListener('click', restartGame);
   soundToggle.addEventListener('click', toggleSound);
+  aiToggle.addEventListener('click', toggleAi);
 });
