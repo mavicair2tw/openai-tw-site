@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-09T16:26:11.096589+08:00",
+  "updatedAt": "2026-03-09T17:07:41.726460+08:00",
   "timezone": "Asia/Taipei",
   "market": "US",
   "items": [
@@ -643,9 +643,9 @@
       "label": "美國費城半導體指數",
       "symbol": "^SOX",
       "type": "Index",
-      "price": 7512.99,
-      "change": -308.77,
-      "changePercent": -3.95,
+      "price": 7513.79,
+      "change": -307.97,
+      "changePercent": -3.94,
       "trend": [
         {
           "time": "23:00",
@@ -733,15 +733,15 @@
         },
         {
           "time": "04:15",
-          "close": 7500.88
+          "close": 7501.15
         },
         {
           "time": "04:30",
-          "close": 7523.27
+          "close": 7523.14
         },
         {
           "time": "04:45",
-          "close": 7512.99
+          "close": 7513.79
         }
       ]
     },
@@ -749,22 +749,10 @@
       "label": "比特幣",
       "symbol": "BTC-USD",
       "type": "Crypto",
-      "price": 67730.93,
-      "change": 1761.15,
-      "changePercent": 2.67,
+      "price": 67722.54,
+      "change": 1752.76,
+      "changePercent": 2.66,
       "trend": [
-        {
-          "time": "10:30",
-          "close": 66503.7
-        },
-        {
-          "time": "10:45",
-          "close": 66575.86
-        },
-        {
-          "time": "11:00",
-          "close": 67343.1
-        },
         {
           "time": "11:15",
           "close": 67208.63
@@ -847,7 +835,19 @@
         },
         {
           "time": "16:15",
-          "close": 67730.93
+          "close": 67801.89
+        },
+        {
+          "time": "16:30",
+          "close": 67766.1
+        },
+        {
+          "time": "16:45",
+          "close": 67810.01
+        },
+        {
+          "time": "17:00",
+          "close": 67722.54
         }
       ]
     },
@@ -855,9 +855,9 @@
       "label": "黃金期貨",
       "symbol": "GC=F",
       "type": "Commodity",
-      "price": 5103.7,
-      "change": -42.4,
-      "changePercent": -0.82,
+      "price": 5102.4,
+      "change": -43.7,
+      "changePercent": -0.85,
       "trend": [
         {
           "time": "12:00",
@@ -929,7 +929,15 @@
         },
         {
           "time": "16:15",
-          "close": 5103.7
+          "close": 5099.0
+        },
+        {
+          "time": "16:30",
+          "close": 5098.0
+        },
+        {
+          "time": "16:45",
+          "close": 5102.4
         }
       ]
     }
