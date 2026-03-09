@@ -1,16 +1,24 @@
 {
-  "updatedAt": "2026-03-10T02:00:38.383036+08:00",
+  "updatedAt": "2026-03-10T03:10:02.827609+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. AI軍事紅線爆衝突！Anthropic提告五角大廈；3. 16:43油價飆破100美元 川普擬動用戰略儲油、限制美國石油出口；4. 16:33紐約Fed調查：通膨預期持穩 就業市場信心分歧；5. 16:10微軟導入Anthropic技術 推出Copilot Cowork搶攻AI代理市場。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 油價飆升航空業拉警報！新機訂單與租賃談判暫停；3. 18:00債市風向轉變？摩根大通看好投資級公司債 預期利差收窄；4. 16:46AI軍事紅線爆衝突！Anthropic提告五角大廈；5. 16:43油價飆破100美元 川普擬動用戰略儲油、限制美國石油出口。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "AI軍事紅線爆衝突！Anthropic提告五角大廈",
+      "title": "油價飆升航空業拉警報！新機訂單與租賃談判暫停",
+      "url": "https://news.cnyes.com/news/id/6372912"
+    },
+    {
+      "title": "18:00債市風向轉變？摩根大通看好投資級公司債 預期利差收窄",
+      "url": "https://news.cnyes.com/news/id/6372906"
+    },
+    {
+      "title": "16:46AI軍事紅線爆衝突！Anthropic提告五角大廈",
       "url": "https://news.cnyes.com/news/id/6372888"
     },
     {
@@ -44,14 +52,6 @@
     {
       "title": "13:00減重藥市場又多一個競爭者？AbbVie新型長效藥物一期試驗展現顯著減重效果",
       "url": "https://news.cnyes.com/news/id/6372692"
-    },
-    {
-      "title": "13:00摩根士丹利看好美股前景：回調接近尾聲、未來一年走勢樂觀",
-      "url": "https://news.cnyes.com/news/id/6372515"
-    },
-    {
-      "title": "12:10油價破百衝擊全球市場 Yardeni警告美股崩盤機率增至35%",
-      "url": "https://news.cnyes.com/news/id/6372334"
     }
   ],
   "error": null
