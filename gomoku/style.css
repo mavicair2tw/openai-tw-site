@@ -80,6 +80,55 @@ body {
   background: rgba(255, 255, 255, 0.15);
 }
 
+.gomoku-top-tags {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.info-tag {
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.info-tag-sub {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+}
+
+.title-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.home-pill {
+  margin-left: auto;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  padding: 0.35rem 0.95rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  text-decoration: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.home-pill:hover {
+  border-color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.15);
+}
+
 
 .title-block h1 {
   margin: 0;
