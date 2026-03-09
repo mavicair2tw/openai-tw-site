@@ -1,4 +1,6 @@
-const BOARD_SIZE = 15;
+let boardSize = 15;
+const DEFAULT_boardSize = 15;
+const MOBILE_boardSize = 9;
 const boardElement = document.getElementById('board');
 const undoButton = document.getElementById('undo-button');
 const restartButton = document.getElementById('restart-button');
@@ -55,11 +57,11 @@ const playerLabels = {
 
 function renderBoard() {
   boardElement.innerHTML = '';
-  boardElement.style.setProperty('--board-size', BOARD_SIZE);
-  cellElements = Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(null));
+  boardElement.style.setProperty('--board-size', boardSize);
+  cellElements = Array.from({ length: boardSize }, () => Array(boardSize).fill(null));
 
-  for (let row = 0; row < BOARD_SIZE; row += 1) {
-    for (let col = 0; col < BOARD_SIZE; col += 1) {
+  for (let row = 0; row < boardSize; row += 1) {
+    for (let col = 0; col < boardSize; col += 1) {
       const cell = document.createElement('button');
       cell.type = 'button';
       cell.className = 'cell';
@@ -74,7 +76,7 @@ function renderBoard() {
 
 function initializeGame() {
   cancelAiMove();
-  boardState = Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(0));
+  boardState = Array.from({ length: boardSize }, () => Array(boardSize).fill(0));
   history = [];
   currentPlayer = 1;
   moveCount = 0;
@@ -186,7 +188,7 @@ function getWinningLine(row, col, dr, dc, player) {
 }
 
 function isInside(row, col) {
-  return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
+  return row >= 0 && row < boardSize && col >= 0 && col < boardSize;
 }
 
 function highlightWinningLine(line) {
@@ -295,6 +297,8 @@ function toggleAi() {
 
 function applyDeviceMode(mode) {
   const normalized = mode === 'mobile' ? 'mobile' : 'pc';
+  const desiredSize = normalized === 'mobile' ? MOBILE_BOARD_SIZE : DEFAULT_BOARD_SIZE;
+  const resized = boardSize !== desiredSize;
   deviceMode = normalized;
   if (boardFrame) {
     boardFrame.classList.toggle('mobile', deviceMode === 'mobile');
@@ -304,6 +308,11 @@ function applyDeviceMode(mode) {
       btn.classList.toggle('active', btn.dataset.deviceMode === deviceMode);
     }
   });
+  if (resized) {
+    boardSize = desiredSize;
+    renderBoard();
+  }
+  initializeGame();
 }
 
 function setAiLevel(value) {
@@ -380,8 +389,8 @@ function pickAiMove() {
 }
 
 function findImmediateWinningCell(player) {
-  for (let row = 0; row < BOARD_SIZE; row += 1) {
-    for (let col = 0; col < BOARD_SIZE; col += 1) {
+  for (let row = 0; row < boardSize; row += 1) {
+    for (let col = 0; col < boardSize; col += 1) {
       if (boardState[row][col] !== 0) continue;
       boardState[row][col] = player;
       const win = checkWin(row, col);
@@ -406,7 +415,7 @@ function evaluateCell(row, col) {
   }
 
   score += countNeighbors(row, col) * (0.6 + aiLevel * 0.25);
-  const distanceToCenter = Math.hypot(row - (BOARD_SIZE - 1) / 2, col - (BOARD_SIZE - 1) / 2);
+  const distanceToCenter = Math.hypot(row - (boardSize - 1) / 2, col - (boardSize - 1) / 2);
   score += (7 - distanceToCenter) * (0.35 + aiLevel * 0.12);
   const noise = (5 - aiLevel) * 0.14;
   return score + noise * Math.random();
@@ -441,8 +450,8 @@ function countNeighbors(row, col) {
 
 function getEmptyCells() {
   const empties = [];
-  for (let row = 0; row < BOARD_SIZE; row += 1) {
-    for (let col = 0; col < BOARD_SIZE; col += 1) {
+  for (let row = 0; row < boardSize; row += 1) {
+    for (let col = 0; col < boardSize; col += 1) {
       if (boardState[row][col] === 0) {
         empties.push({ row, col });
       }
@@ -505,9 +514,6 @@ function primeAudio() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  renderBoard();
-  setAiLevel(aiLevel);
-  initializeGame();
   document.body.addEventListener('pointerdown', primeAudio, { once: true });
   document.body.addEventListener('keydown', primeAudio, { once: true });
   undoButton.addEventListener('click', undoMove);
@@ -520,6 +526,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
   applyDeviceMode('pc');
+  setAiLevel(aiLevel);
   if (aiLevelSlider) {
     aiLevelSlider.addEventListener('input', (event) => {
       setAiLevel(event.target.value);
