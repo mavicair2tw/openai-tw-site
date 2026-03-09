@@ -1,16 +1,20 @@
 {
-  "updatedAt": "2026-03-09T19:49:22.835716+08:00",
+  "updatedAt": "2026-03-09T20:56:52.806777+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 華爾街動量股遭遇「三重打擊」：恐慌拋售後 市場是否已接近臨界點？；3. 09:47德儀攜手輝達加速實體AI 推動人形機器人開發；4. 09:30真金白銀挺AI 「史上最強散戶」大買200萬股輝達股票；5. 08:00下載量僅3周就超越Linux 30年成就！黃仁勳：OpenClaw是這個時代最重要的軟體。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 油價破百衝擊全球市場 Yardeni警告美股崩盤機率增至35%；3. 11:40華爾街動量股遭遇「三重打擊」：恐慌拋售後 市場是否已接近臨界點？；4. 09:47德儀攜手輝達加速實體AI 推動人形機器人開發；5. 09:30真金白銀挺AI 「史上最強散戶」大買200萬股輝達股票。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "華爾街動量股遭遇「三重打擊」：恐慌拋售後 市場是否已接近臨界點？",
+      "title": "油價破百衝擊全球市場 Yardeni警告美股崩盤機率增至35%",
+      "url": "https://news.cnyes.com/news/id/6372334"
+    },
+    {
+      "title": "11:40華爾街動量股遭遇「三重打擊」：恐慌拋售後 市場是否已接近臨界點？",
       "url": "https://news.cnyes.com/news/id/6372299"
     },
     {
@@ -48,10 +52,6 @@
     {
       "title": "02:00美伊戰爭暴露市場集中風險 但標普問題不大",
       "url": "https://news.cnyes.com/news/id/6369086"
-    },
-    {
-      "title": "01:10不滿OpenAI與美國國防部的AI合作！OpenAI硬體主管宣布辭職",
-      "url": "https://news.cnyes.com/news/id/6369678"
     }
   ],
   "error": null
