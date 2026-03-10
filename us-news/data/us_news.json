@@ -1,16 +1,20 @@
 {
-  "updatedAt": "2026-03-11T02:00:30.571195+08:00",
+  "updatedAt": "2026-03-11T03:08:27.573396+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 油價急跌、美股反彈！IEA討論釋放戰略儲油 市場押注將出手穩供應；3. 03/10為AI投資籌資！亞馬遜啟動420億美元發債；4. 03/10突破AI算力新瓶頸！輝達GTC 2026大會倒數 這五檔蓄勢待發；5. 03/10美銀：市場恐誤判Fed反應 油價飆升未必帶來鷹派政策。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 動作頻頻！輝達將向OpenAI競爭對手Thinking Machines Labs提供1GW算力AI晶片；3. 03/10油價急跌、美股反彈！IEA討論釋放戰略儲油 市場押注將出手穩供應；4. 03/10為AI投資籌資！亞馬遜啟動420億美元發債；5. 03/10突破AI算力新瓶頸！輝達GTC 2026大會倒數 這五檔蓄勢待發。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "油價急跌、美股反彈！IEA討論釋放戰略儲油 市場押注將出手穩供應",
+      "title": "動作頻頻！輝達將向OpenAI競爭對手Thinking Machines Labs提供1GW算力AI晶片",
+      "url": "https://news.cnyes.com/news/id/6376551"
+    },
+    {
+      "title": "03/10油價急跌、美股反彈！IEA討論釋放戰略儲油 市場押注將出手穩供應",
       "url": "https://news.cnyes.com/news/id/6376558"
     },
     {
@@ -48,10 +52,6 @@
     {
       "title": "03/10艾克曼推動避險基金上市！Pershing Square申請紐交所IPO 擬募資最高100億美元",
       "url": "https://news.cnyes.com/news/id/6375938"
-    },
-    {
-      "title": "03/10微軟股價回檔16%浮現吸引力！與Anthropic的合作反轉AI軟體末日論？",
-      "url": "https://news.cnyes.com/news/id/6374708"
     }
   ],
   "error": null
