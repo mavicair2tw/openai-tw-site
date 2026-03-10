@@ -1,29 +1,29 @@
 {
-  "updatedAt": "2026-03-11T00:14:04.807075+08:00",
+  "updatedAt": "2026-03-11T01:09:24.307836+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://news.cnyes.com/news/cat/tw_stock_news",
   "ok": true,
-  "summary": "今日台股新聞重點：1. 1.戰事很快結束？伊朗提出停火條件 川普似又改口；2. 2.油價一夜從120殺到85美元 華爾街點破：全球不缺油；3. 3.美防長：對伊朗空襲升級 今日恐迎最猛烈攻勢；4. 4.不能只看石油 荷姆茲危機對這能源衝擊更大；5. 5.鴻海再賣群創8.69萬張獲利16.33億元 持股幾乎出清。建議優先關注權值股、ETF 資金流向與政策面消息。",
+  "summary": "今日台股新聞重點：1. 1.美防長：對伊朗空襲升級 今日恐迎最猛烈攻勢；2. 2.鴻海再賣群創8.69萬張獲利16.33億元 持股幾乎出清；3. 3.〈美股早盤〉中東戰事未解 主要指數開盤陷入觀望、油價回落；4. 4.OpenAI前高層創業 輝達出手投資；5. 5.「全民養蝦」狂歡 OpenClaw引爆中國AI浪潮 巨頭爭奪流量入口。建議優先關注權值股、ETF 資金流向與政策面消息。",
   "headlines": [
     {
-      "title": "1.戰事很快結束？伊朗提出停火條件 川普似又改口",
-      "url": "https://www.cnyes.com/news/id/6373716"
-    },
-    {
-      "title": "2.油價一夜從120殺到85美元 華爾街點破：全球不缺油",
-      "url": "https://www.cnyes.com/news/id/6373461"
-    },
-    {
-      "title": "3.美防長：對伊朗空襲升級 今日恐迎最猛烈攻勢",
+      "title": "1.美防長：對伊朗空襲升級 今日恐迎最猛烈攻勢",
       "url": "https://www.cnyes.com/news/id/6376191"
     },
     {
-      "title": "4.不能只看石油 荷姆茲危機對這能源衝擊更大",
-      "url": "https://www.cnyes.com/news/id/6373462"
+      "title": "2.鴻海再賣群創8.69萬張獲利16.33億元 持股幾乎出清",
+      "url": "https://www.cnyes.com/news/id/6376180"
     },
     {
-      "title": "5.鴻海再賣群創8.69萬張獲利16.33億元 持股幾乎出清",
-      "url": "https://www.cnyes.com/news/id/6376180"
+      "title": "3.〈美股早盤〉中東戰事未解 主要指數開盤陷入觀望、油價回落",
+      "url": "https://www.cnyes.com/news/id/6375937"
+    },
+    {
+      "title": "4.OpenAI前高層創業 輝達出手投資",
+      "url": "https://www.cnyes.com/news/id/6376406"
+    },
+    {
+      "title": "5.「全民養蝦」狂歡 OpenClaw引爆中國AI浪潮 巨頭爭奪流量入口",
+      "url": "https://www.cnyes.com/news/id/6374860"
     }
   ],
   "error": null

@@ -1,16 +1,24 @@
 {
-  "updatedAt": "2026-03-11T00:14:05.814520+08:00",
+  "updatedAt": "2026-03-11T01:09:25.244509+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 突破AI算力新瓶頸！輝達GTC 2026大會倒數 這五檔蓄勢待發；3. 03/10美銀：市場恐誤判Fed反應 油價飆升未必帶來鷹派政策；4. 03/10OpenAI前高層創業 輝達出手投資；5. 03/10〈美股早盤〉中東戰事未解 主要指數開盤陷入觀望、油價回落。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 油價急跌、美股反彈！IEA討論釋放戰略儲油 市場押注將出手穩供應；3. 03/10為AI投資籌資！亞馬遜啟動420億美元發債；4. 03/10突破AI算力新瓶頸！輝達GTC 2026大會倒數 這五檔蓄勢待發；5. 03/10美銀：市場恐誤判Fed反應 油價飆升未必帶來鷹派政策。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "突破AI算力新瓶頸！輝達GTC 2026大會倒數 這五檔蓄勢待發",
+      "title": "油價急跌、美股反彈！IEA討論釋放戰略儲油 市場押注將出手穩供應",
+      "url": "https://news.cnyes.com/news/id/6376558"
+    },
+    {
+      "title": "03/10為AI投資籌資！亞馬遜啟動420億美元發債",
+      "url": "https://news.cnyes.com/news/id/6376409"
+    },
+    {
+      "title": "03/10突破AI算力新瓶頸！輝達GTC 2026大會倒數 這五檔蓄勢待發",
       "url": "https://news.cnyes.com/news/id/6372975"
     },
     {
@@ -44,14 +52,6 @@
     {
       "title": "03/10微軟股價回檔16%浮現吸引力！與Anthropic的合作反轉AI軟體末日論？",
       "url": "https://news.cnyes.com/news/id/6374708"
-    },
-    {
-      "title": "03/10高盛推企業貸款「做空」產品！鎖定受AI衝擊軟體公司債務",
-      "url": "https://news.cnyes.com/news/id/6373032"
-    },
-    {
-      "title": "03/10日月光投控2月營收521億元年增15.9% 創同期新高",
-      "url": "https://news.cnyes.com/news/id/6374550"
     }
   ],
   "error": null
