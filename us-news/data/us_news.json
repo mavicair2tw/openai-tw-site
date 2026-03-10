@@ -1,16 +1,24 @@
 {
-  "updatedAt": "2026-03-10T19:47:32.568255+08:00",
+  "updatedAt": "2026-03-10T20:54:53.956763+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 艾克曼推動避險基金上市！Pershing Square申請紐交所IPO 擬募資最高100億美元；3. 03/10微軟股價回檔16%浮現吸引力！與Anthropic的合作反轉AI軟體末日論？；4. 03/10高盛推企業貸款「做空」產品！鎖定受AI衝擊軟體公司債務；5. 03/10日月光投控2月營收521億元年增15.9% 創同期新高。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. SpaceX估值1.75兆美元合理嗎？馬斯克超級IPO的關鍵問題；3. 03/10SpaceX上市布局曝光！傳鎖定那斯達克並爭取納入Nasdaq100指數；4. 03/10艾克曼推動避險基金上市！Pershing Square申請紐交所IPO 擬募資最高100億美元；5. 03/10微軟股價回檔16%浮現吸引力！與Anthropic的合作反轉AI軟體末日論？。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "艾克曼推動避險基金上市！Pershing Square申請紐交所IPO 擬募資最高100億美元",
+      "title": "SpaceX估值1.75兆美元合理嗎？馬斯克超級IPO的關鍵問題",
+      "url": "https://news.cnyes.com/news/id/6375940"
+    },
+    {
+      "title": "03/10SpaceX上市布局曝光！傳鎖定那斯達克並爭取納入Nasdaq100指數",
+      "url": "https://news.cnyes.com/news/id/6375939"
+    },
+    {
+      "title": "03/10艾克曼推動避險基金上市！Pershing Square申請紐交所IPO 擬募資最高100億美元",
       "url": "https://news.cnyes.com/news/id/6375938"
     },
     {
@@ -44,14 +52,6 @@
     {
       "title": "03/10甲骨文Abilene資料中心200MW電力上線 公司駁斥產能延遲傳聞",
       "url": "https://news.cnyes.com/news/id/6373645"
-    },
-    {
-      "title": "03/10為AI供電 馬斯克xAI擬建天然氣電廠 監管會議選在投票日引爭議",
-      "url": "https://news.cnyes.com/news/id/6373586"
-    },
-    {
-      "title": "03/10美股將迎「全年無休」交易時代！那斯達克推「股票代幣化」計畫",
-      "url": "https://news.cnyes.com/news/id/6373372"
     }
   ],
   "error": null
