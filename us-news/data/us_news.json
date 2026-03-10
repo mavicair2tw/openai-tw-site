@@ -1,16 +1,28 @@
 {
-  "updatedAt": "2026-03-10T09:47:51.874017+08:00",
+  "updatedAt": "2026-03-10T12:07:10.659355+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 不只賣晶片！輝達推AI代理平台NemoClaw 搶企業軟體市場；3. 01:00忘了停滯性通膨吧！美頂尖經濟學家：油價狂飆 通膨也將急速下墜；4. 00:50跟上OpenClaw龍蝦潮！傳輝達將推開源AI代理平台NemoClaw；5. 00:30微軟納德拉：AI將取代人類工作 但人類可靠掌握新技能與實現自我轉型來反擊。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 美股將迎「全年無休」交易時代！那斯達克推「股票代幣化」計畫；3. 02:37政策大轉彎！加拿大允許TikTok繼續當地營運；4. 02:30有多少買多少！黃仁勳喊話DRAM廠儘管擴產 法人看好輝達擴大記憶體備貨有利鴻海等3台廠；5. 01:20不只賣晶片！輝達推AI代理平台NemoClaw 搶企業軟體市場。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "不只賣晶片！輝達推AI代理平台NemoClaw 搶企業軟體市場",
+      "title": "美股將迎「全年無休」交易時代！那斯達克推「股票代幣化」計畫",
+      "url": "https://news.cnyes.com/news/id/6373372"
+    },
+    {
+      "title": "02:37政策大轉彎！加拿大允許TikTok繼續當地營運",
+      "url": "https://news.cnyes.com/news/id/6373044"
+    },
+    {
+      "title": "02:30有多少買多少！黃仁勳喊話DRAM廠儘管擴產 法人看好輝達擴大記憶體備貨有利鴻海等3台廠",
+      "url": "https://news.cnyes.com/news/id/6373426"
+    },
+    {
+      "title": "01:20不只賣晶片！輝達推AI代理平台NemoClaw 搶企業軟體市場",
       "url": "https://news.cnyes.com/news/id/6373068"
     },
     {
@@ -40,18 +52,6 @@
     {
       "title": "00:00美告知G7：俄油制裁豁免僅為因應伊朗戰爭的「暫時」措施",
       "url": "https://news.cnyes.com/news/id/6372970"
-    },
-    {
-      "title": "03/09伊朗最新聲明：與以色列、美國斷交國家 可自由通行荷姆茲海峽",
-      "url": "https://news.cnyes.com/news/id/6373010"
-    },
-    {
-      "title": "03/09遭五角大廈封殺 Anthropic怒告美國政府 專家憂美軍失去關鍵AI工具",
-      "url": "https://news.cnyes.com/news/id/6373005"
-    },
-    {
-      "title": "03/09黃仁勳豪言：DRAM工廠儘管擴產 輝達全部買單！",
-      "url": "https://news.cnyes.com/news/id/6372972"
     }
   ],
   "error": null
