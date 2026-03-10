@@ -1,57 +1,57 @@
 {
-  "updatedAt": "2026-03-10T23:01:05.179150+08:00",
+  "updatedAt": "2026-03-11T00:14:05.814520+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. OpenAI前高層創業 輝達出手投資；3. 13:42〈美股早盤〉中東戰事未解 主要指數開盤陷入觀望、油價回落；4. 13:00醫療器材龍頭美敦力 Medtronic(MDT-US) 斥資 5.5 億美元收購 Scientia Vascular 強化中風治療布局；5. 12:30SpaceX估值1.75兆美元合理嗎？馬斯克超級IPO的關鍵問題。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 突破AI算力新瓶頸！輝達GTC 2026大會倒數 這五檔蓄勢待發；3. 03/10美銀：市場恐誤判Fed反應 油價飆升未必帶來鷹派政策；4. 03/10OpenAI前高層創業 輝達出手投資；5. 03/10〈美股早盤〉中東戰事未解 主要指數開盤陷入觀望、油價回落。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "OpenAI前高層創業 輝達出手投資",
+      "title": "突破AI算力新瓶頸！輝達GTC 2026大會倒數 這五檔蓄勢待發",
+      "url": "https://news.cnyes.com/news/id/6372975"
+    },
+    {
+      "title": "03/10美銀：市場恐誤判Fed反應 油價飆升未必帶來鷹派政策",
+      "url": "https://news.cnyes.com/news/id/6376293"
+    },
+    {
+      "title": "03/10OpenAI前高層創業 輝達出手投資",
       "url": "https://news.cnyes.com/news/id/6376406"
     },
     {
-      "title": "13:42〈美股早盤〉中東戰事未解 主要指數開盤陷入觀望、油價回落",
+      "title": "03/10〈美股早盤〉中東戰事未解 主要指數開盤陷入觀望、油價回落",
       "url": "https://news.cnyes.com/news/id/6375937"
     },
     {
-      "title": "13:00醫療器材龍頭美敦力 Medtronic(MDT-US) 斥資 5.5 億美元收購 Scientia Vascular 強化中風治療布局",
+      "title": "03/10醫療器材龍頭美敦力 Medtronic(MDT-US) 斥資 5.5 億美元收購 Scientia Vascular 強化中風治療布局",
       "url": "https://news.cnyes.com/news/id/6376355"
     },
     {
-      "title": "12:30SpaceX估值1.75兆美元合理嗎？馬斯克超級IPO的關鍵問題",
+      "title": "03/10SpaceX估值1.75兆美元合理嗎？馬斯克超級IPO的關鍵問題",
       "url": "https://news.cnyes.com/news/id/6375940"
     },
     {
-      "title": "12:00SpaceX上市布局曝光！傳鎖定那斯達克並爭取納入Nasdaq100指數",
+      "title": "03/10SpaceX上市布局曝光！傳鎖定那斯達克並爭取納入Nasdaq100指數",
       "url": "https://news.cnyes.com/news/id/6375939"
     },
     {
-      "title": "11:31艾克曼推動避險基金上市！Pershing Square申請紐交所IPO 擬募資最高100億美元",
+      "title": "03/10艾克曼推動避險基金上市！Pershing Square申請紐交所IPO 擬募資最高100億美元",
       "url": "https://news.cnyes.com/news/id/6375938"
     },
     {
-      "title": "11:30微軟股價回檔16%浮現吸引力！與Anthropic的合作反轉AI軟體末日論？",
+      "title": "03/10微軟股價回檔16%浮現吸引力！與Anthropic的合作反轉AI軟體末日論？",
       "url": "https://news.cnyes.com/news/id/6374708"
     },
     {
-      "title": "11:00高盛推企業貸款「做空」產品！鎖定受AI衝擊軟體公司債務",
+      "title": "03/10高盛推企業貸款「做空」產品！鎖定受AI衝擊軟體公司債務",
       "url": "https://news.cnyes.com/news/id/6373032"
     },
     {
-      "title": "09:20日月光投控2月營收521億元年增15.9% 創同期新高",
+      "title": "03/10日月光投控2月營收521億元年增15.9% 創同期新高",
       "url": "https://news.cnyes.com/news/id/6374550"
-    },
-    {
-      "title": "06:26AI需求續強 台積電2月營收年增22%續創同期新高",
-      "url": "https://news.cnyes.com/news/id/6373736"
-    },
-    {
-      "title": "05:33去中國化？蘋果產線大搬家 印度製iPhone占全球25%",
-      "url": "https://news.cnyes.com/news/id/6373688"
     }
   ],
   "error": null
