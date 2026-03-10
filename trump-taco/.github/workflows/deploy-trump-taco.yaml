@@ -1,0 +1,60 @@
+name: Trump TACO deploy
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  backend-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.12
+
+      - name: Install backend dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r trump-taco/backend/requirements.txt
+
+      - name: Build backend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: trump-taco/backend
+          push: false
+          tags: ghcr.io/${{ github.repository_owner }}/trump-taco-backend:${{ github.sha }}
+
+      - name: Deploy backend to Render
+        uses: render-examples/render-deploy@v2
+        with:
+          apiKey: ${{ secrets.RENDER_API_KEY }}
+          serviceId: ${{ secrets.RENDER_BACKEND_SERVICE_ID }}
+          dockerRegistry: ghcr.io
+          dockerImage: ghcr.io/${{ github.repository_owner }}/trump-taco-backend:${{ github.sha }}
+
+  frontend-deploy:
+    runs-on: ubuntu-latest
+    needs: backend-deploy
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install & build frontend
+        run: |
+          cd trump-taco/frontend
+          npm ci
+          npm run build
+
+      - name: Deploy frontend to Vercel
+        uses: amondnet/vercel-action@v24
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: trump-taco/frontend

@@ -37,3 +37,11 @@ docker-compose up --build
 - `TACO_ENDPOINT`: optional override for the upstream source (default `https://openai-tw.com/toao/`).
 - `FETCH_INTERVAL_HOURS`: how often to refresh the cache (default `4`).
 - `NEXT_PUBLIC_API_BASE_URL`: controls where the frontend points (defaults to `http://localhost:8000`).
+
+## GitHub Actions
+
+The repo ships a GitHub Actions workflow under `.github/workflows/deploy-trump-taco.yaml`.
+It builds the backend Docker image, deploys it to Render via `render-deploy`, and builds the Next.js frontend before deploying to Vercel.
+Provide the following secrets before the workflow runs: `RENDER_API_KEY`, `RENDER_BACKEND_SERVICE_ID`, `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`.
+
+Trigger the workflow by pushing to `main` or using `workflow_dispatch`.
