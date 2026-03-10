@@ -1,57 +1,57 @@
 {
-  "updatedAt": "2026-03-10T07:50:59.418755+08:00",
+  "updatedAt": "2026-03-10T09:47:51.874017+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 遭五角大廈封殺 Anthropic怒告美國政府 專家憂美軍失去關鍵AI工具；3. 23:12黃仁勳豪言：DRAM工廠儘管擴產 輝達全部買單！；4. 23:00策略轉向確定！OpenAI再度推遲ChatGPT「成人模式」上線 將優先提升產品能力；5. 22:34〈紐約匯市〉川普表示伊朗戰爭基本上已結束 美元由升轉貶。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 不只賣晶片！輝達推AI代理平台NemoClaw 搶企業軟體市場；3. 01:00忘了停滯性通膨吧！美頂尖經濟學家：油價狂飆 通膨也將急速下墜；4. 00:50跟上OpenClaw龍蝦潮！傳輝達將推開源AI代理平台NemoClaw；5. 00:30微軟納德拉：AI將取代人類工作 但人類可靠掌握新技能與實現自我轉型來反擊。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "遭五角大廈封殺 Anthropic怒告美國政府 專家憂美軍失去關鍵AI工具",
+      "title": "不只賣晶片！輝達推AI代理平台NemoClaw 搶企業軟體市場",
+      "url": "https://news.cnyes.com/news/id/6373068"
+    },
+    {
+      "title": "01:00忘了停滯性通膨吧！美頂尖經濟學家：油價狂飆 通膨也將急速下墜",
+      "url": "https://news.cnyes.com/news/id/6372913"
+    },
+    {
+      "title": "00:50跟上OpenClaw龍蝦潮！傳輝達將推開源AI代理平台NemoClaw",
+      "url": "https://news.cnyes.com/news/id/6373048"
+    },
+    {
+      "title": "00:30微軟納德拉：AI將取代人類工作 但人類可靠掌握新技能與實現自我轉型來反擊",
+      "url": "https://news.cnyes.com/news/id/6372921"
+    },
+    {
+      "title": "00:30美股震盪收高川普暗示伊朗戰事接近落幕",
+      "url": "https://news.cnyes.com/news/id/6373060"
+    },
+    {
+      "title": "00:20美股重點新聞摘要2026年3月10日",
+      "url": "https://news.cnyes.com/news/id/6373036"
+    },
+    {
+      "title": "00:10油價狂飆、就業轉弱 Fed被逼進兩難死角",
+      "url": "https://news.cnyes.com/news/id/6372876"
+    },
+    {
+      "title": "00:00美告知G7：俄油制裁豁免僅為因應伊朗戰爭的「暫時」措施",
+      "url": "https://news.cnyes.com/news/id/6372970"
+    },
+    {
+      "title": "03/09伊朗最新聲明：與以色列、美國斷交國家 可自由通行荷姆茲海峽",
+      "url": "https://news.cnyes.com/news/id/6373010"
+    },
+    {
+      "title": "03/09遭五角大廈封殺 Anthropic怒告美國政府 專家憂美軍失去關鍵AI工具",
       "url": "https://news.cnyes.com/news/id/6373005"
     },
     {
-      "title": "23:12黃仁勳豪言：DRAM工廠儘管擴產 輝達全部買單！",
+      "title": "03/09黃仁勳豪言：DRAM工廠儘管擴產 輝達全部買單！",
       "url": "https://news.cnyes.com/news/id/6372972"
-    },
-    {
-      "title": "23:00策略轉向確定！OpenAI再度推遲ChatGPT「成人模式」上線 將優先提升產品能力",
-      "url": "https://news.cnyes.com/news/id/6369463"
-    },
-    {
-      "title": "22:34〈紐約匯市〉川普表示伊朗戰爭基本上已結束 美元由升轉貶",
-      "url": "https://news.cnyes.com/news/id/6373000"
-    },
-    {
-      "title": "22:01AI版Siri卡關！蘋果傳延遲發布智慧家居顯示器",
-      "url": "https://news.cnyes.com/news/id/6372962"
-    },
-    {
-      "title": "22:00油價飆破110美元、就業轉弱！華爾街警告：戰爭恐引爆「停滯性通貨膨脹」",
-      "url": "https://news.cnyes.com/news/id/6371608"
-    },
-    {
-      "title": "21:50砲轟川普造成國際油價飆漲！《大賣空》本尊：股市下跌是他的致命弱點",
-      "url": "https://news.cnyes.com/news/id/6372924"
-    },
-    {
-      "title": "21:20挑戰Waymo！亞馬遜加速robotaxi布局 Zoox進軍達拉斯、鳳凰城 版圖擴至10座美國城市",
-      "url": "https://news.cnyes.com/news/id/6372916"
-    },
-    {
-      "title": "21:18〈美股盤後〉川普稱美伊戰爭「基本已結束」三大指數豬羊變色 油價衝破100美元後回落",
-      "url": "https://news.cnyes.com/news/id/6372758"
-    },
-    {
-      "title": "20:33川普稱美伊戰爭「基本上已結束」對穆吉塔巴「無話可說」",
-      "url": "https://news.cnyes.com/news/id/6372968"
-    },
-    {
-      "title": "18:51油價飆升航空業拉警報！新機訂單與租賃談判暫停",
-      "url": "https://news.cnyes.com/news/id/6372912"
     }
   ],
   "error": null
