@@ -1,57 +1,57 @@
 {
-  "updatedAt": "2026-03-10T12:07:10.659355+08:00",
+  "updatedAt": "2026-03-10T13:15:21.269871+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 美股將迎「全年無休」交易時代！那斯達克推「股票代幣化」計畫；3. 02:37政策大轉彎！加拿大允許TikTok繼續當地營運；4. 02:30有多少買多少！黃仁勳喊話DRAM廠儘管擴產 法人看好輝達擴大記憶體備貨有利鴻海等3台廠；5. 01:20不只賣晶片！輝達推AI代理平台NemoClaw 搶企業軟體市場。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 廣告訂閱雙箭齊發 ！YouTube躍居全球最大媒體公司 研調：護城河難撼動；3. 03/10Anthropic控告美國政府阻列黑名單！高層警告：恐衝擊數十億美元營收；4. 03/10甲骨文Abilene資料中心200MW電力上線 公司駁斥產能延遲傳聞；5. 03/10為AI供電 馬斯克xAI擬建天然氣電廠 監管會議選在投票日引爭議。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "美股將迎「全年無休」交易時代！那斯達克推「股票代幣化」計畫",
+      "title": "廣告訂閱雙箭齊發 ！YouTube躍居全球最大媒體公司 研調：護城河難撼動",
+      "url": "https://news.cnyes.com/news/id/6372999"
+    },
+    {
+      "title": "03/10Anthropic控告美國政府阻列黑名單！高層警告：恐衝擊數十億美元營收",
+      "url": "https://news.cnyes.com/news/id/6373500"
+    },
+    {
+      "title": "03/10甲骨文Abilene資料中心200MW電力上線 公司駁斥產能延遲傳聞",
+      "url": "https://news.cnyes.com/news/id/6373645"
+    },
+    {
+      "title": "03/10為AI供電 馬斯克xAI擬建天然氣電廠 監管會議選在投票日引爭議",
+      "url": "https://news.cnyes.com/news/id/6373586"
+    },
+    {
+      "title": "03/10美股將迎「全年無休」交易時代！那斯達克推「股票代幣化」計畫",
       "url": "https://news.cnyes.com/news/id/6373372"
     },
     {
-      "title": "02:37政策大轉彎！加拿大允許TikTok繼續當地營運",
+      "title": "03/10政策大轉彎！加拿大允許TikTok繼續當地營運",
       "url": "https://news.cnyes.com/news/id/6373044"
     },
     {
-      "title": "02:30有多少買多少！黃仁勳喊話DRAM廠儘管擴產 法人看好輝達擴大記憶體備貨有利鴻海等3台廠",
+      "title": "03/10有多少買多少！黃仁勳喊話DRAM廠儘管擴產 法人看好輝達擴大記憶體備貨有利鴻海等3台廠",
       "url": "https://news.cnyes.com/news/id/6373426"
     },
     {
-      "title": "01:20不只賣晶片！輝達推AI代理平台NemoClaw 搶企業軟體市場",
+      "title": "03/10不只賣晶片！輝達推AI代理平台NemoClaw 搶企業軟體市場",
       "url": "https://news.cnyes.com/news/id/6373068"
     },
     {
-      "title": "01:00忘了停滯性通膨吧！美頂尖經濟學家：油價狂飆 通膨也將急速下墜",
+      "title": "03/10忘了停滯性通膨吧！美頂尖經濟學家：油價狂飆 通膨也將急速下墜",
       "url": "https://news.cnyes.com/news/id/6372913"
     },
     {
-      "title": "00:50跟上OpenClaw龍蝦潮！傳輝達將推開源AI代理平台NemoClaw",
+      "title": "03/10跟上OpenClaw龍蝦潮！傳輝達將推開源AI代理平台NemoClaw",
       "url": "https://news.cnyes.com/news/id/6373048"
     },
     {
-      "title": "00:30微軟納德拉：AI將取代人類工作 但人類可靠掌握新技能與實現自我轉型來反擊",
+      "title": "03/10微軟納德拉：AI將取代人類工作 但人類可靠掌握新技能與實現自我轉型來反擊",
       "url": "https://news.cnyes.com/news/id/6372921"
-    },
-    {
-      "title": "00:30美股震盪收高川普暗示伊朗戰事接近落幕",
-      "url": "https://news.cnyes.com/news/id/6373060"
-    },
-    {
-      "title": "00:20美股重點新聞摘要2026年3月10日",
-      "url": "https://news.cnyes.com/news/id/6373036"
-    },
-    {
-      "title": "00:10油價狂飆、就業轉弱 Fed被逼進兩難死角",
-      "url": "https://news.cnyes.com/news/id/6372876"
-    },
-    {
-      "title": "00:00美告知G7：俄油制裁豁免僅為因應伊朗戰爭的「暫時」措施",
-      "url": "https://news.cnyes.com/news/id/6372970"
     }
   ],
   "error": null
