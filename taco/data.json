@@ -1,0 +1,650 @@
+{
+  "generatedAt": "2026-03-11T07:43:03",
+  "source": "https://www.trumpstruth.org/stats",
+  "coverage": {
+    "start": "2025-03-11",
+    "end": "2026-03-10"
+  },
+  "allTime": {
+    "totalPosts": 32677,
+    "originals": 25487,
+    "quotes": 1728,
+    "reblogs": 5462,
+    "avgPostsPerDay": 22,
+    "peakDayCount": 168
+  },
+  "selectedWindow": {
+    "days": 365,
+    "totalPosts": 6839,
+    "avgPerDay": 18.74,
+    "maxDailyPosts": 168,
+    "maxDailyDate": "2025-12-01"
+  },
+  "hourly": {
+    "labels": [
+      "12am",
+      "1am",
+      "2am",
+      "3am",
+      "4am",
+      "5am",
+      "6am",
+      "7am",
+      "8am",
+      "9am",
+      "10am",
+      "11am",
+      "12pm",
+      "1pm",
+      "2pm",
+      "3pm",
+      "4pm",
+      "5pm",
+      "6pm",
+      "7pm",
+      "8pm",
+      "9pm",
+      "10pm",
+      "11pm"
+    ],
+    "data": [
+      327,
+      209,
+      27,
+      20,
+      15,
+      81,
+      121,
+      270,
+      237,
+      372,
+      441,
+      439,
+      317,
+      344,
+      295,
+      299,
+      381,
+      447,
+      425,
+      364,
+      291,
+      452,
+      297,
+      368
+    ]
+  },
+  "views": {
+    "daily": [
+      {
+        "date": "2026-02-09",
+        "originals": 2,
+        "quotes": 0,
+        "reblogs": 1,
+        "total": 3,
+        "week": 7,
+        "year": 2026,
+        "month": "2026-02",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-02-10",
+        "originals": 19,
+        "quotes": 4,
+        "reblogs": 0,
+        "total": 23,
+        "week": 7,
+        "year": 2026,
+        "month": "2026-02",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-02-11",
+        "originals": 28,
+        "quotes": 18,
+        "reblogs": 0,
+        "total": 46,
+        "week": 7,
+        "year": 2026,
+        "month": "2026-02",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-02-12",
+        "originals": 11,
+        "quotes": 0,
+        "reblogs": 0,
+        "total": 11,
+        "week": 7,
+        "year": 2026,
+        "month": "2026-02",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-02-13",
+        "originals": 9,
+        "quotes": 0,
+        "reblogs": 0,
+        "total": 9,
+        "week": 7,
+        "year": 2026,
+        "month": "2026-02",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-02-14",
+        "originals": 2,
+        "quotes": 0,
+        "reblogs": 0,
+        "total": 2,
+        "week": 7,
+        "year": 2026,
+        "month": "2026-02",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-02-15",
+        "originals": 1,
+        "quotes": 0,
+        "reblogs": 0,
+        "total": 1,
+        "week": 7,
+        "year": 2026,
+        "month": "2026-02",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-02-16",
+        "originals": 49,
+        "quotes": 0,
+        "reblogs": 2,
+        "total": 51,
+        "week": 8,
+        "year": 2026,
+        "month": "2026-02",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-02-17",
+        "originals": 31,
+        "quotes": 1,
+        "reblogs": 1,
+        "total": 33,
+        "week": 8,
+        "year": 2026,
+        "month": "2026-02",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-02-18",
+        "originals": 14,
+        "quotes": 5,
+        "reblogs": 0,
+        "total": 19,
+        "week": 8,
+        "year": 2026,
+        "month": "2026-02",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-02-19",
+        "originals": 14,
+        "quotes": 0,
+        "reblogs": 0,
+        "total": 14,
+        "week": 8,
+        "year": 2026,
+        "month": "2026-02",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-02-20",
+        "originals": 9,
+        "quotes": 1,
+        "reblogs": 0,
+        "total": 10,
+        "week": 8,
+        "year": 2026,
+        "month": "2026-02",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-02-21",
+        "originals": 19,
+        "quotes": 0,
+        "reblogs": 0,
+        "total": 19,
+        "week": 8,
+        "year": 2026,
+        "month": "2026-02",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-02-22",
+        "originals": 8,
+        "quotes": 0,
+        "reblogs": 0,
+        "total": 8,
+        "week": 8,
+        "year": 2026,
+        "month": "2026-02",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-02-23",
+        "originals": 21,
+        "quotes": 7,
+        "reblogs": 0,
+        "total": 28,
+        "week": 9,
+        "year": 2026,
+        "month": "2026-02",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-02-24",
+        "originals": 1,
+        "quotes": 0,
+        "reblogs": 0,
+        "total": 1,
+        "week": 9,
+        "year": 2026,
+        "month": "2026-02",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-02-25",
+        "originals": 10,
+        "quotes": 0,
+        "reblogs": 0,
+        "total": 10,
+        "week": 9,
+        "year": 2026,
+        "month": "2026-02",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-02-26",
+        "originals": 4,
+        "quotes": 0,
+        "reblogs": 0,
+        "total": 4,
+        "week": 9,
+        "year": 2026,
+        "month": "2026-02",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-02-27",
+        "originals": 81,
+        "quotes": 4,
+        "reblogs": 0,
+        "total": 85,
+        "week": 9,
+        "year": 2026,
+        "month": "2026-02",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-02-28",
+        "originals": 6,
+        "quotes": 1,
+        "reblogs": 0,
+        "total": 7,
+        "week": 9,
+        "year": 2026,
+        "month": "2026-02",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-03-01",
+        "originals": 27,
+        "quotes": 2,
+        "reblogs": 1,
+        "total": 30,
+        "week": 9,
+        "year": 2026,
+        "month": "2026-03",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-03-02",
+        "originals": 22,
+        "quotes": 0,
+        "reblogs": 0,
+        "total": 22,
+        "week": 10,
+        "year": 2026,
+        "month": "2026-03",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-03-03",
+        "originals": 56,
+        "quotes": 4,
+        "reblogs": 1,
+        "total": 61,
+        "week": 10,
+        "year": 2026,
+        "month": "2026-03",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-03-04",
+        "originals": 21,
+        "quotes": 1,
+        "reblogs": 0,
+        "total": 22,
+        "week": 10,
+        "year": 2026,
+        "month": "2026-03",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-03-05",
+        "originals": 24,
+        "quotes": 0,
+        "reblogs": 0,
+        "total": 24,
+        "week": 10,
+        "year": 2026,
+        "month": "2026-03",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-03-06",
+        "originals": 40,
+        "quotes": 0,
+        "reblogs": 0,
+        "total": 40,
+        "week": 10,
+        "year": 2026,
+        "month": "2026-03",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-03-07",
+        "originals": 6,
+        "quotes": 0,
+        "reblogs": 0,
+        "total": 6,
+        "week": 10,
+        "year": 2026,
+        "month": "2026-03",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-03-08",
+        "originals": 5,
+        "quotes": 0,
+        "reblogs": 0,
+        "total": 5,
+        "week": 10,
+        "year": 2026,
+        "month": "2026-03",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-03-09",
+        "originals": 15,
+        "quotes": 0,
+        "reblogs": 0,
+        "total": 15,
+        "week": 11,
+        "year": 2026,
+        "month": "2026-03",
+        "quarter": "2026-Q1"
+      },
+      {
+        "date": "2026-03-10",
+        "originals": 7,
+        "quotes": 0,
+        "reblogs": 0,
+        "total": 7,
+        "week": 11,
+        "year": 2026,
+        "month": "2026-03",
+        "quarter": "2026-Q1"
+      }
+    ],
+    "weekly": [
+      {
+        "label": "2025-W51",
+        "originals": 37,
+        "quotes": 0,
+        "reblogs": 2,
+        "total": 39
+      },
+      {
+        "label": "2025-W52",
+        "originals": 114,
+        "quotes": 71,
+        "reblogs": 2,
+        "total": 187
+      },
+      {
+        "label": "2026-W01",
+        "originals": 97,
+        "quotes": 20,
+        "reblogs": 4,
+        "total": 121
+      },
+      {
+        "label": "2026-W02",
+        "originals": 147,
+        "quotes": 44,
+        "reblogs": 0,
+        "total": 191
+      },
+      {
+        "label": "2026-W03",
+        "originals": 62,
+        "quotes": 1,
+        "reblogs": 3,
+        "total": 66
+      },
+      {
+        "label": "2026-W04",
+        "originals": 199,
+        "quotes": 71,
+        "reblogs": 13,
+        "total": 283
+      },
+      {
+        "label": "2026-W05",
+        "originals": 128,
+        "quotes": 45,
+        "reblogs": 13,
+        "total": 186
+      },
+      {
+        "label": "2026-W06",
+        "originals": 138,
+        "quotes": 44,
+        "reblogs": 14,
+        "total": 196
+      },
+      {
+        "label": "2026-W07",
+        "originals": 72,
+        "quotes": 22,
+        "reblogs": 1,
+        "total": 95
+      },
+      {
+        "label": "2026-W08",
+        "originals": 144,
+        "quotes": 7,
+        "reblogs": 3,
+        "total": 154
+      },
+      {
+        "label": "2026-W09",
+        "originals": 150,
+        "quotes": 14,
+        "reblogs": 1,
+        "total": 165
+      },
+      {
+        "label": "2026-W10",
+        "originals": 174,
+        "quotes": 5,
+        "reblogs": 1,
+        "total": 180
+      },
+      {
+        "label": "2026-W11",
+        "originals": 22,
+        "quotes": 0,
+        "reblogs": 0,
+        "total": 22
+      }
+    ],
+    "monthly": [
+      {
+        "label": "2025-03",
+        "originals": 379,
+        "quotes": 3,
+        "reblogs": 7,
+        "total": 389
+      },
+      {
+        "label": "2025-04",
+        "originals": 427,
+        "quotes": 12,
+        "reblogs": 10,
+        "total": 449
+      },
+      {
+        "label": "2025-05",
+        "originals": 485,
+        "quotes": 19,
+        "reblogs": 23,
+        "total": 527
+      },
+      {
+        "label": "2025-06",
+        "originals": 497,
+        "quotes": 3,
+        "reblogs": 9,
+        "total": 509
+      },
+      {
+        "label": "2025-07",
+        "originals": 606,
+        "quotes": 18,
+        "reblogs": 15,
+        "total": 639
+      },
+      {
+        "label": "2025-08",
+        "originals": 542,
+        "quotes": 24,
+        "reblogs": 5,
+        "total": 571
+      },
+      {
+        "label": "2025-09",
+        "originals": 387,
+        "quotes": 4,
+        "reblogs": 22,
+        "total": 413
+      },
+      {
+        "label": "2025-10",
+        "originals": 446,
+        "quotes": 7,
+        "reblogs": 28,
+        "total": 481
+      },
+      {
+        "label": "2025-11",
+        "originals": 557,
+        "quotes": 19,
+        "reblogs": 42,
+        "total": 618
+      },
+      {
+        "label": "2025-12",
+        "originals": 440,
+        "quotes": 156,
+        "reblogs": 23,
+        "total": 619
+      },
+      {
+        "label": "2026-01",
+        "originals": 580,
+        "quotes": 180,
+        "reblogs": 25,
+        "total": 785
+      },
+      {
+        "label": "2026-02",
+        "originals": 495,
+        "quotes": 86,
+        "reblogs": 26,
+        "total": 607
+      },
+      {
+        "label": "2026-03",
+        "originals": 223,
+        "quotes": 7,
+        "reblogs": 2,
+        "total": 232
+      }
+    ],
+    "quarterly": [
+      {
+        "label": "2025-Q1",
+        "originals": 379,
+        "quotes": 3,
+        "reblogs": 7,
+        "total": 389
+      },
+      {
+        "label": "2025-Q2",
+        "originals": 1409,
+        "quotes": 34,
+        "reblogs": 42,
+        "total": 1485
+      },
+      {
+        "label": "2025-Q3",
+        "originals": 1535,
+        "quotes": 46,
+        "reblogs": 42,
+        "total": 1623
+      },
+      {
+        "label": "2025-Q4",
+        "originals": 1443,
+        "quotes": 182,
+        "reblogs": 93,
+        "total": 1718
+      },
+      {
+        "label": "2026-Q1",
+        "originals": 1298,
+        "quotes": 273,
+        "reblogs": 53,
+        "total": 1624
+      }
+    ],
+    "yearly": [
+      {
+        "label": "2025",
+        "originals": 4766,
+        "quotes": 265,
+        "reblogs": 184,
+        "total": 5215
+      },
+      {
+        "label": "2026",
+        "originals": 1298,
+        "quotes": 273,
+        "reblogs": 53,
+        "total": 1624
+      }
+    ]
+  }
+}
