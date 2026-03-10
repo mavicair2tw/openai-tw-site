@@ -1,16 +1,20 @@
 {
-  "updatedAt": "2026-03-11T05:03:38.993469+08:00",
+  "updatedAt": "2026-03-11T05:41:45.853739+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 〈紐約匯市〉美元走弱 伊朗衝突結束時間不確定；3. 03/10動作頻頻！輝達將向OpenAI競爭對手Thinking Machines Labs提供1GW算力AI晶片；4. 03/10油價急跌、美股反彈！IEA討論釋放戰略儲油 市場押注將出手穩供應；5. 03/10為AI投資籌資！亞馬遜啟動420億美元發債。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 川普釋出與伊朗談判訊號：他們非常想談；3. 03/10〈紐約匯市〉美元走弱 伊朗衝突結束時間不確定；4. 03/10動作頻頻！輝達將向OpenAI競爭對手Thinking Machines Labs提供1GW算力AI晶片；5. 03/10油價急跌、美股反彈！IEA討論釋放戰略儲油 市場押注將出手穩供應。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "〈紐約匯市〉美元走弱 伊朗衝突結束時間不確定",
+      "title": "川普釋出與伊朗談判訊號：他們非常想談",
+      "url": "https://news.cnyes.com/news/id/6376628"
+    },
+    {
+      "title": "03/10〈紐約匯市〉美元走弱 伊朗衝突結束時間不確定",
       "url": "https://news.cnyes.com/news/id/6376620"
     },
     {
@@ -48,10 +52,6 @@
     {
       "title": "03/10SpaceX估值1.75兆美元合理嗎？馬斯克超級IPO的關鍵問題",
       "url": "https://news.cnyes.com/news/id/6375940"
-    },
-    {
-      "title": "03/10SpaceX上市布局曝光！傳鎖定那斯達克並爭取納入Nasdaq100指數",
-      "url": "https://news.cnyes.com/news/id/6375939"
     }
   ],
   "error": null
