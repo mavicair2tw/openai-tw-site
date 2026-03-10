@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional, List
+from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
-class TACOEventBase(BaseModel):
+class TACOEventOut(BaseModel):
+    id: int
     event_timestamp: datetime
     source: str
     quote: str
@@ -16,25 +17,11 @@ class TACOEventBase(BaseModel):
     market_score: Optional[int]
 
 
-class TACOEventCreate(TACOEventBase):
-    pass
-
-
-class TACOEventOut(TACOEventBase):
-    id: int
-
-    class Config:
-        orm_mode = True
-
-
 class DailyReportOut(BaseModel):
     id: int
     report_date: datetime
     summary: str
-    highlights: List[str] = Field(default_factory=list)
-
-    class Config:
-        orm_mode = True
+    highlights: List[str]
 
 
 class NarrativeRadar(BaseModel):

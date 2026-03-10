@@ -1,27 +1,28 @@
 # Trump TACO Report
 
-A Next.js + Tailwind dashboard with a FastAPI backend and PostgreSQL database. This project ingests statements attributed to Donald Trump from verified sources, scores tone + market impact, and surfaces alerts and narrative shifts.
+A Next.js + Tailwind dashboard backed by a lightweight FastAPI service. Instead of storing statements in a database, the backend mirrors the latest content from `https://openai-tw.com/toao/`, analyzes tone/market factors, and exposes the same reporting endpoints as the previous design.
 
 ## Stack
 
 - Frontend: Next.js (App Router) + Tailwind CSS
-- Backend: FastAPI + SQLAlchemy + APScheduler
-- Database: PostgreSQL
-- Deployment: Docker Compose
+- Backend: FastAPI + APScheduler + in-memory cache
+- Deployment: Docker Compose (backend + frontend services)
 
 ## Running Locally
 
-1. Start the stack:
-   ```bash
-   docker-compose up --build
-   ```
-2. Frontend: http://localhost:3000
-3. Backend: http://localhost:8000
+```bash
+cd openai-tw-site-clone/trump-taco
+docker-compose up --build
+```
+
+- Frontend UI: http://localhost:3000
+- Backend docs: http://localhost:8000/docs
 
 ## Automation
 
-- FastAPI launches an APScheduler instance that pulls statements every 4 hours and builds a daily report at 01:00 UTC.
-- `backend/tasks.py` handles scraping, tone analysis, market scoring, and storing events.
+- FastAPI launches APScheduler at startup.
+- Every 4 hours the backend fetches the latest statements from `https://openai-tw.com/toao/` and refreshes the in-memory cache.
+- From those events we compute tone tags, market scores, daily highlights, alerts (market_score ≥ 5), and a small narrative radar.
 
 ## Endpoints
 
@@ -30,9 +31,9 @@ A Next.js + Tailwind dashboard with a FastAPI backend and PostgreSQL database. T
 - `GET /api/reports/daily`
 - `GET /api/alerts`
 - `GET /api/narrative`
-- `POST /api/events`
 
 ## Environment
 
-- `DATABASE_URL` should point at PostgreSQL (default `postgresql+asyncpg://postgres:postgres@db:5432/taco`).
-- `NEXT_PUBLIC_API_BASE_URL` controls the backend URL reachable by the dashboard.
+- `TACO_ENDPOINT`: optional override for the upstream source (default `https://openai-tw.com/toao/`).
+- `FETCH_INTERVAL_HOURS`: how often to refresh the cache (default `4`).
+- `NEXT_PUBLIC_API_BASE_URL`: controls where the frontend points (defaults to `http://localhost:8000`).

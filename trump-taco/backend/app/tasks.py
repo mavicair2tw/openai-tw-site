@@ -1,83 +1,76 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from typing import List
 
 import requests
 from bs4 import BeautifulSoup
 
-from . import crud, schemas, services
+from .cache import daily_reports, latest_events, market_alerts, narrative_radar, timeline_events
 from .core.config import settings
-from .database import AsyncSessionLocal
+from .schemas import TACOEventOut
+from . import services
 
 HEADERS = {"User-Agent": "Mozilla/5.0 (OpenClaw)"}
+EVENT_LIMIT = 20
 
 
-def parse_statements_from_html(body: str, source: str) -> List[str]:
+def parse_statements(body: str) -> List[str]:
     soup = BeautifulSoup(body, "html.parser")
     statements: List[str] = []
     for paragraph in soup.find_all("p"):
         text = paragraph.get_text(separator=" ").strip()
         if len(text) < 40:
             continue
-        if "trump" not in text.lower() and "donald" not in text.lower():
+        lowered = text.lower()
+        if "trump" not in lowered and "donald" not in lowered:
             continue
         statements.append(text)
     return statements
 
 
-def assemble_events() -> List[schemas.TACOEventCreate]:
-    events: List[schemas.TACOEventCreate] = []
+def build_events() -> List[TACOEventOut]:
+    events: List[TACOEventOut] = []
+    try:
+        resp = requests.get(str(settings.taco_endpoint), headers=HEADERS, timeout=12)
+        resp.raise_for_status()
+    except Exception:
+        return events
+    quotes = parse_statements(resp.text)
     now = datetime.now(timezone.utc)
-    for source in settings.statement_sources:
-        try:
-            resp = requests.get(source, headers=HEADERS, timeout=12)
-            resp.raise_for_status()
-        except Exception:
-            continue
-        quotes = parse_statements_from_html(resp.text, source)
-        for quote in quotes[:3]:
-            topic = services.topic_from_quote(quote)
-            tone = services.analyze_tone(quote)
-            score = services.market_score(quote)
-            paraphrase = services.synthesize_paraphrase(quote)
-            events.append(
-                schemas.TACOEventCreate(
-                    event_timestamp=now,
-                    source=source,
-                    quote=quote,
-                    paraphrase=paraphrase,
-                    topic=topic,
-                    tone=tone,
-                    market_score=score,
-                )
-            )
+    for idx, quote in enumerate(quotes[:EVENT_LIMIT], start=1):
+        event = TACOEventOut(
+            id=idx,
+            event_timestamp=now,
+            source=str(settings.taco_endpoint),
+            quote=quote,
+            paraphrase=services.synthesize_paraphrase(quote),
+            topic=services.topic_from_quote(quote),
+            tone=services.analyze_tone(quote),
+            market_score=services.market_score(quote),
+        )
+        events.append(event)
     return events
 
 
-async def fetch_and_store_events() -> None:
-    statements = await asyncio.to_thread(assemble_events)
-    if not statements:
+def update_cache(events: List[TACOEventOut]) -> None:
+    if not events:
         return
-    async with AsyncSessionLocal() as session:
-        for event in statements:
-            await crud.create_event(session, event)
+    latest_events.clear()
+    latest_events.extend(events[:10])
+    timeline_events.clear()
+    timeline_events.extend(events)
+    report = services.build_report(events)
+    report.id = 1
+    daily_reports.clear()
+    daily_reports.append(report)
+    market_alerts.clear()
+    market_alerts.extend(services.build_alerts(events))
+    narrative_radar.clear()
+    narrative_radar.extend(services.narrative_radar(events, events))
 
 
-async def daily_report_job() -> None:
-    async with AsyncSessionLocal() as session:
-        now = datetime.now(timezone.utc)
-        start = now - timedelta(days=1)
-        todays = await crud.events_between(session, start, now)
-        if not todays:
-            return
-        summary, highlights = services.build_report(todays)
-        await crud.create_daily_report(session, summary, highlights)
-
-
-async def narrative_window_events(days: int) -> List[schemas.TACOEventCreate]:
-    async with AsyncSessionLocal() as session:
-        now = datetime.now(timezone.utc)
-        start = now - timedelta(days=days)
-        return await crud.events_between(session, start, now)
+async def fetch_and_cache() -> None:
+    events = await asyncio.to_thread(build_events)
+    update_cache(events)
