@@ -1,57 +1,57 @@
 {
-  "updatedAt": "2026-03-12T05:47:55.871429+08:00",
+  "updatedAt": "2026-03-12T06:24:28.341735+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. AI晶片設計難度飆升 Synopsys整合Ansys技術推新平台；3. 03/11油價飆升！川普將動用美國戰略儲油 壓低能源成本；4. 03/11〈美股盤後〉中東戰火推升油價 川普將釋戰略儲油 道瓊標普連二黑；5. 03/11〈紐約匯市〉美元走強 IEA創紀錄釋放儲備油價仍漲。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 空單創三年新高 高盛：利多一來 美股將「極端」噴出；3. 22:14別驚訝！伊朗石油出口不減反增 已高於戰前水準；4. 22:06加州進入警戒 紐森監控伊朗無人機攻擊風險；5. 22:03川普：不擔心伊朗對美恐攻 稱美軍已摧毀約16艘布雷船。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "AI晶片設計難度飆升 Synopsys整合Ansys技術推新平台",
+      "title": "空單創三年新高 高盛：利多一來 美股將「極端」噴出",
+      "url": "https://news.cnyes.com/news/id/6379440"
+    },
+    {
+      "title": "22:14別驚訝！伊朗石油出口不減反增 已高於戰前水準",
+      "url": "https://news.cnyes.com/news/id/6379865"
+    },
+    {
+      "title": "22:06加州進入警戒 紐森監控伊朗無人機攻擊風險",
+      "url": "https://news.cnyes.com/news/id/6379845"
+    },
+    {
+      "title": "22:03川普：不擔心伊朗對美恐攻 稱美軍已摧毀約16艘布雷船",
+      "url": "https://news.cnyes.com/news/id/6379842"
+    },
+    {
+      "title": "22:00私募信貸產業持續承壓！小摩開始減記軟體貸款價值後 並收緊信貸槓桿",
+      "url": "https://news.cnyes.com/news/id/6377674"
+    },
+    {
+      "title": "21:40AI晶片設計難度飆升 Synopsys整合Ansys技術推新平台",
       "url": "https://news.cnyes.com/news/id/6379589"
     },
     {
-      "title": "03/11油價飆升！川普將動用美國戰略儲油 壓低能源成本",
+      "title": "21:35油價飆升！川普將動用美國戰略儲油 壓低能源成本",
       "url": "https://news.cnyes.com/news/id/6379851"
     },
     {
-      "title": "03/11〈美股盤後〉中東戰火推升油價 川普將釋戰略儲油 道瓊標普連二黑",
+      "title": "21:34〈美股盤後〉中東戰火推升油價 川普將釋戰略儲油 道瓊標普連二黑",
       "url": "https://news.cnyes.com/news/id/6379858"
     },
     {
-      "title": "03/11〈紐約匯市〉美元走強 IEA創紀錄釋放儲備油價仍漲",
+      "title": "21:10〈紐約匯市〉美元走強 IEA創紀錄釋放儲備油價仍漲",
       "url": "https://news.cnyes.com/news/id/6379837"
     },
     {
-      "title": "03/11中東硝煙瀰漫！伊朗荷姆茲海峽布雷 美軍已掌握水雷位置",
+      "title": "20:36中東硝煙瀰漫！伊朗荷姆茲海峽布雷 美軍已掌握水雷位置",
       "url": "https://news.cnyes.com/news/id/6379621"
     },
     {
-      "title": "03/11FBI警告：伊朗擬用無人機攻擊美國本土 加州恐成報復目標",
+      "title": "20:10FBI警告：伊朗擬用無人機攻擊美國本土 加州恐成報復目標",
       "url": "https://news.cnyes.com/news/id/6378009"
-    },
-    {
-      "title": "03/11AI恐慌洗掉投資人？軟體股迎買盤",
-      "url": "https://news.cnyes.com/news/id/6379447"
-    },
-    {
-      "title": "03/11AI代理競賽升溫！輝達推出「Nemotron 3 Super」新模型",
-      "url": "https://news.cnyes.com/news/id/6379564"
-    },
-    {
-      "title": "03/11向微軟致敬？馬斯克再掀AI話題 特斯拉與xAI聯手打造「Macrohard」",
-      "url": "https://news.cnyes.com/news/id/6379573"
-    },
-    {
-      "title": "03/11卡達LNG停產衝擊全球供應！殼牌宣布不可抗力",
-      "url": "https://news.cnyes.com/news/id/6379015"
-    },
-    {
-      "title": "03/1122分鐘全程無接管！黃仁勳親測輝達輔助駕駛系統Alpamayo：這是實體AI的ChatGPT時刻",
-      "url": "https://news.cnyes.com/news/id/6379504"
     }
   ],
   "error": null
