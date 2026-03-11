@@ -1,57 +1,57 @@
 {
-  "updatedAt": "2026-03-12T01:10:31.586562+08:00",
+  "updatedAt": "2026-03-12T02:03:07.170180+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 卡達LNG停產衝擊全球供應！殼牌宣布不可抗力；3. 16:1022分鐘全程無接管！黃仁勳親測輝達輔助駕駛系統Alpamayo：這是實體AI的ChatGPT時刻；4. 16:00輝達GTC大會倒數！分析師看淡股價爆發力：產品藍圖已在市場預期內；5. 15:30不只靠輝達！Meta加速AI晶片布局 2027年前部署四代自研晶片。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. AI代理競賽升溫！輝達推出「Nemotron 3 Super」新模型；3. 03/11向微軟致敬？馬斯克再掀AI話題 特斯拉與xAI聯手打造「Macrohard」；4. 03/11卡達LNG停產衝擊全球供應！殼牌宣布不可抗力；5. 03/1122分鐘全程無接管！黃仁勳親測輝達輔助駕駛系統Alpamayo：這是實體AI的ChatGPT時刻。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "卡達LNG停產衝擊全球供應！殼牌宣布不可抗力",
+      "title": "AI代理競賽升溫！輝達推出「Nemotron 3 Super」新模型",
+      "url": "https://news.cnyes.com/news/id/6379564"
+    },
+    {
+      "title": "03/11向微軟致敬？馬斯克再掀AI話題 特斯拉與xAI聯手打造「Macrohard」",
+      "url": "https://news.cnyes.com/news/id/6379573"
+    },
+    {
+      "title": "03/11卡達LNG停產衝擊全球供應！殼牌宣布不可抗力",
       "url": "https://news.cnyes.com/news/id/6379015"
     },
     {
-      "title": "16:1022分鐘全程無接管！黃仁勳親測輝達輔助駕駛系統Alpamayo：這是實體AI的ChatGPT時刻",
+      "title": "03/1122分鐘全程無接管！黃仁勳親測輝達輔助駕駛系統Alpamayo：這是實體AI的ChatGPT時刻",
       "url": "https://news.cnyes.com/news/id/6379504"
     },
     {
-      "title": "16:00輝達GTC大會倒數！分析師看淡股價爆發力：產品藍圖已在市場預期內",
+      "title": "03/11輝達GTC大會倒數！分析師看淡股價爆發力：產品藍圖已在市場預期內",
       "url": "https://news.cnyes.com/news/id/6376603"
     },
     {
-      "title": "15:30不只靠輝達！Meta加速AI晶片布局 2027年前部署四代自研晶片",
+      "title": "03/11不只靠輝達！Meta加速AI晶片布局 2027年前部署四代自研晶片",
       "url": "https://news.cnyes.com/news/id/6379461"
     },
     {
-      "title": "15:07戰火與油價令市場焦頭爛額 標普500「下一條生死線」浮現",
+      "title": "03/11戰火與油價令市場焦頭爛額 標普500「下一條生死線」浮現",
       "url": "https://news.cnyes.com/news/id/6379442"
     },
     {
-      "title": "15:00類比晶片股成中東戰火下避險首選 雙重防禦優勢受青睞",
+      "title": "03/11類比晶片股成中東戰火下避險首選 雙重防禦優勢受青睞",
       "url": "https://news.cnyes.com/news/id/6376599"
     },
     {
-      "title": "14:26川普：伊朗幾乎已無目標可打 戰爭將「很快」結束",
+      "title": "03/11川普：伊朗幾乎已無目標可打 戰爭將「很快」結束",
       "url": "https://news.cnyes.com/news/id/6379489"
     },
     {
-      "title": "14:10通膨好消息被戰爭掩蓋？華爾街解讀CPI：真正的風險其實是油價",
+      "title": "03/11通膨好消息被戰爭掩蓋？華爾街解讀CPI：真正的風險其實是油價",
       "url": "https://news.cnyes.com/news/id/6379414"
     },
     {
-      "title": "13:39〈美股早盤〉油價飆升壓抑市場情緒 主要指數漲跌互現",
+      "title": "03/11〈美股早盤〉油價飆升壓抑市場情緒 主要指數漲跌互現",
       "url": "https://news.cnyes.com/news/id/6379011"
-    },
-    {
-      "title": "13:30輝達砸20億美元投資Nebius擴建AI資料中心華碩、技嘉、華擎AI伺服器訂單同步受惠",
-      "url": "https://news.cnyes.com/news/id/6379428"
-    },
-    {
-      "title": "13:30Alphabet完成收購WizGoogle Cloud資安實力大幅升級",
-      "url": "https://news.cnyes.com/news/id/6379427"
     }
   ],
   "error": null
