@@ -1,16 +1,28 @@
 {
-  "updatedAt": "2026-03-11T17:00:07.369183+08:00",
+  "updatedAt": "2026-03-11T17:55:11.724902+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 記憶體晶片荒重創市場！Omdia：2026年出貨量料將大跌12% 入門級最受創；3. 07:20當中國在「全民養蝦」時 Meta已悄悄買下了「蝦池」；4. 07:10Rambus鞏固HBM市場 推出HBM4E控制器IP；5. 06:44美防長稱最猛攻勢將至 逾150名美軍傷亡 伊朗揚言「以牙還牙」報復。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 緩解AI用電問題 特斯拉、Google結盟挺電網轉型；3. 09:20當VIX不再靈敏可靠 抄底訊號竟藏在「加油站」；4. 09:00美伊戰火連天 川普真正目標為何？戰爭終局成全球焦點；5. 08:00記憶體晶片荒重創市場！Omdia：2026年出貨量料將大跌12% 入門級最受創。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "記憶體晶片荒重創市場！Omdia：2026年出貨量料將大跌12% 入門級最受創",
+      "title": "緩解AI用電問題 特斯拉、Google結盟挺電網轉型",
+      "url": "https://news.cnyes.com/news/id/6376598"
+    },
+    {
+      "title": "09:20當VIX不再靈敏可靠 抄底訊號竟藏在「加油站」",
+      "url": "https://news.cnyes.com/news/id/6377505"
+    },
+    {
+      "title": "09:00美伊戰火連天 川普真正目標為何？戰爭終局成全球焦點",
+      "url": "https://news.cnyes.com/news/id/6376608"
+    },
+    {
+      "title": "08:00記憶體晶片荒重創市場！Omdia：2026年出貨量料將大跌12% 入門級最受創",
       "url": "https://news.cnyes.com/news/id/6377656"
     },
     {
@@ -40,18 +52,6 @@
     {
       "title": "05:20甲骨文董事長反駁「AI 軟體末日論」：對我們來說不是問題",
       "url": "https://news.cnyes.com/news/id/6376695"
-    },
-    {
-      "title": "05:10WSJ：聰明錢 笨錢 其實都只是錢",
-      "url": "https://news.cnyes.com/news/id/6376610"
-    },
-    {
-      "title": "04:36黃仁勳：AI像「五層蛋糕」 數兆美元基建時代才剛開始",
-      "url": "https://news.cnyes.com/news/id/6377282"
-    },
-    {
-      "title": "04:10伊朗戰爭持續如何布局？專家：別急著避險也別急著抄底",
-      "url": "https://news.cnyes.com/news/id/6376626"
     }
   ],
   "error": null
