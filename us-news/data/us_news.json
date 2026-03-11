@@ -1,16 +1,36 @@
 {
-  "updatedAt": "2026-03-11T10:13:16.739543+08:00",
+  "updatedAt": "2026-03-11T12:18:51.376340+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 馬斯克預告：支付服務X Money下月可公開試用；3. 01:53微軟：法院應暫時阻止五角大廈將Anthropic列入黑名單；4. 01:40AI晶片新創Cerebras獲甲骨文採用 挑戰輝達、AMD主導地位；5. 01:27美國國防部加速AI部署 Google Gemini代理將進入辦公體系。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 罕見發長文！黃仁勳：未來傳統軟體和APP恐消失 AI Agent將成為主流；3. 03:55日月光衝刺先進封測 斥178億元擴楠梓第三園區 2028年Q2完工；4. 03:25富比士富豪榜！馬斯克坐擁8,390億美元 蟬聯全球首富；5. 03:20軟體股回暖現投資機會 分析師點名7檔潛力股。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "馬斯克預告：支付服務X Money下月可公開試用",
+      "title": "罕見發長文！黃仁勳：未來傳統軟體和APP恐消失 AI Agent將成為主流",
+      "url": "https://news.cnyes.com/news/id/6377162"
+    },
+    {
+      "title": "03:55日月光衝刺先進封測 斥178億元擴楠梓第三園區 2028年Q2完工",
+      "url": "https://news.cnyes.com/news/id/6377258"
+    },
+    {
+      "title": "03:25富比士富豪榜！馬斯克坐擁8,390億美元 蟬聯全球首富",
+      "url": "https://news.cnyes.com/news/id/6377137"
+    },
+    {
+      "title": "03:20軟體股回暖現投資機會 分析師點名7檔潛力股",
+      "url": "https://news.cnyes.com/news/id/6376624"
+    },
+    {
+      "title": "03:00又一家！Cliffwater旗鑑私募信貸基金贖回請求恐超7% 外媒：現在像極了2007年次貸危機前夕",
+      "url": "https://news.cnyes.com/news/id/6376775"
+    },
+    {
+      "title": "02:05馬斯克預告：支付服務X Money下月可公開試用",
       "url": "https://news.cnyes.com/news/id/6376632"
     },
     {
@@ -32,26 +52,6 @@
     {
       "title": "00:43委內瑞拉能源開放 雪佛龍、殼牌接近敲定大型開發案",
       "url": "https://news.cnyes.com/news/id/6376649"
-    },
-    {
-      "title": "00:40傳Meta收購爆紅AI代理社群「機器人版Reddit」Moltbook",
-      "url": "https://news.cnyes.com/news/id/6376627"
-    },
-    {
-      "title": "00:30美股走高油價重挫14%科技股領漲",
-      "url": "https://news.cnyes.com/news/id/6376749"
-    },
-    {
-      "title": "00:30甲骨文看好AI資料中心需求預估2027財年營收達900億美元",
-      "url": "https://news.cnyes.com/news/id/6376747"
-    },
-    {
-      "title": "00:06川普宣布在德州建設美國50年來首座新煉油廠 感謝印度信實集團投資",
-      "url": "https://news.cnyes.com/news/id/6376689"
-    },
-    {
-      "title": "00:00美股重點新聞摘要2026年3月11日",
-      "url": "https://news.cnyes.com/news/id/6376621"
     }
   ],
   "error": null
