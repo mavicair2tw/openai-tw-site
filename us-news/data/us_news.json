@@ -1,16 +1,32 @@
 {
-  "updatedAt": "2026-03-11T12:18:51.376340+08:00",
+  "updatedAt": "2026-03-11T13:31:27.694035+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 罕見發長文！黃仁勳：未來傳統軟體和APP恐消失 AI Agent將成為主流；3. 03:55日月光衝刺先進封測 斥178億元擴楠梓第三園區 2028年Q2完工；4. 03:25富比士富豪榜！馬斯克坐擁8,390億美元 蟬聯全球首富；5. 03:20軟體股回暖現投資機會 分析師點名7檔潛力股。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 甲骨文董事長反駁「AI 軟體末日論」：對我們來說不是問題；3. 05:10WSJ：聰明錢 笨錢 其實都只是錢；4. 04:36黃仁勳：AI像「五層蛋糕」 數兆美元基建時代才剛開始；5. 04:10伊朗戰爭持續如何布局？專家：別急著避險也別急著抄底。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "罕見發長文！黃仁勳：未來傳統軟體和APP恐消失 AI Agent將成為主流",
+      "title": "甲骨文董事長反駁「AI 軟體末日論」：對我們來說不是問題",
+      "url": "https://news.cnyes.com/news/id/6376695"
+    },
+    {
+      "title": "05:10WSJ：聰明錢 笨錢 其實都只是錢",
+      "url": "https://news.cnyes.com/news/id/6376610"
+    },
+    {
+      "title": "04:36黃仁勳：AI像「五層蛋糕」 數兆美元基建時代才剛開始",
+      "url": "https://news.cnyes.com/news/id/6377282"
+    },
+    {
+      "title": "04:10伊朗戰爭持續如何布局？專家：別急著避險也別急著抄底",
+      "url": "https://news.cnyes.com/news/id/6376626"
+    },
+    {
+      "title": "04:00罕見發長文！黃仁勳：未來傳統軟體和APP恐消失 AI Agent將成為主流",
       "url": "https://news.cnyes.com/news/id/6377162"
     },
     {
@@ -36,22 +52,6 @@
     {
       "title": "01:53微軟：法院應暫時阻止五角大廈將Anthropic列入黑名單",
       "url": "https://news.cnyes.com/news/id/6376635"
-    },
-    {
-      "title": "01:40AI晶片新創Cerebras獲甲骨文採用 挑戰輝達、AMD主導地位",
-      "url": "https://news.cnyes.com/news/id/6376887"
-    },
-    {
-      "title": "01:27美國國防部加速AI部署 Google Gemini代理將進入辦公體系",
-      "url": "https://news.cnyes.com/news/id/6376690"
-    },
-    {
-      "title": "01:10結束長達10年虧損！蔚來頭一次實現季度獲利 激勵股價在紐約狂飆逾15%",
-      "url": "https://news.cnyes.com/news/id/6376698"
-    },
-    {
-      "title": "00:43委內瑞拉能源開放 雪佛龍、殼牌接近敲定大型開發案",
-      "url": "https://news.cnyes.com/news/id/6376649"
     }
   ],
   "error": null
