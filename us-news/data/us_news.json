@@ -1,16 +1,20 @@
 {
-  "updatedAt": "2026-03-12T03:51:09.817016+08:00",
+  "updatedAt": "2026-03-12T04:31:08.461315+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. AI恐慌洗掉投資人？軟體股迎買盤；3. 18:00AI代理競賽升溫！輝達推出「Nemotron 3 Super」新模型；4. 17:30向微軟致敬？馬斯克再掀AI話題 特斯拉與xAI聯手打造「Macrohard」；5. 16:30卡達LNG停產衝擊全球供應！殼牌宣布不可抗力。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. FBI警告：伊朗擬用無人機攻擊美國本土 加州恐成報復目標；3. 19:00AI恐慌洗掉投資人？軟體股迎買盤；4. 18:00AI代理競賽升溫！輝達推出「Nemotron 3 Super」新模型；5. 17:30向微軟致敬？馬斯克再掀AI話題 特斯拉與xAI聯手打造「Macrohard」。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "AI恐慌洗掉投資人？軟體股迎買盤",
+      "title": "FBI警告：伊朗擬用無人機攻擊美國本土 加州恐成報復目標",
+      "url": "https://news.cnyes.com/news/id/6378009"
+    },
+    {
+      "title": "19:00AI恐慌洗掉投資人？軟體股迎買盤",
       "url": "https://news.cnyes.com/news/id/6379447"
     },
     {
@@ -48,10 +52,6 @@
     {
       "title": "14:26川普：伊朗幾乎已無目標可打 戰爭將「很快」結束",
       "url": "https://news.cnyes.com/news/id/6379489"
-    },
-    {
-      "title": "14:10通膨好消息被戰爭掩蓋？華爾街解讀CPI：真正的風險其實是油價",
-      "url": "https://news.cnyes.com/news/id/6379414"
     }
   ],
   "error": null
