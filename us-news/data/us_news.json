@@ -1,57 +1,57 @@
 {
-  "updatedAt": "2026-03-11T19:53:59.914343+08:00",
+  "updatedAt": "2026-03-11T20:54:38.941090+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 受基期較低影響 特斯拉中國2月份銷量增長達91%；3. 10:30全年財測亮眼緩解市場疑慮！Oracle盤前大漲10%；4. 10:00小摩憂軟體業遭AI衝擊！收緊私募信貸放款、下調資產估值；5. 09:30緩解AI用電問題 特斯拉、Google結盟挺電網轉型。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 美30年期房貸利率攀升至6.19% 周漲幅創去年9月以來新高；3. 03/11美國2月CPI年升2.4%符合預期 美股指數期貨小幅走高；4. 03/11美股軟體股走出「AI顛覆」陰霾 估值觸底與強勁回購帶動反彈；5. 03/11AI記憶體爭奪戰開打？蘇姿丰傳訪韓與三星洽談合作。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "受基期較低影響 特斯拉中國2月份銷量增長達91%",
+      "title": "美30年期房貸利率攀升至6.19% 周漲幅創去年9月以來新高",
+      "url": "https://news.cnyes.com/news/id/6379040"
+    },
+    {
+      "title": "03/11美國2月CPI年升2.4%符合預期 美股指數期貨小幅走高",
+      "url": "https://news.cnyes.com/news/id/6379241"
+    },
+    {
+      "title": "03/11美股軟體股走出「AI顛覆」陰霾 估值觸底與強勁回購帶動反彈",
+      "url": "https://news.cnyes.com/news/id/6378873"
+    },
+    {
+      "title": "03/11AI記憶體爭奪戰開打？蘇姿丰傳訪韓與三星洽談合作",
+      "url": "https://news.cnyes.com/news/id/6379013"
+    },
+    {
+      "title": "03/11科技股領漲訊號浮現！巴隆：Alphabet、美光技術面轉強",
+      "url": "https://news.cnyes.com/news/id/6377967"
+    },
+    {
+      "title": "03/11受基期較低影響 特斯拉中國2月份銷量增長達91%",
       "url": "https://news.cnyes.com/news/id/6378870"
     },
     {
-      "title": "10:30全年財測亮眼緩解市場疑慮！Oracle盤前大漲10%",
+      "title": "03/11全年財測亮眼緩解市場疑慮！Oracle盤前大漲10%",
       "url": "https://news.cnyes.com/news/id/6378830"
     },
     {
-      "title": "10:00小摩憂軟體業遭AI衝擊！收緊私募信貸放款、下調資產估值",
+      "title": "03/11小摩憂軟體業遭AI衝擊！收緊私募信貸放款、下調資產估值",
       "url": "https://news.cnyes.com/news/id/6377444"
     },
     {
-      "title": "09:30緩解AI用電問題 特斯拉、Google結盟挺電網轉型",
+      "title": "03/11緩解AI用電問題 特斯拉、Google結盟挺電網轉型",
       "url": "https://news.cnyes.com/news/id/6376598"
     },
     {
-      "title": "09:20當VIX不再靈敏可靠 抄底訊號竟藏在「加油站」",
+      "title": "03/11當VIX不再靈敏可靠 抄底訊號竟藏在「加油站」",
       "url": "https://news.cnyes.com/news/id/6377505"
     },
     {
-      "title": "09:00美伊戰火連天 川普真正目標為何？戰爭終局成全球焦點",
+      "title": "03/11美伊戰火連天 川普真正目標為何？戰爭終局成全球焦點",
       "url": "https://news.cnyes.com/news/id/6376608"
-    },
-    {
-      "title": "08:00記憶體晶片荒重創市場！Omdia：2026年出貨量料將大跌12% 入門級最受創",
-      "url": "https://news.cnyes.com/news/id/6377656"
-    },
-    {
-      "title": "07:20當中國在「全民養蝦」時 Meta已悄悄買下了「蝦池」",
-      "url": "https://news.cnyes.com/news/id/6377390"
-    },
-    {
-      "title": "07:10Rambus鞏固HBM市場 推出HBM4E控制器IP",
-      "url": "https://news.cnyes.com/news/id/6377499"
-    },
-    {
-      "title": "06:44美防長稱最猛攻勢將至 逾150名美軍傷亡 伊朗揚言「以牙還牙」報復",
-      "url": "https://news.cnyes.com/news/id/6376639"
-    },
-    {
-      "title": "06:10軟銀旗下PayPay赴美IPO 定價料落在此區間",
-      "url": "https://news.cnyes.com/news/id/6377381"
     }
   ],
   "error": null
