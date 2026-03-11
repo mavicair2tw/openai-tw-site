@@ -1,57 +1,57 @@
 {
-  "updatedAt": "2026-03-12T04:31:08.461315+08:00",
+  "updatedAt": "2026-03-12T05:03:51.152886+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. FBI警告：伊朗擬用無人機攻擊美國本土 加州恐成報復目標；3. 19:00AI恐慌洗掉投資人？軟體股迎買盤；4. 18:00AI代理競賽升溫！輝達推出「Nemotron 3 Super」新模型；5. 17:30向微軟致敬？馬斯克再掀AI話題 特斯拉與xAI聯手打造「Macrohard」。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 中東硝煙瀰漫！伊朗荷姆茲海峽布雷 美軍已掌握水雷位置；3. 03/11FBI警告：伊朗擬用無人機攻擊美國本土 加州恐成報復目標；4. 03/11AI恐慌洗掉投資人？軟體股迎買盤；5. 03/11AI代理競賽升溫！輝達推出「Nemotron 3 Super」新模型。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "FBI警告：伊朗擬用無人機攻擊美國本土 加州恐成報復目標",
+      "title": "中東硝煙瀰漫！伊朗荷姆茲海峽布雷 美軍已掌握水雷位置",
+      "url": "https://news.cnyes.com/news/id/6379621"
+    },
+    {
+      "title": "03/11FBI警告：伊朗擬用無人機攻擊美國本土 加州恐成報復目標",
       "url": "https://news.cnyes.com/news/id/6378009"
     },
     {
-      "title": "19:00AI恐慌洗掉投資人？軟體股迎買盤",
+      "title": "03/11AI恐慌洗掉投資人？軟體股迎買盤",
       "url": "https://news.cnyes.com/news/id/6379447"
     },
     {
-      "title": "18:00AI代理競賽升溫！輝達推出「Nemotron 3 Super」新模型",
+      "title": "03/11AI代理競賽升溫！輝達推出「Nemotron 3 Super」新模型",
       "url": "https://news.cnyes.com/news/id/6379564"
     },
     {
-      "title": "17:30向微軟致敬？馬斯克再掀AI話題 特斯拉與xAI聯手打造「Macrohard」",
+      "title": "03/11向微軟致敬？馬斯克再掀AI話題 特斯拉與xAI聯手打造「Macrohard」",
       "url": "https://news.cnyes.com/news/id/6379573"
     },
     {
-      "title": "16:30卡達LNG停產衝擊全球供應！殼牌宣布不可抗力",
+      "title": "03/11卡達LNG停產衝擊全球供應！殼牌宣布不可抗力",
       "url": "https://news.cnyes.com/news/id/6379015"
     },
     {
-      "title": "16:1022分鐘全程無接管！黃仁勳親測輝達輔助駕駛系統Alpamayo：這是實體AI的ChatGPT時刻",
+      "title": "03/1122分鐘全程無接管！黃仁勳親測輝達輔助駕駛系統Alpamayo：這是實體AI的ChatGPT時刻",
       "url": "https://news.cnyes.com/news/id/6379504"
     },
     {
-      "title": "16:00輝達GTC大會倒數！分析師看淡股價爆發力：產品藍圖已在市場預期內",
+      "title": "03/11輝達GTC大會倒數！分析師看淡股價爆發力：產品藍圖已在市場預期內",
       "url": "https://news.cnyes.com/news/id/6376603"
     },
     {
-      "title": "15:30不只靠輝達！Meta加速AI晶片布局 2027年前部署四代自研晶片",
+      "title": "03/11不只靠輝達！Meta加速AI晶片布局 2027年前部署四代自研晶片",
       "url": "https://news.cnyes.com/news/id/6379461"
     },
     {
-      "title": "15:07戰火與油價令市場焦頭爛額 標普500「下一條生死線」浮現",
+      "title": "03/11戰火與油價令市場焦頭爛額 標普500「下一條生死線」浮現",
       "url": "https://news.cnyes.com/news/id/6379442"
     },
     {
-      "title": "15:00類比晶片股成中東戰火下避險首選 雙重防禦優勢受青睞",
+      "title": "03/11類比晶片股成中東戰火下避險首選 雙重防禦優勢受青睞",
       "url": "https://news.cnyes.com/news/id/6376599"
-    },
-    {
-      "title": "14:26川普：伊朗幾乎已無目標可打 戰爭將「很快」結束",
-      "url": "https://news.cnyes.com/news/id/6379489"
     }
   ],
   "error": null
