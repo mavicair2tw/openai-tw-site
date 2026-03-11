@@ -1,16 +1,24 @@
 {
-  "updatedAt": "2026-03-11T17:55:11.724902+08:00",
+  "updatedAt": "2026-03-11T18:36:13.245576+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 緩解AI用電問題 特斯拉、Google結盟挺電網轉型；3. 09:20當VIX不再靈敏可靠 抄底訊號竟藏在「加油站」；4. 09:00美伊戰火連天 川普真正目標為何？戰爭終局成全球焦點；5. 08:00記憶體晶片荒重創市場！Omdia：2026年出貨量料將大跌12% 入門級最受創。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 全年財測亮眼緩解市場疑慮！Oracle盤前大漲10%；3. 10:00小摩憂軟體業遭AI衝擊！收緊私募信貸放款、下調資產估值；4. 09:30緩解AI用電問題 特斯拉、Google結盟挺電網轉型；5. 09:20當VIX不再靈敏可靠 抄底訊號竟藏在「加油站」。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "緩解AI用電問題 特斯拉、Google結盟挺電網轉型",
+      "title": "全年財測亮眼緩解市場疑慮！Oracle盤前大漲10%",
+      "url": "https://news.cnyes.com/news/id/6378830"
+    },
+    {
+      "title": "10:00小摩憂軟體業遭AI衝擊！收緊私募信貸放款、下調資產估值",
+      "url": "https://news.cnyes.com/news/id/6377444"
+    },
+    {
+      "title": "09:30緩解AI用電問題 特斯拉、Google結盟挺電網轉型",
       "url": "https://news.cnyes.com/news/id/6376598"
     },
     {
@@ -44,14 +52,6 @@
     {
       "title": "06:00甲骨文法說重點整理：290億美元大單入袋、AI基建不燒自家現金、「我們才是SaaS顛覆者」",
       "url": "https://news.cnyes.com/news/id/6377406"
-    },
-    {
-      "title": "05:53富比士2026富豪榜出爐：郭台銘重登台灣首富、張忠謀排第五",
-      "url": "https://news.cnyes.com/news/id/6377369"
-    },
-    {
-      "title": "05:20甲骨文董事長反駁「AI 軟體末日論」：對我們來說不是問題",
-      "url": "https://news.cnyes.com/news/id/6376695"
     }
   ],
   "error": null
