@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-11T13:31:23.940646+08:00",
+  "updatedAt": "2026-03-11T14:32:22.618847+08:00",
   "timezone": "Asia/Taipei",
   "dataDate": "2026-03-11",
   "source": {
@@ -19,9 +19,9 @@
       "label": "加權指數",
       "symbol": "^TWII",
       "type": "Index",
-      "price": 34122.37,
-      "change": 1350.5,
-      "changePercent": 4.12,
+      "price": 34114.19,
+      "change": 1342.32,
+      "changePercent": 4.1,
       "currency": "TWD",
       "trend": [
         {
@@ -29,11 +29,11 @@
           "close": 32771.87
         },
         {
-          "time": "13:30",
-          "close": 34122.37
+          "time": "13:33",
+          "close": 34114.19
         }
       ],
-      "timestamp": "2026-03-11T13:30:00+08:00"
+      "timestamp": "2026-03-11T13:33:00+08:00"
     },
     {
       "label": "台積電",

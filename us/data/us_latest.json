@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-11T13:31:25.221549+08:00",
+  "updatedAt": "2026-03-11T14:32:25.100590+08:00",
   "timezone": "Asia/Taipei",
   "market": "US",
   "items": [
@@ -749,22 +749,10 @@
       "label": "比特幣",
       "symbol": "BTC-USD",
       "type": "Crypto",
-      "price": 69968.69,
-      "change": 1566.3,
-      "changePercent": 2.29,
+      "price": 69801.9,
+      "change": -125.02,
+      "changePercent": -0.18,
       "trend": [
-        {
-          "time": "08:00",
-          "close": 70063.68
-        },
-        {
-          "time": "08:15",
-          "close": 70128.48
-        },
-        {
-          "time": "08:30",
-          "close": 69857.41
-        },
         {
           "time": "08:45",
           "close": 70093.77
@@ -840,6 +828,26 @@
         {
           "time": "13:15",
           "close": 69968.69
+        },
+        {
+          "time": "13:30",
+          "close": 69453.7
+        },
+        {
+          "time": "13:45",
+          "close": 69552.3
+        },
+        {
+          "time": "14:00",
+          "close": 69710.3
+        },
+        {
+          "time": "14:15",
+          "close": 69786.23
+        },
+        {
+          "time": "14:30",
+          "close": 69801.9
         }
       ]
     },
@@ -847,9 +855,9 @@
       "label": "黃金期貨",
       "symbol": "GC=F",
       "type": "Commodity",
-      "price": 5212.6,
-      "change": -17.1,
-      "changePercent": -0.33,
+      "price": 5213.0,
+      "change": -16.7,
+      "changePercent": -0.32,
       "trend": [
         {
           "time": "12:00",
@@ -873,7 +881,23 @@
         },
         {
           "time": "13:15",
-          "close": 5212.6
+          "close": 5208.9
+        },
+        {
+          "time": "13:30",
+          "close": 5209.1
+        },
+        {
+          "time": "13:45",
+          "close": 5207.6
+        },
+        {
+          "time": "14:00",
+          "close": 5217.0
+        },
+        {
+          "time": "14:15",
+          "close": 5213.0
         }
       ]
     }
