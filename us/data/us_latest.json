@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-12T09:54:05.572600+08:00",
+  "updatedAt": "2026-03-12T09:54:08.075042+08:00",
   "timezone": "Asia/Taipei",
   "market": "US",
   "items": [
@@ -791,9 +791,9 @@
       "label": "黃金期貨",
       "symbol": "GC=F",
       "type": "Commodity",
-      "price": 5172.1,
-      "change": -57.6,
-      "changePercent": -1.1,
+      "price": 5172.9,
+      "change": -56.8,
+      "changePercent": -1.09,
       "trend": [
         {
           "time": "02:45",
@@ -889,7 +889,7 @@
         },
         {
           "time": "09:30",
-          "close": 5172.1
+          "close": 5172.9
         }
       ]
     }
