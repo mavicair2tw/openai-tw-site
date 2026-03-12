@@ -1,57 +1,57 @@
 {
-  "updatedAt": "2026-03-12T07:48:57.752709+08:00",
+  "updatedAt": "2026-03-12T09:54:08.304171+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 川普政府宣布釋出1.72億桶戰略儲油 平穩油價；3. 03/11能源專家：沒有任何政策能阻止油價上漲；4. 03/11震撼全球！中國全民封養「龍蝦」 高盛震驚MinMax奇蹟：沒看過IPO兩個月飆740%；5. 03/11伊朗總統提出結束戰爭三大必要條件。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 川普啟動新一輪301調查 首批16國含台灣、中國、日本、歐盟；3. 03/12串流AI戰升溫 法國Canal+引入Google AI創作工具 挑戰Netflix；4. 03/12Anthropic實證：AI專搶高薪白領飯碗 「5大職業」最危險；5. 03/12輝達將斥資260億美元打造開放權重AI模型。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "川普政府宣布釋出1.72億桶戰略儲油 平穩油價",
+      "title": "川普啟動新一輪301調查 首批16國含台灣、中國、日本、歐盟",
+      "url": "https://news.cnyes.com/news/id/6380004"
+    },
+    {
+      "title": "03/12串流AI戰升溫 法國Canal+引入Google AI創作工具 挑戰Netflix",
+      "url": "https://news.cnyes.com/news/id/6379952"
+    },
+    {
+      "title": "03/12Anthropic實證：AI專搶高薪白領飯碗 「5大職業」最危險",
+      "url": "https://news.cnyes.com/news/id/6379515"
+    },
+    {
+      "title": "03/12輝達將斥資260億美元打造開放權重AI模型",
+      "url": "https://news.cnyes.com/news/id/6379843"
+    },
+    {
+      "title": "03/12美股收盤漲跌互見伊朗衝突升溫壓抑市場風險情緒",
+      "url": "https://news.cnyes.com/news/id/6379956"
+    },
+    {
+      "title": "03/12蘋果摺疊iPhone傳採類iPad介面 支援多工功能",
+      "url": "https://news.cnyes.com/news/id/6379841"
+    },
+    {
+      "title": "03/12從「龍蝦派對」到「五層蛋糕」：黃仁勳想怎麼挖掘AI金礦？",
+      "url": "https://news.cnyes.com/news/id/6379347"
+    },
+    {
+      "title": "03/12低軌衛星競爭白熱化 FCC主席怒批亞馬遜：自家衛星部署恐少1000顆 卻忙著反對SpaceX",
+      "url": "https://news.cnyes.com/news/id/6379883"
+    },
+    {
+      "title": "03/12美股重點新聞摘要2026年3月12日",
+      "url": "https://news.cnyes.com/news/id/6379836"
+    },
+    {
+      "title": "23:41川普政府宣布釋出1.72億桶戰略儲油 平穩油價",
       "url": "https://news.cnyes.com/news/id/6379893"
     },
     {
-      "title": "03/11能源專家：沒有任何政策能阻止油價上漲",
+      "title": "23:11能源專家：沒有任何政策能阻止油價上漲",
       "url": "https://news.cnyes.com/news/id/6379839"
-    },
-    {
-      "title": "03/11震撼全球！中國全民封養「龍蝦」 高盛震驚MinMax奇蹟：沒看過IPO兩個月飆740%",
-      "url": "https://news.cnyes.com/news/id/6377675"
-    },
-    {
-      "title": "03/11伊朗總統提出結束戰爭三大必要條件",
-      "url": "https://news.cnyes.com/news/id/6379848"
-    },
-    {
-      "title": "03/11空單創三年新高 高盛：利多一來 美股將「極端」噴出",
-      "url": "https://news.cnyes.com/news/id/6379440"
-    },
-    {
-      "title": "03/11別驚訝！伊朗石油出口不減反增 已高於戰前水準",
-      "url": "https://news.cnyes.com/news/id/6379865"
-    },
-    {
-      "title": "03/11加州進入警戒 紐森監控伊朗無人機攻擊風險",
-      "url": "https://news.cnyes.com/news/id/6379845"
-    },
-    {
-      "title": "03/11川普：不擔心伊朗對美恐攻 稱美軍已摧毀約16艘布雷船",
-      "url": "https://news.cnyes.com/news/id/6379842"
-    },
-    {
-      "title": "03/11私募信貸產業持續承壓！小摩開始減記軟體貸款價值後 並收緊信貸槓桿",
-      "url": "https://news.cnyes.com/news/id/6377674"
-    },
-    {
-      "title": "03/11AI晶片設計難度飆升 Synopsys整合Ansys技術推新平台",
-      "url": "https://news.cnyes.com/news/id/6379589"
-    },
-    {
-      "title": "03/11油價飆升！川普將動用美國戰略儲油 壓低能源成本",
-      "url": "https://news.cnyes.com/news/id/6379851"
     }
   ],
   "error": null
