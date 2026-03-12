@@ -1,16 +1,28 @@
 {
-  "updatedAt": "2026-03-12T12:12:03.916353+08:00",
+  "updatedAt": "2026-03-12T13:21:23.117896+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. OpenAI、Anthropic鷸蚌相爭 Google坐收漁利；3. 03/12油價漲幅擴大 布蘭特又登上100美元！道瓊期下挫580點、亞股走低；4. 03/12為何IEA史上最大規模釋放儲備反而推升油價？；5. 03/12美股底在哪？技術派盯上標普500這條線。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 化工股大漲！波克夏收購西方石油化工業務超值 帳面大賺逾30億美元；3. 03/12AI打破記憶體類股景氣循環 暴漲暴跌時代可能結束；4. 03/12打造全球AI資料中心 不只需要輝達晶片；5. 03/12OpenAI、Anthropic鷸蚌相爭 Google坐收漁利。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "OpenAI、Anthropic鷸蚌相爭 Google坐收漁利",
+      "title": "化工股大漲！波克夏收購西方石油化工業務超值 帳面大賺逾30億美元",
+      "url": "https://news.cnyes.com/news/id/6379619"
+    },
+    {
+      "title": "03/12AI打破記憶體類股景氣循環 暴漲暴跌時代可能結束",
+      "url": "https://news.cnyes.com/news/id/6379855"
+    },
+    {
+      "title": "03/12打造全球AI資料中心 不只需要輝達晶片",
+      "url": "https://news.cnyes.com/news/id/6379846"
+    },
+    {
+      "title": "03/12OpenAI、Anthropic鷸蚌相爭 Google坐收漁利",
       "url": "https://news.cnyes.com/news/id/6379615"
     },
     {
@@ -40,18 +52,6 @@
     {
       "title": "03/12串流AI戰升溫 法國Canal+引入Google AI創作工具 挑戰Netflix",
       "url": "https://news.cnyes.com/news/id/6379952"
-    },
-    {
-      "title": "03/12Anthropic實證：AI專搶高薪白領飯碗 「5大職業」最危險",
-      "url": "https://news.cnyes.com/news/id/6379515"
-    },
-    {
-      "title": "03/12輝達將斥資260億美元打造開放權重AI模型",
-      "url": "https://news.cnyes.com/news/id/6379843"
-    },
-    {
-      "title": "03/12美股收盤漲跌互見伊朗衝突升溫壓抑市場風險情緒",
-      "url": "https://news.cnyes.com/news/id/6379956"
     }
   ],
   "error": null
