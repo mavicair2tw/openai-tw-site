@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-12T15:57:27.872736+08:00",
+  "updatedAt": "2026-03-12T16:49:29.540077+08:00",
   "timezone": "Asia/Taipei",
   "asset": "BTC-USD",
   "defaultFrame": "day",
@@ -13,15 +13,11 @@
       "label": "每小時",
       "interval": "1h",
       "latest": {
-        "price": 69847.91,
-        "change": 384.58,
-        "changePercent": 0.554
+        "price": 69815.3,
+        "change": 1.87,
+        "changePercent": 0.003
       },
       "series": [
-        {
-          "time": "03-08 16:00",
-          "close": 67537.93
-        },
         {
           "time": "03-08 17:00",
           "close": 67733.98
@@ -52,11 +48,11 @@
         },
         {
           "time": "03-09 00:00",
-          "close": 66846.52
+          "close": 66930.73
         },
         {
           "time": "03-09 01:00",
-          "close": 66978.2
+          "close": 66974.21
         },
         {
           "time": "03-09 02:00",
@@ -400,16 +396,14 @@
         },
         {
           "time": "03-12 15:00",
-          "close": 69847.91
+          "close": 69813.43
+        },
+        {
+          "time": "03-12 16:00",
+          "close": 69815.3
         }
       ],
       "table": [
-        {
-          "label": "03-11 16:00",
-          "price": 69637.3,
-          "change": -29.17,
-          "changePercent": -0.042
-        },
         {
           "label": "03-11 17:00",
           "price": 69411.18,
@@ -544,9 +538,15 @@
         },
         {
           "label": "03-12 15:00",
-          "price": 69847.91,
-          "change": 384.58,
-          "changePercent": 0.554
+          "price": 69813.43,
+          "change": 350.09,
+          "changePercent": 0.504
+        },
+        {
+          "label": "03-12 16:00",
+          "price": 69815.3,
+          "change": 1.87,
+          "changePercent": 0.003
         }
       ]
     },
@@ -554,9 +554,9 @@
       "label": "每日",
       "interval": "1d",
       "latest": {
-        "price": 69847.91,
-        "change": -356.97,
-        "changePercent": -0.508
+        "price": 69815.3,
+        "change": -389.59,
+        "changePercent": -0.555
       },
       "series": [
         {
@@ -1037,7 +1037,7 @@
         },
         {
           "time": "2026-03-12",
-          "close": 69847.91
+          "close": 69815.3
         }
       ],
       "table": [
@@ -1217,9 +1217,9 @@
         },
         {
           "label": "2026-03-12",
-          "price": 69847.91,
-          "change": -356.97,
-          "changePercent": -0.508
+          "price": 69815.3,
+          "change": -389.59,
+          "changePercent": -0.555
         }
       ]
     },
@@ -1227,9 +1227,9 @@
       "label": "每週",
       "interval": "1wk",
       "latest": {
-        "price": 69847.91,
-        "change": 3878.13,
-        "changePercent": 5.879
+        "price": 69815.3,
+        "change": 3845.52,
+        "changePercent": 5.829
       },
       "series": [
         {
@@ -1646,7 +1646,7 @@
         },
         {
           "time": "2026-03-09",
-          "close": 69847.91
+          "close": 69815.3
         }
       ],
       "table": [
@@ -1802,9 +1802,9 @@
         },
         {
           "label": "2026-03-09",
-          "price": 69847.91,
-          "change": 3878.13,
-          "changePercent": 5.879
+          "price": 69815.3,
+          "change": 3845.52,
+          "changePercent": 5.829
         }
       ]
     },
@@ -1812,9 +1812,9 @@
       "label": "每月",
       "interval": "1mo",
       "latest": {
-        "price": 69847.91,
-        "change": 2852.05,
-        "changePercent": 4.257
+        "price": 69815.3,
+        "change": 2819.44,
+        "changePercent": 4.208
       },
       "series": [
         {
@@ -2295,7 +2295,7 @@
         },
         {
           "time": "2026-03",
-          "close": 69847.91
+          "close": 69815.3
         }
       ],
       "table": [
@@ -2439,9 +2439,9 @@
         },
         {
           "label": "2026-03",
-          "price": 69847.91,
-          "change": 2852.05,
-          "changePercent": 4.257
+          "price": 69815.3,
+          "change": 2819.44,
+          "changePercent": 4.208
         }
       ]
     },
@@ -2449,9 +2449,9 @@
       "label": "每年",
       "interval": "1yr",
       "latest": {
-        "price": 69847.91,
-        "change": -17660.91,
-        "changePercent": -20.182
+        "price": 69815.3,
+        "change": -17693.53,
+        "changePercent": -20.219
       },
       "series": [
         {
@@ -2496,7 +2496,7 @@
         },
         {
           "time": "2026",
-          "close": 69847.91
+          "close": 69815.3
         }
       ],
       "table": [
@@ -2556,9 +2556,9 @@
         },
         {
           "label": "2026",
-          "price": 69847.91,
-          "change": -17660.91,
-          "changePercent": -20.182
+          "price": 69815.3,
+          "change": -17693.53,
+          "changePercent": -20.219
         }
       ]
     }
