@@ -1,57 +1,57 @@
 {
-  "updatedAt": "2026-03-12T13:21:23.117896+08:00",
+  "updatedAt": "2026-03-12T14:10:31.160128+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 化工股大漲！波克夏收購西方石油化工業務超值 帳面大賺逾30億美元；3. 03/12AI打破記憶體類股景氣循環 暴漲暴跌時代可能結束；4. 03/12打造全球AI資料中心 不只需要輝達晶片；5. 03/12OpenAI、Anthropic鷸蚌相爭 Google坐收漁利。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. AI需求推升供應鏈成本 恩智浦宣布4月調漲晶片價格；3. 05:50五角大廈向高盛、摩根大通銀行家招手 成立「經濟防禦部門」；4. 05:41川普關稅被推翻 好市多遭會員集體提告「把錢吐回來」；5. 05:20川普：美軍擊沉28艘伊朗布雷艦 摧毀伊朗無人機計畫。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "化工股大漲！波克夏收購西方石油化工業務超值 帳面大賺逾30億美元",
+      "title": "AI需求推升供應鏈成本 恩智浦宣布4月調漲晶片價格",
+      "url": "https://news.cnyes.com/news/id/6380441"
+    },
+    {
+      "title": "05:50五角大廈向高盛、摩根大通銀行家招手 成立「經濟防禦部門」",
+      "url": "https://news.cnyes.com/news/id/6379875"
+    },
+    {
+      "title": "05:41川普關稅被推翻 好市多遭會員集體提告「把錢吐回來」",
+      "url": "https://news.cnyes.com/news/id/6380369"
+    },
+    {
+      "title": "05:20川普：美軍擊沉28艘伊朗布雷艦 摧毀伊朗無人機計畫",
+      "url": "https://news.cnyes.com/news/id/6379617"
+    },
+    {
+      "title": "05:00化工股大漲！波克夏收購西方石油化工業務超值 帳面大賺逾30億美元",
       "url": "https://news.cnyes.com/news/id/6379619"
     },
     {
-      "title": "03/12AI打破記憶體類股景氣循環 暴漲暴跌時代可能結束",
+      "title": "04:19AI打破記憶體類股景氣循環 暴漲暴跌時代可能結束",
       "url": "https://news.cnyes.com/news/id/6379855"
     },
     {
-      "title": "03/12打造全球AI資料中心 不只需要輝達晶片",
+      "title": "04:10打造全球AI資料中心 不只需要輝達晶片",
       "url": "https://news.cnyes.com/news/id/6379846"
     },
     {
-      "title": "03/12OpenAI、Anthropic鷸蚌相爭 Google坐收漁利",
+      "title": "04:00OpenAI、Anthropic鷸蚌相爭 Google坐收漁利",
       "url": "https://news.cnyes.com/news/id/6379615"
     },
     {
-      "title": "03/12油價漲幅擴大 布蘭特又登上100美元！道瓊期下挫580點、亞股走低",
+      "title": "03:13油價漲幅擴大 布蘭特又登上100美元！道瓊期下挫580點、亞股走低",
       "url": "https://news.cnyes.com/news/id/6380254"
     },
     {
-      "title": "03/12為何IEA史上最大規模釋放儲備反而推升油價？",
+      "title": "02:59為何IEA史上最大規模釋放儲備反而推升油價？",
       "url": "https://news.cnyes.com/news/id/6379838"
     },
     {
-      "title": "03/12美股底在哪？技術派盯上標普500這條線",
+      "title": "02:30美股底在哪？技術派盯上標普500這條線",
       "url": "https://news.cnyes.com/news/id/6379578"
-    },
-    {
-      "title": "03/12「vibe coding」熱潮帶動 AI編程新創Cursor傳募資 估值倍增至500億美元",
-      "url": "https://news.cnyes.com/news/id/6379984"
-    },
-    {
-      "title": "03/12Netflix擬斥資最高6億美元收購班艾佛列克AI電影公司",
-      "url": "https://news.cnyes.com/news/id/6379844"
-    },
-    {
-      "title": "03/12川普啟動新一輪301調查 首批16國含台灣、中國、日本、南韓、歐盟",
-      "url": "https://news.cnyes.com/news/id/6380004"
-    },
-    {
-      "title": "03/12串流AI戰升溫 法國Canal+引入Google AI創作工具 挑戰Netflix",
-      "url": "https://news.cnyes.com/news/id/6379952"
     }
   ],
   "error": null
