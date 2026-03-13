@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>台股即時報表</title>
+    <title>台股即時報表（15 分鐘更新）</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
       :root {
@@ -69,7 +69,7 @@
           <div class="nav-item"><a class="tag" href="https://openai-tw.com/us/">美股</a><span class="tag-sub">US Market</span></div>
         </div>
       </div>
-      <h1>台股即時報表</h1>
+      <h1>台股即時報表（15 分鐘更新）</h1>
       <div class="sub" id="updated">載入中...</div>
       <div class="sub" id="viewCounter">點閱數：--</div>
       <div class="status" id="marketStatus">檢查交易時段中...</div>
@@ -183,147 +183,65 @@
           `【投資建議】${action}<br><span class="muted">※ 以上為程式自動摘要，僅供參考，非投資建議。</span>`;
       }
 
-      const TW_SYMBOLS = [
-        { code: 't00', ex: 'tse', ref: '^TWII', label: '加權指數', type: 'Index' },
-        { code: '2330', ex: 'tse', ref: '2330.TW', label: '台積電', type: 'Stock' },
-        { code: '0052', ex: 'tse', ref: '0052.TW', label: '富邦科技', type: 'ETF' },
-        { code: '0050', ex: 'tse', ref: '0050.TW', label: '元大台灣50', type: 'ETF' },
-        { code: '009816', ex: 'tse', ref: '009816.TW', label: '凱基台灣TOP50', type: 'ETF' },
-        { code: '00919', ex: 'tse', ref: '00919.TW', label: '群益台灣精選高息', type: 'ETF' },
-        { code: '00909', ex: 'tse', ref: '00909.TW', label: '國泰數位支付服務', type: 'ETF' }
-      ];
-
-      function toNum(v) {
-        if (v == null) return null;
-        const n = Number(String(v).replace(/,/g, '').trim());
-        return Number.isFinite(n) ? n : null;
-      }
-
-      function pickLastTrade(msg) {
-        return toNum(msg.z) ?? toNum(msg.y) ?? toNum((msg.a || '').split('_').find(Boolean)) ?? null;
-      }
-
-      function buildTwseUrl() {
-        const ex_ch = TW_SYMBOLS.map(s => `${s.ex}_${s.code}.tw`).join('|');
-        return `https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=${encodeURIComponent(ex_ch)}&json=1&delay=0&_=${Date.now()}`;
-      }
-
-      function mapTwseData(raw) {
-        const byCode = new Map((raw?.msgArray || []).map(m => [m.c, m]));
-        const items = TW_SYMBOLS.map(meta => {
-          const msg = byCode.get(meta.code);
-          if (!msg) return { label: meta.label, symbol: meta.ref, type: meta.type, price: null, change: null, changePercent: null, currency: 'TWD', trend: [] };
-          const prev = toNum(msg.y);
-          const price = pickLastTrade(msg);
-          const change = price != null && prev != null ? +(price - prev).toFixed(2) : null;
-          const changePercent = price != null && prev ? +(((price - prev) / prev) * 100).toFixed(2) : null;
-          return {
-            label: msg.n || meta.label,
-            symbol: meta.ref,
-            type: meta.type,
-            price,
-            change,
-            changePercent,
-            currency: 'TWD',
-            trend: [
-              ...(prev != null ? [{ time: '前收', close: prev }] : []),
-              ...(price != null ? [{ time: msg.t || msg['%'] || '最新', close: price }] : [])
-            ],
-            timestamp: msg.tlong ? new Date(Number(msg.tlong)).toISOString() : null
-          };
-        });
-
-        return {
-          updatedAt: new Date().toISOString(),
-          timezone: 'Asia/Taipei',
-          dataDate: new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Taipei' }),
-          source: {
-            name: '臺灣證券交易所 MIS 即時 API',
-            provider: 'TWSE',
-            url: 'https://mis.twse.com.tw/stock/index.jsp',
-            remarks: '官方即時資料；本站 latest.json 作為備援'
-          },
-          market: {
-            name: 'TWSE',
-            open: '09:00',
-            close: '13:30',
-            isTradingWindow: twMarketStatus().includes('交易中')
-          },
-          items
-        };
-      }
-
-      function fetchFallbackData() {
-        return fetch('./data/latest.json?ts=' + Date.now())
-          .catch(() => fetch('../data/latest.json?ts=' + Date.now()))
-          .then(r => r.json());
-      }
-
-      function renderData(data) {
-        const updatedEl = document.getElementById('updated');
-        if (updatedEl) {
-          const dateLabel = data?.dataDate ? `資料日期：${data.dataDate}` : '';
-          const updateLabel = data?.updatedAt ? `最後同步：${data.updatedAt} (${data.timezone || 'Asia/Taipei'})` : '';
-          const suffix = '頁面每 60 秒檢查一次新資料';
-          updatedEl.textContent = [dateLabel, updateLabel, suffix].filter(Boolean).join('｜');
-        }
-
-        document.getElementById('marketStatus').textContent = twMarketStatus();
-        const sourceEl = document.getElementById('dataSource');
-        if (sourceEl) {
-          const name = data?.source?.name || '臺灣證券交易所 MIS';
-          const url = data?.source?.url;
-          const remark = data?.source?.remarks || '官方撮合即時資料';
-          const extra = remark ? `（${remark}）` : '';
-          const html = url ? `資料來源：<a href="${url}" target="_blank" rel="noreferrer">${name}</a>${extra}` : `資料來源：${name}${extra}`;
-          sourceEl.innerHTML = html;
-        }
-
-        const rows = (data.items || []).map(item => {
-          const changeClass = cls(item.change);
-          const percentClass = cls(item.changePercent);
-          return `
-            <tr>
-              <td>${item.label}</td>
-              <td>${fmt(item.price)}</td>
-              <td><span class="${changeClass}">${fmtSigned(item.change)}</span></td>
-              <td><span class="${percentClass}">${fmtSigned(item.changePercent, '%')}</span></td>
-              <td>${item.symbol}</td>
-            </tr>
-          `;
-        }).join('');
-        document.getElementById('rows').innerHTML = rows;
-
-        const labels = (data.items || []).map(i => i.label);
-        const vals = (data.items || []).map(i => (typeof i.changePercent === 'number' ? i.changePercent : 0));
-        const colors = vals.map(v => v > 0 ? 'rgba(248,81,73,0.8)' : v < 0 ? 'rgba(34,197,94,0.8)' : 'rgba(159,176,195,0.8)');
-
-        renderSummary(data.items || []);
-
-        if (window._changeChart) window._changeChart.destroy();
-        window._changeChart = new Chart(document.getElementById('changeChart'), {
-          type: 'bar',
-          data: { labels, datasets: [{ label: '漲跌幅 %', data: vals, backgroundColor: colors }] },
-          options: {
-            responsive: true,
-            plugins: { legend: { labels: { color: '#e6edf3' } } },
-            scales: {
-              x: { ticks: { color: '#c7d5e5' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-              y: { ticks: { color: '#c7d5e5' }, grid: { color: 'rgba(255,255,255,0.05)' } }
-            }
-          }
-        });
-      }
-
       function loadData() {
-        fetch(buildTwseUrl())
-          .then(r => {
-            if (!r.ok) throw new Error(`TWSE HTTP ${r.status}`);
-            return r.json();
+        fetch('./data/latest.json?ts=' + Date.now())
+          .catch(() => fetch('../data/latest.json?ts=' + Date.now()))
+          .then(r => r.json())
+          .then(data => {
+            const updatedEl = document.getElementById('updated');
+            if (updatedEl) {
+              const dateLabel = data?.dataDate ? `資料日期：${data.dataDate}` : '';
+              const updateLabel = data?.updatedAt ? `最後同步：${data.updatedAt} (${data.timezone || 'Asia/Taipei'})` : '';
+              const suffix = '頁面每 60 秒檢查一次新資料';
+              updatedEl.textContent = [dateLabel, updateLabel, suffix].filter(Boolean).join('｜');
+            }
+
+            document.getElementById('marketStatus').textContent = twMarketStatus();
+            const sourceEl = document.getElementById('dataSource');
+            if (sourceEl) {
+              const name = data?.source?.name || '臺灣證券交易所 MIS';
+              const url = data?.source?.url;
+              const remark = data?.source?.remarks || '官方撮合即時資料';
+              const extra = remark ? `（${remark}）` : '';
+              const html = url ? `資料來源：<a href="${url}" target="_blank" rel="noreferrer">${name}</a>${extra}` : `資料來源：${name}${extra}`;
+              sourceEl.innerHTML = html;
+            }
+
+            const rows = data.items.map(item => {
+              const changeClass = cls(item.change || 0);
+              const percentClass = cls(item.changePercent || 0);
+              return `
+                <tr>
+                  <td>${item.label}</td>
+                  <td>${fmt(item.price)}</td>
+                  <td><span class="${changeClass}">${fmtSigned(item.change)}</span></td>
+                  <td><span class="${percentClass}">${fmtSigned(item.changePercent, '%')}</span></td>
+                  <td>${item.symbol}</td>
+                </tr>
+              `;
+            }).join('');
+            document.getElementById('rows').innerHTML = rows;
+
+            const labels = data.items.map(i => i.label);
+            const vals = data.items.map(i => (typeof i.changePercent === 'number' ? i.changePercent : 0));
+            const colors = vals.map(v => v > 0 ? 'rgba(248,81,73,0.8)' : v < 0 ? 'rgba(34,197,94,0.8)' : 'rgba(159,176,195,0.8)');
+
+            renderSummary(data.items || []);
+
+            if (window._changeChart) window._changeChart.destroy();
+            window._changeChart = new Chart(document.getElementById('changeChart'), {
+              type: 'bar',
+              data: { labels, datasets: [{ label: '漲跌幅 %', data: vals, backgroundColor: colors }] },
+              options: {
+                responsive: true,
+                plugins: { legend: { labels: { color: '#e6edf3' } } },
+                scales: {
+                  x: { ticks: { color: '#c7d5e5' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                  y: { ticks: { color: '#c7d5e5' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                }
+              }
+            });
           })
-          .then(mapTwseData)
-          .then(renderData)
-          .catch(() => fetchFallbackData().then(renderData))
           .catch(err => {
             document.getElementById('updated').textContent = '讀取資料失敗';
             console.error(err);

@@ -1,57 +1,57 @@
 {
-  "updatedAt": "2026-03-13T10:35:44.606750+08:00",
+  "updatedAt": "2026-03-13T12:26:06.315650+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. 最低降至12%！蘋果突宣布下調中國App Store佣金率 專家：有助iOS應用生態升級；2. 03/13Google地圖十幾年來最大升級 推出AI問答功能；3. 03/13標普擬改規則 助SpaceX加速納入標普500指數；4. 03/13蘋果宣布降低中國App Store傭金率；5. 03/13伊朗最高領袖穆吉塔巴加入馬斯克X平台 帳號獲驗證。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. AI引爆白領失業海嘯？渾水創始人：401K崩潰恐成美股最大炸彈；2. 03:30市場降息預期迅速消退 經濟學家：聯準會不應急於行動；3. 03:10伊朗不是委內瑞拉 川普「戰略誤判」正在付出代價；4. 02:33美新一波301調查鎖定60國「強迫勞動」行為 台、日、歐、韓、中都在名單內；5. 02:31「TACO交易」策略失靈？伊朗戰事恐改變市場邏輯。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
-      "title": "最低降至12%！蘋果突宣布下調中國App Store佣金率 專家：有助iOS應用生態升級",
+      "title": "AI引爆白領失業海嘯？渾水創始人：401K崩潰恐成美股最大炸彈",
+      "url": "https://news.cnyes.com/news/id/6382373"
+    },
+    {
+      "title": "03:30市場降息預期迅速消退 經濟學家：聯準會不應急於行動",
+      "url": "https://news.cnyes.com/news/id/6382426"
+    },
+    {
+      "title": "03:10伊朗不是委內瑞拉 川普「戰略誤判」正在付出代價",
+      "url": "https://news.cnyes.com/news/id/6382371"
+    },
+    {
+      "title": "02:33美新一波301調查鎖定60國「強迫勞動」行為 台、日、歐、韓、中都在名單內",
+      "url": "https://news.cnyes.com/news/id/6382874"
+    },
+    {
+      "title": "02:31「TACO交易」策略失靈？伊朗戰事恐改變市場邏輯",
+      "url": "https://news.cnyes.com/news/id/6382195"
+    },
+    {
+      "title": "02:20最低降至12%！蘋果突宣布下調中國App Store佣金率 專家：有助iOS應用生態升級",
       "url": "https://news.cnyes.com/news/id/6382810"
     },
     {
-      "title": "03/13Google地圖十幾年來最大升級 推出AI問答功能",
+      "title": "02:14Google地圖十幾年來最大升級 推出AI問答功能",
       "url": "https://news.cnyes.com/news/id/6382552"
     },
     {
-      "title": "03/13標普擬改規則 助SpaceX加速納入標普500指數",
+      "title": "02:10標普擬改規則 助SpaceX加速納入標普500指數",
       "url": "https://news.cnyes.com/news/id/6382427"
     },
     {
-      "title": "03/13蘋果宣布降低中國App Store傭金率",
+      "title": "01:42蘋果宣布降低中國App Store傭金率",
       "url": "https://news.cnyes.com/news/id/6382623"
     },
     {
-      "title": "03/13伊朗最高領袖穆吉塔巴加入馬斯克X平台 帳號獲驗證",
+      "title": "01:30伊朗最高領袖穆吉塔巴加入馬斯克X平台 帳號獲驗證",
       "url": "https://news.cnyes.com/news/id/6382425"
     },
     {
-      "title": "03/13馬斯克：只要不發生世界大戰 未來10年全球GDP成長10倍 人類在AI面前終將被邊緣化",
+      "title": "01:12馬斯克：只要不發生世界大戰 未來10年全球GDP成長10倍 人類在AI面前終將被邊緣化",
       "url": "https://news.cnyes.com/news/id/6382485"
     },
     {
-      "title": "03/13美股重挫伊朗衝突升級油價逼近100美元",
+      "title": "00:31美股重挫伊朗衝突升級油價逼近100美元",
       "url": "https://news.cnyes.com/news/id/6382532"
-    },
-    {
-      "title": "03/13穩定能源市場！美國允許暫時購買海上俄羅斯石油",
-      "url": "https://news.cnyes.com/news/id/6382512"
-    },
-    {
-      "title": "03/13美股重點新聞摘要2026年3月13日",
-      "url": "https://news.cnyes.com/news/id/6382421"
-    },
-    {
-      "title": "23:40〈財報〉Adobe Q1業績亮眼 但執行長將在接班人選出後卸任 動搖市場信心 盤後挫逾7%",
-      "url": "https://news.cnyes.com/news/id/6382413"
-    },
-    {
-      "title": "23:35全美40%線上消費都在這！亞馬遜會員日檔期提前 財報可望提前吃下大補丸",
-      "url": "https://news.cnyes.com/news/id/6382467"
-    },
-    {
-      "title": "23:20貝森特周日巴黎會晤中國副總理 為川普訪中鋪路",
-      "url": "https://news.cnyes.com/news/id/6382424"
     }
   ],
   "error": null
