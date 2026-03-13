@@ -1,16 +1,28 @@
 {
-  "updatedAt": "2026-03-13T19:52:44.829667+08:00",
+  "updatedAt": "2026-03-13T20:53:21.473521+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 美國私募信貸危機連鎖爆發 骨牌效應倒向傳統銀行；3. 10:52慧榮推6奈米新晶片 搶企業級SSD開機碟商機；4. 10:43聯電合作延伸至系統端 宣布再攜手Jabil推動TFLN光子技術；5. 09:20以色列大規模空襲伊朗！歐洲股、債市遭遇黑色星期五 財政空間有限引憂慮。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 政府關門與消費放緩拖累 美國去年第四季GDP下修至0.7%；3. 12:34美國1月PCE物價指數年升2.8% 略低預期；4. 12:10蘋果迎接創立 50 周年 庫克發表「不同凡想」公開信 致敬半世紀的個人科技革命；5. 11:40美國私募信貸危機連鎖爆發 骨牌效應倒向傳統銀行。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "美國私募信貸危機連鎖爆發 骨牌效應倒向傳統銀行",
+      "title": "政府關門與消費放緩拖累 美國去年第四季GDP下修至0.7%",
+      "url": "https://news.cnyes.com/news/id/6384358"
+    },
+    {
+      "title": "12:34美國1月PCE物價指數年升2.8% 略低預期",
+      "url": "https://news.cnyes.com/news/id/6384283"
+    },
+    {
+      "title": "12:10蘋果迎接創立 50 周年 庫克發表「不同凡想」公開信 致敬半世紀的個人科技革命",
+      "url": "https://news.cnyes.com/news/id/6383406"
+    },
+    {
+      "title": "11:40美國私募信貸危機連鎖爆發 骨牌效應倒向傳統銀行",
       "url": "https://news.cnyes.com/news/id/6383409"
     },
     {
@@ -40,18 +52,6 @@
     {
       "title": "06:30美伊戰火延燒 美債「恐慌指數」觸及九個月高點",
       "url": "https://news.cnyes.com/news/id/6382493"
-    },
-    {
-      "title": "06:00美以伊開戰第14天戰況：伊朗第44輪軍事行動宣稱「精確打擊」美以基地 俄呼籲停止侵略伊朗",
-      "url": "https://news.cnyes.com/news/id/6383086"
-    },
-    {
-      "title": "05:50重新定義雲端霸權：Google 320億美元收購Wiz的戰略版圖",
-      "url": "https://news.cnyes.com/news/id/6383113"
-    },
-    {
-      "title": "05:19巴菲特：現金像氧氣一樣不可或缺 但不是優質資產",
-      "url": "https://news.cnyes.com/news/id/6382431"
     }
   ],
   "error": null
