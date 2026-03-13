@@ -1,16 +1,20 @@
 {
-  "updatedAt": "2026-03-14T06:52:10.191512+08:00",
+  "updatedAt": "2026-03-14T07:26:17.745521+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 美光逆勢升超5% Wedbush上調目標價至500美元；3. 22:01〈紐約匯市〉美元衝破100連兩周上漲 伊朗衝突推升避險需求；4. 21:41〈美股盤後〉標普創今年新低 連三周收黑 油價飆升引爆通膨疑慮；5. 19:00華許還能降息嗎？油價衝擊讓Fed政策前景生變。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 從外送廚房到機器人帝國 Uber前CEO捲土重來 新創「Atoms」進軍採礦與運輸；3. 22:20美光逆勢升超5% Wedbush上調目標價至500美元；4. 22:01〈紐約匯市〉美元衝破100連兩周上漲 伊朗衝突推升避險需求；5. 21:41〈美股盤後〉標普創今年新低 連三周收黑 油價飆升引爆通膨疑慮。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "美光逆勢升超5% Wedbush上調目標價至500美元",
+      "title": "從外送廚房到機器人帝國 Uber前CEO捲土重來 新創「Atoms」進軍採礦與運輸",
+      "url": "https://news.cnyes.com/news/id/6384603"
+    },
+    {
+      "title": "22:20美光逆勢升超5% Wedbush上調目標價至500美元",
       "url": "https://news.cnyes.com/news/id/6384582"
     },
     {
@@ -48,10 +52,6 @@
     {
       "title": "15:11油價壓力來了！美國3月消費者信心跌至三個月低點",
       "url": "https://news.cnyes.com/news/id/6384388"
-    },
-    {
-      "title": "14:40經濟降溫與油價衝擊交織！美債反彈 市場重新定價Fed降息預期",
-      "url": "https://news.cnyes.com/news/id/6384453"
     }
   ],
   "error": null
