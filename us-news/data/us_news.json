@@ -1,16 +1,20 @@
 {
-  "updatedAt": "2026-03-14T14:04:49.374072+08:00",
+  "updatedAt": "2026-03-14T15:06:10.540585+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 波克夏重啟庫藏股！單日豪擲2.25億美元 新任執行長釋強力訊號；3. 03/14AI代理衝擊就業 ServiceNow執行長：大學畢業生失業率恐飆破30%；4. 03/14「這不是2022年！」策略師解析這次能源衝擊為何不同；5. 03/14美國低調撤回AI晶片「全球許可制」草案。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. WSJ：川普政府靠TikTok交易進帳100億美元；3. 03/14波克夏重啟庫藏股！單日豪擲2.25億美元 新任執行長釋強力訊號；4. 03/14AI代理衝擊就業 ServiceNow執行長：大學畢業生失業率恐飆破30%；5. 03/14「這不是2022年！」策略師解析這次能源衝擊為何不同。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "波克夏重啟庫藏股！單日豪擲2.25億美元 新任執行長釋強力訊號",
+      "title": "WSJ：川普政府靠TikTok交易進帳100億美元",
+      "url": "https://news.cnyes.com/news/id/6384609"
+    },
+    {
+      "title": "03/14波克夏重啟庫藏股！單日豪擲2.25億美元 新任執行長釋強力訊號",
       "url": "https://news.cnyes.com/news/id/6384613"
     },
     {
@@ -48,10 +52,6 @@
     {
       "title": "03/14Uber前執行長創新公司Atoms 聚焦機器人技術",
       "url": "https://news.cnyes.com/news/id/6384581"
-    },
-    {
-      "title": "03/14美股重點新聞摘要2026年3月14日",
-      "url": "https://news.cnyes.com/news/id/6384576"
     }
   ],
   "error": null
