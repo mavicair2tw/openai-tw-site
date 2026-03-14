@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-15T03:58:06.923590+08:00",
+  "updatedAt": "2026-03-15T04:34:19.094429+08:00",
   "timezone": "Asia/Taipei",
   "market": "US",
   "items": [
@@ -749,22 +749,10 @@
       "label": "比特幣",
       "symbol": "BTC-USD",
       "type": "Crypto",
-      "price": 70711.73,
-      "change": -256.54,
-      "changePercent": -0.36,
+      "price": 70745.07,
+      "change": -223.2,
+      "changePercent": -0.31,
       "trend": [
-        {
-          "time": "22:00",
-          "close": 70754.11
-        },
-        {
-          "time": "22:15",
-          "close": 70821.48
-        },
-        {
-          "time": "22:30",
-          "close": 70705.55
-        },
         {
           "time": "22:45",
           "close": 70632.64
@@ -847,7 +835,19 @@
         },
         {
           "time": "03:45",
-          "close": 70711.73
+          "close": 70711.62
+        },
+        {
+          "time": "04:00",
+          "close": 70694.35
+        },
+        {
+          "time": "04:15",
+          "close": 70762.71
+        },
+        {
+          "time": "04:30",
+          "close": 70745.07
         }
       ]
     },
