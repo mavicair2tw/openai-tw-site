@@ -1,16 +1,20 @@
 {
-  "updatedAt": "2026-03-14T15:06:10.540585+08:00",
+  "updatedAt": "2026-03-14T15:49:44.801739+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. WSJ：川普政府靠TikTok交易進帳100億美元；3. 03/14波克夏重啟庫藏股！單日豪擲2.25億美元 新任執行長釋強力訊號；4. 03/14AI代理衝擊就業 ServiceNow執行長：大學畢業生失業率恐飆破30%；5. 03/14「這不是2022年！」策略師解析這次能源衝擊為何不同。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 蘋果MacBook Neo維修性大幅改善！iFixit評「近十年最好修」、記憶體焊接仍成限制；3. 03/14WSJ：川普政府靠TikTok交易進帳100億美元；4. 03/14波克夏重啟庫藏股！單日豪擲2.25億美元 新任執行長釋強力訊號；5. 03/14AI代理衝擊就業 ServiceNow執行長：大學畢業生失業率恐飆破30%。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "WSJ：川普政府靠TikTok交易進帳100億美元",
+      "title": "蘋果MacBook Neo維修性大幅改善！iFixit評「近十年最好修」、記憶體焊接仍成限制",
+      "url": "https://news.cnyes.com/news/id/6384760"
+    },
+    {
+      "title": "03/14WSJ：川普政府靠TikTok交易進帳100億美元",
       "url": "https://news.cnyes.com/news/id/6384609"
     },
     {
@@ -48,10 +52,6 @@
     {
       "title": "03/14〈輝達GTC前瞻〉黃仁勳料展示AI晶片與資料中心新布局",
       "url": "https://news.cnyes.com/news/id/6384237"
-    },
-    {
-      "title": "03/14Uber前執行長創新公司Atoms 聚焦機器人技術",
-      "url": "https://news.cnyes.com/news/id/6384581"
     }
   ],
   "error": null
