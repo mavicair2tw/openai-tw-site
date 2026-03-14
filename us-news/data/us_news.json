@@ -1,16 +1,32 @@
 {
-  "updatedAt": "2026-03-14T07:52:01.902018+08:00",
+  "updatedAt": "2026-03-14T09:49:39.134349+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 從外送廚房到機器人帝國 Uber前CEO捲土重來 新創「Atoms」進軍採礦與運輸；3. 22:20美光逆勢升超5% Wedbush上調目標價至500美元；4. 22:01〈紐約匯市〉美元衝破100連兩周上漲 伊朗衝突推升避險需求；5. 21:41〈美股盤後〉標普創今年新低 連三周收黑 油價飆升引爆通膨疑慮。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 〈輝達GTC前瞻〉黃仁勳料展示AI晶片與資料中心新布局；3. 03/14Uber前執行長創新公司Atoms 聚焦機器人技術；4. 03/14美股重點新聞摘要2026年3月14日；5. 03/14IBM攜手泛林集團 劍指1奈米晶片技術。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "從外送廚房到機器人帝國 Uber前CEO捲土重來 新創「Atoms」進軍採礦與運輸",
+      "title": "〈輝達GTC前瞻〉黃仁勳料展示AI晶片與資料中心新布局",
+      "url": "https://news.cnyes.com/news/id/6384237"
+    },
+    {
+      "title": "03/14Uber前執行長創新公司Atoms 聚焦機器人技術",
+      "url": "https://news.cnyes.com/news/id/6384581"
+    },
+    {
+      "title": "03/14美股重點新聞摘要2026年3月14日",
+      "url": "https://news.cnyes.com/news/id/6384576"
+    },
+    {
+      "title": "03/14IBM攜手泛林集團 劍指1奈米晶片技術",
+      "url": "https://news.cnyes.com/news/id/6384475"
+    },
+    {
+      "title": "23:20從外送廚房到機器人帝國 Uber前CEO捲土重來 新創「Atoms」進軍採礦與運輸",
       "url": "https://news.cnyes.com/news/id/6384603"
     },
     {
@@ -36,22 +52,6 @@
     {
       "title": "16:402008年金融危機要重演？美銀策略師發出警告",
       "url": "https://news.cnyes.com/news/id/6384477"
-    },
-    {
-      "title": "16:10美國1月職缺意外增加至695萬 勞動需求略有回升",
-      "url": "https://news.cnyes.com/news/id/6384387"
-    },
-    {
-      "title": "16:00物價重返「拜登水準」？美通膨預期飆近四年高點 川普期中選舉拉警報",
-      "url": "https://news.cnyes.com/news/id/6382471"
-    },
-    {
-      "title": "15:40美國設備投資開年疲弱 1月核心資本財訂單成長意外停滯",
-      "url": "https://news.cnyes.com/news/id/6384386"
-    },
-    {
-      "title": "15:11油價壓力來了！美國3月消費者信心跌至三個月低點",
-      "url": "https://news.cnyes.com/news/id/6384388"
     }
   ],
   "error": null
