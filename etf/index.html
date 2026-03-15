@@ -159,15 +159,18 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
 const ETFS = [
-  { code:'0056',   name:'元大高股息',      type:'高股息', tc:'tb-high',  yield:5.2, fee:0.34, freq:'季配', aumN:2650, aum:'2,650億' },
-  { code:'00878',  name:'國泰永續高股息',   type:'ESG',   tc:'tb-esg',   yield:4.8, fee:0.27, freq:'季配', aumN:1420, aum:'1,420億' },
-  { code:'00929',  name:'復華台灣科技優息', type:'科技',   tc:'tb-tech',  yield:6.1, fee:0.39, freq:'月配', aumN:380,  aum:'380億'  },
-  { code:'006208', name:'富邦台50',         type:'寬基',   tc:'tb-broad', yield:2.8, fee:0.04, freq:'半年', aumN:920,  aum:'920億'  },
-  { code:'00919',  name:'群益台灣精選高息', type:'高股息', tc:'tb-high',  yield:12.82, fee:0.43, freq:'月配', aumN:2100, aum:'2,100億', note:'第12次配息 $0.78/股（2026.03）'},
-  { code:'0050',   name:'元大台灣50',       type:'寬基',   tc:'tb-broad', yield:2.5, fee:0.03, freq:'半年', aumN:4200, aum:'4,200億'},
-  { code:'0052',   name:'富邦科技',         type:'科技',   tc:'tb-tech',  yield:1.8, fee:0.31, freq:'半年', aumN:210,  aum:'210億'  },
+  // ── 高股息型 ──
+  { code:'0056',   name:'元大高股息',        type:'高股息', tc:'tb-high',  yield:5.2,  fee:0.34, freq:'季配', aumN:2650, aum:'2,650億', annReturn:10.71, note:'2025含息報酬 +11.98%' },
+  { code:'00878',  name:'國泰永續高股息',     type:'ESG',    tc:'tb-esg',   yield:4.8,  fee:0.27, freq:'季配', aumN:1420, aum:'1,420億', annReturn:5.35,  note:'2025含息報酬 +6.32%' },
+  { code:'00929',  name:'復華台灣科技優息',   type:'科技',    tc:'tb-tech',  yield:6.1,  fee:0.39, freq:'月配', aumN:380,  aum:'380億',   annReturn:11.69, note:'2025含息報酬 +7.28%' },
+  { code:'00919',  name:'群益台灣精選高息',   type:'高股息', tc:'tb-high',  yield:12.82, fee:0.43, freq:'月配', aumN:2100, aum:'2,100億', annReturn:11.69, note:'第12次配息 $0.78/股（2026.03）' },
+  // ── 市值型 ──
+  { code:'0050',   name:'元大台灣50',         type:'市值',    tc:'tb-broad', yield:2.5,  fee:0.03, freq:'半年', aumN:4200, aum:'4,200億', annReturn:16.08, note:'近一年總報酬 +40.89%' },
+  { code:'006208', name:'富邦台50',           type:'市值',    tc:'tb-broad', yield:2.8,  fee:0.04, freq:'半年', aumN:920,  aum:'920億',   annReturn:15.5,  note:'近一年總報酬 +65.73%' },
+  { code:'0052',   name:'富邦科技',           type:'市值',    tc:'tb-broad', yield:2.11, fee:0.31, freq:'半年', aumN:210,  aum:'210億',   annReturn:12.0,  note:'5年累計報酬 >70%；2025配息3.23元' },
+  { code:'009816', name:'凱基台灣TOP50',      type:'市值',    tc:'tb-broad', yield:0,    fee:0.25, freq:'不配息', aumN:100, aum:'—',       annReturn:4.67,  note:'2026.02新掛牌；收益自動再投入' },
 ];
-const COLS = ['#3b82f6','#34d399','#f59e0b','#f87171','#a78bfa','#22d3ee','#fb7185'];
+const COLS = ['#3b82f6','#34d399','#f59e0b','#f87171','#a78bfa','#22d3ee','#fb7185','#e879f9'];
 
 let activeTab = 'calc';
 let selected = new Set(ETFS.map(e => e.code));
@@ -343,6 +346,7 @@ function portfolioHTML() {
         <span class="yield-val">${e.yield}%</span>
         <span class="tag-pill">${e.freq}</span>
         <span style="color:var(--muted);font-size:11px;">${e.fee}%</span>
+        ${e.annReturn ? '<span style="font-size:11px;color:#34d399;font-weight:600;">↑'+e.annReturn.toFixed(1)+'%</span>' : ''}
       </div>
       ${e.note ? '<div style="font-size:10px;color:#6ee7b7;margin-top:5px;">★ ' + e.note + '</div>' : ''}
     </div>`;
@@ -370,6 +374,7 @@ function portfolioHTML() {
       <button class="btn-sm" onclick="doSelType('高股息')">高股息</button>
       <button class="btn-sm" onclick="doSelType('寬基')">寬基</button>
       <button class="btn-sm" onclick="doSelType('科技')">科技</button>
+      <button class="btn-sm" onclick="doSelType('市值')">市值</button>
     </div>
   </div>
   <div class="etf-grid">${chips}</div>
@@ -451,6 +456,7 @@ function compareHTML() {
       <td><span style="font-weight:700;color:${topY?'var(--green)':'var(--text)'};">${e.yield}%</span>${topY?'<span class="top-badge">最高</span>':''}</td>
       <td><span style="color:${lowF?'var(--green)':'var(--text)'};">${e.fee}%</span>${lowF?'<span class="top-badge">最低</span>':''}</td>
       <td><span class="tag-pill">${e.freq}</span></td>
+      <td style="font-weight:600;color:${e.annReturn>=10?'#34d399':'var(--muted)'};">${e.annReturn ? e.annReturn.toFixed(2)+'%' : '—'}</td>
       <td style="color:var(--muted);">${e.aum}</td>
       <td style="font-size:11px;color:#6ee7b7;">${e.note||''}</td>
     </tr>\`;
@@ -465,7 +471,7 @@ function compareHTML() {
   <div style="overflow-x:auto;">
     <table class="cmp-table">
       <thead><tr>
-        <th>代號</th><th>名稱</th><th>類型</th><th>殖利率</th><th>費用率</th><th>配息</th><th>規模</th><th>最新配息</th>
+        <th>代號</th><th>名稱</th><th>類型</th><th>殖利率</th><th>費用率</th><th>配息</th><th>年化報酬</th><th>規模</th><th>備註</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>
@@ -474,7 +480,8 @@ function compareHTML() {
 <div style="display:flex;gap:8px;flex-wrap:wrap;">
   <button class="ai-btn" onclick="window.open('/chat/?q='+encodeURIComponent('0050和0052的差異是什麼？哪個更適合長期投資？'),'_blank')">0050 vs 0052 ↗</button>
   <button class="ai-btn" onclick="window.open('/chat/?q='+encodeURIComponent('00919和00929都是月配息ETF，哪個比較好？'),'_blank')">00919 vs 00929 ↗</button>
-  <button class="ai-btn" onclick="window.open('/chat/?q='+encodeURIComponent('這7檔ETF如何搭配成攻守兼備的投資組合？'),'_blank')">AI 組合建議 ↗</button>
+  <button class="ai-btn" onclick="window.open('/chat/?q='+encodeURIComponent('009816凱基台灣TOP50不配息ETF有什麼優缺點？適合什麼投資人？'),'_blank')">009816 不配息 ↗</button>
+  <button class="ai-btn" onclick="window.open('/chat/?q='+encodeURIComponent('市值型ETF（0050、006208、0052、009816）和高股息ETF（0056、00878、00919、00929）長期下來哪種報酬更好？'),'_blank')">AI 組合建議 ↗</button>
 </div>`;
 }
 
