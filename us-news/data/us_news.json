@@ -1,16 +1,20 @@
 {
-  "updatedAt": "2026-03-15T17:06:24.973940+08:00",
+  "updatedAt": "2026-03-15T17:49:31.861854+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 馬斯克宣布：特斯拉AI晶片巨型工廠「Terafab」7天後啟動；3. 03/14搶救期中選舉！川普簽行政命令 祭房貸鬆綁、促進新屋供給；4. 03/14蘋果MacBook Neo維修性大幅改善！iFixit評「近十年最好修」、記憶體焊接仍成限制；5. 03/14WSJ：川普政府靠TikTok交易進帳100億美元。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. Meta 傳將啟動大規模裁員逾 20% 以支應 AI 基礎建設龐大支出；3. 06:40馬斯克宣布：特斯拉AI晶片巨型工廠「Terafab」7天後啟動；4. 03/14搶救期中選舉！川普簽行政命令 祭房貸鬆綁、促進新屋供給；5. 03/14蘋果MacBook Neo維修性大幅改善！iFixit評「近十年最好修」、記憶體焊接仍成限制。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "馬斯克宣布：特斯拉AI晶片巨型工廠「Terafab」7天後啟動",
+      "title": "Meta 傳將啟動大規模裁員逾 20% 以支應 AI 基礎建設龐大支出",
+      "url": "https://news.cnyes.com/news/id/6385156"
+    },
+    {
+      "title": "06:40馬斯克宣布：特斯拉AI晶片巨型工廠「Terafab」7天後啟動",
       "url": "https://news.cnyes.com/news/id/6384913"
     },
     {
@@ -48,10 +52,6 @@
     {
       "title": "03/14Meta再啟動裁員潮 擬大砍至少20%人力抵銷AI支出",
       "url": "https://news.cnyes.com/news/id/6384699"
-    },
-    {
-      "title": "03/14川普稱美軍下周將「猛烈空襲」伊朗 傳美正向中東增派海軍陸戰隊與軍艦",
-      "url": "https://news.cnyes.com/news/id/6384685"
     }
   ],
   "error": null
