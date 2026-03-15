@@ -1,24 +1,28 @@
 {
-  "updatedAt": "2026-03-15T20:46:24.595574+08:00",
+  "updatedAt": "2026-03-15T21:44:28.840466+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. Meta AI研發遇瓶頸？傳新模型落後對手、恐暫時採用Google Gemini技術；3. 09:30Meta 傳將啟動大規模裁員逾 20% 以支應 AI 基礎建設龐大支出；4. 06:40馬斯克宣布：特斯拉AI晶片巨型工廠「Terafab」7天後啟動；5. 03/14搶救期中選舉！川普簽行政命令 祭房貸鬆綁、促進新屋供給。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 本週操盤筆記：超級央行週來襲！美日台歐央行決議、中東局勢與油價、輝達GTC大會、美光財報；3. 03/15Meta AI研發遇瓶頸？傳新模型落後對手、恐暫時採用Google Gemini技術；4. 03/15Meta 傳將啟動大規模裁員逾 20% 以支應 AI 基礎建設龐大支出；5. 03/15馬斯克宣布：特斯拉AI晶片巨型工廠「Terafab」7天後啟動。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "Meta AI研發遇瓶頸？傳新模型落後對手、恐暫時採用Google Gemini技術",
+      "title": "本週操盤筆記：超級央行週來襲！美日台歐央行決議、中東局勢與油價、輝達GTC大會、美光財報",
+      "url": "https://news.cnyes.com/news/id/6384668"
+    },
+    {
+      "title": "03/15Meta AI研發遇瓶頸？傳新模型落後對手、恐暫時採用Google Gemini技術",
       "url": "https://news.cnyes.com/news/id/6385141"
     },
     {
-      "title": "09:30Meta 傳將啟動大規模裁員逾 20% 以支應 AI 基礎建設龐大支出",
+      "title": "03/15Meta 傳將啟動大規模裁員逾 20% 以支應 AI 基礎建設龐大支出",
       "url": "https://news.cnyes.com/news/id/6385156"
     },
     {
-      "title": "06:40馬斯克宣布：特斯拉AI晶片巨型工廠「Terafab」7天後啟動",
+      "title": "03/15馬斯克宣布：特斯拉AI晶片巨型工廠「Terafab」7天後啟動",
       "url": "https://news.cnyes.com/news/id/6384913"
     },
     {
@@ -48,10 +52,6 @@
     {
       "title": "03/14美國低調撤回AI晶片「全球許可制」草案",
       "url": "https://news.cnyes.com/news/id/6384710"
-    },
-    {
-      "title": "03/14馬斯克稱xAI須「重新打造」創辦團隊爆離職潮、SpaceX IPO在即",
-      "url": "https://news.cnyes.com/news/id/6384579"
     }
   ],
   "error": null
