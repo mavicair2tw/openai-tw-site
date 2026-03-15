@@ -1,0 +1,91 @@
+name: Protect Custom Pages
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    # Only run when triggered by the deploy bot, not by us
+    if: contains(github.event.head_commit.message, 'Deploy site')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check if custom pages were deleted
+        id: check
+        run: |
+          DELETED=$(git diff HEAD~1 HEAD --name-only --diff-filter=D)
+          echo "Deleted files: $DELETED"
+          NEED_RESTORE=false
+          if echo "$DELETED" | grep -q "etf/index.html"; then
+            echo "etf_deleted=true" >> $GITHUB_OUTPUT
+            NEED_RESTORE=true
+          fi
+          if echo "$DELETED" | grep -qP "五子棋/index.html"; then
+            echo "gomoku_deleted=true" >> $GITHUB_OUTPUT
+            NEED_RESTORE=true
+          fi
+          echo "need_restore=$NEED_RESTORE" >> $GITHUB_OUTPUT
+
+      - name: Restore deleted pages
+        if: steps.check.outputs.need_restore == 'true'
+        run: |
+          git config user.name "page-protector"
+          git config user.email "protect@openai-tw.com"
+
+          # Restore etf page from last known good commit
+          if [ "${{ steps.check.outputs.etf_deleted }}" == "true" ]; then
+            COMMIT=$(git log --all --oneline -- etf/index.html | grep -v "Deploy site" | head -1 | awk '{print $1}')
+            if [ -n "$COMMIT" ]; then
+              mkdir -p etf
+              git show $COMMIT:etf/index.html > etf/index.html
+              git add etf/index.html
+              echo "✅ Restored etf/index.html from $COMMIT"
+            fi
+          fi
+
+          # Restore 五子棋 page
+          if [ "${{ steps.check.outputs.gomoku_deleted }}" == "true" ]; then
+            COMMIT=$(git log --all --oneline -- "五子棋/index.html" | grep -v "Deploy site" | head -1 | awk '{print $1}')
+            if [ -n "$COMMIT" ]; then
+              mkdir -p 五子棋
+              git show $COMMIT:"五子棋/index.html" > "五子棋/index.html"
+              git add "五子棋/index.html"
+              echo "✅ Restored 五子棋/index.html from $COMMIT"
+            fi
+          fi
+
+          # Restore homepage cards if missing
+          if ! grep -q '"/etf/"' index.html || ! grep -q '"五子棋"' index.html; then
+            python3 - << 'PYEOF'
+          content = open('index.html').read()
+          changed = False
+          cards = '''        <a class="card" href="/etf/">
+                    <div class="name">ETF 投資工具</div>
+                    <div class="desc">配息試算、投資組合分析與 ETF 比較</div>
+                  </a>
+                  <a class="card" href="/五子棋/">
+                    <div class="name">五子棋 AI 對戰</div>
+                    <div class="desc">與 AI 對弈五子棋，四種難度，支援音效與悔棋</div>
+                  </a>'''
+          if '/etf/' not in content or '/五子棋/' not in content:
+              content = content.replace('      </section>', cards + '\n      </section>', 1)
+              open('index.html', 'w').write(content)
+              print('Restored homepage cards')
+          PYEOF
+            git add index.html
+          fi
+
+          # Commit only if there are staged changes
+          if git diff --cached --quiet; then
+            echo "Nothing to restore"
+          else
+            git commit -m "auto-restore: recover custom pages deleted by deploy bot"
+            git push
+          fi
