@@ -160,15 +160,23 @@
 <script>
 const ETFS = [
   // ── 高股息型 ──
-  { code:'0056',   name:'元大高股息',        type:'高股息', tc:'tb-high',  yield:5.2,  fee:0.34, freq:'季配', aumN:2650, aum:'2,650億', annReturn:10.71, note:'2025含息報酬 +11.98%' },
-  { code:'00878',  name:'國泰永續高股息',     type:'ESG',    tc:'tb-esg',   yield:4.8,  fee:0.27, freq:'季配', aumN:1420, aum:'1,420億', annReturn:5.35,  note:'2025含息報酬 +6.32%' },
-  { code:'00929',  name:'復華台灣科技優息',   type:'科技',    tc:'tb-tech',  yield:6.1,  fee:0.39, freq:'月配', aumN:380,  aum:'380億',   annReturn:11.69, note:'2025含息報酬 +7.28%' },
-  { code:'00919',  name:'群益台灣精選高息',   type:'高股息', tc:'tb-high',  yield:12.82, fee:0.43, freq:'月配', aumN:2100, aum:'2,100億', annReturn:11.69, note:'第12次配息 $0.78/股（2026.03）' },
+  { code:'00919',  name:'群益台灣精選高息', type:'高股息', tc:'tb-high', yield:12.82, fee:0.43, freq:'月配', aumN:2100, aum:'2,100億', annReturn:11.69,
+    divPerUnit:0.78,  exDivDate:'2026/03/17', lastBuyDate:'2026/03/16', note:'第12次配息創新高；除息日 3/17' },
+  { code:'0056',   name:'元大高股息',       type:'高股息', tc:'tb-high', yield:8.5,   fee:0.34, freq:'季配', aumN:2650, aum:'2,650億', annReturn:10.71,
+    divPerUnit:0.866, exDivDate:'2026/03/24', lastBuyDate:'2026/03/23', note:'2025含息報酬 +11.98%；除息日 3/24' },
+  { code:'00878',  name:'國泰永續高股息',   type:'ESG',    tc:'tb-esg',  yield:4.8,   fee:0.27, freq:'季配', aumN:1420, aum:'1,420億', annReturn:5.35,
+    divPerUnit:0.42,  exDivDate:'2026/02/26', payDate:'2026/03/23',     note:'2/26已除息；預計3/23發放' },
+  { code:'00929',  name:'復華台灣科技優息', type:'科技',   tc:'tb-tech', yield:6.1,   fee:0.39, freq:'月配', aumN:380,  aum:'380億',   annReturn:11.69,
+    note:'2025含息報酬 +7.28%' },
   // ── 市值型 ──
-  { code:'0050',   name:'元大台灣50',         type:'市值',    tc:'tb-broad', yield:2.5,  fee:0.03, freq:'半年', aumN:4200, aum:'4,200億', annReturn:16.08, note:'近一年總報酬 +40.89%' },
-  { code:'006208', name:'富邦台50',           type:'市值',    tc:'tb-broad', yield:2.8,  fee:0.04, freq:'半年', aumN:920,  aum:'920億',   annReturn:15.5,  note:'近一年總報酬 +65.73%' },
-  { code:'0052',   name:'富邦科技',           type:'市值',    tc:'tb-broad', yield:2.11, fee:0.31, freq:'半年', aumN:210,  aum:'210億',   annReturn:12.0,  note:'5年累計報酬 >70%；2025配息3.23元' },
-  { code:'009816', name:'凱基台灣TOP50',      type:'市值',    tc:'tb-broad', yield:0,    fee:0.25, freq:'不配息', aumN:100, aum:'—',       annReturn:4.67,  note:'2026.02新掛牌；收益自動再投入' },
+  { code:'0050',   name:'元大台灣50',       type:'市值',   tc:'tb-broad', yield:2.5,  fee:0.03, freq:'半年', aumN:4200, aum:'4,200億', annReturn:16.08,
+    divPerUnit:1.0,   exDivDate:'2026/01/21', note:'近一年總報酬 +40.89%；2026首季配息創同期新高' },
+  { code:'006208', name:'富邦台50',         type:'市值',   tc:'tb-broad', yield:2.8,  fee:0.04, freq:'半年', aumN:920,  aum:'920億',   annReturn:15.5,
+    divPerUnit:3.448, exDivDate:'2025/11',    note:'近一年總報酬 +65.73%；下次公告約6~7月' },
+  { code:'0052',   name:'富邦科技',         type:'市值',   tc:'tb-broad', yield:2.11, fee:0.31, freq:'年配', aumN:210,  aum:'210億',   annReturn:12.0,
+    divPerUnit:3.23,  exDivDate:'2025年度',   note:'2026年度配息尚未公告（2025合計3.23元）' },
+  { code:'009816', name:'凱基台灣TOP50',    type:'市值',   tc:'tb-broad', yield:0,    fee:0.25, freq:'不配息', aumN:100, aum:'—',       annReturn:4.67,
+    note:'2026.02新掛牌；收益自動再投入，不配息' },
 ];
 const COLS = ['#3b82f6','#34d399','#f59e0b','#f87171','#a78bfa','#22d3ee','#fb7185','#e879f9'];
 
@@ -348,7 +356,12 @@ function portfolioHTML() {
         <span style="color:var(--muted);font-size:11px;">${e.fee}%</span>
         ${e.annReturn ? '<span style="font-size:11px;color:#34d399;font-weight:600;">↑'+e.annReturn.toFixed(1)+'%</span>' : ''}
       </div>
-      ${e.note ? '<div style="font-size:10px;color:#6ee7b7;margin-top:5px;">★ ' + e.note + '</div>' : ''}
+      ${e.divPerUnit ? '<div style="font-size:11px;margin-top:6px;display:flex;gap:6px;align-items:center;">' +
+        '<span style="background:#052e16;color:#6ee7b7;border:1px solid #064e2a;border-radius:3px;padding:1px 6px;font-weight:600;">$' + e.divPerUnit + '/股</span>' +
+        (e.exDivDate ? '<span style="color:var(--muted);font-size:10px;">除息 ' + e.exDivDate + '</span>' : '') +
+        (e.lastBuyDate ? '<span style="color:#f59e0b;font-size:10px;">最後買進 ' + e.lastBuyDate + '</span>' : '') +
+        '</div>' : ''}
+      ${e.note ? '<div style="font-size:10px;color:var(--muted);margin-top:4px;">※ ' + e.note + '</div>' : ''}
     </div>`;
   }).join('');
 
@@ -376,6 +389,14 @@ function portfolioHTML() {
       <button class="btn-sm" onclick="doSelType('科技')">科技</button>
       <button class="btn-sm" onclick="doSelType('市值')">市值</button>
     </div>
+  </div>
+  <div style="background:#1a2a0a;border:1px solid #064e2a;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;">
+    <span style="color:#6ee7b7;font-weight:700;">📅 即將除息</span>
+    <span style="color:#e5e7eb;">00919 <span style="color:#f59e0b;">除息 3/17</span> · 最後買進 <strong>3/16</strong></span>
+    <span style="color:#9ca3af;">｜</span>
+    <span style="color:#e5e7eb;">0056 <span style="color:#f59e0b;">除息 3/24</span> · 最後買進 <strong>3/23</strong></span>
+    <span style="color:#9ca3af;">｜</span>
+    <span style="color:#e5e7eb;">00878 <span style="color:var(--muted);">2/26已除息</span> · 預計發放 3/23</span>
   </div>
   <div class="etf-grid">${chips}</div>
   <div style="margin-top:8px;font-size:12px;color:var(--muted);">已選 ${selected.size} 檔${selected.size===1?' · 單選模式':selected.size>1?' · 複選模式':''}</div>
@@ -457,8 +478,10 @@ function compareHTML() {
       <td><span style="color:${lowF?'var(--green)':'var(--text)'};">${e.fee}%</span>${lowF?'<span class="top-badge">最低</span>':''}</td>
       <td><span class="tag-pill">${e.freq}</span></td>
       <td style="font-weight:600;color:${e.annReturn>=10?'#34d399':'var(--muted)'};">${e.annReturn ? e.annReturn.toFixed(2)+'%' : '—'}</td>
+      <td style="font-weight:600;color:#6ee7b7;">${e.divPerUnit ? '$'+e.divPerUnit : '—'}</td>
+      <td style="font-size:12px;color:${e.lastBuyDate?'#f59e0b':'var(--muted)'};">${e.exDivDate||'—'}${e.lastBuyDate?'<br><span style=\"font-size:10px;\">最後買進 '+e.lastBuyDate+'</span>':''}</td>
       <td style="color:var(--muted);">${e.aum}</td>
-      <td style="font-size:11px;color:#6ee7b7;">${e.note||''}</td>
+      <td style="font-size:11px;color:var(--muted);">${e.note||''}</td>
     </tr>\`;
   }).join('');
 
@@ -471,7 +494,7 @@ function compareHTML() {
   <div style="overflow-x:auto;">
     <table class="cmp-table">
       <thead><tr>
-        <th>代號</th><th>名稱</th><th>類型</th><th>殖利率</th><th>費用率</th><th>配息</th><th>年化報酬</th><th>規模</th><th>備註</th>
+        <th>代號</th><th>名稱</th><th>類型</th><th>殖利率</th><th>費用率</th><th>配息</th><th>年化報酬</th><th>每股配息</th><th>除息日</th><th>規模</th><th>備註</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>
