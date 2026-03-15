@@ -163,7 +163,7 @@ const ETFS = [
   { code:'00878',  name:'國泰永續高股息',   type:'ESG',   tc:'tb-esg',   yield:4.8, fee:0.27, freq:'季配', aumN:1420, aum:'1,420億' },
   { code:'00929',  name:'復華台灣科技優息', type:'科技',   tc:'tb-tech',  yield:6.1, fee:0.39, freq:'月配', aumN:380,  aum:'380億'  },
   { code:'006208', name:'富邦台50',         type:'寬基',   tc:'tb-broad', yield:2.8, fee:0.04, freq:'半年', aumN:920,  aum:'920億'  },
-  { code:'00919',  name:'群益台灣精選高息', type:'高股息', tc:'tb-high',  yield:6.8, fee:0.43, freq:'月配', aumN:2100, aum:'2,100億'},
+  { code:'00919',  name:'群益台灣精選高息', type:'高股息', tc:'tb-high',  yield:12.82, fee:0.43, freq:'月配', aumN:2100, aum:'2,100億', note:'第12次配息 $0.78/股（2026.03）'},
   { code:'0050',   name:'元大台灣50',       type:'寬基',   tc:'tb-broad', yield:2.5, fee:0.03, freq:'半年', aumN:4200, aum:'4,200億'},
   { code:'0052',   name:'富邦科技',         type:'科技',   tc:'tb-tech',  yield:1.8, fee:0.31, freq:'半年', aumN:210,  aum:'210億'  },
 ];
@@ -344,6 +344,7 @@ function portfolioHTML() {
         <span class="tag-pill">${e.freq}</span>
         <span style="color:var(--muted);font-size:11px;">${e.fee}%</span>
       </div>
+      ${e.note ? '<div style="font-size:10px;color:#6ee7b7;margin-top:5px;">★ ' + e.note + '</div>' : ''}
     </div>`;
   }).join('');
 
@@ -451,7 +452,8 @@ function compareHTML() {
       <td><span style="color:${lowF?'var(--green)':'var(--text)'};">${e.fee}%</span>${lowF?'<span class="top-badge">最低</span>':''}</td>
       <td><span class="tag-pill">${e.freq}</span></td>
       <td style="color:var(--muted);">${e.aum}</td>
-    </tr>`;
+      <td style="font-size:11px;color:#6ee7b7;">${e.note||''}</td>
+    </tr>\`;
   }).join('');
 
   return `
@@ -463,7 +465,7 @@ function compareHTML() {
   <div style="overflow-x:auto;">
     <table class="cmp-table">
       <thead><tr>
-        <th>代號</th><th>名稱</th><th>類型</th><th>殖利率</th><th>費用率</th><th>配息</th><th>規模</th>
+        <th>代號</th><th>名稱</th><th>類型</th><th>殖利率</th><th>費用率</th><th>配息</th><th>規模</th><th>最新配息</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>
