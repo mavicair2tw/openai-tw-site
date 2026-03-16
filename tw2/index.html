@@ -35,13 +35,6 @@
     .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; background: #253252; color: #c7d5e5; margin-bottom: 6px; }
     .market-status { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; background: #1a2a4a; color: #93c5fd; margin-bottom: 16px; margin-left: 6px; }
 
-    /* Overview bar chart */
-    .overview-card {
-      background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
-      padding: 16px; margin-bottom: 20px;
-    }
-    .overview-card h2 { font-size: 14px; color: var(--muted); margin-bottom: 10px; }
-
     /* Cards grid */
     .grid {
       display: grid;
@@ -108,12 +101,6 @@
   <div class="badge">紅色 = 上漲，綠色 = 下跌</div>
   <span class="market-status" id="marketStatus">檢查交易時段中...</span>
   <div class="source" id="dataSource">資料來源：臺灣證券交易所 MIS</div>
-
-  <!-- Overview bar chart -->
-  <div class="overview-card">
-    <h2>📊 整體漲跌幅概覽</h2>
-    <canvas id="overviewChart" height="70"></canvas>
-  </div>
 
   <!-- Cards -->
   <div class="grid" id="cardGrid"></div>
@@ -269,7 +256,6 @@
         }
 
         renderCards(data.items || []);
-        renderOverview(data.items || []);
         renderSummary(data.items || []);
         document.getElementById('marketStatus').textContent = twMarketStatus();
       })

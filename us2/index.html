@@ -34,13 +34,6 @@
     .meta { color: var(--muted); font-size: 13px; margin-bottom: 4px; }
     .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; background: #253252; color: #c7d5e5; margin-bottom: 16px; }
 
-    /* Overview bar chart */
-    .overview-card {
-      background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
-      padding: 16px; margin-bottom: 20px;
-    }
-    .overview-card h2 { font-size: 14px; color: var(--muted); margin-bottom: 10px; }
-
     /* Cards grid */
     .grid {
       display: grid;
@@ -101,12 +94,6 @@
   <div class="meta" id="updated">載入中...</div>
   <div class="meta" id="viewCounter">點閱數：--</div>
   <div class="badge">綠色 = 下跌，紅色 = 上漲（台灣習慣）</div>
-
-  <!-- Overview bar chart -->
-  <div class="overview-card">
-    <h2>📊 整體漲跌幅概覽</h2>
-    <canvas id="overviewChart" height="70"></canvas>
-  </div>
 
   <!-- Cards -->
   <div class="grid" id="cardGrid"></div>
@@ -247,7 +234,6 @@
       .then(data => {
         document.getElementById('updated').textContent = `最後更新：${data.updatedAt || '--'} (${data.timezone || 'UTC'})`;
         renderCards(data.items || []);
-        renderOverview(data.items || []);
         renderSummary(data.items || []);
       })
       .catch(() => { document.getElementById('updated').textContent = '讀取資料失敗'; });
