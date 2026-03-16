@@ -1,16 +1,24 @@
 {
-  "updatedAt": "2026-03-16T19:57:20.789368+08:00",
+  "updatedAt": "2026-03-16T21:18:12.438161+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 為AI擴張鋪路！Meta砸270億美元布局基礎設施 攜Nebius展開五年合作；3. 03/16362億美元撤資潮！美股四巫日恐迎「崩盤與軋空」史詩級波動；4. 03/16員工苦等7周仍未獲通知！ASML裁員1700人計畫引發內部動蕩 工會質疑重組緊迫性；5. 03/16五大科技賽道共振！木頭姐揭未來十年最大商機：AI引發史無前例「大加速」。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. AI記憶體太搶手！美光宣布台灣再建晶片基地 盤前股價勁揚逾5%；3. 03/16Google反壟斷案拖兩年 歐洲業界促歐盟儘快開罰；4. 03/16為AI擴張鋪路！Meta砸270億美元布局基礎設施 攜Nebius展開五年合作；5. 03/16362億美元撤資潮！美股四巫日恐迎「崩盤與軋空」史詩級波動。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "為AI擴張鋪路！Meta砸270億美元布局基礎設施 攜Nebius展開五年合作",
+      "title": "AI記憶體太搶手！美光宣布台灣再建晶片基地 盤前股價勁揚逾5%",
+      "url": "https://news.cnyes.com/news/id/6386508"
+    },
+    {
+      "title": "03/16Google反壟斷案拖兩年 歐洲業界促歐盟儘快開罰",
+      "url": "https://news.cnyes.com/news/id/6386394"
+    },
+    {
+      "title": "03/16為AI擴張鋪路！Meta砸270億美元布局基礎設施 攜Nebius展開五年合作",
       "url": "https://news.cnyes.com/news/id/6386392"
     },
     {
@@ -44,14 +52,6 @@
     {
       "title": "03/16美光完成收購力積電銅鑼P5廠 無塵室開始改裝、2028財年量產",
       "url": "https://news.cnyes.com/news/id/6385678"
-    },
-    {
-      "title": "03/16馬斯克的全球最大晶片廠Terafab 有「一點」與台積電很不同",
-      "url": "https://news.cnyes.com/news/id/6385342"
-    },
-    {
-      "title": "03/16OpenAI：ChatGPT廣告暫不會在全球範圍內推出",
-      "url": "https://news.cnyes.com/news/id/6385401"
     }
   ],
   "error": null
