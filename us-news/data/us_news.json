@@ -1,16 +1,24 @@
 {
-  "updatedAt": "2026-03-16T21:18:12.438161+08:00",
+  "updatedAt": "2026-03-16T22:43:33.102040+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. AI記憶體太搶手！美光宣布台灣再建晶片基地 盤前股價勁揚逾5%；3. 03/16Google反壟斷案拖兩年 歐洲業界促歐盟儘快開罰；4. 03/16為AI擴張鋪路！Meta砸270億美元布局基礎設施 攜Nebius展開五年合作；5. 03/16362億美元撤資潮！美股四巫日恐迎「崩盤與軋空」史詩級波動。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. OpenAI搶攻企業AI市場 傳攜私募基金打造100億美元合資公司；3. 03/16〈美股早盤〉科技股領漲、油價回落提振市場情緒 主要指數開高；4. 03/16AI記憶體太搶手！美光宣布台灣再建晶片基地 盤前股價勁揚逾5%；5. 03/16Google反壟斷案拖兩年 歐洲業界促歐盟儘快開罰。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "AI記憶體太搶手！美光宣布台灣再建晶片基地 盤前股價勁揚逾5%",
+      "title": "OpenAI搶攻企業AI市場 傳攜私募基金打造100億美元合資公司",
+      "url": "https://news.cnyes.com/news/id/6386591"
+    },
+    {
+      "title": "03/16〈美股早盤〉科技股領漲、油價回落提振市場情緒 主要指數開高",
+      "url": "https://news.cnyes.com/news/id/6386390"
+    },
+    {
+      "title": "03/16AI記憶體太搶手！美光宣布台灣再建晶片基地 盤前股價勁揚逾5%",
       "url": "https://news.cnyes.com/news/id/6386508"
     },
     {
@@ -44,14 +52,6 @@
     {
       "title": "03/16輝達GTC大會前瞻！美銀點名三大關注焦點：晶片架構路線圖、CPO、LPU全攻略",
       "url": "https://news.cnyes.com/news/id/6385403"
-    },
-    {
-      "title": "03/16力積電P5廠完成交易 將提供美光HBM/PWF代工",
-      "url": "https://news.cnyes.com/news/id/6385709"
-    },
-    {
-      "title": "03/16美光完成收購力積電銅鑼P5廠 無塵室開始改裝、2028財年量產",
-      "url": "https://news.cnyes.com/news/id/6385678"
     }
   ],
   "error": null
