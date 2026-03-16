@@ -1,16 +1,28 @@
 {
-  "updatedAt": "2026-03-16T10:07:16.346665+08:00",
+  "updatedAt": "2026-03-16T12:02:02.428887+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. OpenAI：ChatGPT廣告暫不會在全球範圍內推出；3. 00:33中東戰爭維持油價高企 國際金價今早開盤一度跌破5000美元大關；4. 00:00緊盯油價！美國三大股指逼近200日均支撐位置 市場拋售力道是否會加劇？；5. 03/15美伊戰火燒向AI！台積電ADR下挫、關鍵材料供應缺、「這一領域」將受益。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 力積電P5廠完成交易 將提供美光HBM/PWF代工；3. 03:45美光完成收購力積電銅鑼P5廠 無塵室開始改裝、2028財年量產；4. 02:37馬斯克的全球最大晶片廠Terafab 有「一點」與台積電很不同；5. 01:11OpenAI：ChatGPT廣告暫不會在全球範圍內推出。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "OpenAI：ChatGPT廣告暫不會在全球範圍內推出",
+      "title": "力積電P5廠完成交易 將提供美光HBM/PWF代工",
+      "url": "https://news.cnyes.com/news/id/6385709"
+    },
+    {
+      "title": "03:45美光完成收購力積電銅鑼P5廠 無塵室開始改裝、2028財年量產",
+      "url": "https://news.cnyes.com/news/id/6385678"
+    },
+    {
+      "title": "02:37馬斯克的全球最大晶片廠Terafab 有「一點」與台積電很不同",
+      "url": "https://news.cnyes.com/news/id/6385342"
+    },
+    {
+      "title": "01:11OpenAI：ChatGPT廣告暫不會在全球範圍內推出",
       "url": "https://news.cnyes.com/news/id/6385401"
     },
     {
@@ -40,18 +52,6 @@
     {
       "title": "03/15荷姆茲海峽封鎖衝擊AI資金鏈？專家：恐削弱台積電利潤、資金轉向「這類」避險資產",
       "url": "https://news.cnyes.com/news/id/6384775"
-    },
-    {
-      "title": "03/15「第二故鄉」遭鎖定！AI晶片巨擘輝達被列入伊朗合法打擊目標 問題出在「它」身上",
-      "url": "https://news.cnyes.com/news/id/6385259"
-    },
-    {
-      "title": "03/15本週操盤筆記：超級央行週來襲！美日台歐央行決議、中東局勢與油價、輝達GTC大會、美光財報",
-      "url": "https://news.cnyes.com/news/id/6384668"
-    },
-    {
-      "title": "03/15Meta AI研發遇瓶頸？傳新模型落後對手、恐暫時採用Google Gemini技術",
-      "url": "https://news.cnyes.com/news/id/6385141"
     }
   ],
   "error": null
