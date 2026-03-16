@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WordWave · 英語單字學習平台</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #f0eef8;
+    --text-muted: rgba(240,238,248,0.45);
+    --text-dim: rgba(240,238,248,0.22);
+    --accent: #7c6aff;
+    --accent-glow: rgba(124,106,255,0.25);
+    --accent2: #ff6ab0;
+    --accent3: #36e8b4;
+    --yellow: #ffd166;
+    --red-soft: #ff6b6b;
+
+    --easy: #36e8b4;
+    --familiar: #7c6aff;
+    --not-easy: #ffd166;
+    --not-familiar: #ff6b6b;
+
+    --radius: 16px;
+    --radius-sm: 10px;
+    --shadow: 0 8px 40px rgba(0,0,0,0.6);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── BACKGROUND NOISE ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 20% 10%, rgba(124,106,255,0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 60% at 80% 90%, rgba(54,232,180,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  #app { position: relative; z-index: 1; min-height: 100vh; }
+
+  /* ── SCREENS ── */
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* ════════════════════════════════
+     HOME / LEVEL SELECTION
+  ════════════════════════════════ */
+  #screen-home {
+    align-items: center; justify-content: center;
+    padding: 40px 20px;
+  }
+
+  .home-inner {
+    max-width: 600px; width: 100%;
+  }
+
+  .logo-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(124,106,255,0.12);
+    border: 1px solid rgba(124,106,255,0.3);
+    padding: 6px 14px; border-radius: 99px;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.08em;
+    color: var(--accent); text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+
+  .home-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(42px, 8vw, 72px);
+    font-weight: 800; line-height: 0.95;
+    letter-spacing: -0.03em;
+    margin-bottom: 16px;
+  }
+
+  .home-title span { color: var(--accent); }
+
+  .home-sub {
+    color: var(--text-muted);
+    font-size: 17px; font-weight: 300;
+    line-height: 1.6; margin-bottom: 48px;
+  }
+
+  .level-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 14px; margin-bottom: 32px;
+  }
+
+  .level-card {
+    position: relative; overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 20px;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+  }
+
+  .level-card:hover {
+    border-color: var(--border2);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+
+  .level-card.selected {
+    border-color: var(--accent);
+    background: rgba(124,106,255,0.08);
+    box-shadow: 0 0 0 1px rgba(124,106,255,0.3), inset 0 0 40px rgba(124,106,255,0.05);
+  }
+
+  .level-card .lv-emoji { font-size: 28px; margin-bottom: 10px; display: block; }
+  .level-card .lv-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: 14px;
+    letter-spacing: 0.02em; color: var(--text);
+    margin-bottom: 4px;
+  }
+  .level-card .lv-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+  .level-card .lv-check {
+    position: absolute; top: 14px; right: 14px;
+    width: 20px; height: 20px;
+    background: var(--accent); border-radius: 50%;
+    display: none; align-items: center; justify-content: center;
+    font-size: 11px;
+  }
+  .level-card.selected .lv-check { display: flex; }
+
+  .btn-start {
+    width: 100%;
+    background: var(--accent);
+    color: #fff;
+    border: none; border-radius: var(--radius-sm);
+    padding: 16px 24px;
+    font-family: 'Syne', sans-serif;
+    font-size: 16px; font-weight: 700;
+    cursor: pointer; letter-spacing: 0.02em;
+    transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 4px 24px rgba(124,106,255,0.35);
+  }
+  .btn-start:hover:not(:disabled) {
+    opacity: 0.9; transform: translateY(-1px);
+    box-shadow: 0 8px 32px rgba(124,106,255,0.45);
+  }
+  .btn-start:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* ════════════════════════════════
+     QUIZ SCREEN
+  ════════════════════════════════ */
+  #screen-quiz {
+    padding: 0;
+    flex-direction: column;
+  }
+
+  /* top bar */
+  .quiz-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .btn-back {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 7px 12px;
+    color: var(--text-muted); font-size: 13px;
+    cursor: pointer; transition: color 0.2s, border-color 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .btn-back:hover { color: var(--text); border-color: var(--border2); }
+
+  .level-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); padding: 4px 10px;
+    background: rgba(124,106,255,0.12);
+    border-radius: 99px;
+  }
+
+  .topbar-stats {
+    display: flex; gap: 20px; align-items: center;
+  }
+  .stat-item {
+    text-align: center;
+  }
+  .stat-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px; font-weight: 700;
+    line-height: 1;
+  }
+  .stat-lbl { font-size: 10px; color: var(--text-muted); letter-spacing: 0.05em; text-transform: uppercase; margin-top: 2px; }
+
+  .streak-badge {
+    display: flex; align-items: center; gap: 5px;
+    background: rgba(255,209,102,0.12);
+    border: 1px solid rgba(255,209,102,0.25);
+    padding: 5px 10px; border-radius: 99px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px; font-weight: 500;
+    color: var(--yellow);
+  }
+
+  /* progress bar */
+  .progress-wrap {
+    height: 3px; background: var(--surface2);
+    flex-shrink: 0;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* quiz body */
+  .quiz-body {
+    flex: 1; display: flex; align-items: flex-start;
+    justify-content: center; padding: 32px 20px 40px;
+    overflow-y: auto;
+  }
+
+  .quiz-inner { max-width: 560px; width: 100%; }
+
+  /* mode tabs */
+  .mode-tabs {
+    display: flex; gap: 8px; margin-bottom: 24px;
+  }
+  .mode-tab {
+    flex: 1; padding: 8px 0;
+    border-radius: 8px; border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted); font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .mode-tab.active {
+    background: var(--surface2);
+    border-color: var(--border2);
+    color: var(--text);
+  }
+  .mode-tab .tab-dot {
+    display: inline-block; width: 6px; height: 6px;
+    border-radius: 50%; margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  /* card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: opacity 0.2s;
+  }
+
+  .card-header {
+    padding: 28px 28px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center;
+  }
+  .card-meta { width: 100%; }
+
+  .card-meta {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 18px;
+  }
+
+  .pos-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 6px;
+  }
+
+  .difficulty-indicator {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--text-muted);
+  }
+  .diff-dots { display: flex; gap: 3px; }
+  .diff-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--border2);
+  }
+  .diff-dot.lit { background: var(--accent); }
+
+  .card-word {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(32px, 6vw, 52px);
+    font-weight: 800; letter-spacing: -0.02em;
+    line-height: 1.1; margin-bottom: 8px;
+  }
+
+  .card-phonetic {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px; color: var(--text-muted);
+  }
+
+  /* ── TTS PLAY BUTTON ── */
+  .word-row {
+    display: flex; flex-direction: column; align-items: center;
+    margin-bottom: 0; width: 100%;
+  }
+
+  .btn-tts {
+    flex-shrink: 0;
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    border: 1px solid var(--border2);
+    background: var(--surface2);
+    color: var(--accent);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    align-self: center;
+    margin-top: 16px;
+  }
+  .btn-tts:hover {
+    background: rgba(124,106,255,0.15);
+    border-color: var(--accent);
+    transform: scale(1.08);
+    box-shadow: 0 0 16px rgba(124,106,255,0.3);
+  }
+  .btn-tts:active { transform: scale(0.95); }
+
+  .btn-tts svg { width: 18px; height: 18px; transition: opacity 0.15s; }
+
+  .btn-tts.speaking {
+    background: rgba(124,106,255,0.18);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(124,106,255,0.2);
+    animation: tts-pulse 1s ease-in-out infinite;
+  }
+  @keyframes tts-pulse {
+    0%,100% { box-shadow: 0 0 0 3px rgba(124,106,255,0.2); }
+    50%      { box-shadow: 0 0 0 6px rgba(124,106,255,0.08); }
+  }
+
+  .phonetic-row {
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .btn-tts-sm {
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .btn-tts-sm:hover {
+    color: var(--accent); border-color: var(--accent);
+    background: rgba(124,106,255,0.1);
+  }
+  .btn-tts-sm.speaking { color: var(--accent); border-color: var(--accent); animation: tts-pulse 1s infinite; }
+  .btn-tts-sm svg { width: 13px; height: 13px; }
+
+  /* TTS unavailable notice */
+  .tts-unavail {
+    font-size: 11px; color: var(--text-dim);
+    margin-top: 4px; display: none;
+  }
+
+  /* answer area */
+  .answer-area { padding: 24px 28px; }
+
+  .reveal-btns {
+    display: flex; gap: 10px; margin-bottom: 0;
+  }
+
+  .btn-reveal {
+    flex: 1; padding: 12px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border2);
+    background: var(--surface2);
+    color: var(--text); font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+  }
+  .btn-reveal:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-reveal.revealed { opacity: 0.4; pointer-events: none; }
+
+  /* answer blocks */
+  .meaning-block, .example-block {
+    display: none; animation: fadeUp 0.25s ease;
+  }
+  .meaning-block.visible, .example-block.visible { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .answer-divider {
+    height: 1px; background: var(--border);
+    margin: 18px 0;
+  }
+
+  .meaning-label, .example-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; font-weight: 500;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 8px;
+  }
+
+  .meaning-text {
+    font-size: 22px; font-weight: 500;
+    color: var(--text); line-height: 1.4;
+  }
+
+  .example-text {
+    font-size: 15px; font-weight: 300;
+    color: var(--text-muted); line-height: 1.7;
+    font-style: italic;
+  }
+
+  .example-text strong {
+    color: var(--text); font-weight: 500; font-style: normal;
+    border-bottom: 1px solid rgba(124,106,255,0.5);
+  }
+
+  /* rating section */
+  .rating-section {
+    padding: 20px 28px 28px;
+    border-top: 1px solid var(--border);
+    display: none;
+    animation: fadeUp 0.3s ease;
+  }
+  .rating-section.visible { display: block; }
+
+  .rating-label {
+    font-size: 12px; color: var(--text-muted);
+    margin-bottom: 12px; text-align: center;
+  }
+
+  .rating-btns {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .btn-rate {
+    padding: 14px 10px;
+    border-radius: 10px; border: 1px solid;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px; font-weight: 700;
+    cursor: pointer;
+    transition: all 0.18s;
+    text-align: center;
+    position: relative; overflow: hidden;
+  }
+
+  .btn-rate::before {
+    content: '';
+    position: absolute; inset: 0;
+    opacity: 0; transition: opacity 0.18s;
+  }
+  .btn-rate:hover::before { opacity: 1; }
+  .btn-rate:hover { transform: translateY(-1px); }
+
+  .btn-rate .rate-emoji { font-size: 18px; display: block; margin-bottom: 3px; }
+  .btn-rate .rate-sub { font-size: 10px; font-family: 'DM Sans', sans-serif; font-weight: 400; opacity: 0.7; }
+
+  .rate-easy {
+    color: var(--easy);
+    border-color: rgba(54,232,180,0.3);
+    background: rgba(54,232,180,0.06);
+  }
+  .rate-easy::before { background: rgba(54,232,180,0.06); }
+  .rate-easy:hover { border-color: rgba(54,232,180,0.6); box-shadow: 0 4px 20px rgba(54,232,180,0.15); }
+
+  .rate-familiar {
+    color: var(--familiar);
+    border-color: rgba(124,106,255,0.3);
+    background: rgba(124,106,255,0.06);
+  }
+  .rate-familiar:hover { border-color: rgba(124,106,255,0.6); box-shadow: 0 4px 20px rgba(124,106,255,0.15); }
+
+  .rate-not-easy {
+    color: var(--not-easy);
+    border-color: rgba(255,209,102,0.3);
+    background: rgba(255,209,102,0.06);
+  }
+  .rate-not-easy:hover { border-color: rgba(255,209,102,0.6); box-shadow: 0 4px 20px rgba(255,209,102,0.15); }
+
+  .rate-not-familiar {
+    color: var(--not-familiar);
+    border-color: rgba(255,107,107,0.3);
+    background: rgba(255,107,107,0.06);
+  }
+  .rate-not-familiar:hover { border-color: rgba(255,107,107,0.6); box-shadow: 0 4px 20px rgba(255,107,107,0.15); }
+
+  /* pool overview */
+  .pool-overview {
+    margin-top: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+  }
+  .pool-title {
+    font-size: 11px; font-family: 'DM Mono', monospace;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 14px;
+  }
+  .pool-bars { display: flex; flex-direction: column; gap: 8px; }
+  .pool-bar-row {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .pool-bar-label { font-size: 12px; color: var(--text-muted); width: 80px; flex-shrink: 0; }
+  .pool-bar-track {
+    flex: 1; height: 4px; background: var(--border2);
+    border-radius: 99px; overflow: hidden;
+  }
+  .pool-bar-fill { height: 100%; border-radius: 99px; transition: width 0.4s; }
+  .pool-bar-count { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text-muted); width: 24px; text-align: right; }
+
+  /* empty state */
+  .empty-state {
+    text-align: center; padding: 60px 20px;
+  }
+  .empty-emoji { font-size: 56px; margin-bottom: 16px; }
+  .empty-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 24px; font-weight: 800; margin-bottom: 8px;
+  }
+  .empty-sub { color: var(--text-muted); font-size: 15px; margin-bottom: 24px; }
+  .btn-secondary {
+    background: var(--surface2); border: 1px solid var(--border2);
+    color: var(--text); padding: 12px 24px; border-radius: 10px;
+    font-family: 'DM Sans', sans-serif; font-size: 14px;
+    cursor: pointer; transition: all 0.2s;
+    margin: 0 6px;
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* toast */
+  .toast {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    padding: 12px 24px; border-radius: 99px;
+    font-size: 13px; color: var(--text);
+    z-index: 1000; opacity: 0; pointer-events: none;
+    transition: opacity 0.3s, transform 0.3s;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
+  /* reset btn */
+  .btn-reset {
+    background: none; border: none;
+    color: var(--red-soft); font-size: 12px;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    opacity: 0.7; transition: opacity 0.2s;
+    padding: 4px 0;
+  }
+  .btn-reset:hover { opacity: 1; }
+
+  /* ════════ RESPONSIVE ════════ */
+  @media (max-width: 480px) {
+    .level-grid { grid-template-columns: 1fr; }
+    .quiz-topbar { padding: 12px 16px; flex-wrap: wrap; gap: 10px; }
+    .topbar-stats { gap: 14px; }
+    .card-header, .answer-area, .rating-section { padding-left: 20px; padding-right: 20px; }
+    .quiz-body { padding: 20px 14px 32px; }
+    .rating-btns { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ═══ HOME SCREEN ═══ -->
+  <div class="screen active" id="screen-home">
+    <div class="home-inner">
+      <div class="logo-badge">🌊 WordWave</div>
+      <h1 class="home-title">學英語，<br><span>更聰明</span>。</h1>
+      <p class="home-sub">根據你的學習狀況，自動調整複習頻率。<br>越練越輕鬆，讓每個單字都記住你。</p>
+
+      <div class="level-grid">
+        <div class="level-card" data-level="elementary" onclick="selectLevel(this)">
+          <div class="lv-check">✓</div>
+          <span class="lv-emoji">🌱</span>
+          <div class="lv-name">Elementary School</div>
+          <div class="lv-desc">國小基礎詞彙<br>日常名詞、動詞、短句</div>
+        </div>
+        <div class="level-card" data-level="junior" onclick="selectLevel(this)">
+          <div class="lv-check">✓</div>
+          <span class="lv-emoji">📘</span>
+          <div class="lv-name">Junior High School</div>
+          <div class="lv-desc">國中學術詞彙<br>常見慣用語、對話用語</div>
+        </div>
+        <div class="level-card" data-level="high" onclick="selectLevel(this)">
+          <div class="lv-check">✓</div>
+          <span class="lv-emoji">🎓</span>
+          <div class="lv-name">High School</div>
+          <div class="lv-desc">高中學術詞彙<br>複雜短語、考試單字</div>
+        </div>
+        <div class="level-card" data-level="university" onclick="selectLevel(this)">
+          <div class="lv-check">✓</div>
+          <span class="lv-emoji">🏛️</span>
+          <div class="lv-name">University</div>
+          <div class="lv-desc">大學高階詞彙<br>學術短語、專業用語</div>
+        </div>
+      </div>
+
+      <button class="btn-start" id="btn-start" disabled onclick="startQuiz()">選擇學習級別開始 →</button>
+    </div>
+  </div>
+
+  <!-- ═══ QUIZ SCREEN ═══ -->
+  <div class="screen" id="screen-quiz">
+    <!-- Top bar -->
+    <div class="quiz-topbar">
+      <div class="topbar-left">
+        <button class="btn-back" onclick="goHome()">← 返回</button>
+        <div class="level-tag" id="level-tag">Elementary</div>
+      </div>
+      <div class="topbar-stats">
+        <div class="stat-item">
+          <div class="stat-val" id="stat-mastered" style="color:var(--easy)">0</div>
+          <div class="stat-lbl">已掌握</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val" id="stat-remaining">0</div>
+          <div class="stat-lbl">剩餘</div>
+        </div>
+        <div class="streak-badge" id="streak-badge">🔥 <span id="streak-count">0</span></div>
+        <button class="btn-reset" onclick="confirmReset()">重置</button>
+      </div>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="progress-wrap">
+      <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+
+    <!-- Body -->
+    <div class="quiz-body">
+      <div class="quiz-inner">
+
+        <!-- Mode tabs -->
+        <div class="mode-tabs">
+          <button class="mode-tab active" id="tab-all" onclick="setMode('all',this)">
+            <span class="tab-dot" style="background:var(--accent)"></span>全部練習
+          </button>
+          <button class="mode-tab" id="tab-review" onclick="setMode('review',this)">
+            <span class="tab-dot" style="background:var(--not-familiar)"></span>不熟複習
+          </button>
+        </div>
+
+        <!-- Quiz card -->
+        <div class="card" id="quiz-card">
+          <div class="card-header">
+            <div class="card-meta">
+              <div class="pos-tag" id="pos-tag">noun</div>
+              <div class="difficulty-indicator">
+                <span style="font-size:11px;color:var(--text-dim)">頻率</span>
+                <div class="diff-dots" id="diff-dots">
+                  <div class="diff-dot"></div>
+                  <div class="diff-dot"></div>
+                  <div class="diff-dot"></div>
+                  <div class="diff-dot"></div>
+                </div>
+              </div>
+            </div>
+            <div class="word-row">
+              <div class="card-word" id="card-word">vocabulary</div>
+            </div>
+            <div class="phonetic-row">
+              <div class="card-phonetic" id="card-phonetic">/ˌvɒkæbjʊˈlæri/</div>
+            </div>
+            <button class="btn-tts" id="btn-tts-word" onclick="speakWord()" title="播放單字發音">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+            </button>
+            <div class="tts-unavail" id="tts-unavail">⚠️ 此瀏覽器不支援語音播放</div>
+          </div>
+
+          <div class="answer-area" id="answer-area">
+            <div class="reveal-btns">
+              <button class="btn-reveal" id="btn-meaning" onclick="revealMeaning()">
+                <span>💬</span> 顯示中文
+              </button>
+              <button class="btn-reveal" id="btn-example" onclick="revealExample()">
+                <span>📖</span> 顯示例句
+              </button>
+            </div>
+
+            <div class="meaning-block" id="meaning-block">
+              <div class="answer-divider"></div>
+              <div class="meaning-label">中文意思</div>
+              <div class="meaning-text" id="meaning-text">—</div>
+            </div>
+
+            <div class="example-block" id="example-block">
+              <div class="answer-divider"></div>
+              <div class="example-label" style="display:flex;align-items:center;gap:8px;">
+                例句
+                <button class="btn-tts-sm" id="btn-tts-ex" onclick="speakExample()" title="播放例句">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="example-text" id="example-text">—</div>
+            </div>
+          </div>
+
+          <div class="rating-section" id="rating-section">
+            <div class="rating-label">你對這個單字的熟悉程度？</div>
+            <div class="rating-btns">
+              <button class="btn-rate rate-easy" onclick="rateWord('easy')">
+                <span class="rate-emoji">✅</span>
+                Easy
+                <div class="rate-sub">完全會了，移除</div>
+              </button>
+              <button class="btn-rate rate-familiar" onclick="rateWord('familiar')">
+                <span class="rate-emoji">👍</span>
+                Familiar
+                <div class="rate-sub">認識，偶爾複習</div>
+              </button>
+              <button class="btn-rate rate-not-easy" onclick="rateWord('not-easy')">
+                <span class="rate-emoji">🤔</span>
+                Not Easy
+                <div class="rate-sub">有點難，繼續練</div>
+              </button>
+              <button class="btn-rate rate-not-familiar" onclick="rateWord('not-familiar')">
+                <span class="rate-emoji">❌</span>
+                Not Familiar
+                <div class="rate-sub">不熟，頻繁出現</div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-state" id="empty-state" style="display:none">
+          <div class="empty-emoji">🎉</div>
+          <div class="empty-title">全部完成！</div>
+          <div class="empty-sub">目前模式的單字都練習完了。<br>切換「不熟複習」或繼續全部練習。</div>
+          <button class="btn-secondary" onclick="setMode('review', document.getElementById('tab-review'))">複習不熟單字</button>
+          <button class="btn-secondary" onclick="resetPool()">重新開始全部</button>
+        </div>
+
+        <!-- Pool Overview -->
+        <div class="pool-overview" id="pool-overview">
+          <div class="pool-title">學習進度分布</div>
+          <div class="pool-bars">
+            <div class="pool-bar-row">
+              <div class="pool-bar-label">✅ 已掌握</div>
+              <div class="pool-bar-track"><div class="pool-bar-fill" id="bar-easy" style="background:var(--easy);width:0%"></div></div>
+              <div class="pool-bar-count" id="cnt-easy">0</div>
+            </div>
+            <div class="pool-bar-row">
+              <div class="pool-bar-label">👍 熟悉中</div>
+              <div class="pool-bar-track"><div class="pool-bar-fill" id="bar-familiar" style="background:var(--familiar);width:0%"></div></div>
+              <div class="pool-bar-count" id="cnt-familiar">0</div>
+            </div>
+            <div class="pool-bar-row">
+              <div class="pool-bar-label">🤔 練習中</div>
+              <div class="pool-bar-track"><div class="pool-bar-fill" id="bar-not-easy" style="background:var(--not-easy);width:0%"></div></div>
+              <div class="pool-bar-count" id="cnt-not-easy">0</div>
+            </div>
+            <div class="pool-bar-row">
+              <div class="pool-bar-label">❌ 不熟悉</div>
+              <div class="pool-bar-track"><div class="pool-bar-fill" id="bar-not-familiar" style="background:var(--not-familiar);width:0%"></div></div>
+              <div class="pool-bar-count" id="cnt-not-familiar">0</div>
+            </div>
+            <div class="pool-bar-row">
+              <div class="pool-bar-label">🆕 未練習</div>
+              <div class="pool-bar-track"><div class="pool-bar-fill" id="bar-new" style="background:var(--border2);width:0%"></div></div>
+              <div class="pool-bar-count" id="cnt-new">0</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════
+//  VOCABULARY DATABASE
+// ════════════════════════════════════════
+const VOCAB = {
+  elementary: [
+    { word:"apple",     pos:"noun",      phonetic:"/ˈæpəl/",           zh:"蘋果",         ex:"I eat an <strong>apple</strong> every morning." },
+    { word:"run",       pos:"verb",      phonetic:"/rʌn/",             zh:"跑；跑步",     ex:"The children love to <strong>run</strong> in the park." },
+    { word:"happy",     pos:"adjective", phonetic:"/ˈhæpi/",           zh:"快樂的",       ex:"She feels very <strong>happy</strong> today." },
+    { word:"school",    pos:"noun",      phonetic:"/skuːl/",           zh:"學校",         ex:"My <strong>school</strong> is near my house." },
+    { word:"big",       pos:"adjective", phonetic:"/bɪɡ/",             zh:"大的",         ex:"That is a very <strong>big</strong> dog." },
+    { word:"drink",     pos:"verb",      phonetic:"/drɪŋk/",           zh:"喝",           ex:"Please <strong>drink</strong> some water." },
+    { word:"family",    pos:"noun",      phonetic:"/ˈfæməli/",         zh:"家庭；家人",   ex:"My <strong>family</strong> has four people." },
+    { word:"bird",      pos:"noun",      phonetic:"/bɜːrd/",           zh:"鳥",           ex:"A <strong>bird</strong> is singing in the tree." },
+    { word:"walk",      pos:"verb",      phonetic:"/wɔːk/",            zh:"走；步行",     ex:"We <strong>walk</strong> to school together." },
+    { word:"sunny",     pos:"adjective", phonetic:"/ˈsʌni/",           zh:"晴朗的",       ex:"It is a <strong>sunny</strong> day today." },
+    { word:"thank you", pos:"phrase",    phonetic:"/θæŋk juː/",        zh:"謝謝你",       ex:"<strong>Thank you</strong> for helping me." },
+    { word:"how are you",pos:"phrase",   phonetic:"/haʊ ɑːr juː/",    zh:"你好嗎？",     ex:"<strong>How are you</strong>? I am fine, thanks." },
+    { word:"friend",    pos:"noun",      phonetic:"/frend/",           zh:"朋友",         ex:"Tom is my best <strong>friend</strong>." },
+    { word:"read",      pos:"verb",      phonetic:"/riːd/",            zh:"閱讀；讀",     ex:"I <strong>read</strong> a book every night." },
+    { word:"small",     pos:"adjective", phonetic:"/smɔːl/",           zh:"小的",         ex:"She has a <strong>small</strong> cat at home." },
+    { word:"morning",   pos:"noun",      phonetic:"/ˈmɔːrnɪŋ/",        zh:"早上",         ex:"I wake up early every <strong>morning</strong>." },
+    { word:"play",      pos:"verb",      phonetic:"/pleɪ/",            zh:"玩；演奏",     ex:"Let's <strong>play</strong> in the garden." },
+    { word:"book",      pos:"noun",      phonetic:"/bʊk/",             zh:"書",           ex:"This <strong>book</strong> is very interesting." },
+    { word:"good morning",pos:"phrase",  phonetic:"/ɡʊd ˈmɔːrnɪŋ/",   zh:"早安",         ex:"<strong>Good morning</strong>! How did you sleep?" },
+    { word:"water",     pos:"noun",      phonetic:"/ˈwɔːtər/",         zh:"水",           ex:"Please drink more <strong>water</strong> every day." },
+    { word:"love",      pos:"verb",      phonetic:"/lʌv/",             zh:"愛；喜歡",     ex:"I <strong>love</strong> my family very much." },
+    { word:"colour",    pos:"noun",      phonetic:"/ˈkʌlər/",          zh:"顏色",         ex:"What is your favourite <strong>colour</strong>?" },
+    { word:"eat",       pos:"verb",      phonetic:"/iːt/",             zh:"吃",           ex:"We <strong>eat</strong> lunch at noon." },
+    { word:"good night",pos:"phrase",    phonetic:"/ɡʊd naɪt/",        zh:"晚安",         ex:"<strong>Good night</strong>! Sweet dreams." },
+  ],
+
+  junior: [
+    { word:"communicate",    pos:"verb",      phonetic:"/kəˈmjuːnɪkeɪt/",  zh:"溝通；傳達",   ex:"It is important to <strong>communicate</strong> clearly." },
+    { word:"responsibility", pos:"noun",      phonetic:"/rɪˌspɒnsəˈbɪləti/",zh:"責任",        ex:"Taking <strong>responsibility</strong> for your actions is important." },
+    { word:"environment",    pos:"noun",      phonetic:"/ɪnˈvaɪrənmənt/",   zh:"環境",         ex:"We must protect our <strong>environment</strong>." },
+    { word:"achievement",    pos:"noun",      phonetic:"/əˈtʃiːvmənt/",     zh:"成就；達成",   ex:"Winning the prize was a great <strong>achievement</strong>." },
+    { word:"develop",        pos:"verb",      phonetic:"/dɪˈveləp/",        zh:"發展；培養",   ex:"She wants to <strong>develop</strong> her writing skills." },
+    { word:"break a leg",    pos:"phrase",    phonetic:"/breɪk ə leɡ/",     zh:"祝你好運",     ex:"<strong>Break a leg</strong> at your performance tonight!" },
+    { word:"once in a while",pos:"phrase",    phonetic:"/wʌns ɪn ə waɪl/", zh:"偶爾；有時候", ex:"We should exercise <strong>once in a while</strong> at least." },
+    { word:"volunteer",      pos:"verb",      phonetic:"/ˌvɒlənˈtɪər/",    zh:"自願；做義工", ex:"She decides to <strong>volunteer</strong> at the hospital." },
+    { word:"pollution",      pos:"noun",      phonetic:"/pəˈluːʃən/",       zh:"污染",         ex:"Air <strong>pollution</strong> affects our health." },
+    { word:"influence",      pos:"verb",      phonetic:"/ˈɪnfluəns/",       zh:"影響",         ex:"Good friends <strong>influence</strong> us in positive ways." },
+    { word:"opportunity",    pos:"noun",      phonetic:"/ˌɒpəˈtjuːnəti/",  zh:"機會",         ex:"This job is a great <strong>opportunity</strong> for growth." },
+    { word:"instead of",     pos:"phrase",    phonetic:"/ɪnˈsted əv/",      zh:"代替；而不是", ex:"Use a dictionary <strong>instead of</strong> a phone." },
+    { word:"curious",        pos:"adjective", phonetic:"/ˈkjʊəriəs/",       zh:"好奇的",       ex:"She is very <strong>curious</strong> about science." },
+    { word:"experiment",     pos:"noun",      phonetic:"/ɪkˈsperɪmənt/",    zh:"實驗",         ex:"The students set up an <strong>experiment</strong> in the lab." },
+    { word:"compare",        pos:"verb",      phonetic:"/kəmˈpeər/",        zh:"比較",         ex:"Let's <strong>compare</strong> the two results." },
+    { word:"take part in",   pos:"phrase",    phonetic:"/teɪk pɑːrt ɪn/",  zh:"參加；參與",   ex:"Everyone should <strong>take part in</strong> the activity." },
+    { word:"generous",       pos:"adjective", phonetic:"/ˈdʒenərəs/",       zh:"慷慨的；大方的",ex:"He is very <strong>generous</strong> with his time." },
+    { word:"conflict",       pos:"noun",      phonetic:"/ˈkɒnflɪkt/",       zh:"衝突；矛盾",   ex:"They resolved the <strong>conflict</strong> through talking." },
+    { word:"disappointed",   pos:"adjective", phonetic:"/ˌdɪsəˈpɔɪntɪd/",  zh:"失望的",       ex:"He was very <strong>disappointed</strong> with his score." },
+    { word:"look forward to",pos:"phrase",    phonetic:"/lʊk ˈfɔːwəd tuː/",zh:"期待",         ex:"I <strong>look forward to</strong> seeing you next week." },
+    { word:"encourage",      pos:"verb",      phonetic:"/ɪnˈkʌrɪdʒ/",      zh:"鼓勵",         ex:"Teachers should <strong>encourage</strong> their students." },
+    { word:"tradition",      pos:"noun",      phonetic:"/trəˈdɪʃən/",       zh:"傳統",         ex:"Eating dumplings is a <strong>tradition</strong> in Taiwan." },
+    { word:"anxious",        pos:"adjective", phonetic:"/ˈæŋkʃəs/",         zh:"焦慮的；擔心的",ex:"She felt <strong>anxious</strong> before the exam." },
+    { word:"in spite of",    pos:"phrase",    phonetic:"/ɪn spaɪt əv/",     zh:"儘管；雖然",   ex:"<strong>In spite of</strong> the rain, they kept going." },
+  ],
+
+  high: [
+    { word:"ambiguous",       pos:"adjective", phonetic:"/æmˈbɪɡjuəs/",       zh:"模糊的；不明確的", ex:"The instructions were <strong>ambiguous</strong> and confusing." },
+    { word:"unprecedented",   pos:"adjective", phonetic:"/ʌnˈpresɪdentɪd/",    zh:"史無前例的",       ex:"The storm caused <strong>unprecedented</strong> damage." },
+    { word:"mitigate",        pos:"verb",      phonetic:"/ˈmɪtɪɡeɪt/",         zh:"減輕；緩和",       ex:"We need to <strong>mitigate</strong> the effects of climate change." },
+    { word:"perspective",     pos:"noun",      phonetic:"/pəˈspektɪv/",         zh:"觀點；角度",       ex:"Try to see things from another <strong>perspective</strong>." },
+    { word:"exemplify",       pos:"verb",      phonetic:"/ɪɡˈzemplɪfaɪ/",      zh:"例示；是…的典範",  ex:"Her work <strong>exemplifies</strong> creativity and dedication." },
+    { word:"come to terms with",pos:"phrase",  phonetic:"/kʌm tə tɜːmz wɪð/", zh:"接受；適應（困難）",ex:"It took time to <strong>come to terms with</strong> the loss." },
+    { word:"controversy",     pos:"noun",      phonetic:"/ˈkɒntrəvɜːsi/",       zh:"爭議；論戰",       ex:"The new policy sparked a great deal of <strong>controversy</strong>." },
+    { word:"inherent",        pos:"adjective", phonetic:"/ɪnˈhɪərənt/",         zh:"固有的；本質上的", ex:"There is an <strong>inherent</strong> risk in every decision." },
+    { word:"elaborate",       pos:"adjective", phonetic:"/ɪˈlæbərət/",          zh:"精心設計的；詳細的",ex:"She gave an <strong>elaborate</strong> explanation." },
+    { word:"take it for granted",pos:"phrase", phonetic:"/teɪk ɪt fə ˈɡrɑːntɪd/",zh:"視為理所當然",  ex:"Don't <strong>take it for granted</strong> that people will help you." },
+    { word:"subsequent",      pos:"adjective", phonetic:"/ˈsʌbsɪkwənt/",        zh:"隨後的；後來的",   ex:"<strong>Subsequent</strong> studies confirmed the theory." },
+    { word:"deteriorate",     pos:"verb",      phonetic:"/dɪˈtɪəriəreɪt/",      zh:"惡化；退化",       ex:"His health began to <strong>deteriorate</strong> quickly." },
+    { word:"hypothesis",      pos:"noun",      phonetic:"/haɪˈpɒθəsɪs/",        zh:"假說；假設",       ex:"The scientist tested her <strong>hypothesis</strong> through research." },
+    { word:"rhetorical",      pos:"adjective", phonetic:"/rɪˈtɒrɪkəl/",         zh:"修辭的；反問的",   ex:"That was a <strong>rhetorical</strong> question — no answer needed." },
+    { word:"consensus",       pos:"noun",      phonetic:"/kənˈsensəs/",          zh:"共識",             ex:"The team reached a <strong>consensus</strong> on the plan." },
+    { word:"cut corners",     pos:"phrase",    phonetic:"/kʌt ˈkɔːrnərz/",      zh:"走捷徑；偷工減料", ex:"Don't <strong>cut corners</strong> when it comes to safety." },
+    { word:"plausible",       pos:"adjective", phonetic:"/ˈplɔːzɪbəl/",          zh:"合理的；貌似可信的",ex:"That explanation sounds quite <strong>plausible</strong>." },
+    { word:"paradigm",        pos:"noun",      phonetic:"/ˈpærədaɪm/",           zh:"典範；範例",       ex:"This discovery changed the scientific <strong>paradigm</strong>." },
+    { word:"irony",           pos:"noun",      phonetic:"/ˈaɪərəni/",            zh:"諷刺；反語",       ex:"The <strong>irony</strong> is that he won without trying." },
+    { word:"at the expense of",pos:"phrase",   phonetic:"/æt ðə ɪkˈspens əv/", zh:"以…為代價",        ex:"They gained profit <strong>at the expense of</strong> the environment." },
+    { word:"scrutinize",      pos:"verb",      phonetic:"/ˈskruːtɪnaɪz/",        zh:"仔細審查",         ex:"The editor carefully <strong>scrutinized</strong> every sentence." },
+    { word:"profound",        pos:"adjective", phonetic:"/prəˈfaʊnd/",            zh:"深刻的；深遠的",   ex:"The book had a <strong>profound</strong> effect on my thinking." },
+    { word:"abolish",         pos:"verb",      phonetic:"/əˈbɒlɪʃ/",             zh:"廢除；取消",       ex:"Many people want to <strong>abolish</strong> the death penalty." },
+    { word:"shed light on",   pos:"phrase",    phonetic:"/ʃed laɪt ɒn/",        zh:"闡明；使人了解",   ex:"The study <strong>sheds light on</strong> the cause of the disease." },
+  ],
+
+  university: [
+    { word:"epistemology",     pos:"noun",      phonetic:"/ɪˌpɪstɪˈmɒlədʒi/",    zh:"知識論；認識論",     ex:"<strong>Epistemology</strong> examines the nature and scope of knowledge." },
+    { word:"dialectical",      pos:"adjective", phonetic:"/ˌdaɪəˈlektɪkəl/",      zh:"辯證的",             ex:"She used a <strong>dialectical</strong> method to analyse the argument." },
+    { word:"proliferate",      pos:"verb",      phonetic:"/prəˈlɪfəreɪt/",         zh:"大量增生；擴散",     ex:"Social media platforms have <strong>proliferated</strong> in recent years." },
+    { word:"hegemony",         pos:"noun",      phonetic:"/hɪˈdʒeməni/",           zh:"霸權；支配地位",     ex:"The country sought cultural and economic <strong>hegemony</strong>." },
+    { word:"empirical",        pos:"adjective", phonetic:"/ɪmˈpɪrɪkəl/",           zh:"實證的；以經驗為依據的",ex:"The claim must be supported by <strong>empirical</strong> evidence." },
+    { word:"in the long run",  pos:"phrase",    phonetic:"/ɪn ðə lɒŋ rʌn/",       zh:"從長遠來看",         ex:"Saving money consistently pays off <strong>in the long run</strong>." },
+    { word:"paradigm shift",   pos:"phrase",    phonetic:"/ˈpærədaɪm ʃɪft/",       zh:"典範轉移",           ex:"Darwin's theory caused a major <strong>paradigm shift</strong> in biology." },
+    { word:"ostensibly",       pos:"adverb",    phonetic:"/ɒˈstensɪbli/",           zh:"表面上看起來",       ex:"The reform was <strong>ostensibly</strong> intended to benefit workers." },
+    { word:"juxtapose",        pos:"verb",      phonetic:"/ˌdʒʌkstəˈpəʊz/",        zh:"並列；對比放置",     ex:"The author <strong>juxtaposes</strong> wealth and poverty effectively." },
+    { word:"nuanced",          pos:"adjective", phonetic:"/ˈnjuːɑːnst/",            zh:"微妙的；細緻入微的", ex:"We need a more <strong>nuanced</strong> understanding of the issue." },
+    { word:"it goes without saying",pos:"phrase",phonetic:"/ɪt ɡəʊz wɪðˈaʊt ˈseɪɪŋ/",zh:"不言而喻；毋庸置疑", ex:"<strong>It goes without saying</strong> that honesty is essential." },
+    { word:"misnomer",         pos:"noun",      phonetic:"/ˌmɪsˈnəʊmər/",           zh:"誤稱；用詞不當",     ex:"'Starfish' is a <strong>misnomer</strong> as they are not actually fish." },
+    { word:"exacerbate",       pos:"verb",      phonetic:"/ɪɡˈzæsəbeɪt/",           zh:"使惡化；加劇",       ex:"Stress can <strong>exacerbate</strong> physical health problems." },
+    { word:"corroborate",      pos:"verb",      phonetic:"/kəˈrɒbəreɪt/",           zh:"確認；支持（說法）", ex:"New evidence <strong>corroborated</strong> the original findings." },
+    { word:"ontological",      pos:"adjective", phonetic:"/ˌɒntəˈlɒdʒɪkəl/",        zh:"本體論的",           ex:"The philosopher raised an <strong>ontological</strong> question about being." },
+    { word:"draw the line at", pos:"phrase",    phonetic:"/drɔː ðə laɪn æt/",       zh:"以…為界；對…不妥協", ex:"I <strong>draw the line at</strong> compromising my core values." },
+    { word:"ubiquitous",       pos:"adjective", phonetic:"/juːˈbɪkwɪtəs/",          zh:"無所不在的；普遍存在的",ex:"Smartphones have become <strong>ubiquitous</strong> in modern life." },
+    { word:"tangential",       pos:"adjective", phonetic:"/tænˈdʒenʃəl/",            zh:"離題的；相切的",     ex:"His remark was <strong>tangential</strong> to the main discussion." },
+    { word:"extrapolate",      pos:"verb",      phonetic:"/ɪkˈstræpəleɪt/",          zh:"推斷；外推",         ex:"We can <strong>extrapolate</strong> trends from the available data." },
+    { word:"albeit",           pos:"conjunction",phonetic:"/ɔːlˈbiːɪt/",            zh:"儘管；雖然",         ex:"The plan succeeded, <strong>albeit</strong> with some difficulties." },
+    { word:"the elephant in the room",pos:"phrase",phonetic:"/ðə ˈelɪfənt ɪn ðə ruːm/",zh:"顯而易見卻被刻意忽略的問題",ex:"Budget cuts were <strong>the elephant in the room</strong> nobody mentioned." },
+    { word:"commensurate",     pos:"adjective", phonetic:"/kəˈmenʃərət/",            zh:"相稱的；成比例的",   ex:"Her salary is not <strong>commensurate</strong> with her experience." },
+    { word:"dichotomy",        pos:"noun",      phonetic:"/daɪˈkɒtəmi/",             zh:"二分法；兩分",       ex:"There is a false <strong>dichotomy</strong> between science and art." },
+    { word:"on the fence",     pos:"phrase",    phonetic:"/ɒn ðə fens/",             zh:"立場不明確；舉棋不定",ex:"She is still <strong>on the fence</strong> about which career to choose." },
+  ]
+};
+
+// ════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════
+let state = {
+  level: null,
+  // wordStates: { word: { status:'new'|'easy'|'familiar'|'not-easy'|'not-familiar', freq:1, seen:0 } }
+  wordStates: {},
+  streak: 0,
+  totalEasy: 0,
+  mode: 'all',  // 'all' | 'review'
+  currentWord: null,
+};
+
+const STORAGE_KEY = 'wordwave_v2';
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) { const s = JSON.parse(raw); Object.assign(state, s); }
+  } catch(e) {}
+}
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+// ════════════════════════════════════════
+//  LEVEL SELECTION
+// ════════════════════════════════════════
+function selectLevel(el) {
+  document.querySelectorAll('.level-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.level = el.dataset.level;
+  document.getElementById('btn-start').disabled = false;
+}
+
+// ════════════════════════════════════════
+//  INIT QUIZ
+// ════════════════════════════════════════
+function startQuiz() {
+  if (!state.level) return;
+  loadState();
+
+  // If switching level, init word states for new words not yet seen
+  const words = VOCAB[state.level];
+  words.forEach(w => {
+    if (!state.wordStates[w.word]) {
+      state.wordStates[w.word] = { status: 'new', freq: 1, seen: 0 };
+    }
+  });
+
+  showScreen('quiz');
+  updateLevelTag();
+  setMode('all', document.getElementById('tab-all'));
+}
+
+function goHome() {
+  saveState();
+  showScreen('home');
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+}
+
+function updateLevelTag() {
+  const labels = { elementary:'🌱 Elementary', junior:'📘 Junior High', high:'🎓 High School', university:'🏛️ University' };
+  document.getElementById('level-tag').textContent = labels[state.level];
+}
+
+// ════════════════════════════════════════
+//  POOL & SELECTION
+// ════════════════════════════════════════
+function buildPool() {
+  const words = VOCAB[state.level];
+  let pool = [];
+
+  if (state.mode === 'review') {
+    // Only not-familiar
+    words.forEach(w => {
+      const ws = state.wordStates[w.word];
+      if (ws && ws.status === 'not-familiar') pool.push(w);
+    });
+  } else {
+    words.forEach(w => {
+      const ws = state.wordStates[w.word];
+      if (!ws || ws.status === 'easy') return; // skip mastered
+      const freq = ws.freq || 1;
+      for (let i = 0; i < freq; i++) pool.push(w);
+    });
+  }
+  return pool;
+}
+
+function pickWord(pool) {
+  if (!pool.length) return null;
+  // Weighted random – avoid repeating same word
+  let filtered = pool.filter(w => w.word !== (state.currentWord?.word));
+  if (!filtered.length) filtered = pool;
+  return filtered[Math.floor(Math.random() * filtered.length)];
+}
+
+// Freq values per status
+const FREQ_MAP = {
+  'new': 2,
+  'not-familiar': 4,
+  'not-easy': 2,
+  'familiar': 1,
+  'easy': 0,
+};
+
+// ════════════════════════════════════════
+//  RENDER CARD
+// ════════════════════════════════════════
+function renderCard(word) {
+  state.currentWord = word;
+
+  // Show card, hide empty
+  document.getElementById('quiz-card').style.display = '';
+  document.getElementById('empty-state').style.display = 'none';
+
+  // POS tag color
+  const posColors = {
+    noun: '#7c6aff', verb: '#36e8b4', adjective: '#ff6ab0',
+    adverb: '#ffd166', phrase: '#ff6b6b', conjunction: '#36e8b4'
+  };
+  const posEl = document.getElementById('pos-tag');
+  posEl.textContent = word.pos;
+  const c = posColors[word.pos] || '#7c6aff';
+  posEl.style.background = c + '18';
+  posEl.style.color = c;
+  posEl.style.border = '1px solid ' + c + '44';
+
+  document.getElementById('card-word').textContent = word.word;
+  document.getElementById('card-phonetic').textContent = word.phonetic || '';
+  document.getElementById('meaning-text').innerHTML = word.zh;
+  document.getElementById('example-text').innerHTML = word.ex;
+
+  // Difficulty dots
+  const ws = state.wordStates[word.word];
+  const status = ws?.status || 'new';
+  const dotCount = { 'easy':0, 'familiar':1, 'new':2, 'not-easy':3, 'not-familiar':4 }[status] || 2;
+  const dots = document.querySelectorAll('.diff-dot');
+  dots.forEach((d,i) => {
+    d.classList.toggle('lit', i < dotCount);
+  });
+
+  // Reset reveal state
+  document.getElementById('meaning-block').classList.remove('visible');
+  document.getElementById('example-block').classList.remove('visible');
+  document.getElementById('btn-meaning').classList.remove('revealed');
+  document.getElementById('btn-example').classList.remove('revealed');
+  document.getElementById('rating-section').classList.remove('visible');
+
+  // Cancel any ongoing speech and reset TTS buttons
+  if (ttsSupported) { window.speechSynthesis.cancel(); clearInterval(ttsResumeTimer); }
+  setBtnSpeaking(null);
+
+  updateStats();
+  updatePoolBars();
+}
+
+function showEmptyState() {
+  document.getElementById('quiz-card').style.display = 'none';
+  document.getElementById('empty-state').style.display = '';
+  state.currentWord = null;
+}
+
+// ════════════════════════════════════════
+//  REVEAL
+// ════════════════════════════════════════
+let meaningRevealed = false, exampleRevealed = false;
+
+function revealMeaning() {
+  meaningRevealed = true;
+  document.getElementById('meaning-block').classList.add('visible');
+  document.getElementById('btn-meaning').classList.add('revealed');
+  checkShowRating();
+}
+
+function revealExample() {
+  exampleRevealed = true;
+  document.getElementById('example-block').classList.add('visible');
+  document.getElementById('btn-example').classList.add('revealed');
+  checkShowRating();
+}
+
+function checkShowRating() {
+  if (meaningRevealed || exampleRevealed) {
+    document.getElementById('rating-section').classList.add('visible');
+  }
+  meaningRevealed = false; exampleRevealed = false;
+}
+
+// ════════════════════════════════════════
+//  RATING
+// ════════════════════════════════════════
+function rateWord(rating) {
+  if (!state.currentWord) return;
+  const word = state.currentWord.word;
+  const ws = state.wordStates[word] || { status:'new', freq:1, seen:0 };
+
+  ws.status = rating;
+  ws.seen = (ws.seen || 0) + 1;
+  ws.freq = FREQ_MAP[rating] ?? 1;
+  state.wordStates[word] = ws;
+
+  if (rating === 'easy') {
+    state.streak = (state.streak || 0) + 1;
+    showToast('✅ 已掌握！繼續保持 🎉');
+  } else if (rating === 'familiar') {
+    state.streak = (state.streak || 0) + 1;
+  } else {
+    state.streak = 0;
+  }
+
+  // count easy
+  state.totalEasy = Object.values(state.wordStates)
+    .filter(s => s.status === 'easy').length;
+
+  saveState();
+  nextWord();
+}
+
+function nextWord() {
+  const pool = buildPool();
+  const word = pickWord(pool);
+  if (!word) {
+    showEmptyState();
+    updateStats();
+    updatePoolBars();
+  } else {
+    renderCard(word);
+  }
+}
+
+// ════════════════════════════════════════
+//  STATS & PROGRESS
+// ════════════════════════════════════════
+function updateStats() {
+  const total = VOCAB[state.level]?.length || 0;
+  const easy = Object.values(state.wordStates).filter(s => s.status === 'easy').length;
+  const active = Object.values(state.wordStates).filter(s => s.status !== 'easy' && s.status !== undefined).length;
+  const remaining = total - easy;
+  const pct = total ? Math.round((easy / total) * 100) : 0;
+
+  document.getElementById('stat-mastered').textContent = easy;
+  document.getElementById('stat-remaining').textContent = remaining;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('streak-count').textContent = state.streak || 0;
+}
+
+function updatePoolBars() {
+  const total = VOCAB[state.level]?.length || 1;
+  const counts = { easy:0, familiar:0, 'not-easy':0, 'not-familiar':0, new:0 };
+
+  VOCAB[state.level]?.forEach(w => {
+    const ws = state.wordStates[w.word];
+    const s = ws?.status || 'new';
+    counts[s] = (counts[s] || 0) + 1;
+  });
+
+  const set = (id, cnt) => {
+    document.getElementById('bar-' + id).style.width = (cnt/total*100) + '%';
+    document.getElementById('cnt-' + id).textContent = cnt;
+  };
+  set('easy', counts.easy || 0);
+  set('familiar', counts.familiar || 0);
+  set('not-easy', counts['not-easy'] || 0);
+  set('not-familiar', counts['not-familiar'] || 0);
+  set('new', counts.new || 0);
+}
+
+// ════════════════════════════════════════
+//  MODE
+// ════════════════════════════════════════
+function setMode(mode, tabEl) {
+  state.mode = mode;
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  if (tabEl) tabEl.classList.add('active');
+
+  const pool = buildPool();
+  const word = pickWord(pool);
+  if (!word) showEmptyState();
+  else renderCard(word);
+  updateStats();
+  updatePoolBars();
+}
+
+// ════════════════════════════════════════
+//  RESET
+// ════════════════════════════════════════
+function confirmReset() {
+  if (confirm('確定要重置本級別的所有學習進度嗎？')) {
+    resetPool();
+  }
+}
+
+function resetPool() {
+  if (!state.level) return;
+  VOCAB[state.level].forEach(w => {
+    state.wordStates[w.word] = { status: 'new', freq: 2, seen: 0 };
+  });
+  state.streak = 0;
+  saveState();
+  setMode('all', document.getElementById('tab-all'));
+  showToast('🔄 已重置進度');
+}
+
+// ════════════════════════════════════════
+//  TOAST
+// ════════════════════════════════════════
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// ════════════════════════════════════════
+//  TEXT-TO-SPEECH  (mobile-safe)
+// ════════════════════════════════════════
+const ttsSupported = 'speechSynthesis' in window;
+let ttsVoice = null;
+let ttsUnlocked = false;   // tracks whether audio context is unlocked on mobile
+let ttsResumeTimer = null; // Chrome mobile bug: speechSynthesis stalls after ~15s
+
+function pickVoice() {
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices.length) return;
+  ttsVoice =
+    voices.find(v => v.lang === 'en-US' && /google/i.test(v.name)) ||
+    voices.find(v => v.lang === 'en-US') ||
+    voices.find(v => v.lang === 'en-GB') ||
+    voices.find(v => v.lang.startsWith('en')) ||
+    voices[0] ||
+    null;
+}
+
+function initTTS() {
+  if (!ttsSupported) {
+    const el = document.getElementById('tts-unavail');
+    if (el) el.style.display = 'block';
+    ['btn-tts-word','btn-tts-ex'].forEach(id => {
+      const b = document.getElementById(id);
+      if (b) { b.style.opacity = '0.3'; b.style.pointerEvents = 'none'; }
+    });
+    return;
+  }
+  // Voices may load async (especially on mobile)
+  pickVoice();
+  window.speechSynthesis.onvoiceschanged = pickVoice;
+
+  // Unlock audio on first user interaction (required by mobile browsers)
+  // We fire a silent utterance on the very first touch/click anywhere
+  const unlock = () => {
+    if (ttsUnlocked) return;
+    ttsUnlocked = true;
+    const silent = new SpeechSynthesisUtterance('');
+    silent.volume = 0;
+    window.speechSynthesis.speak(silent);
+    document.removeEventListener('touchstart', unlock);
+    document.removeEventListener('click', unlock);
+  };
+  document.addEventListener('touchstart', unlock, { passive: true });
+  document.addEventListener('click', unlock);
+}
+
+const PLAY_ICON  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
+const PAUSE_ICON = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>`;
+
+function setBtnSpeaking(activeBtnId) {
+  ['btn-tts-word', 'btn-tts-ex'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle('speaking', id === activeBtnId);
+    el.innerHTML = (id === activeBtnId) ? PAUSE_ICON : PLAY_ICON;
+  });
+}
+
+function speak(text, btnId) {
+  if (!ttsSupported) { showToast('⚠️ 此瀏覽器不支援語音播放'); return; }
+
+  // If already speaking this button → stop (toggle off)
+  const btn = document.getElementById(btnId);
+  if (btn && btn.classList.contains('speaking')) {
+    window.speechSynthesis.cancel();
+    clearInterval(ttsResumeTimer);
+    setBtnSpeaking(null);
+    return;
+  }
+
+  // Cancel anything ongoing
+  window.speechSynthesis.cancel();
+  clearInterval(ttsResumeTimer);
+  setBtnSpeaking(null);
+
+  // Re-pick voices (mobile Chrome sometimes loads them lazily)
+  if (!ttsVoice) pickVoice();
+
+  const clean = text.replace(/<[^>]+>/g, '').trim();
+  const utter = new SpeechSynthesisUtterance(clean);
+  utter.lang   = 'en-US';
+  utter.rate   = 0.88;
+  utter.pitch  = 1;
+  utter.volume = 1;
+  if (ttsVoice) utter.voice = ttsVoice;
+
+  utter.onstart = () => {
+    setBtnSpeaking(btnId);
+    // Chrome mobile bug: synthesis can pause silently after ~15s
+    // Keep it alive by calling resume() every 10s
+    ttsResumeTimer = setInterval(() => {
+      if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+    }, 10000);
+  };
+  utter.onend = utter.onerror = () => {
+    clearInterval(ttsResumeTimer);
+    setBtnSpeaking(null);
+  };
+
+  // Small delay ensures cancel() has fully flushed on Android Chrome
+  setTimeout(() => window.speechSynthesis.speak(utter), 50);
+}
+
+function speakWord() {
+  if (!state.currentWord) return;
+  speak(state.currentWord.word, 'btn-tts-word');
+}
+
+function speakExample() {
+  if (!state.currentWord) return;
+  speak(state.currentWord.ex, 'btn-tts-ex');
+}
+
+// ════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════
+loadState();
+initTTS();
+// Restore last level if any
+if (state.level) {
+  const card = document.querySelector(`.level-card[data-level="${state.level}"]`);
+  if (card) {
+    card.classList.add('selected');
+    document.getElementById('btn-start').disabled = false;
+  }
+}
+</script>
+</body>
+</html>
