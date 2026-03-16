@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-16T15:54:01.857908+08:00",
+  "updatedAt": "2026-03-16T16:53:21.432798+08:00",
   "timezone": "Asia/Taipei",
   "market": "US",
   "items": [
@@ -749,26 +749,10 @@
       "label": "比特幣",
       "symbol": "BTC-USD",
       "type": "Crypto",
-      "price": 73461.54,
-      "change": 671.62,
-      "changePercent": 0.92,
+      "price": 73094.02,
+      "change": 304.1,
+      "changePercent": 0.42,
       "trend": [
-        {
-          "time": "10:00",
-          "close": 72688.91
-        },
-        {
-          "time": "10:15",
-          "close": 72436.82
-        },
-        {
-          "time": "10:30",
-          "close": 72440.12
-        },
-        {
-          "time": "10:45",
-          "close": 72568.95
-        },
         {
           "time": "11:00",
           "close": 72567.3
@@ -847,7 +831,23 @@
         },
         {
           "time": "15:45",
-          "close": 73461.54
+          "close": 73494.09
+        },
+        {
+          "time": "16:00",
+          "close": 73642.09
+        },
+        {
+          "time": "16:15",
+          "close": 73387.27
+        },
+        {
+          "time": "16:30",
+          "close": 73140.18
+        },
+        {
+          "time": "16:45",
+          "close": 73094.02
         }
       ]
     },
@@ -855,9 +855,9 @@
       "label": "黃金期貨",
       "symbol": "GC=F",
       "type": "Commodity",
-      "price": 4997.9,
-      "change": -54.6,
-      "changePercent": -1.08,
+      "price": 4990.3,
+      "change": -62.2,
+      "changePercent": -1.23,
       "trend": [
         {
           "time": "12:00",
@@ -917,7 +917,23 @@
         },
         {
           "time": "15:30",
-          "close": 4997.9
+          "close": 4995.7
+        },
+        {
+          "time": "15:45",
+          "close": 4998.9
+        },
+        {
+          "time": "16:00",
+          "close": 4993.1
+        },
+        {
+          "time": "16:15",
+          "close": 5001.2
+        },
+        {
+          "time": "16:30",
+          "close": 4990.3
         }
       ]
     }
