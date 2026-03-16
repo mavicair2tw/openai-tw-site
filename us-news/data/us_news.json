@@ -1,16 +1,28 @@
 {
-  "updatedAt": "2026-03-17T04:51:01.217269+08:00",
+  "updatedAt": "2026-03-17T05:37:08.833694+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 輝達GTC大會揭AI藍圖！黃仁勳喊出1兆美元AI晶片商機；3. 03/16債券空軍撤退？Citadel不再看空美債 全球債市拋售潮可能近尾聲；4. 03/16Fed主席鮑爾會不會離任？法院文件透露最新動向；5. 03/16華爾街空軍集結？避險基金大舉做空金融股 成今年最遭拋售板塊。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 5倍Token吞吐量 能源效率4倍！輝達發布BlueField-4 STX架構 搶攻AI算力市場；3. 03/16〈美股盤後〉輝達GTC大會登場 油價回落 道瓊高升近400點；4. 03/16〈紐約匯市〉美元漲勢暫歇 市場聚焦央行決策；5. 03/16輝達GTC大會揭AI藍圖！黃仁勳喊出1兆美元AI晶片商機。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "輝達GTC大會揭AI藍圖！黃仁勳喊出1兆美元AI晶片商機",
+      "title": "5倍Token吞吐量 能源效率4倍！輝達發布BlueField-4 STX架構 搶攻AI算力市場",
+      "url": "https://news.cnyes.com/news/id/6386760"
+    },
+    {
+      "title": "03/16〈美股盤後〉輝達GTC大會登場 油價回落 道瓊高升近400點",
+      "url": "https://news.cnyes.com/news/id/6386763"
+    },
+    {
+      "title": "03/16〈紐約匯市〉美元漲勢暫歇 市場聚焦央行決策",
+      "url": "https://news.cnyes.com/news/id/6386786"
+    },
+    {
+      "title": "03/16輝達GTC大會揭AI藍圖！黃仁勳喊出1兆美元AI晶片商機",
       "url": "https://news.cnyes.com/news/id/6386734"
     },
     {
@@ -40,18 +52,6 @@
     {
       "title": "03/16〈美股早盤〉科技股領漲、油價回落提振市場情緒 主要指數開高",
       "url": "https://news.cnyes.com/news/id/6386390"
-    },
-    {
-      "title": "03/16AI記憶體太搶手！美光宣布台灣再建晶片基地 盤前股價勁揚逾5%",
-      "url": "https://news.cnyes.com/news/id/6386508"
-    },
-    {
-      "title": "03/16Google反壟斷案拖兩年 歐洲業界促歐盟儘快開罰",
-      "url": "https://news.cnyes.com/news/id/6386394"
-    },
-    {
-      "title": "03/16為AI擴張鋪路！Meta砸270億美元布局基礎設施 攜Nebius展開五年合作",
-      "url": "https://news.cnyes.com/news/id/6386392"
     }
   ],
   "error": null
