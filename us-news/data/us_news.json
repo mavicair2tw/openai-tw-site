@@ -1,57 +1,57 @@
 {
-  "updatedAt": "2026-03-16T12:55:18.227544+08:00",
+  "updatedAt": "2026-03-16T14:19:31.292987+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 輝達GTC大會前瞻！美銀點名三大關注焦點：晶片架構路線圖、CPO、LPU全攻略；3. 03:55力積電P5廠完成交易 將提供美光HBM/PWF代工；4. 03:45美光完成收購力積電銅鑼P5廠 無塵室開始改裝、2028財年量產；5. 02:37馬斯克的全球最大晶片廠Terafab 有「一點」與台積電很不同。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 美債今年漲幅全吐光！高油價引爆滯脹恐慌 華爾街降息夢碎；3. 03/16SemiAnalysis創辦人：算力瓶頸從CoWoS轉移到EUV產能 記憶體吃掉30%資本支出；4. 03/16輝達GTC大會前瞻！美銀點名三大關注焦點：晶片架構路線圖、CPO、LPU全攻略；5. 03/16力積電P5廠完成交易 將提供美光HBM/PWF代工。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "輝達GTC大會前瞻！美銀點名三大關注焦點：晶片架構路線圖、CPO、LPU全攻略",
+      "title": "美債今年漲幅全吐光！高油價引爆滯脹恐慌 華爾街降息夢碎",
+      "url": "https://news.cnyes.com/news/id/6385338"
+    },
+    {
+      "title": "03/16SemiAnalysis創辦人：算力瓶頸從CoWoS轉移到EUV產能 記憶體吃掉30%資本支出",
+      "url": "https://news.cnyes.com/news/id/6385780"
+    },
+    {
+      "title": "03/16輝達GTC大會前瞻！美銀點名三大關注焦點：晶片架構路線圖、CPO、LPU全攻略",
       "url": "https://news.cnyes.com/news/id/6385403"
     },
     {
-      "title": "03:55力積電P5廠完成交易 將提供美光HBM/PWF代工",
+      "title": "03/16力積電P5廠完成交易 將提供美光HBM/PWF代工",
       "url": "https://news.cnyes.com/news/id/6385709"
     },
     {
-      "title": "03:45美光完成收購力積電銅鑼P5廠 無塵室開始改裝、2028財年量產",
+      "title": "03/16美光完成收購力積電銅鑼P5廠 無塵室開始改裝、2028財年量產",
       "url": "https://news.cnyes.com/news/id/6385678"
     },
     {
-      "title": "02:37馬斯克的全球最大晶片廠Terafab 有「一點」與台積電很不同",
+      "title": "03/16馬斯克的全球最大晶片廠Terafab 有「一點」與台積電很不同",
       "url": "https://news.cnyes.com/news/id/6385342"
     },
     {
-      "title": "01:11OpenAI：ChatGPT廣告暫不會在全球範圍內推出",
+      "title": "03/16OpenAI：ChatGPT廣告暫不會在全球範圍內推出",
       "url": "https://news.cnyes.com/news/id/6385401"
     },
     {
-      "title": "00:33中東戰爭維持油價高企 國際金價今早開盤一度跌破5000美元大關",
+      "title": "03/16中東戰爭維持油價高企 國際金價今早開盤一度跌破5000美元大關",
       "url": "https://news.cnyes.com/news/id/6385372"
     },
     {
-      "title": "00:00緊盯油價！美國三大股指逼近200日均支撐位置 市場拋售力道是否會加劇？",
+      "title": "03/16緊盯油價！美國三大股指逼近200日均支撐位置 市場拋售力道是否會加劇？",
       "url": "https://news.cnyes.com/news/id/6385094"
     },
     {
-      "title": "03/15美伊戰火燒向AI！台積電ADR下挫、關鍵材料供應缺、「這一領域」將受益",
+      "title": "22:30美伊戰火燒向AI！台積電ADR下挫、關鍵材料供應缺、「這一領域」將受益",
       "url": "https://news.cnyes.com/news/id/6385140"
     },
     {
-      "title": "03/15波克夏重啟庫藏股計畫！一文看懂股票回購是什麼、對投資人代表什麼",
+      "title": "22:10波克夏重啟庫藏股計畫！一文看懂股票回購是什麼、對投資人代表什麼",
       "url": "https://news.cnyes.com/news/id/6384891"
-    },
-    {
-      "title": "03/15荷姆茲海峽停航衝擊！亞太各國轉向美國採購能源、48小時簽逾500億美元合約",
-      "url": "https://news.cnyes.com/news/id/6385233"
-    },
-    {
-      "title": "03/15美國、伊朗衝突升溫如何避險？大摩看好「這1關鍵」題材、「2項」大宗商品",
-      "url": "https://news.cnyes.com/news/id/6384774"
     }
   ],
   "error": null
