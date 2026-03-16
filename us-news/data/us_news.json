@@ -1,57 +1,57 @@
 {
-  "updatedAt": "2026-03-16T19:11:12.636201+08:00",
+  "updatedAt": "2026-03-16T19:57:20.789368+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 362億美元撤資潮！美股四巫日恐迎「崩盤與軋空」史詩級波動；3. 09:10員工苦等7周仍未獲通知！ASML裁員1700人計畫引發內部動蕩 工會質疑重組緊迫性；4. 07:00五大科技賽道共振！木頭姐揭未來十年最大商機：AI引發史無前例「大加速」；5. 06:03美債今年漲幅全吐光！高油價引爆滯脹恐慌 華爾街降息夢碎。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 為AI擴張鋪路！Meta砸270億美元布局基礎設施 攜Nebius展開五年合作；3. 03/16362億美元撤資潮！美股四巫日恐迎「崩盤與軋空」史詩級波動；4. 03/16員工苦等7周仍未獲通知！ASML裁員1700人計畫引發內部動蕩 工會質疑重組緊迫性；5. 03/16五大科技賽道共振！木頭姐揭未來十年最大商機：AI引發史無前例「大加速」。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "362億美元撤資潮！美股四巫日恐迎「崩盤與軋空」史詩級波動",
+      "title": "為AI擴張鋪路！Meta砸270億美元布局基礎設施 攜Nebius展開五年合作",
+      "url": "https://news.cnyes.com/news/id/6386392"
+    },
+    {
+      "title": "03/16362億美元撤資潮！美股四巫日恐迎「崩盤與軋空」史詩級波動",
       "url": "https://news.cnyes.com/news/id/6385856"
     },
     {
-      "title": "09:10員工苦等7周仍未獲通知！ASML裁員1700人計畫引發內部動蕩 工會質疑重組緊迫性",
+      "title": "03/16員工苦等7周仍未獲通知！ASML裁員1700人計畫引發內部動蕩 工會質疑重組緊迫性",
       "url": "https://news.cnyes.com/news/id/6385402"
     },
     {
-      "title": "07:00五大科技賽道共振！木頭姐揭未來十年最大商機：AI引發史無前例「大加速」",
+      "title": "03/16五大科技賽道共振！木頭姐揭未來十年最大商機：AI引發史無前例「大加速」",
       "url": "https://news.cnyes.com/news/id/6385270"
     },
     {
-      "title": "06:03美債今年漲幅全吐光！高油價引爆滯脹恐慌 華爾街降息夢碎",
+      "title": "03/16美債今年漲幅全吐光！高油價引爆滯脹恐慌 華爾街降息夢碎",
       "url": "https://news.cnyes.com/news/id/6385338"
     },
     {
-      "title": "05:40SemiAnalysis創辦人：算力瓶頸從CoWoS轉移到EUV產能 記憶體吃掉30%資本支出",
+      "title": "03/16SemiAnalysis創辦人：算力瓶頸從CoWoS轉移到EUV產能 記憶體吃掉30%資本支出",
       "url": "https://news.cnyes.com/news/id/6385780"
     },
     {
-      "title": "04:00輝達GTC大會前瞻！美銀點名三大關注焦點：晶片架構路線圖、CPO、LPU全攻略",
+      "title": "03/16輝達GTC大會前瞻！美銀點名三大關注焦點：晶片架構路線圖、CPO、LPU全攻略",
       "url": "https://news.cnyes.com/news/id/6385403"
     },
     {
-      "title": "03:55力積電P5廠完成交易 將提供美光HBM/PWF代工",
+      "title": "03/16力積電P5廠完成交易 將提供美光HBM/PWF代工",
       "url": "https://news.cnyes.com/news/id/6385709"
     },
     {
-      "title": "03:45美光完成收購力積電銅鑼P5廠 無塵室開始改裝、2028財年量產",
+      "title": "03/16美光完成收購力積電銅鑼P5廠 無塵室開始改裝、2028財年量產",
       "url": "https://news.cnyes.com/news/id/6385678"
     },
     {
-      "title": "02:37馬斯克的全球最大晶片廠Terafab 有「一點」與台積電很不同",
+      "title": "03/16馬斯克的全球最大晶片廠Terafab 有「一點」與台積電很不同",
       "url": "https://news.cnyes.com/news/id/6385342"
     },
     {
-      "title": "01:11OpenAI：ChatGPT廣告暫不會在全球範圍內推出",
+      "title": "03/16OpenAI：ChatGPT廣告暫不會在全球範圍內推出",
       "url": "https://news.cnyes.com/news/id/6385401"
-    },
-    {
-      "title": "00:33中東戰爭維持油價高企 國際金價今早開盤一度跌破5000美元大關",
-      "url": "https://news.cnyes.com/news/id/6385372"
     }
   ],
   "error": null
