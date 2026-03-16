@@ -1,16 +1,28 @@
 {
-  "updatedAt": "2026-03-17T00:59:28.080706+08:00",
+  "updatedAt": "2026-03-17T02:03:54.252871+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 美國製造業回暖 2月工業生產連4月成長；3. 14:435年大改款！蘋果AirPods Max 2登場 加入即時翻譯與更強降噪；4. 14:10OpenAI搶攻企業AI市場 傳攜私募基金打造100億美元合資公司；5. 13:38〈美股早盤〉科技股領漲、油價回落提振市場情緒 主要指數開高。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 債券空軍撤退？Citadel不再看空美債 全球債市拋售潮可能近尾聲；3. 17:30Fed主席鮑爾會不會離任？法院文件透露最新動向；4. 17:00華爾街空軍集結？避險基金大舉做空金融股 成今年最遭拋售板塊；5. 15:30美國製造業回暖 2月工業生產連4月成長。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "美國製造業回暖 2月工業生產連4月成長",
+      "title": "債券空軍撤退？Citadel不再看空美債 全球債市拋售潮可能近尾聲",
+      "url": "https://news.cnyes.com/news/id/6386704"
+    },
+    {
+      "title": "17:30Fed主席鮑爾會不會離任？法院文件透露最新動向",
+      "url": "https://news.cnyes.com/news/id/6386686"
+    },
+    {
+      "title": "17:00華爾街空軍集結？避險基金大舉做空金融股 成今年最遭拋售板塊",
+      "url": "https://news.cnyes.com/news/id/6386643"
+    },
+    {
+      "title": "15:30美國製造業回暖 2月工業生產連4月成長",
       "url": "https://news.cnyes.com/news/id/6386621"
     },
     {
@@ -40,18 +52,6 @@
     {
       "title": "09:20362億美元撤資潮！美股四巫日恐迎「崩盤與軋空」史詩級波動",
       "url": "https://news.cnyes.com/news/id/6385856"
-    },
-    {
-      "title": "09:10員工苦等7周仍未獲通知！ASML裁員1700人計畫引發內部動蕩 工會質疑重組緊迫性",
-      "url": "https://news.cnyes.com/news/id/6385402"
-    },
-    {
-      "title": "07:00五大科技賽道共振！木頭姐揭未來十年最大商機：AI引發史無前例「大加速」",
-      "url": "https://news.cnyes.com/news/id/6385270"
-    },
-    {
-      "title": "06:03美債今年漲幅全吐光！高油價引爆滯脹恐慌 華爾街降息夢碎",
-      "url": "https://news.cnyes.com/news/id/6385338"
     }
   ],
   "error": null
