@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-17T04:00:08.367932+08:00",
+  "updatedAt": "2026-03-17T04:50:56.967350+08:00",
   "timezone": "Asia/Taipei",
   "market": "US",
   "items": [
@@ -7,9 +7,9 @@
       "label": "台積電ADR",
       "symbol": "TSM",
       "type": "Stock",
-      "price": 340.13,
-      "change": 1.82,
-      "changePercent": 0.54,
+      "price": 340.11,
+      "change": 1.8,
+      "changePercent": 0.53,
       "trend": [
         {
           "time": "22:00",
@@ -105,7 +105,7 @@
         },
         {
           "time": "03:45",
-          "close": 340.13
+          "close": 340.11
         }
       ]
     },
@@ -749,26 +749,10 @@
       "label": "比特幣",
       "symbol": "BTC-USD",
       "type": "Crypto",
-      "price": 73919.84,
-      "change": 1129.93,
-      "changePercent": 1.55,
+      "price": 74075.79,
+      "change": 1285.88,
+      "changePercent": 1.77,
       "trend": [
-        {
-          "time": "22:00",
-          "close": 74253.65
-        },
-        {
-          "time": "22:15",
-          "close": 73907.18
-        },
-        {
-          "time": "22:30",
-          "close": 73112.17
-        },
-        {
-          "time": "22:45",
-          "close": 73457.05
-        },
         {
           "time": "23:00",
           "close": 73603.23
@@ -847,7 +831,23 @@
         },
         {
           "time": "03:45",
-          "close": 73919.84
+          "close": 73962.58
+        },
+        {
+          "time": "04:00",
+          "close": 73868.88
+        },
+        {
+          "time": "04:15",
+          "close": 74009.48
+        },
+        {
+          "time": "04:30",
+          "close": 74043.87
+        },
+        {
+          "time": "04:45",
+          "close": 74075.79
         }
       ]
     },
@@ -855,22 +855,10 @@
       "label": "黃金期貨",
       "symbol": "GC=F",
       "type": "Commodity",
-      "price": 5017.1,
-      "change": -35.4,
-      "changePercent": -0.7,
+      "price": 5015.8,
+      "change": -36.7,
+      "changePercent": -0.73,
       "trend": [
-        {
-          "time": "22:00",
-          "close": 5034.1
-        },
-        {
-          "time": "22:15",
-          "close": 5020.4
-        },
-        {
-          "time": "22:30",
-          "close": 5006.4
-        },
         {
           "time": "22:45",
           "close": 5000.8
@@ -953,7 +941,19 @@
         },
         {
           "time": "03:45",
-          "close": 5017.1
+          "close": 5019.3
+        },
+        {
+          "time": "04:00",
+          "close": 5022.9
+        },
+        {
+          "time": "04:15",
+          "close": 5020.2
+        },
+        {
+          "time": "04:30",
+          "close": 5015.8
         }
       ]
     }
