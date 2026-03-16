@@ -1072,7 +1072,7 @@ function renderCard(word) {
   document.getElementById('rating-section').classList.remove('visible');
 
   // Cancel any ongoing speech and reset TTS buttons
-  if (ttsSupported) window.speechSynthesis.cancel();
+  if (ttsSupported) { window.speechSynthesis.cancel(); clearInterval(ttsResumeTimer); }
   setBtnSpeaking(null);
 
   updateStats();
@@ -1239,66 +1239,109 @@ function showToast(msg) {
 }
 
 // ════════════════════════════════════════
-//  TEXT-TO-SPEECH
+//  TEXT-TO-SPEECH  (mobile-safe)
 // ════════════════════════════════════════
 const ttsSupported = 'speechSynthesis' in window;
 let ttsVoice = null;
+let ttsUnlocked = false;   // tracks whether audio context is unlocked on mobile
+let ttsResumeTimer = null; // Chrome mobile bug: speechSynthesis stalls after ~15s
+
+function pickVoice() {
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices.length) return;
+  ttsVoice =
+    voices.find(v => v.lang === 'en-US' && /google/i.test(v.name)) ||
+    voices.find(v => v.lang === 'en-US') ||
+    voices.find(v => v.lang === 'en-GB') ||
+    voices.find(v => v.lang.startsWith('en')) ||
+    voices[0] ||
+    null;
+}
 
 function initTTS() {
   if (!ttsSupported) {
-    const unavail = document.getElementById('tts-unavail');
-    if (unavail) unavail.style.display = 'block';
-    const btn = document.getElementById('btn-tts-word');
-    if (btn) { btn.style.opacity = '0.3'; btn.style.pointerEvents = 'none'; }
+    const el = document.getElementById('tts-unavail');
+    if (el) el.style.display = 'block';
+    ['btn-tts-word','btn-tts-ex'].forEach(id => {
+      const b = document.getElementById(id);
+      if (b) { b.style.opacity = '0.3'; b.style.pointerEvents = 'none'; }
+    });
     return;
   }
-  const loadVoices = () => {
-    const voices = window.speechSynthesis.getVoices();
-    ttsVoice =
-      voices.find(v => v.lang === 'en-US' && v.name.toLowerCase().includes('google')) ||
-      voices.find(v => v.lang === 'en-US') ||
-      voices.find(v => v.lang === 'en-GB') ||
-      voices.find(v => v.lang.startsWith('en')) ||
-      null;
+  // Voices may load async (especially on mobile)
+  pickVoice();
+  window.speechSynthesis.onvoiceschanged = pickVoice;
+
+  // Unlock audio on first user interaction (required by mobile browsers)
+  // We fire a silent utterance on the very first touch/click anywhere
+  const unlock = () => {
+    if (ttsUnlocked) return;
+    ttsUnlocked = true;
+    const silent = new SpeechSynthesisUtterance('');
+    silent.volume = 0;
+    window.speechSynthesis.speak(silent);
+    document.removeEventListener('touchstart', unlock);
+    document.removeEventListener('click', unlock);
   };
-  loadVoices();
-  window.speechSynthesis.onvoiceschanged = loadVoices;
+  document.addEventListener('touchstart', unlock, { passive: true });
+  document.addEventListener('click', unlock);
 }
 
-const PLAY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
+const PLAY_ICON  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
 const PAUSE_ICON = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>`;
 
 function setBtnSpeaking(activeBtnId) {
   ['btn-tts-word', 'btn-tts-ex'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    if (id === activeBtnId) {
-      el.classList.add('speaking');
-      el.innerHTML = PAUSE_ICON;
-    } else {
-      el.classList.remove('speaking');
-      el.innerHTML = PLAY_ICON;
-    }
+    el.classList.toggle('speaking', id === activeBtnId);
+    el.innerHTML = (id === activeBtnId) ? PAUSE_ICON : PLAY_ICON;
   });
 }
 
 function speak(text, btnId) {
   if (!ttsSupported) { showToast('⚠️ 此瀏覽器不支援語音播放'); return; }
+
+  // If already speaking this button → stop (toggle off)
+  const btn = document.getElementById(btnId);
+  if (btn && btn.classList.contains('speaking')) {
+    window.speechSynthesis.cancel();
+    clearInterval(ttsResumeTimer);
+    setBtnSpeaking(null);
+    return;
+  }
+
+  // Cancel anything ongoing
   window.speechSynthesis.cancel();
+  clearInterval(ttsResumeTimer);
   setBtnSpeaking(null);
+
+  // Re-pick voices (mobile Chrome sometimes loads them lazily)
+  if (!ttsVoice) pickVoice();
 
   const clean = text.replace(/<[^>]+>/g, '').trim();
   const utter = new SpeechSynthesisUtterance(clean);
-  utter.lang = 'en-US';
-  utter.rate = 0.88;
-  utter.pitch = 1;
+  utter.lang   = 'en-US';
+  utter.rate   = 0.88;
+  utter.pitch  = 1;
   utter.volume = 1;
   if (ttsVoice) utter.voice = ttsVoice;
 
-  utter.onstart = () => setBtnSpeaking(btnId);
-  utter.onend   = () => setBtnSpeaking(null);
-  utter.onerror = () => setBtnSpeaking(null);
-  window.speechSynthesis.speak(utter);
+  utter.onstart = () => {
+    setBtnSpeaking(btnId);
+    // Chrome mobile bug: synthesis can pause silently after ~15s
+    // Keep it alive by calling resume() every 10s
+    ttsResumeTimer = setInterval(() => {
+      if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+    }, 10000);
+  };
+  utter.onend = utter.onerror = () => {
+    clearInterval(ttsResumeTimer);
+    setBtnSpeaking(null);
+  };
+
+  // Small delay ensures cancel() has fully flushed on Android Chrome
+  setTimeout(() => window.speechSynthesis.speak(utter), 50);
 }
 
 function speakWord() {
