@@ -1,57 +1,57 @@
 {
-  "updatedAt": "2026-03-17T06:06:05.640034+08:00",
+  "updatedAt": "2026-03-17T06:51:51.253336+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 輝達推出Vera Rubin Space-1晶片系統 進軍太空AI資料中心；3. 21:205倍Token吞吐量 能源效率4倍！輝達發布BlueField-4 STX架構 搶攻AI算力市場；4. 21:15〈美股盤後〉黃仁勳喊1兆美元AI商機 油價回落 道瓊高升近400點；5. 20:59〈紐約匯市〉美元漲勢暫歇 市場聚焦央行決策。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 川普稱因伊朗戰爭 美方要求延後與習近平會面「約一個月」；3. 03/16挑戰Adobe！蘋果出手買下MotionVFX 搶攻影音創作者市場；4. 03/16AI支出太沉重！傳Meta擬裁員20%省60億美元 小摩：杯水車薪；5. 03/16特斯拉走高 馬斯克7日內啟動全球最大晶片廠Terafab。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "輝達推出Vera Rubin Space-1晶片系統 進軍太空AI資料中心",
+      "title": "川普稱因伊朗戰爭 美方要求延後與習近平會面「約一個月」",
+      "url": "https://news.cnyes.com/news/id/6386800"
+    },
+    {
+      "title": "03/16挑戰Adobe！蘋果出手買下MotionVFX 搶攻影音創作者市場",
+      "url": "https://news.cnyes.com/news/id/6386746"
+    },
+    {
+      "title": "03/16AI支出太沉重！傳Meta擬裁員20%省60億美元 小摩：杯水車薪",
+      "url": "https://news.cnyes.com/news/id/6386773"
+    },
+    {
+      "title": "03/16特斯拉走高 馬斯克7日內啟動全球最大晶片廠Terafab",
+      "url": "https://news.cnyes.com/news/id/6386767"
+    },
+    {
+      "title": "03/16輝達推出Vera Rubin Space-1晶片系統 進軍太空AI資料中心",
       "url": "https://news.cnyes.com/news/id/6386792"
     },
     {
-      "title": "21:205倍Token吞吐量 能源效率4倍！輝達發布BlueField-4 STX架構 搶攻AI算力市場",
+      "title": "03/165倍Token吞吐量 能源效率4倍！輝達發布BlueField-4 STX架構 搶攻AI算力市場",
       "url": "https://news.cnyes.com/news/id/6386760"
     },
     {
-      "title": "21:15〈美股盤後〉黃仁勳喊1兆美元AI商機 油價回落 道瓊高升近400點",
+      "title": "03/16〈美股盤後〉黃仁勳喊1兆美元AI商機 油價回落 道瓊高升近400點",
       "url": "https://news.cnyes.com/news/id/6386763"
     },
     {
-      "title": "20:59〈紐約匯市〉美元漲勢暫歇 市場聚焦央行決策",
+      "title": "03/16〈紐約匯市〉美元漲勢暫歇 市場聚焦央行決策",
       "url": "https://news.cnyes.com/news/id/6386786"
     },
     {
-      "title": "19:56輝達GTC大會揭AI藍圖！黃仁勳喊出1兆美元AI晶片商機",
+      "title": "03/16輝達GTC大會揭AI藍圖！黃仁勳喊出1兆美元AI晶片商機",
       "url": "https://news.cnyes.com/news/id/6386734"
     },
     {
-      "title": "18:00債券空軍撤退？Citadel不再看空美債 全球債市拋售潮可能近尾聲",
+      "title": "03/16債券空軍撤退？Citadel不再看空美債 全球債市拋售潮可能近尾聲",
       "url": "https://news.cnyes.com/news/id/6386704"
     },
     {
-      "title": "17:30Fed主席鮑爾會不會離任？法院文件透露最新動向",
+      "title": "03/16Fed主席鮑爾會不會離任？法院文件透露最新動向",
       "url": "https://news.cnyes.com/news/id/6386686"
-    },
-    {
-      "title": "17:00華爾街空軍集結？避險基金大舉做空金融股 成今年最遭拋售板塊",
-      "url": "https://news.cnyes.com/news/id/6386643"
-    },
-    {
-      "title": "15:30美國製造業回暖 2月工業生產連4月成長",
-      "url": "https://news.cnyes.com/news/id/6386621"
-    },
-    {
-      "title": "14:435年大改款！蘋果AirPods Max 2登場 加入即時翻譯與更強降噪",
-      "url": "https://news.cnyes.com/news/id/6386641"
-    },
-    {
-      "title": "14:10OpenAI搶攻企業AI市場 傳攜私募基金打造100億美元合資公司",
-      "url": "https://news.cnyes.com/news/id/6386591"
     }
   ],
   "error": null
