@@ -976,6 +976,15 @@
           <div class="qz-feedback-text" id="qz-feedback-text"></div>
           <button class="btn-next" id="btn-next" onclick="nextQuestion()">下一題 →</button>
         </div>
+
+      <!-- LEADERBOARD (practice screen) -->
+      <div class="leaderboard-wrap" id="leaderboard-wrap" style="display:none">
+        <div class="leaderboard-header">
+          <div class="leaderboard-title">🏆 本級別排行榜</div>
+        </div>
+        <div id="leaderboard-list"><div class="lb-empty">載入中...</div></div>
+      </div>
+
       </div>
     </div>
   </div>
@@ -1015,6 +1024,14 @@
         <div class="wrong-review-title">❌ 答錯的單字</div>
         <div id="wrong-list"></div>
       </div>
+      <!-- Leaderboard on results page -->
+      <div class="leaderboard-wrap" id="leaderboard-wrap-results" style="display:none">
+        <div class="leaderboard-header">
+          <div class="leaderboard-title">🏆 本級別排行榜</div>
+        </div>
+        <div id="leaderboard-list-results"><div class="lb-empty">載入中...</div></div>
+      </div>
+
       <div class="results-btns">
         <button class="btn-retry" onclick="startTestQuiz()">🔄 再測一次</button>
         <button class="btn-home-results" onclick="goHome()">🏠 回首頁</button>
@@ -1629,6 +1646,7 @@ function startTestQuiz(){
   document.getElementById('res-level-tag').textContent=L[state.level];
   showScreen('testquiz');
   renderQuestion();
+  loadLeaderboard(state.level);
 }
 
 function exitQuiz(){
@@ -1953,22 +1971,28 @@ showResults = async function() {
 
 // Leaderboard
 async function loadLeaderboard(level) {
+  if (!currentUser) return;
+  const rows = await cloudLeaderboard(level);
+  const medals = ['🥇','🥈','🥉'];
+  const renderRows = (rows) => {
+    if (!rows.length) return '<div class="lb-empty">還沒有排行資料，完成 Quiz 成為第一名！</div>';
+    return rows.map((r,i) => {
+      const isMe = r.name.toLowerCase() === currentUser.name.toLowerCase();
+      return '<div class="lb-row" style="'+(isMe?'background:rgba(124,106,255,.08)':'')+'">'+
+        '<div class="lb-rank">'+(medals[i]||(i+1))+'</div>'+
+        '<div class="lb-name">'+r.name+(isMe?' 👈':'')+'</div>'+
+        '<div class="lb-score">⭐ '+r.best_score+'</div>'+
+        '<div class="lb-acc">'+r.avg_accuracy+'%</div></div>';
+    }).join('');
+  };
+  // Practice screen leaderboard
   const wrap = document.getElementById('leaderboard-wrap');
   const list = document.getElementById('leaderboard-list');
-  if (!wrap || !currentUser) { if(wrap) wrap.style.display='none'; return; }
-  wrap.style.display='';
-  list.innerHTML='<div class="lb-empty">載入中...</div>';
-  const rows = await cloudLeaderboard(level);
-  if (!rows.length) { list.innerHTML='<div class="lb-empty">還沒有排行資料，完成 Quiz 成為第一名！</div>'; return; }
-  const medals=['🥇','🥈','🥉'];
-  list.innerHTML = rows.map((r,i) => {
-    const isMe = currentUser && r.name.toLowerCase()===currentUser.name.toLowerCase();
-    return '<div class="lb-row" style="'+(isMe?'background:rgba(124,106,255,.08)':'')+'">'+
-      '<div class="lb-rank">'+(medals[i]||(i+1))+'</div>'+
-      '<div class="lb-name">'+r.name+(isMe?' 👈':'')+'</div>'+
-      '<div class="lb-score">⭐ '+r.best_score+'</div>'+
-      '<div class="lb-acc">'+r.avg_accuracy+'%</div></div>';
-  }).join('');
+  if (wrap && list) { wrap.style.display=''; list.innerHTML = renderRows(rows); }
+  // Results screen leaderboard
+  const wrap2 = document.getElementById('leaderboard-wrap-results');
+  const list2 = document.getElementById('leaderboard-list-results');
+  if (wrap2 && list2) { wrap2.style.display=''; list2.innerHTML = renderRows(rows); }
 }
 </script>
 </body>
