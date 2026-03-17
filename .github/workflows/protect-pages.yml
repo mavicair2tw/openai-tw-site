@@ -7,9 +7,7 @@ on:
 jobs:
   restore:
     runs-on: ubuntu-latest
-    # Only run when triggered by the deploy bot, not by us
-    if: contains(github.event.head_commit.message, 'Deploy site')
-
+    # Run on ALL pushes (not just deploy bot) to catch any deletion
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,6 +33,11 @@ jobs:
             echo "english_deleted=true" >> $GITHUB_OUTPUT
             NEED_RESTORE=true
           fi
+          # Also check if homepage cards are missing (even without file deletion)
+          if ! grep -q '"/etf/"' index.html || ! grep -q '"五子棋"' index.html || ! grep -q '"/english/"' index.html; then
+            echo "homepage_cards_missing=true" >> $GITHUB_OUTPUT
+            NEED_RESTORE=true
+          fi
           echo "need_restore=$NEED_RESTORE" >> $GITHUB_OUTPUT
 
       - name: Restore deleted pages
@@ -45,7 +48,7 @@ jobs:
 
           # Restore etf page from last known good commit
           if [ "${{ steps.check.outputs.etf_deleted }}" == "true" ]; then
-            COMMIT=$(git log --all --oneline -- etf/index.html | grep -v "Deploy site" | head -1 | awk '{print $1}')
+            COMMIT=$(git log --all --oneline -- etf/index.html | head -1 | awk '{print $1}')
             if [ -n "$COMMIT" ]; then
               mkdir -p etf
               git show $COMMIT:etf/index.html > etf/index.html
@@ -56,7 +59,7 @@ jobs:
 
           # Restore 五子棋 page
           if [ "${{ steps.check.outputs.gomoku_deleted }}" == "true" ]; then
-            COMMIT=$(git log --all --oneline -- "五子棋/index.html" | grep -v "Deploy site" | head -1 | awk '{print $1}')
+            COMMIT=$(git log --all --oneline -- "五子棋/index.html" | head -1 | awk '{print $1}')
             if [ -n "$COMMIT" ]; then
               mkdir -p 五子棋
               git show $COMMIT:"五子棋/index.html" > "五子棋/index.html"
@@ -67,7 +70,7 @@ jobs:
 
           # Restore english page
           if [ "${{ steps.check.outputs.english_deleted }}" == "true" ]; then
-            COMMIT=$(git log --all --oneline -- english/index.html | grep -v "Deploy site" | head -1 | awk '{print $1}')
+            COMMIT=$(git log --all --oneline -- english/index.html | head -1 | awk '{print $1}')
             if [ -n "$COMMIT" ]; then
               mkdir -p english
               git show $COMMIT:english/index.html > english/index.html
@@ -76,11 +79,12 @@ jobs:
             fi
           fi
 
-          # Restore homepage cards if any are missing
-          if ! grep -q '"/etf/"' index.html || ! grep -q '"五子棋"' index.html || ! grep -q '"/english/"' index.html; then
+          # Always ensure all 3 homepage cards exist
+          if [ "${{ steps.check.outputs.homepage_cards_missing }}" == "true" ]; then
             python3 - << 'PYEOF'
-          content = open('index.html').read()
-          TARGET = '''        <a class="card" href="/etf/">
+import re
+content = open('index.html').read()
+TARGET = '''        <a class="card" href="/etf/">
           <div class="name">ETF 投資工具</div>
           <div class="desc">配息試算、投資組合分析與 ETF 比較</div>
         </a>
@@ -93,17 +97,15 @@ jobs:
           <div class="desc">國小到大學四級英語單字，雲端記錄進度、Quiz 排行榜</div>
         </a>
       </section>'''
-          import re
-          # Replace the entire featured-grid section content
-          new_content = re.sub(
-              r'(<section class="featured-grid">)(.*?)(</section>)',
-              lambda m: m.group(1) + '\n' + TARGET,
-              content, flags=re.DOTALL
-          )
-          if new_content != content:
-              open('index.html', 'w').write(new_content)
-              print('Restored homepage featured-grid cards')
-          PYEOF
+new_content = re.sub(
+    r'<section class="featured-grid">.*?</section>',
+    '<section class="featured-grid">\n' + TARGET,
+    content, flags=re.DOTALL
+)
+if new_content != content:
+    open('index.html', 'w').write(new_content)
+    print('✅ Restored all homepage featured-grid cards')
+PYEOF
             git add index.html
           fi
 
@@ -111,6 +113,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "Nothing to restore"
           else
-            git commit -m "auto-restore: recover custom pages deleted by deploy bot"
+            git commit -m "auto-restore: recover custom pages and homepage cards"
             git push
           fi
