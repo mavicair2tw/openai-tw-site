@@ -1889,18 +1889,22 @@ let currentUser = null;  // { id, name, level, total_score }
 // ── Login / Register ──────────────────────
 async function cloudLogin(name) {
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000); // 8s timeout
     const res = await fetch(API + '/api/user/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name })
+      body: JSON.stringify({ name }),
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
     const data = await res.json();
     if (data.user) {
       currentUser = data.user;
       localStorage.setItem('wordwave_user', JSON.stringify(currentUser));
       return currentUser;
     }
-  } catch (e) { console.warn('Cloud login failed, offline mode', e); }
+  } catch (e) { console.warn('Cloud login failed, offline mode:', e.message); }
   return null;
 }
 
@@ -1986,21 +1990,32 @@ if (state.level) {
 
 // ── Login helpers ──────────────────────
 async function doLogin() {
-  const name = document.getElementById('login-name').value.trim();
-  if (!name) { document.getElementById('login-name').focus(); return; }
+  const nameEl = document.getElementById('login-name');
+  const name = nameEl.value.trim();
+  if (!name) { nameEl.focus(); nameEl.style.borderColor='var(--not-familiar)'; return; }
+  nameEl.style.borderColor='';
   const btn = document.getElementById('btn-modal-login');
   btn.disabled = true; btn.textContent = '連線中...';
-  const user = await cloudLogin(name);
+
+  let user = null;
+  try {
+    user = await cloudLogin(name);
+  } catch(e) { /* network error — fall through to offline */ }
+
   btn.disabled = false; btn.textContent = '開始學習 →';
+
+  // Always close modal regardless of success/failure
   document.getElementById('login-modal').classList.add('hidden');
+
   if (user) {
     updateUserChip();
     showToast('👋 歡迎，' + user.name + '！');
   } else {
+    // Offline fallback — still let user in
     currentUser = { id: name.toLowerCase().replace(/[^a-z0-9]/g,'_'), name, total_score: 0 };
     localStorage.setItem('wordwave_user', JSON.stringify(currentUser));
     updateUserChip();
-    showToast('📴 離線模式，進度存在本機');
+    showToast('📴 離線模式（網路問題），進度存在本機');
   }
 }
 function skipLogin() {
