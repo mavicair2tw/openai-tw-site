@@ -310,7 +310,7 @@
 
   .card-word {
     font-family: 'Syne', sans-serif;
-    font-size: clamp(22px, 5vw, 36px);
+    font-size: clamp(44px, 10vw, 72px);
     font-weight: 800; letter-spacing: -0.02em;
     line-height: 1.2; margin-bottom: 6px;
     word-break: break-word; overflow-wrap: break-word;
@@ -2172,6 +2172,29 @@ function stopPlayAll() {
   }
 }
 
+function playAllSpeak(text, onDone) {
+  // Utility: speak one utterance and call onDone when finished
+  if (!playAllActive) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'en-US';
+  utter.rate = 0.82;
+  utter.pitch = 1;
+  utter.volume = 1;
+  if (ttsVoice) utter.voice = ttsVoice;
+  utter.onend = () => { if (playAllActive) onDone(); };
+  utter.onerror = (e) => {
+    if (!playAllActive) return;
+    if (e.error !== 'interrupted' && e.error !== 'canceled') onDone();
+  };
+  window.speechSynthesis.speak(utter);
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  if (!isIOS && !isSafari) {
+    setTimeout(() => { try { window.speechSynthesis.resume(); } catch(e) {} }, 100);
+  }
+}
+
 function playAllNext() {
   if (!playAllActive) return;
   if (playAllQueue.length === 0) { stopPlayAll(); showToast('✅ Play All 播放完畢！'); return; }
@@ -2184,42 +2207,38 @@ function playAllNext() {
   if (!isTTSAvailable()) { stopPlayAll(); showToast('⚠️ 此裝置不支援語音'); return; }
   pickVoice();
 
+  // Show word + Chinese on toast
+  showToast('🔊 ' + item.word + '　' + item.zh, 4500);
+
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-  const doSpeak = () => {
+  const startSpeak = () => {
     try {
-      window.speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(item.word);
-      utter.lang = 'en-US';
-      utter.rate = 0.82;
-      utter.pitch = 1;
-      utter.volume = 1;
-      if (ttsVoice) utter.voice = ttsVoice;
-
-      showToast('🔊 ' + item.word + '　' + item.zh, 4500);
-
-      utter.onend = () => {
+      // Step 1: speak the WORD
+      playAllSpeak(item.word, () => {
         if (!playAllActive) return;
-        playAllTimer = setTimeout(playAllNext, PLAY_ALL_INTERVAL);
-      };
-      utter.onerror = (e) => {
-        if (!playAllActive) return;
-        if (e.error !== 'interrupted' && e.error !== 'canceled') {
-          playAllTimer = setTimeout(playAllNext, PLAY_ALL_INTERVAL);
-        }
-      };
-
-      window.speechSynthesis.speak(utter);
-      if (!isIOS && !isSafari) {
-        setTimeout(() => { try { window.speechSynthesis.resume(); } catch(e) {} }, 100);
-      }
+        // Step 2: short 600ms pause then speak EXAMPLE SENTENCE
+        playAllTimer = setTimeout(() => {
+          if (!playAllActive) return;
+          const exClean = (item.ex || '').replace(/<[^>]+>/g, '').trim();
+          if (exClean) {
+            playAllSpeak(exClean, () => {
+              if (!playAllActive) return;
+              // Step 3: 5s pause then next word
+              playAllTimer = setTimeout(playAllNext, PLAY_ALL_INTERVAL);
+            });
+          } else {
+            playAllTimer = setTimeout(playAllNext, PLAY_ALL_INTERVAL);
+          }
+        }, 600);
+      });
     } catch(err) {
       if (playAllActive) playAllTimer = setTimeout(playAllNext, PLAY_ALL_INTERVAL);
     }
   };
 
-  if (isIOS || isSafari) doSpeak(); else setTimeout(doSpeak, 80);
+  if (isIOS || isSafari) startSpeak(); else setTimeout(startSpeak, 80);
 }
 
 function togglePlayAll(btn) {
