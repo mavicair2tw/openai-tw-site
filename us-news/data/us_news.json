@@ -1,16 +1,24 @@
 {
-  "updatedAt": "2026-03-17T21:51:42.182465+08:00",
+  "updatedAt": "2026-03-17T22:53:46.600829+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 〈美股早盤〉油價回落舒緩市場壓力 主要指數開高；3. 03/17Meta大單加持 Nebius再籌37.5億美元衝AI；4. 03/17物流大戰白熱化！亞馬遜祭出1小時極速配送力抗沃爾瑪；5. 03/17油價高漲恐引發股市「骨牌效應」！小摩警告標普500或下跌15%、衝擊美國經濟。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. OpenAI搶攻華府市場 攜AWS賣AI給政府；3. 03/17高通豪砸200億美元回購並調高股利 盤中股價漲逾2%；4. 03/17〈美股早盤〉油價回落舒緩市場壓力 主要指數開高；5. 03/17Meta大單加持 Nebius再籌37.5億美元衝AI。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "〈美股早盤〉油價回落舒緩市場壓力 主要指數開高",
+      "title": "OpenAI搶攻華府市場 攜AWS賣AI給政府",
+      "url": "https://news.cnyes.com/news/id/6388049"
+    },
+    {
+      "title": "03/17高通豪砸200億美元回購並調高股利 盤中股價漲逾2%",
+      "url": "https://news.cnyes.com/news/id/6388038"
+    },
+    {
+      "title": "03/17〈美股早盤〉油價回落舒緩市場壓力 主要指數開高",
       "url": "https://news.cnyes.com/news/id/6387952"
     },
     {
@@ -44,14 +52,6 @@
     {
       "title": "03/17黃仁勳定義AI時代新貨幣：Token效能將決定企業生死",
       "url": "https://news.cnyes.com/news/id/6387213"
-    },
-    {
-      "title": "03/17全球半導體營收10強美企霸榜7家 中國零上榜陷「生存攻堅」",
-      "url": "https://news.cnyes.com/news/id/6387449"
-    },
-    {
-      "title": "03/17施壓盟友分擔護航成本 美國務卿促南韓協助重啟荷姆茲海峽",
-      "url": "https://news.cnyes.com/news/id/6387229"
     }
   ],
   "error": null

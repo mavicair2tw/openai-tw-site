@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-17T21:51:35.431192+08:00",
+  "updatedAt": "2026-03-17T22:53:43.521642+08:00",
   "timezone": "Asia/Taipei",
   "market": "US",
   "items": [
@@ -7,9 +7,9 @@
       "label": "台積電ADR",
       "symbol": "TSM",
       "type": "Stock",
-      "price": 342.43,
-      "change": 2.2,
-      "changePercent": 0.65,
+      "price": 344.81,
+      "change": 4.58,
+      "changePercent": 1.35,
       "trend": [
         {
           "time": "21:30",
@@ -17,7 +17,23 @@
         },
         {
           "time": "21:45",
-          "close": 342.43
+          "close": 342.53
+        },
+        {
+          "time": "22:00",
+          "close": 342.39
+        },
+        {
+          "time": "22:15",
+          "close": 342.22
+        },
+        {
+          "time": "22:30",
+          "close": 343.54
+        },
+        {
+          "time": "22:45",
+          "close": 344.81
         }
       ]
     },
@@ -25,9 +41,9 @@
       "label": "Google",
       "symbol": "GOOG",
       "type": "Stock",
-      "price": 305.9,
-      "change": 1.48,
-      "changePercent": 0.49,
+      "price": 305.85,
+      "change": 1.43,
+      "changePercent": 0.47,
       "trend": [
         {
           "time": "21:30",
@@ -35,7 +51,23 @@
         },
         {
           "time": "21:45",
-          "close": 305.9
+          "close": 305.23
+        },
+        {
+          "time": "22:00",
+          "close": 305.28
+        },
+        {
+          "time": "22:15",
+          "close": 305.93
+        },
+        {
+          "time": "22:30",
+          "close": 306.21
+        },
+        {
+          "time": "22:45",
+          "close": 305.85
         }
       ]
     },
@@ -43,9 +75,9 @@
       "label": "AMD",
       "symbol": "AMD",
       "type": "Stock",
-      "price": 198.87,
-      "change": 2.29,
-      "changePercent": 1.16,
+      "price": 198.05,
+      "change": 1.47,
+      "changePercent": 0.75,
       "trend": [
         {
           "time": "21:30",
@@ -53,7 +85,23 @@
         },
         {
           "time": "21:45",
-          "close": 198.87
+          "close": 198.84
+        },
+        {
+          "time": "22:00",
+          "close": 197.16
+        },
+        {
+          "time": "22:15",
+          "close": 198.26
+        },
+        {
+          "time": "22:30",
+          "close": 198.26
+        },
+        {
+          "time": "22:45",
+          "close": 198.05
         }
       ]
     },
@@ -61,9 +109,9 @@
       "label": "NVIDIA",
       "symbol": "NVDA",
       "type": "Stock",
-      "price": 183.83,
-      "change": 0.61,
-      "changePercent": 0.33,
+      "price": 183.07,
+      "change": -0.15,
+      "changePercent": -0.08,
       "trend": [
         {
           "time": "21:30",
@@ -71,7 +119,23 @@
         },
         {
           "time": "21:45",
-          "close": 183.83
+          "close": 183.09
+        },
+        {
+          "time": "22:00",
+          "close": 182.38
+        },
+        {
+          "time": "22:15",
+          "close": 183.09
+        },
+        {
+          "time": "22:30",
+          "close": 183.16
+        },
+        {
+          "time": "22:45",
+          "close": 183.07
         }
       ]
     },
@@ -79,9 +143,9 @@
       "label": "Tesla",
       "symbol": "TSLA",
       "type": "Stock",
-      "price": 396.75,
-      "change": 1.19,
-      "changePercent": 0.3,
+      "price": 399.38,
+      "change": 3.82,
+      "changePercent": 0.97,
       "trend": [
         {
           "time": "21:30",
@@ -89,7 +153,23 @@
         },
         {
           "time": "21:45",
-          "close": 396.75
+          "close": 397.71
+        },
+        {
+          "time": "22:00",
+          "close": 397.47
+        },
+        {
+          "time": "22:15",
+          "close": 397.39
+        },
+        {
+          "time": "22:30",
+          "close": 399.52
+        },
+        {
+          "time": "22:45",
+          "close": 399.38
         }
       ]
     },
@@ -97,9 +177,9 @@
       "label": "S&P 500",
       "symbol": "^GSPC",
       "type": "Index",
-      "price": 6750.18,
-      "change": 50.8,
-      "changePercent": 0.76,
+      "price": 6742.05,
+      "change": 42.67,
+      "changePercent": 0.64,
       "trend": [
         {
           "time": "21:30",
@@ -107,7 +187,23 @@
         },
         {
           "time": "21:45",
-          "close": 6750.18
+          "close": 6748.62
+        },
+        {
+          "time": "22:00",
+          "close": 6734.24
+        },
+        {
+          "time": "22:15",
+          "close": 6734.98
+        },
+        {
+          "time": "22:30",
+          "close": 6742.47
+        },
+        {
+          "time": "22:45",
+          "close": 6742.05
         }
       ]
     },
@@ -115,9 +211,9 @@
       "label": "美國費城半導體指數",
       "symbol": "^SOX",
       "type": "Index",
-      "price": 7840.67,
-      "change": 44.43,
-      "changePercent": 0.57,
+      "price": 7848.44,
+      "change": 52.2,
+      "changePercent": 0.67,
       "trend": [
         {
           "time": "21:30",
@@ -125,7 +221,23 @@
         },
         {
           "time": "21:45",
-          "close": 7840.67
+          "close": 7858.66
+        },
+        {
+          "time": "22:00",
+          "close": 7843.8
+        },
+        {
+          "time": "22:15",
+          "close": 7843.63
+        },
+        {
+          "time": "22:30",
+          "close": 7857.93
+        },
+        {
+          "time": "22:45",
+          "close": 7848.44
         }
       ]
     },
@@ -133,26 +245,10 @@
       "label": "比特幣",
       "symbol": "BTC-USD",
       "type": "Crypto",
-      "price": 73810.9,
-      "change": -1050.19,
-      "changePercent": -1.4,
+      "price": 74161.41,
+      "change": -699.68,
+      "changePercent": -0.93,
       "trend": [
-        {
-          "time": "16:00",
-          "close": 74221.86
-        },
-        {
-          "time": "16:15",
-          "close": 74300.13
-        },
-        {
-          "time": "16:30",
-          "close": 74425.85
-        },
-        {
-          "time": "16:45",
-          "close": 74167.98
-        },
         {
           "time": "17:00",
           "close": 74059.68
@@ -231,7 +327,23 @@
         },
         {
           "time": "21:45",
-          "close": 73810.9
+          "close": 73668.18
+        },
+        {
+          "time": "22:00",
+          "close": 73780.61
+        },
+        {
+          "time": "22:15",
+          "close": 73895.84
+        },
+        {
+          "time": "22:30",
+          "close": 74244.41
+        },
+        {
+          "time": "22:45",
+          "close": 74161.41
         }
       ]
     },
@@ -239,26 +351,10 @@
       "label": "黃金期貨",
       "symbol": "GC=F",
       "type": "Commodity",
-      "price": 5034.4,
-      "change": 40.4,
-      "changePercent": 0.81,
+      "price": 5018.3,
+      "change": 24.3,
+      "changePercent": 0.49,
       "trend": [
-        {
-          "time": "15:45",
-          "close": 5025.0
-        },
-        {
-          "time": "16:00",
-          "close": 5025.7
-        },
-        {
-          "time": "16:15",
-          "close": 5025.2
-        },
-        {
-          "time": "16:30",
-          "close": 5026.0
-        },
         {
           "time": "16:45",
           "close": 5029.0
@@ -337,7 +433,23 @@
         },
         {
           "time": "21:30",
-          "close": 5034.4
+          "close": 5032.7
+        },
+        {
+          "time": "21:45",
+          "close": 5021.9
+        },
+        {
+          "time": "22:00",
+          "close": 5023.7
+        },
+        {
+          "time": "22:15",
+          "close": 5013.2
+        },
+        {
+          "time": "22:30",
+          "close": 5018.3
         }
       ]
     }
