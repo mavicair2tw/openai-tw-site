@@ -2164,207 +2164,139 @@ if (state.level) {
 }
 
 // ════════════════════════════════════════
-//  PLAY ALL  — clean rewrite, isolated timers
+//  PLAY ALL
 // ════════════════════════════════════════
-let _paActive  = false;   // is Play All running?
-let _paQueue   = [];      // shuffled word list
-let _paIndex   = 0;       // current position
-let _paStep    = null;    // 'word' | 'example' | 'wait'
-let _paTimer   = null;    // the ONE timeout handle
+let PA = {
+  active: false,
+  queue: [],
+  idx: 0,
+  timer: null,
+  utter: null
+};
+const PA_GAP = 5000; // ms between words
 
-const PA_INTERVAL = 5000; // ms between words
-
-// ── helpers ──────────────────────────────────────────────────────
-function _paClear() {
-  clearTimeout(_paTimer);
-  _paTimer = null;
-}
-
-function _paStop(msg) {
-  _paActive = false;
-  _paStep   = null;
-  _paClear();
-  // cancel any ongoing speech without triggering our handlers
+function paStop(msg) {
+  PA.active = false;
+  clearTimeout(PA.timer);
+  PA.timer = null;
+  if (PA.utter) { PA.utter.onend = null; PA.utter.onerror = null; PA.utter = null; }
   try { window.speechSynthesis.cancel(); } catch(e) {}
-  // restore UI
   const btn = document.getElementById('btn-play-all');
-  if (btn) { btn.classList.remove('playing'); btn.innerHTML = '▶ Play All'; btn.disabled = false; }
+  if (btn) { btn.classList.remove('playing'); btn.innerHTML = '&#9654; Play All'; btn.disabled = false; }
   const badge = document.getElementById('play-all-badge');
   if (badge) badge.classList.remove('visible');
   const rating = document.getElementById('rating-section');
   if (rating) rating.style.display = '';
-  const card = document.getElementById('quiz-card');
-  if (card) { card.style.outline = ''; card.style.outlineOffset = ''; }
   if (msg) showToast(msg);
 }
+function stopPlayAll() { paStop(); }
 
-function _paSay(text, onDone) {
-  // Speak text; call onDone when finished (or on error/timeout)
-  if (!_paActive) return;
-  const clean = (text || '').replace(/<[^>]+>/g, '').trim();
-  if (!clean) { onDone(); return; }
-
-  let done = false;
-  const safeOnDone = () => {
-    if (done || !_paActive) return;
-    done = true;
-    _paClear();
-    onDone();
-  };
-
-  try {
-    window.speechSynthesis.cancel();
-    pickVoice();
-
-    const u = new SpeechSynthesisUtterance(clean);
-    u.lang   = 'en-US';
-    u.rate   = 0.82;
-    u.pitch  = 1;
-    u.volume = 1;
-    if (ttsVoice) u.voice = ttsVoice;
-
-    u.onend   = safeOnDone;
-    u.onerror = (e) => {
-      // 'interrupted' = we cancelled it ourselves (stopPlayAll) → do NOT advance
-      if (e.error === 'interrupted' || e.error === 'canceled') return;
-      safeOnDone();
-    };
-
-    // Android Chrome: delay speak() slightly after cancel() to avoid 'interrupted'
-    const isIOS2 = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const doSpeak = () => {
-      window.speechSynthesis.speak(u);
-      if (!isIOS2) setTimeout(() => { try { window.speechSynthesis.resume(); } catch(x){} }, 80);
-    };
-    if (isIOS2) {
-      doSpeak(); // iOS must be synchronous
-    } else {
-      setTimeout(doSpeak, 50); // Android: tiny delay after cancel
-    }
-
-    // Safety fallback: if onend never fires after 10s, advance anyway
-    _paTimer = setTimeout(safeOnDone, 10000);
-
-  } catch(err) {
-    console.warn('[PlayAll] speak error:', err);
-    safeOnDone();
-  }
-}
-
-// ── main step machine ─────────────────────────────────────────────
-function _paUpdateCard(item) {
-  // Update card UI directly — avoids calling renderCard which calls stopTTS()
-  const posColors = {
-    noun:'#7c6aff', verb:'#36e8b4', adjective:'#ff6ab0',
-    adverb:'#ffd166', phrase:'#ff6b6b', conjunction:'#36e8b4'
-  };
+function paShowCard(item) {
+  // Update card directly (skip renderCard to avoid its stopTTS call)
+  const colors = {noun:'#7c6aff',verb:'#36e8b4',adjective:'#ff6ab0',adverb:'#ffd166',phrase:'#ff6b6b',conjunction:'#36e8b4'};
   const posEl = document.getElementById('pos-tag');
   if (posEl) {
     posEl.textContent = item.pos || '';
-    const col = posColors[item.pos] || '#7c6aff';
-    posEl.style.background = col + '18';
-    posEl.style.color = col;
-    posEl.style.border = '1px solid ' + col + '44';
+    const col = colors[item.pos] || '#7c6aff';
+    posEl.style.cssText = 'background:'+col+'18;color:'+col+';border:1px solid '+col+'44';
   }
-  const wordEl = document.getElementById('card-word');
-  if (wordEl) wordEl.textContent = item.word;
-  const phonEl = document.getElementById('card-phonetic');
-  if (phonEl) phonEl.textContent = item.phonetic || '';
-  const meanEl = document.getElementById('meaning-text');
-  if (meanEl) meanEl.innerHTML = item.zh;
-  const exEl = document.getElementById('example-text');
-  if (exEl) exEl.innerHTML = item.ex || '';
-
-  // Auto-reveal meaning and example
-  document.getElementById('meaning-block').classList.add('visible');
-  document.getElementById('example-block').classList.add('visible');
-  document.getElementById('btn-meaning').classList.add('revealed');
-  document.getElementById('btn-example').classList.add('revealed');
-
-  // Show badge, hide rating
+  const set = (id, val, html) => { const el = document.getElementById(id); if (el) { if (html) el.innerHTML = val; else el.textContent = val; } };
+  set('card-word',    item.word);
+  set('card-phonetic', item.phonetic || '');
+  set('meaning-text', item.zh, true);
+  set('example-text', item.ex || '', true);
+  ['meaning-block','example-block'].forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('visible'); });
+  ['btn-meaning','btn-example'].forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('revealed'); });
   const badge = document.getElementById('play-all-badge');
   if (badge) badge.classList.add('visible');
   const rating = document.getElementById('rating-section');
   if (rating) rating.style.display = 'none';
 }
 
-function _paNext() {
-  if (!_paActive) return;
-  if (_paIndex >= _paQueue.length) _paIndex = 0; // loop
+function paSay(text, onDone) {
+  if (!PA.active) return;
+  const clean = (text||'').replace(/<[^>]+>/g,'').trim();
+  if (!clean) { PA.timer = setTimeout(onDone, 100); return; }
 
-  const item = _paQueue[_paIndex++];
+  let fired = false;
+  const done = () => { if (!fired) { fired = true; clearTimeout(PA.timer); if (PA.active) onDone(); } };
 
-  // Update card UI (does NOT call stopTTS)
-  _paUpdateCard(item);
-
-  // Small delay after cancel so Android Chrome doesn't fire 'interrupted'
-  _paTimer = setTimeout(() => {
-    if (!_paActive) return;
-
-    // Step 1: say the word
-    _paStep = 'word';
-    _paSay(item.word, () => {
-      if (!_paActive) return;
-
-      // Step 2: say the example sentence after 800ms pause
-      _paStep = 'example';
-      _paTimer = setTimeout(() => {
-        if (!_paActive) return;
-        const ex = (item.ex || '').replace(/<[^>]+>/g, '').trim();
-        _paSay(ex || item.zh, () => {
-          if (!_paActive) return;
-
-          // Step 3: wait PA_INTERVAL then next word
-          _paStep = 'wait';
-          _paTimer = setTimeout(_paNext, PA_INTERVAL);
-        });
-      }, 800);
-    });
-  }, 300); // 300ms delay after card update before speaking
+  try {
+    window.speechSynthesis.cancel();
+    pickVoice();
+    const u = new SpeechSynthesisUtterance(clean);
+    u.lang = 'en-US'; u.rate = 0.82; u.pitch = 1; u.volume = 1;
+    if (ttsVoice) u.voice = ttsVoice;
+    PA.utter = u;
+    u.onend = done;
+    u.onerror = (e) => { if (e.error !== 'interrupted' && e.error !== 'canceled') done(); };
+    // Fallback: advance after word_length*120ms + 3s minimum
+    const ms = Math.max(3000, clean.length * 120);
+    PA.timer = setTimeout(done, ms);
+    setTimeout(() => {
+      if (!PA.active) return;
+      window.speechSynthesis.speak(u);
+      setTimeout(() => { try { window.speechSynthesis.resume(); } catch(x){} }, 100);
+    }, 50);
+  } catch(e) { done(); }
 }
 
-// ── public API ────────────────────────────────────────────────────
-async function togglePlayAll(btn) {
-  // Stop if already running
-  if (_paActive) { _paStop('⏹ Play All 已停止'); return; }
+function paNext() {
+  if (!PA.active) return;
+  if (PA.idx >= PA.queue.length) PA.idx = 0;
+  const item = PA.queue[PA.idx++];
+  paShowCard(item);
+  // Step 1: word
+  paSay(item.word, () => {
+    if (!PA.active) return;
+    // Step 2: example after 700ms
+    PA.timer = setTimeout(() => {
+      if (!PA.active) return;
+      const ex = (item.ex||'').replace(/<[^>]+>/g,'').trim();
+      paSay(ex || item.zh, () => {
+        if (!PA.active) return;
+        // Step 3: wait then next
+        PA.timer = setTimeout(paNext, PA_GAP);
+      });
+    }, 700);
+  });
+}
 
+function togglePlayAll(btn) {
+  if (PA.active) { paStop('⏹ Play All 已停止'); return; }
   if (!isTTSAvailable()) { showToast('⚠️ 此裝置不支援語音'); return; }
-  if (!state.level)      { showToast('請先選擇級別再使用 Play All'); return; }
+  if (!state.level) { showToast('請先選擇級別再使用 Play All'); return; }
 
-  // Load vocab if needed
-  if (!vocabLoaded[state.level]) {
-    btn.disabled = true;
-    btn.innerHTML = '⏳ 載入中...';
-    await loadVocabFromCloud(state.level);
-    btn.disabled = false;
-    btn.innerHTML = '▶ Play All';
-    if (!_paActive === false) return; // user may have navigated away
-  }
-
-  // Build queue: exclude mastered ('easy') words
+  // Build queue from already-loaded vocab (or fallback)
   const all = VOCAB[state.level] || [];
-  _paQueue = shuffle(all.filter(w => {
-    const ws = state.wordStates[w.word];
-    return !ws || ws.status !== 'easy';
-  }));
-  _paIndex = 0;
+  PA.queue = shuffle(all.filter(w => { const ws = state.wordStates[w.word]; return !ws || ws.status !== 'easy'; }));
+  PA.idx = 0;
+  if (PA.queue.length === 0) { showToast('⚠️ 所有單字已掌握，無可播放'); return; }
 
-  if (_paQueue.length === 0) {
-    showToast('⚠️ 沒有可播放的單字（全部已掌握）');
-    return;
+  PA.active = true;
+  btn.classList.add('playing');
+  btn.innerHTML = '&#9646;&#9646; Stop';
+  showToast('&#9654; 播放 ' + PA.queue.length + ' 個單字', 2500);
+
+  // Load vocab in background while FIRST word plays from fallback
+  if (!vocabLoaded[state.level]) {
+    loadVocabFromCloud(state.level).then(() => {
+      if (PA.active) {
+        // Refresh queue with full vocab after background load
+        const full = VOCAB[state.level] || [];
+        const fresh = shuffle(full.filter(w => { const ws = state.wordStates[w.word]; return !ws || ws.status !== 'easy'; }));
+        if (fresh.length > PA.queue.length) {
+          PA.queue = fresh;
+          // keep current index roughly proportional
+          PA.idx = Math.min(PA.idx, fresh.length - 1);
+        }
+      }
+    });
   }
 
-  _paActive = true;
-  btn.classList.add('playing');
-  btn.innerHTML = '⏹ Stop';
-  showToast('▶ 播放 ' + _paQueue.length + ' 個單字，間隔 5 秒', 3000);
-
-  // Start — use setTimeout(0) so the async await above doesn't block iOS gesture
-  setTimeout(_paNext, 50);
+  // Start immediately (synchronous gesture chain for iOS)
+  paNext();
 }
-
-// Keep old names working (called by stopPlayAll references elsewhere)
-function stopPlayAll() { _paStop(); }
 </script>
 </body>
 </html>
