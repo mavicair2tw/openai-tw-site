@@ -1047,115 +1047,74 @@
 // ════════════════════════════════════════
 //  VOCABULARY DATABASE
 // ════════════════════════════════════════
-const VOCAB = {
+// ══════════════════════════════════════
+//  VOCABULARY  (dynamic from D1 via Worker API)
+// ══════════════════════════════════════
+
+// Fallback minimal set used ONLY while cloud data is loading
+const VOCAB_FALLBACK = {
   elementary: [
-    { word:"apple",     pos:"noun",      phonetic:"/ˈæpəl/",           zh:"蘋果",         ex:"I eat an <strong>apple</strong> every morning." },
-    { word:"run",       pos:"verb",      phonetic:"/rʌn/",             zh:"跑；跑步",     ex:"The children love to <strong>run</strong> in the park." },
-    { word:"happy",     pos:"adjective", phonetic:"/ˈhæpi/",           zh:"快樂的",       ex:"She feels very <strong>happy</strong> today." },
-    { word:"school",    pos:"noun",      phonetic:"/skuːl/",           zh:"學校",         ex:"My <strong>school</strong> is near my house." },
-    { word:"big",       pos:"adjective", phonetic:"/bɪɡ/",             zh:"大的",         ex:"That is a very <strong>big</strong> dog." },
-    { word:"drink",     pos:"verb",      phonetic:"/drɪŋk/",           zh:"喝",           ex:"Please <strong>drink</strong> some water." },
-    { word:"family",    pos:"noun",      phonetic:"/ˈfæməli/",         zh:"家庭；家人",   ex:"My <strong>family</strong> has four people." },
-    { word:"bird",      pos:"noun",      phonetic:"/bɜːrd/",           zh:"鳥",           ex:"A <strong>bird</strong> is singing in the tree." },
-    { word:"walk",      pos:"verb",      phonetic:"/wɔːk/",            zh:"走；步行",     ex:"We <strong>walk</strong> to school together." },
-    { word:"sunny",     pos:"adjective", phonetic:"/ˈsʌni/",           zh:"晴朗的",       ex:"It is a <strong>sunny</strong> day today." },
-    { word:"thank you", pos:"phrase",    phonetic:"/θæŋk juː/",        zh:"謝謝你",       ex:"<strong>Thank you</strong> for helping me." },
-    { word:"how are you",pos:"phrase",   phonetic:"/haʊ ɑːr juː/",    zh:"你好嗎？",     ex:"<strong>How are you</strong>? I am fine, thanks." },
-    { word:"friend",    pos:"noun",      phonetic:"/frend/",           zh:"朋友",         ex:"Tom is my best <strong>friend</strong>." },
-    { word:"read",      pos:"verb",      phonetic:"/riːd/",            zh:"閱讀；讀",     ex:"I <strong>read</strong> a book every night." },
-    { word:"small",     pos:"adjective", phonetic:"/smɔːl/",           zh:"小的",         ex:"She has a <strong>small</strong> cat at home." },
-    { word:"morning",   pos:"noun",      phonetic:"/ˈmɔːrnɪŋ/",        zh:"早上",         ex:"I wake up early every <strong>morning</strong>." },
-    { word:"play",      pos:"verb",      phonetic:"/pleɪ/",            zh:"玩；演奏",     ex:"Let's <strong>play</strong> in the garden." },
-    { word:"book",      pos:"noun",      phonetic:"/bʊk/",             zh:"書",           ex:"This <strong>book</strong> is very interesting." },
-    { word:"good morning",pos:"phrase",  phonetic:"/ɡʊd ˈmɔːrnɪŋ/",   zh:"早安",         ex:"<strong>Good morning</strong>! How did you sleep?" },
-    { word:"water",     pos:"noun",      phonetic:"/ˈwɔːtər/",         zh:"水",           ex:"Please drink more <strong>water</strong> every day." },
-    { word:"love",      pos:"verb",      phonetic:"/lʌv/",             zh:"愛；喜歡",     ex:"I <strong>love</strong> my family very much." },
-    { word:"colour",    pos:"noun",      phonetic:"/ˈkʌlər/",          zh:"顏色",         ex:"What is your favourite <strong>colour</strong>?" },
-    { word:"eat",       pos:"verb",      phonetic:"/iːt/",             zh:"吃",           ex:"We <strong>eat</strong> lunch at noon." },
-    { word:"good night",pos:"phrase",    phonetic:"/ɡʊd naɪt/",        zh:"晚安",         ex:"<strong>Good night</strong>! Sweet dreams." },
+    {word:"apple",pos:"noun",phonetic:"/ˈæpəl/",zh:"蘋果",ex:"I eat an <strong>apple</strong> every morning."},
+    {word:"run",pos:"verb",phonetic:"/rʌn/",zh:"跑；跑步",ex:"The children love to <strong>run</strong> in the park."},
+    {word:"happy",pos:"adjective",phonetic:"/ˈhæpi/",zh:"快樂的",ex:"She feels very <strong>happy</strong> today."},
+    {word:"school",pos:"noun",phonetic:"/skuːl/",zh:"學校",ex:"My <strong>school</strong> is near my house."},
+    {word:"thank you",pos:"phrase",phonetic:"/θæŋk juː/",zh:"謝謝你",ex:"<strong>Thank you</strong> for helping me."},
   ],
-
   junior: [
-    { word:"communicate",    pos:"verb",      phonetic:"/kəˈmjuːnɪkeɪt/",  zh:"溝通；傳達",   ex:"It is important to <strong>communicate</strong> clearly." },
-    { word:"responsibility", pos:"noun",      phonetic:"/rɪˌspɒnsəˈbɪləti/",zh:"責任",        ex:"Taking <strong>responsibility</strong> for your actions is important." },
-    { word:"environment",    pos:"noun",      phonetic:"/ɪnˈvaɪrənmənt/",   zh:"環境",         ex:"We must protect our <strong>environment</strong>." },
-    { word:"achievement",    pos:"noun",      phonetic:"/əˈtʃiːvmənt/",     zh:"成就；達成",   ex:"Winning the prize was a great <strong>achievement</strong>." },
-    { word:"develop",        pos:"verb",      phonetic:"/dɪˈveləp/",        zh:"發展；培養",   ex:"She wants to <strong>develop</strong> her writing skills." },
-    { word:"break a leg",    pos:"phrase",    phonetic:"/breɪk ə leɡ/",     zh:"祝你好運",     ex:"<strong>Break a leg</strong> at your performance tonight!" },
-    { word:"once in a while",pos:"phrase",    phonetic:"/wʌns ɪn ə waɪl/", zh:"偶爾；有時候", ex:"We should exercise <strong>once in a while</strong> at least." },
-    { word:"volunteer",      pos:"verb",      phonetic:"/ˌvɒlənˈtɪər/",    zh:"自願；做義工", ex:"She decides to <strong>volunteer</strong> at the hospital." },
-    { word:"pollution",      pos:"noun",      phonetic:"/pəˈluːʃən/",       zh:"污染",         ex:"Air <strong>pollution</strong> affects our health." },
-    { word:"influence",      pos:"verb",      phonetic:"/ˈɪnfluəns/",       zh:"影響",         ex:"Good friends <strong>influence</strong> us in positive ways." },
-    { word:"opportunity",    pos:"noun",      phonetic:"/ˌɒpəˈtjuːnəti/",  zh:"機會",         ex:"This job is a great <strong>opportunity</strong> for growth." },
-    { word:"instead of",     pos:"phrase",    phonetic:"/ɪnˈsted əv/",      zh:"代替；而不是", ex:"Use a dictionary <strong>instead of</strong> a phone." },
-    { word:"curious",        pos:"adjective", phonetic:"/ˈkjʊəriəs/",       zh:"好奇的",       ex:"She is very <strong>curious</strong> about science." },
-    { word:"experiment",     pos:"noun",      phonetic:"/ɪkˈsperɪmənt/",    zh:"實驗",         ex:"The students set up an <strong>experiment</strong> in the lab." },
-    { word:"compare",        pos:"verb",      phonetic:"/kəmˈpeər/",        zh:"比較",         ex:"Let's <strong>compare</strong> the two results." },
-    { word:"take part in",   pos:"phrase",    phonetic:"/teɪk pɑːrt ɪn/",  zh:"參加；參與",   ex:"Everyone should <strong>take part in</strong> the activity." },
-    { word:"generous",       pos:"adjective", phonetic:"/ˈdʒenərəs/",       zh:"慷慨的；大方的",ex:"He is very <strong>generous</strong> with his time." },
-    { word:"conflict",       pos:"noun",      phonetic:"/ˈkɒnflɪkt/",       zh:"衝突；矛盾",   ex:"They resolved the <strong>conflict</strong> through talking." },
-    { word:"disappointed",   pos:"adjective", phonetic:"/ˌdɪsəˈpɔɪntɪd/",  zh:"失望的",       ex:"He was very <strong>disappointed</strong> with his score." },
-    { word:"look forward to",pos:"phrase",    phonetic:"/lʊk ˈfɔːwəd tuː/",zh:"期待",         ex:"I <strong>look forward to</strong> seeing you next week." },
-    { word:"encourage",      pos:"verb",      phonetic:"/ɪnˈkʌrɪdʒ/",      zh:"鼓勵",         ex:"Teachers should <strong>encourage</strong> their students." },
-    { word:"tradition",      pos:"noun",      phonetic:"/trəˈdɪʃən/",       zh:"傳統",         ex:"Eating dumplings is a <strong>tradition</strong> in Taiwan." },
-    { word:"anxious",        pos:"adjective", phonetic:"/ˈæŋkʃəs/",         zh:"焦慮的；擔心的",ex:"She felt <strong>anxious</strong> before the exam." },
-    { word:"in spite of",    pos:"phrase",    phonetic:"/ɪn spaɪt əv/",     zh:"儘管；雖然",   ex:"<strong>In spite of</strong> the rain, they kept going." },
+    {word:"communicate",pos:"verb",phonetic:"/kəˈmjuːnɪkeɪt/",zh:"溝通；傳達",ex:"It is important to <strong>communicate</strong> clearly."},
+    {word:"environment",pos:"noun",phonetic:"/ɪnˈvaɪrənmənt/",zh:"環境",ex:"We must protect our <strong>environment</strong>."},
+    {word:"opportunity",pos:"noun",phonetic:"/ˌɒpəˈtjuːnəti/",zh:"機會",ex:"This job is a great <strong>opportunity</strong> for growth."},
+    {word:"encourage",pos:"verb",phonetic:"/ɪnˈkʌrɪdʒ/",zh:"鼓勵",ex:"Teachers should <strong>encourage</strong> their students."},
+    {word:"break a leg",pos:"phrase",phonetic:"/breɪk ə leɡ/",zh:"祝你好運",ex:"<strong>Break a leg</strong> at your performance tonight!"},
   ],
-
   high: [
-    { word:"ambiguous",       pos:"adjective", phonetic:"/æmˈbɪɡjuəs/",       zh:"模糊的；不明確的", ex:"The instructions were <strong>ambiguous</strong> and confusing." },
-    { word:"unprecedented",   pos:"adjective", phonetic:"/ʌnˈpresɪdentɪd/",    zh:"史無前例的",       ex:"The storm caused <strong>unprecedented</strong> damage." },
-    { word:"mitigate",        pos:"verb",      phonetic:"/ˈmɪtɪɡeɪt/",         zh:"減輕；緩和",       ex:"We need to <strong>mitigate</strong> the effects of climate change." },
-    { word:"perspective",     pos:"noun",      phonetic:"/pəˈspektɪv/",         zh:"觀點；角度",       ex:"Try to see things from another <strong>perspective</strong>." },
-    { word:"exemplify",       pos:"verb",      phonetic:"/ɪɡˈzemplɪfaɪ/",      zh:"例示；是…的典範",  ex:"Her work <strong>exemplifies</strong> creativity and dedication." },
-    { word:"come to terms with",pos:"phrase",  phonetic:"/kʌm tə tɜːmz wɪð/", zh:"接受；適應（困難）",ex:"It took time to <strong>come to terms with</strong> the loss." },
-    { word:"controversy",     pos:"noun",      phonetic:"/ˈkɒntrəvɜːsi/",       zh:"爭議；論戰",       ex:"The new policy sparked a great deal of <strong>controversy</strong>." },
-    { word:"inherent",        pos:"adjective", phonetic:"/ɪnˈhɪərənt/",         zh:"固有的；本質上的", ex:"There is an <strong>inherent</strong> risk in every decision." },
-    { word:"elaborate",       pos:"adjective", phonetic:"/ɪˈlæbərət/",          zh:"精心設計的；詳細的",ex:"She gave an <strong>elaborate</strong> explanation." },
-    { word:"take it for granted",pos:"phrase", phonetic:"/teɪk ɪt fə ˈɡrɑːntɪd/",zh:"視為理所當然",  ex:"Don't <strong>take it for granted</strong> that people will help you." },
-    { word:"subsequent",      pos:"adjective", phonetic:"/ˈsʌbsɪkwənt/",        zh:"隨後的；後來的",   ex:"<strong>Subsequent</strong> studies confirmed the theory." },
-    { word:"deteriorate",     pos:"verb",      phonetic:"/dɪˈtɪəriəreɪt/",      zh:"惡化；退化",       ex:"His health began to <strong>deteriorate</strong> quickly." },
-    { word:"hypothesis",      pos:"noun",      phonetic:"/haɪˈpɒθəsɪs/",        zh:"假說；假設",       ex:"The scientist tested her <strong>hypothesis</strong> through research." },
-    { word:"rhetorical",      pos:"adjective", phonetic:"/rɪˈtɒrɪkəl/",         zh:"修辭的；反問的",   ex:"That was a <strong>rhetorical</strong> question — no answer needed." },
-    { word:"consensus",       pos:"noun",      phonetic:"/kənˈsensəs/",          zh:"共識",             ex:"The team reached a <strong>consensus</strong> on the plan." },
-    { word:"cut corners",     pos:"phrase",    phonetic:"/kʌt ˈkɔːrnərz/",      zh:"走捷徑；偷工減料", ex:"Don't <strong>cut corners</strong> when it comes to safety." },
-    { word:"plausible",       pos:"adjective", phonetic:"/ˈplɔːzɪbəl/",          zh:"合理的；貌似可信的",ex:"That explanation sounds quite <strong>plausible</strong>." },
-    { word:"paradigm",        pos:"noun",      phonetic:"/ˈpærədaɪm/",           zh:"典範；範例",       ex:"This discovery changed the scientific <strong>paradigm</strong>." },
-    { word:"irony",           pos:"noun",      phonetic:"/ˈaɪərəni/",            zh:"諷刺；反語",       ex:"The <strong>irony</strong> is that he won without trying." },
-    { word:"at the expense of",pos:"phrase",   phonetic:"/æt ðə ɪkˈspens əv/", zh:"以…為代價",        ex:"They gained profit <strong>at the expense of</strong> the environment." },
-    { word:"scrutinize",      pos:"verb",      phonetic:"/ˈskruːtɪnaɪz/",        zh:"仔細審查",         ex:"The editor carefully <strong>scrutinized</strong> every sentence." },
-    { word:"profound",        pos:"adjective", phonetic:"/prəˈfaʊnd/",            zh:"深刻的；深遠的",   ex:"The book had a <strong>profound</strong> effect on my thinking." },
-    { word:"abolish",         pos:"verb",      phonetic:"/əˈbɒlɪʃ/",             zh:"廢除；取消",       ex:"Many people want to <strong>abolish</strong> the death penalty." },
-    { word:"shed light on",   pos:"phrase",    phonetic:"/ʃed laɪt ɒn/",        zh:"闡明；使人了解",   ex:"The study <strong>sheds light on</strong> the cause of the disease." },
+    {word:"ambiguous",pos:"adjective",phonetic:"/æmˈbɪɡjuəs/",zh:"模糊的；不明確的",ex:"The instructions were <strong>ambiguous</strong> and confusing."},
+    {word:"unprecedented",pos:"adjective",phonetic:"/ʌnˈpresɪdentɪd/",zh:"史無前例的",ex:"The storm caused <strong>unprecedented</strong> damage."},
+    {word:"consensus",pos:"noun",phonetic:"/kənˈsensəs/",zh:"共識",ex:"The team reached a <strong>consensus</strong> on the plan."},
+    {word:"profound",pos:"adjective",phonetic:"/prəˈfaʊnd/",zh:"深刻的；深遠的",ex:"The book had a <strong>profound</strong> effect on my thinking."},
+    {word:"shed light on",pos:"phrase",phonetic:"/ʃed laɪt ɒn/",zh:"闡明；使人了解",ex:"The study <strong>sheds light on</strong> the cause of the disease."},
   ],
-
   university: [
-    { word:"epistemology",     pos:"noun",      phonetic:"/ɪˌpɪstɪˈmɒlədʒi/",    zh:"知識論；認識論",     ex:"<strong>Epistemology</strong> examines the nature and scope of knowledge." },
-    { word:"dialectical",      pos:"adjective", phonetic:"/ˌdaɪəˈlektɪkəl/",      zh:"辯證的",             ex:"She used a <strong>dialectical</strong> method to analyse the argument." },
-    { word:"proliferate",      pos:"verb",      phonetic:"/prəˈlɪfəreɪt/",         zh:"大量增生；擴散",     ex:"Social media platforms have <strong>proliferated</strong> in recent years." },
-    { word:"hegemony",         pos:"noun",      phonetic:"/hɪˈdʒeməni/",           zh:"霸權；支配地位",     ex:"The country sought cultural and economic <strong>hegemony</strong>." },
-    { word:"empirical",        pos:"adjective", phonetic:"/ɪmˈpɪrɪkəl/",           zh:"實證的；以經驗為依據的",ex:"The claim must be supported by <strong>empirical</strong> evidence." },
-    { word:"in the long run",  pos:"phrase",    phonetic:"/ɪn ðə lɒŋ rʌn/",       zh:"從長遠來看",         ex:"Saving money consistently pays off <strong>in the long run</strong>." },
-    { word:"paradigm shift",   pos:"phrase",    phonetic:"/ˈpærədaɪm ʃɪft/",       zh:"典範轉移",           ex:"Darwin's theory caused a major <strong>paradigm shift</strong> in biology." },
-    { word:"ostensibly",       pos:"adverb",    phonetic:"/ɒˈstensɪbli/",           zh:"表面上看起來",       ex:"The reform was <strong>ostensibly</strong> intended to benefit workers." },
-    { word:"juxtapose",        pos:"verb",      phonetic:"/ˌdʒʌkstəˈpəʊz/",        zh:"並列；對比放置",     ex:"The author <strong>juxtaposes</strong> wealth and poverty effectively." },
-    { word:"nuanced",          pos:"adjective", phonetic:"/ˈnjuːɑːnst/",            zh:"微妙的；細緻入微的", ex:"We need a more <strong>nuanced</strong> understanding of the issue." },
-    { word:"it goes without saying",pos:"phrase",phonetic:"/ɪt ɡəʊz wɪðˈaʊt ˈseɪɪŋ/",zh:"不言而喻；毋庸置疑", ex:"<strong>It goes without saying</strong> that honesty is essential." },
-    { word:"misnomer",         pos:"noun",      phonetic:"/ˌmɪsˈnəʊmər/",           zh:"誤稱；用詞不當",     ex:"'Starfish' is a <strong>misnomer</strong> as they are not actually fish." },
-    { word:"exacerbate",       pos:"verb",      phonetic:"/ɪɡˈzæsəbeɪt/",           zh:"使惡化；加劇",       ex:"Stress can <strong>exacerbate</strong> physical health problems." },
-    { word:"corroborate",      pos:"verb",      phonetic:"/kəˈrɒbəreɪt/",           zh:"確認；支持（說法）", ex:"New evidence <strong>corroborated</strong> the original findings." },
-    { word:"ontological",      pos:"adjective", phonetic:"/ˌɒntəˈlɒdʒɪkəl/",        zh:"本體論的",           ex:"The philosopher raised an <strong>ontological</strong> question about being." },
-    { word:"draw the line at", pos:"phrase",    phonetic:"/drɔː ðə laɪn æt/",       zh:"以…為界；對…不妥協", ex:"I <strong>draw the line at</strong> compromising my core values." },
-    { word:"ubiquitous",       pos:"adjective", phonetic:"/juːˈbɪkwɪtəs/",          zh:"無所不在的；普遍存在的",ex:"Smartphones have become <strong>ubiquitous</strong> in modern life." },
-    { word:"tangential",       pos:"adjective", phonetic:"/tænˈdʒenʃəl/",            zh:"離題的；相切的",     ex:"His remark was <strong>tangential</strong> to the main discussion." },
-    { word:"extrapolate",      pos:"verb",      phonetic:"/ɪkˈstræpəleɪt/",          zh:"推斷；外推",         ex:"We can <strong>extrapolate</strong> trends from the available data." },
-    { word:"albeit",           pos:"conjunction",phonetic:"/ɔːlˈbiːɪt/",            zh:"儘管；雖然",         ex:"The plan succeeded, <strong>albeit</strong> with some difficulties." },
-    { word:"the elephant in the room",pos:"phrase",phonetic:"/ðə ˈelɪfənt ɪn ðə ruːm/",zh:"顯而易見卻被刻意忽略的問題",ex:"Budget cuts were <strong>the elephant in the room</strong> nobody mentioned." },
-    { word:"commensurate",     pos:"adjective", phonetic:"/kəˈmenʃərət/",            zh:"相稱的；成比例的",   ex:"Her salary is not <strong>commensurate</strong> with her experience." },
-    { word:"dichotomy",        pos:"noun",      phonetic:"/daɪˈkɒtəmi/",             zh:"二分法；兩分",       ex:"There is a false <strong>dichotomy</strong> between science and art." },
-    { word:"on the fence",     pos:"phrase",    phonetic:"/ɒn ðə fens/",             zh:"立場不明確；舉棋不定",ex:"She is still <strong>on the fence</strong> about which career to choose." },
-  ]
+    {word:"epistemology",pos:"noun",phonetic:"/ɪˌpɪstɪˈmɒlədʒi/",zh:"知識論；認識論",ex:"<strong>Epistemology</strong> examines the nature and scope of knowledge."},
+    {word:"ubiquitous",pos:"adjective",phonetic:"/juːˈbɪkwɪtəs/",zh:"無所不在的；普遍存在的",ex:"Smartphones have become <strong>ubiquitous</strong> in modern life."},
+    {word:"nuanced",pos:"adjective",phonetic:"/ˈnjuːɑːnst/",zh:"微妙的；細緻入微的",ex:"We need a more <strong>nuanced</strong> understanding of the issue."},
+    {word:"paradigm shift",pos:"phrase",phonetic:"/ˈpærədaɪm ʃɪft/",zh:"典範轉移",ex:"Darwin's theory caused a major <strong>paradigm shift</strong> in biology."},
+    {word:"status quo",pos:"phrase",phonetic:"/ˌsteɪtəs ˈkwəʊ/",zh:"現狀",ex:"She challenged the <strong>status quo</strong>."},
+  ],
 };
+
+// Live vocab loaded from D1 — starts as fallback, replaced on load
+let VOCAB = JSON.parse(JSON.stringify(VOCAB_FALLBACK));
+
+// Loading state per level
+const vocabLoaded = { elementary:false, junior:false, high:false, university:false };
+const vocabLoading = { elementary:false, junior:false, high:false, university:false };
+
+async function loadVocabFromCloud(level) {
+  if (vocabLoaded[level] || vocabLoading[level]) return;
+  vocabLoading[level] = true;
+  try {
+    const res = await fetch(`${API}/api/vocab/${level}`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data.words && data.words.length > 0) {
+      // Convert cloud format to app format (add HTML bold to example word)
+      VOCAB[level] = data.words.map(w => ({
+        word: w.word,
+        pos: w.pos,
+        phonetic: w.phonetic || '',
+        zh: w.zh,
+        ex: w.ex || w.word + '.',
+      }));
+      vocabLoaded[level] = true;
+      console.log(`✅ Loaded ${VOCAB[level].length} words for ${level} from cloud`);
+    }
+  } catch (e) {
+    console.warn(`⚠️ Cloud vocab load failed for ${level}, using fallback:`, e.message);
+  }
+  vocabLoading[level] = false;
+}
+
 
 // ════════════════════════════════════════
 //  STATE
@@ -1671,7 +1630,7 @@ function generateQuestions(level){
   return questions;
 }
 
-function startTestQuiz(){
+async function startTestQuiz(){
   if(!state.level) return;
   loadState();
   VOCAB[state.level].forEach(w=>{ if(!state.wordStates[w.word]) state.wordStates[w.word]={status:'new',freq:1,seen:0}; });
@@ -1682,6 +1641,18 @@ function startTestQuiz(){
   const L={elementary:'🌱 Elementary',junior:'📘 Junior High',high:'🎓 High School',university:'🏛️ University'};
   document.getElementById('qz-level-tag').textContent=L[state.level];
   document.getElementById('res-level-tag').textContent=L[state.level];
+  // Load cloud vocab before starting quiz
+  if (!vocabLoaded[state.level]) {
+    showToast('⏳ 載入題庫中...');
+    await loadVocabFromCloud(state.level);
+  }
+
+  // Re-generate questions now that full vocab may be loaded
+  quiz.questions = generateQuestions(state.level);
+  quiz.current = 0; quiz.score = 0; quiz.correct = 0;
+  quiz.streak = 0; quiz.maxStreak = 0; quiz.wrongs = [];
+  quiz.answered = false; quiz.level = state.level;
+
   showScreen('testquiz');
   renderQuestion();
   loadLeaderboard(state.level);
@@ -1979,17 +1950,24 @@ function updateUserChip() {
   document.getElementById('user-name-chip').textContent = currentUser.name;
 }
 
-// Override startPractice to load cloud progress
+// Override startPractice to load cloud vocab + progress
 const _origStartPractice = startPractice;
 startPractice = async function() {
   if (!state.level) return;
   loadState();
+
+  // Show loading toast while fetching vocab
+  const needsLoad = !vocabLoaded[state.level];
+  if (needsLoad) showToast('⏳ 載入題庫中...');
+  await loadVocabFromCloud(state.level);
+
   VOCAB[state.level].forEach(w => { if (!state.wordStates[w.word]) state.wordStates[w.word]={status:'new',freq:1,seen:0}; });
   await cloudLoadProgress(state.level);
   showScreen('quiz');
   updateLevelTag();
   setMode('all', document.getElementById('tab-all'));
   loadLeaderboard(state.level);
+  if (needsLoad) showToast('✅ 已載入 ' + VOCAB[state.level].length + ' 個單字');
 };
 
 // Override rateWord to cloud-sync after each rating
