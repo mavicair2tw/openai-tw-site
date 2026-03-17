@@ -1595,7 +1595,7 @@ function speakExample() {
 // ══════════════════════════════════════════
 //  QUIZ TEST ENGINE
 // ══════════════════════════════════════════
-const QUIZ_COUNT = 10;
+const QUIZ_COUNT = 15;
 
 let quiz = {
   questions:[], current:0, score:0, correct:0,
@@ -1606,25 +1606,89 @@ let quiz = {
 function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
 
 function generateQuestions(level){
-  const all=VOCAB[level];
-  const pool=shuffle([...all]).slice(0,QUIZ_COUNT);
-  const questions=[];
-  pool.forEach((item,idx)=>{
-    const typeNum=(idx%4)+1;
-    const distractors=all.filter(w=>w.word!==item.word);
-    if(typeNum===1){
-      const choices=shuffle([item,...shuffle(distractors).slice(0,3)]).map(w=>w.zh);
-      questions.push({type:1,item,question:item.word,hint:item.phonetic,choices,answer:item.zh});
-    } else if(typeNum===2){
-      const choices=shuffle([item,...shuffle(distractors).slice(0,3)]).map(w=>w.word);
-      questions.push({type:2,item,question:item.zh,hint:'('+item.pos+')',choices,answer:item.word});
-    } else if(typeNum===3){
-      const fl=item.word[0].toUpperCase();
-      questions.push({type:3,item,question:item.zh,hint:'詞性：'+item.pos+'　提示：'+fl+'＿＿',choices:null,answer:item.word});
+  const all = VOCAB[level];
+  if (!all || all.length < 5) return [];
+
+  // Pick QUIZ_COUNT questions, weighted toward words the user finds harder
+  const wordStatesForLevel = Object.entries(state.wordStates)
+    .filter(([,ws]) => ws.status && ws.status !== 'easy');
+  const hardWords = new Set(wordStatesForLevel
+    .filter(([,ws]) => ws.status === 'not-familiar' || ws.status === 'not-easy')
+    .map(([w]) => w));
+
+  // Build a weighted pool: hard words appear 3x, others 1x
+  let weightedPool = [];
+  all.forEach(w => {
+    const reps = hardWords.has(w.word) ? 3 : 1;
+    for (let i = 0; i < reps; i++) weightedPool.push(w);
+  });
+  weightedPool = shuffle(weightedPool);
+
+  // Deduplicate to get QUIZ_COUNT unique words
+  const seen = new Set();
+  const pool = [];
+  for (const w of weightedPool) {
+    if (!seen.has(w.word)) { seen.add(w.word); pool.push(w); }
+    if (pool.length >= QUIZ_COUNT) break;
+  }
+  // Fill up if not enough hard words
+  if (pool.length < QUIZ_COUNT) {
+    for (const w of shuffle([...all])) {
+      if (!seen.has(w.word)) { seen.add(w.word); pool.push(w); }
+      if (pool.length >= QUIZ_COUNT) break;
+    }
+  }
+
+  // Distractors MUST come from the same level
+  const sameLevel = all;
+
+  // Vary question types: cycle through all 4 types
+  // Type distribution based on level difficulty
+  // elementary: more type1/2 (recognition), less type3 (fill-in)
+  // university: more type3/4 (production)
+  const typeDist = {
+    elementary:  [1,1,1,2,2,2,3,4,4,4],
+    junior:      [1,1,2,2,3,3,4,4,1,2],
+    high:        [1,2,2,3,3,4,4,3,1,2],
+    university:  [2,3,3,4,4,3,2,3,4,1],
+  };
+  const dist = typeDist[level] || [1,2,3,4,1,2,3,4,1,2];
+  const shuffledDist = shuffle([...dist]);
+
+  const questions = [];
+  pool.forEach((item, idx) => {
+    const typeNum = shuffledDist[idx % shuffledDist.length];
+    const distractors = sameLevel.filter(w => w.word !== item.word);
+
+    if (typeNum === 1) {
+      // EN word → pick correct ZH meaning (4 choices)
+      // Make distractors tricky: same POS when possible
+      const samePOS = distractors.filter(w => w.pos === item.pos);
+      const pool3 = samePOS.length >= 3 ? samePOS : distractors;
+      const choices = shuffle([item, ...shuffle(pool3).slice(0,3)]).map(w => w.zh);
+      questions.push({type:1, item, question:item.word, hint:item.phonetic, choices, answer:item.zh});
+
+    } else if (typeNum === 2) {
+      // ZH meaning → pick correct EN word (4 choices, same POS)
+      const samePOS = distractors.filter(w => w.pos === item.pos);
+      const pool3 = samePOS.length >= 3 ? samePOS : distractors;
+      const choices = shuffle([item, ...shuffle(pool3).slice(0,3)]).map(w => w.word);
+      questions.push({type:2, item, question:item.zh, hint:'('+item.pos+')', choices, answer:item.word});
+
+    } else if (typeNum === 3) {
+      // Fill in: see ZH + POS + first letter hint → type EN word
+      const fl = item.word[0].toUpperCase();
+      const lengthHint = '＿'.repeat(Math.min(item.word.length - 1, 6));
+      questions.push({type:3, item, question:item.zh, hint:'詞性：'+item.pos+'　提示：'+fl+lengthHint, choices:null, answer:item.word});
+
     } else {
-      const blank=item.ex.replace(/<strong>/g,'').replace(/<\/strong>/g,'').replace(item.word,'______');
-      const choices=shuffle([item,...shuffle(distractors).slice(0,3)]).map(w=>w.word);
-      questions.push({type:4,item,question:blank,hint:item.zh+'　('+item.pos+')',choices,answer:item.word});
+      // Sentence gap-fill: same-POS distractors for harder choices
+      const rawEx = item.ex.replace(/<strong>/g,'').replace(/<\/strong>/g,'');
+      const blank = rawEx.replace(new RegExp(item.word.replace(/[.*+?^${}()|[\]\]/g,'\$&'),'i'), '______');
+      const samePOS = distractors.filter(w => w.pos === item.pos);
+      const pool3 = samePOS.length >= 3 ? samePOS : distractors;
+      const choices = shuffle([item, ...shuffle(pool3).slice(0,3)]).map(w => w.word);
+      questions.push({type:4, item, question:blank, hint:item.zh+'　('+item.pos+')', choices, answer:item.word});
     }
   });
   return questions;
@@ -1633,25 +1697,28 @@ function generateQuestions(level){
 async function startTestQuiz(){
   if(!state.level) return;
   loadState();
-  VOCAB[state.level].forEach(w=>{ if(!state.wordStates[w.word]) state.wordStates[w.word]={status:'new',freq:1,seen:0}; });
-  quiz.questions=generateQuestions(state.level);
-  quiz.current=0; quiz.score=0; quiz.correct=0;
-  quiz.streak=0; quiz.maxStreak=0; quiz.wrongs=[];
-  quiz.answered=false; quiz.level=state.level;
-  const L={elementary:'🌱 Elementary',junior:'📘 Junior High',high:'🎓 High School',university:'🏛️ University'};
-  document.getElementById('qz-level-tag').textContent=L[state.level];
-  document.getElementById('res-level-tag').textContent=L[state.level];
-  // Load cloud vocab before starting quiz
+
+  // Load cloud vocab FIRST — this is the key fix for level-appropriate questions
   if (!vocabLoaded[state.level]) {
     showToast('⏳ 載入題庫中...');
     await loadVocabFromCloud(state.level);
+    showToast('✅ 已載入 ' + VOCAB[state.level].length + ' 個單字');
   }
 
-  // Re-generate questions now that full vocab may be loaded
+  // Init word states for any new words
+  VOCAB[state.level].forEach(w=>{ if(!state.wordStates[w.word]) state.wordStates[w.word]={status:'new',freq:1,seen:0}; });
+
+  // Build questions from the FULL level vocab (not fallback)
   quiz.questions = generateQuestions(state.level);
-  quiz.current = 0; quiz.score = 0; quiz.correct = 0;
-  quiz.streak = 0; quiz.maxStreak = 0; quiz.wrongs = [];
-  quiz.answered = false; quiz.level = state.level;
+  if (!quiz.questions.length) { showToast('❌ 題庫載入失敗，請重試'); return; }
+
+  quiz.current=0; quiz.score=0; quiz.correct=0;
+  quiz.streak=0; quiz.maxStreak=0; quiz.wrongs=[];
+  quiz.answered=false; quiz.level=state.level;
+
+  const L={elementary:'🌱 Elementary',junior:'📘 Junior High',high:'🎓 High School',university:'🏛️ University'};
+  document.getElementById('qz-level-tag').textContent=L[state.level];
+  document.getElementById('res-level-tag').textContent=L[state.level];
 
   showScreen('testquiz');
   renderQuestion();
@@ -1720,6 +1787,8 @@ function submitFill(){
   processAnswer(correct,q,val);
 }
 
+// Level-adjusted scoring: harder levels = more points
+const LEVEL_MULTIPLIER = {elementary:1, junior:1.5, high:2, university:2.5};
 const SCORE_BASE=10, SCORE_FILL=20, SCORE_STREAK3=5, SCORE_STREAK5=15;
 
 function processAnswer(correct,q,chosen){
@@ -1727,9 +1796,10 @@ function processAnswer(correct,q,chosen){
   if(correct){
     quiz.correct++; quiz.streak++;
     if(quiz.streak>quiz.maxStreak) quiz.maxStreak=quiz.streak;
-    gained+=q.type===3?SCORE_FILL:SCORE_BASE;
-    if(quiz.streak>0&&quiz.streak%5===0) gained+=SCORE_STREAK5;
-    else if(quiz.streak>0&&quiz.streak%3===0) gained+=SCORE_STREAK3;
+    const mult = LEVEL_MULTIPLIER[quiz.level||state.level] || 1;
+    gained += Math.round((q.type===3 ? SCORE_FILL : SCORE_BASE) * mult);
+    if(quiz.streak>0&&quiz.streak%5===0) gained+=Math.round(SCORE_STREAK5*mult);
+    else if(quiz.streak>0&&quiz.streak%3===0) gained+=Math.round(SCORE_STREAK3*mult);
     quiz.score+=gained;
     if(state.wordStates[q.item.word]){
       const ws=state.wordStates[q.item.word];
