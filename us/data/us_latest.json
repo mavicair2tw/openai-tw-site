@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-17T16:33:11.953206+08:00",
+  "updatedAt": "2026-03-17T17:38:18.706933+08:00",
   "timezone": "Asia/Taipei",
   "market": "US",
   "items": [
@@ -749,26 +749,10 @@
       "label": "比特幣",
       "symbol": "BTC-USD",
       "type": "Crypto",
-      "price": 74348.13,
-      "change": 1558.22,
-      "changePercent": 2.14,
+      "price": 74200.56,
+      "change": -660.52,
+      "changePercent": -0.88,
       "trend": [
-        {
-          "time": "10:45",
-          "close": 75211.62
-        },
-        {
-          "time": "11:00",
-          "close": 75021.78
-        },
-        {
-          "time": "11:15",
-          "close": 74844.13
-        },
-        {
-          "time": "11:30",
-          "close": 74435.12
-        },
         {
           "time": "11:45",
           "close": 74423.71
@@ -847,7 +831,23 @@
         },
         {
           "time": "16:30",
-          "close": 74348.13
+          "close": 74425.85
+        },
+        {
+          "time": "16:45",
+          "close": 74167.98
+        },
+        {
+          "time": "17:00",
+          "close": 74059.68
+        },
+        {
+          "time": "17:15",
+          "close": 74267.29
+        },
+        {
+          "time": "17:30",
+          "close": 74200.56
         }
       ]
     },
@@ -855,9 +855,9 @@
       "label": "黃金期貨",
       "symbol": "GC=F",
       "type": "Commodity",
-      "price": 5027.9,
-      "change": 33.9,
-      "changePercent": 0.68,
+      "price": 5022.9,
+      "change": 28.9,
+      "changePercent": 0.58,
       "trend": [
         {
           "time": "12:00",
@@ -929,7 +929,23 @@
         },
         {
           "time": "16:15",
-          "close": 5027.9
+          "close": 5025.2
+        },
+        {
+          "time": "16:30",
+          "close": 5026.0
+        },
+        {
+          "time": "16:45",
+          "close": 5029.0
+        },
+        {
+          "time": "17:00",
+          "close": 5018.2
+        },
+        {
+          "time": "17:15",
+          "close": 5022.9
         }
       ]
     }
