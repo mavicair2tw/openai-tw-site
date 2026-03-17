@@ -1684,7 +1684,7 @@ function generateQuestions(level){
     } else {
       // Sentence gap-fill: same-POS distractors for harder choices
       const rawEx = item.ex.replace(/<strong>/g,'').replace(/<\/strong>/g,'');
-      const blank = rawEx.replace(new RegExp(item.word.replace(/[.*+?^${}()|[\]\]/g,'\$&'),'i'), '______');
+      const blank = rawEx.includes(item.word) ? rawEx.split(item.word).join('______') : (rawEx.toLowerCase().includes(item.word.toLowerCase()) ? rawEx.replace(item.word, '______') : rawEx + ' (' + item.word.replace(/./g,'_') + ')');
       const samePOS = distractors.filter(w => w.pos === item.pos);
       const pool3 = samePOS.length >= 3 ? samePOS : distractors;
       const choices = shuffle([item, ...shuffle(pool3).slice(0,3)]).map(w => w.word);
