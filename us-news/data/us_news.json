@@ -1,57 +1,57 @@
 {
-  "updatedAt": "2026-03-17T17:38:21.359464+08:00",
+  "updatedAt": "2026-03-17T18:34:00.421423+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 「軟體末日」降臨？Reddit鄉民視股價大跌為撿便宜機會 看好5大軟體股；3. 09:10黃仁勳定義AI時代新貨幣：Token效能將決定企業生死；4. 08:10全球半導體營收10強美企霸榜7家 中國零上榜陷「生存攻堅」；5. 07:13施壓盟友分擔護航成本 美國務卿促南韓協助重啟荷姆茲海峽。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 大摩明星分析師：美股震盪已近尾聲 別過度憂慮油價；3. 03/17英特爾Xeon 6 CPU獲輝達採用 導入DGX Rubin NVL8系統；4. 03/17比通膨更糟！美銀警告：投資人忽略了伊朗戰爭「一個」更具破壞性的風險；5. 03/17「軟體末日」降臨？Reddit鄉民視股價大跌為撿便宜機會 看好5大軟體股。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "「軟體末日」降臨？Reddit鄉民視股價大跌為撿便宜機會 看好5大軟體股",
+      "title": "大摩明星分析師：美股震盪已近尾聲 別過度憂慮油價",
+      "url": "https://news.cnyes.com/news/id/6387596"
+    },
+    {
+      "title": "03/17英特爾Xeon 6 CPU獲輝達採用 導入DGX Rubin NVL8系統",
+      "url": "https://news.cnyes.com/news/id/6387826"
+    },
+    {
+      "title": "03/17比通膨更糟！美銀警告：投資人忽略了伊朗戰爭「一個」更具破壞性的風險",
+      "url": "https://news.cnyes.com/news/id/6386856"
+    },
+    {
+      "title": "03/17「軟體末日」降臨？Reddit鄉民視股價大跌為撿便宜機會 看好5大軟體股",
       "url": "https://news.cnyes.com/news/id/6387614"
     },
     {
-      "title": "09:10黃仁勳定義AI時代新貨幣：Token效能將決定企業生死",
+      "title": "03/17黃仁勳定義AI時代新貨幣：Token效能將決定企業生死",
       "url": "https://news.cnyes.com/news/id/6387213"
     },
     {
-      "title": "08:10全球半導體營收10強美企霸榜7家 中國零上榜陷「生存攻堅」",
+      "title": "03/17全球半導體營收10強美企霸榜7家 中國零上榜陷「生存攻堅」",
       "url": "https://news.cnyes.com/news/id/6387449"
     },
     {
-      "title": "07:13施壓盟友分擔護航成本 美國務卿促南韓協助重啟荷姆茲海峽",
+      "title": "03/17施壓盟友分擔護航成本 美國務卿促南韓協助重啟荷姆茲海峽",
       "url": "https://news.cnyes.com/news/id/6387229"
     },
     {
-      "title": "06:40中東戰火熄滅紅海復航希望 運價止跌回升、台灣貨櫃三雄2026展望優於歐洲對手",
+      "title": "03/17中東戰火熄滅紅海復航希望 運價止跌回升、台灣貨櫃三雄2026展望優於歐洲對手",
       "url": "https://news.cnyes.com/news/id/6386853"
     },
     {
-      "title": "06:19美國、伊朗戰爭下如何布局？高盛揭示「三大」潛力投資標的",
+      "title": "03/17美國、伊朗戰爭下如何布局？高盛揭示「三大」潛力投資標的",
       "url": "https://news.cnyes.com/news/id/6386857"
     },
     {
-      "title": "06:10大摩：中國資產「避風港」特徵突出 今年將是A股「企穩之年」",
+      "title": "03/17大摩：中國資產「避風港」特徵突出 今年將是A股「企穩之年」",
       "url": "https://news.cnyes.com/news/id/6387464"
     },
     {
-      "title": "06:10美伊戰爭期間 投資人未將「美債」視為避險資產",
+      "title": "03/17美伊戰爭期間 投資人未將「美債」視為避險資產",
       "url": "https://news.cnyes.com/news/id/6386766"
-    },
-    {
-      "title": "05:37擺脫依賴中國！特斯拉聯手LG 打造美本土LFP電池廠",
-      "url": "https://news.cnyes.com/news/id/6387542"
-    },
-    {
-      "title": "05:30《大賣空》貝瑞警告那斯達克新規！SpaceX「火速入指數」散戶恐成最大輸家",
-      "url": "https://news.cnyes.com/news/id/6386854"
-    },
-    {
-      "title": "05:20川普若未在3月底前結束對伊朗戰爭 全球市場恐面臨4月重新定價",
-      "url": "https://news.cnyes.com/news/id/6386783"
     }
   ],
   "error": null
