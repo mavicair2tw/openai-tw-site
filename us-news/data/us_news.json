@@ -1,16 +1,24 @@
 {
-  "updatedAt": "2026-03-18T02:11:43.421630+08:00",
+  "updatedAt": "2026-03-18T03:20:41.913614+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 微軟AI策略升級 Copilot團隊重整；3. 03/17Fed傳聲筒：戰爭與油價夾擊 聯準會利率路徑恐被改寫；4. 03/17美股不懼中東戰火 要感謝分析師？標普500獲利預估逆勢創新高；5. 03/17否認退休傳聞！蘋果CEO庫克：無法想像沒有蘋果的人生。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 油價飆升帶動能源股 華爾街警告漲勢恐見頂；3. 03/17〈輝達GTC大會〉AI熱潮有多大？黃仁勳：輝達整體業務規模可破1兆美元；4. 03/17微軟AI策略升級 Copilot團隊重整；5. 03/17Fed傳聲筒：戰爭與油價夾擊 聯準會利率路徑恐被改寫。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "微軟AI策略升級 Copilot團隊重整",
+      "title": "油價飆升帶動能源股 華爾街警告漲勢恐見頂",
+      "url": "https://news.cnyes.com/news/id/6387990"
+    },
+    {
+      "title": "03/17〈輝達GTC大會〉AI熱潮有多大？黃仁勳：輝達整體業務規模可破1兆美元",
+      "url": "https://news.cnyes.com/news/id/6388134"
+    },
+    {
+      "title": "03/17微軟AI策略升級 Copilot團隊重整",
       "url": "https://news.cnyes.com/news/id/6388101"
     },
     {
@@ -44,14 +52,6 @@
     {
       "title": "03/17Meta大單加持 Nebius再籌37.5億美元衝AI",
       "url": "https://news.cnyes.com/news/id/6387955"
-    },
-    {
-      "title": "03/17物流大戰白熱化！亞馬遜祭出1小時極速配送力抗沃爾瑪",
-      "url": "https://news.cnyes.com/news/id/6387906"
-    },
-    {
-      "title": "03/17油價高漲恐引發股市「骨牌效應」！小摩警告標普500或下跌15%、衝擊美國經濟",
-      "url": "https://news.cnyes.com/news/id/6385343"
     }
   ],
   "error": null
