@@ -76,23 +76,33 @@ jobs:
             fi
           fi
 
-          # Restore homepage cards if missing
-          if ! grep -q '"/etf/"' index.html || ! grep -q '"五子棋"' index.html; then
+          # Restore homepage cards if any are missing
+          if ! grep -q '"/etf/"' index.html || ! grep -q '"五子棋"' index.html || ! grep -q '"/english/"' index.html; then
             python3 - << 'PYEOF'
           content = open('index.html').read()
-          changed = False
-          cards = '''        <a class="card" href="/etf/">
-                    <div class="name">ETF 投資工具</div>
-                    <div class="desc">配息試算、投資組合分析與 ETF 比較</div>
-                  </a>
-                  <a class="card" href="/五子棋/">
-                    <div class="name">五子棋 AI 對戰</div>
-                    <div class="desc">與 AI 對弈五子棋，四種難度，支援音效與悔棋</div>
-                  </a>'''
-          if '/etf/' not in content or '/五子棋/' not in content:
-              content = content.replace('      </section>', cards + '\n      </section>', 1)
-              open('index.html', 'w').write(content)
-              print('Restored homepage cards')
+          TARGET = '''        <a class="card" href="/etf/">
+          <div class="name">ETF 投資工具</div>
+          <div class="desc">配息試算、投資組合分析與 ETF 比較</div>
+        </a>
+        <a class="card" href="/五子棋/">
+          <div class="name">五子棋 AI 對戰</div>
+          <div class="desc">與 AI 對弈五子棋，四種難度，支援音效與悔棋</div>
+        </a>
+        <a class="card" href="/english/">
+          <div class="name">🎓 AI School 英語學習</div>
+          <div class="desc">國小到大學四級英語單字，雲端記錄進度、Quiz 排行榜</div>
+        </a>
+      </section>'''
+          import re
+          # Replace the entire featured-grid section content
+          new_content = re.sub(
+              r'(<section class="featured-grid">)(.*?)(</section>)',
+              lambda m: m.group(1) + '\n' + TARGET,
+              content, flags=re.DOTALL
+          )
+          if new_content != content:
+              open('index.html', 'w').write(new_content)
+              print('Restored homepage featured-grid cards')
           PYEOF
             git add index.html
           fi
