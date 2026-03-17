@@ -31,6 +31,10 @@ jobs:
             echo "gomoku_deleted=true" >> $GITHUB_OUTPUT
             NEED_RESTORE=true
           fi
+          if echo "$DELETED" | grep -q "english/index.html"; then
+            echo "english_deleted=true" >> $GITHUB_OUTPUT
+            NEED_RESTORE=true
+          fi
           echo "need_restore=$NEED_RESTORE" >> $GITHUB_OUTPUT
 
       - name: Restore deleted pages
@@ -58,6 +62,17 @@ jobs:
               git show $COMMIT:"五子棋/index.html" > "五子棋/index.html"
               git add "五子棋/index.html"
               echo "✅ Restored 五子棋/index.html from $COMMIT"
+            fi
+          fi
+
+          # Restore english page
+          if [ "${{ steps.check.outputs.english_deleted }}" == "true" ]; then
+            COMMIT=$(git log --all --oneline -- english/index.html | grep -v "Deploy site" | head -1 | awk '{print $1}')
+            if [ -n "$COMMIT" ]; then
+              mkdir -p english
+              git show $COMMIT:english/index.html > english/index.html
+              git add english/index.html
+              echo "✅ Restored english/index.html from $COMMIT"
             fi
           fi
 
