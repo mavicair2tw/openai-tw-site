@@ -1,57 +1,57 @@
 {
-  "updatedAt": "2026-03-17T07:53:59.609857+08:00",
+  "updatedAt": "2026-03-17T09:54:27.429007+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 輝達GTC重點一次看：黃仁勳喊兆美元AI晶片商機、加入OpenClaw熱潮、太空運算布局；3. 23:10川普力挺改革 美SEC擬鬆綁季報制度 上市公司可改半年報；4. 23:00全球最大鋁土礦出口國醞釀出口控制 供應鏈緊張恐升溫；5. 22:40川普稱因伊朗戰爭 美方要求延後與習近平會面「約一個月」。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 為何伊朗戰爭升溫 黃金價格卻下跌？；3. 01:10穆迪：油價若再高企幾週 美國衰退機率恐超50%；4. 01:05美光科技：開始為輝達量產HBM4記憶體 銅鑼廠年底前啟動第2座晶圓廠；5. 00:40黃仁勳：自駕「ChatGPT時刻」已經到來 比亞迪等4新夥伴加入輝達RoboTaxi Ready平台。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "輝達GTC重點一次看：黃仁勳喊兆美元AI晶片商機、加入OpenClaw熱潮、太空運算布局",
+      "title": "為何伊朗戰爭升溫 黃金價格卻下跌？",
+      "url": "https://news.cnyes.com/news/id/6386794"
+    },
+    {
+      "title": "01:10穆迪：油價若再高企幾週 美國衰退機率恐超50%",
+      "url": "https://news.cnyes.com/news/id/6386874"
+    },
+    {
+      "title": "01:05美光科技：開始為輝達量產HBM4記憶體 銅鑼廠年底前啟動第2座晶圓廠",
+      "url": "https://news.cnyes.com/news/id/6386904"
+    },
+    {
+      "title": "00:40黃仁勳：自駕「ChatGPT時刻」已經到來 比亞迪等4新夥伴加入輝達RoboTaxi Ready平台",
+      "url": "https://news.cnyes.com/news/id/6386893"
+    },
+    {
+      "title": "00:40輝達推Groq 3 AI晶片與CPU伺服器 強攻資料中心市場 迎戰英特爾與AMD",
+      "url": "https://news.cnyes.com/news/id/6386790"
+    },
+    {
+      "title": "00:31AI題材回流帶動科技股反彈美股三大指數全面收高",
+      "url": "https://news.cnyes.com/news/id/6386902"
+    },
+    {
+      "title": "00:20記憶體超級周期 RBC上調美光目標價",
+      "url": "https://news.cnyes.com/news/id/6386764"
+    },
+    {
+      "title": "00:15SK海力士亮相輝達GTC展出HBM4等新一代AI產品 崔泰源：晶片晶圓短缺恐持續至2030年",
+      "url": "https://news.cnyes.com/news/id/6386860"
+    },
+    {
+      "title": "00:10沒有一定要輝達！搶攻中國智慧電動車 福斯改用本土晶片技術",
+      "url": "https://news.cnyes.com/news/id/6386835"
+    },
+    {
+      "title": "00:00美股重點新聞摘要2026年3月17日",
+      "url": "https://news.cnyes.com/news/id/6386787"
+    },
+    {
+      "title": "03/16輝達GTC重點一次看：黃仁勳喊兆美元AI晶片商機、加入OpenClaw熱潮、太空運算布局",
       "url": "https://news.cnyes.com/news/id/6386762"
-    },
-    {
-      "title": "23:10川普力挺改革 美SEC擬鬆綁季報制度 上市公司可改半年報",
-      "url": "https://news.cnyes.com/news/id/6386782"
-    },
-    {
-      "title": "23:00全球最大鋁土礦出口國醞釀出口控制 供應鏈緊張恐升溫",
-      "url": "https://news.cnyes.com/news/id/6386772"
-    },
-    {
-      "title": "22:40川普稱因伊朗戰爭 美方要求延後與習近平會面「約一個月」",
-      "url": "https://news.cnyes.com/news/id/6386800"
-    },
-    {
-      "title": "22:30挑戰Adobe！蘋果出手買下MotionVFX 搶攻影音創作者市場",
-      "url": "https://news.cnyes.com/news/id/6386746"
-    },
-    {
-      "title": "22:10AI支出太沉重！傳Meta擬裁員20%省60億美元 小摩：杯水車薪",
-      "url": "https://news.cnyes.com/news/id/6386773"
-    },
-    {
-      "title": "22:10特斯拉走高 馬斯克7日內啟動全球最大晶片廠Terafab",
-      "url": "https://news.cnyes.com/news/id/6386767"
-    },
-    {
-      "title": "22:00輝達推出Vera Rubin Space-1晶片系統 進軍太空AI資料中心",
-      "url": "https://news.cnyes.com/news/id/6386792"
-    },
-    {
-      "title": "21:205倍Token吞吐量 能源效率4倍！輝達發布BlueField-4 STX架構 搶攻AI算力市場",
-      "url": "https://news.cnyes.com/news/id/6386760"
-    },
-    {
-      "title": "21:15〈美股盤後〉黃仁勳喊1兆美元AI商機 油價回落 道瓊高升近400點",
-      "url": "https://news.cnyes.com/news/id/6386763"
-    },
-    {
-      "title": "20:59〈紐約匯市〉美元漲勢暫歇 市場聚焦央行決策",
-      "url": "https://news.cnyes.com/news/id/6386786"
     }
   ],
   "error": null
