@@ -1134,7 +1134,12 @@ const STORAGE_KEY = 'wordwave_v2';
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) { const s = JSON.parse(raw); Object.assign(state, s); }
+    if (raw) {
+      const s = JSON.parse(raw);
+      const currentLevel = state.level; // Preserve any in-memory level selection
+      Object.assign(state, s);
+      if (currentLevel) state.level = currentLevel; // Don't let saved state overwrite UI selection
+    }
   } catch(e) {}
 }
 function saveState() {
@@ -1148,6 +1153,7 @@ function selectLevel(el) {
   document.querySelectorAll('.level-card').forEach(c => c.classList.remove('selected'));
   el.classList.add('selected');
   state.level = el.dataset.level;
+  saveState(); // Persist the selected level immediately
   document.getElementById('btn-start').disabled = false;
   document.getElementById('btn-start-quiz').disabled = false;
 }
@@ -1696,7 +1702,9 @@ function generateQuestions(level){
 
 async function startTestQuiz(){
   if(!state.level) return;
+  const selectedLevel = state.level; // Save BEFORE loadState overwrites it
   loadState();
+  state.level = selectedLevel; // Restore the user's selected level
 
   // Load cloud vocab FIRST — this is the key fix for level-appropriate questions
   if (!vocabLoaded[state.level]) {
@@ -2039,7 +2047,9 @@ function updateUserChip() {
 const _origStartPractice = startPractice;
 startPractice = async function() {
   if (!state.level) return;
+  const selectedLevel = state.level; // Save BEFORE loadState overwrites it
   loadState();
+  state.level = selectedLevel; // Restore the user's selected level
 
   // Show loading toast while fetching vocab
   const needsLoad = !vocabLoaded[state.level];
