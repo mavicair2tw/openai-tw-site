@@ -1,16 +1,24 @@
 {
-  "updatedAt": "2026-03-17T20:05:26.636859+08:00",
+  "updatedAt": "2026-03-17T21:51:42.182465+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 物流大戰白熱化！亞馬遜祭出1小時極速配送力抗沃爾瑪；3. 03/17油價高漲恐引發股市「骨牌效應」！小摩警告標普500或下跌15%、衝擊美國經濟；4. 03/17大摩明星分析師：美股震盪已近尾聲 別過度憂慮油價；5. 03/17英特爾Xeon 6 CPU獲輝達採用 導入DGX Rubin NVL8系統。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 〈美股早盤〉油價回落舒緩市場壓力 主要指數開高；3. 03/17Meta大單加持 Nebius再籌37.5億美元衝AI；4. 03/17物流大戰白熱化！亞馬遜祭出1小時極速配送力抗沃爾瑪；5. 03/17油價高漲恐引發股市「骨牌效應」！小摩警告標普500或下跌15%、衝擊美國經濟。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "物流大戰白熱化！亞馬遜祭出1小時極速配送力抗沃爾瑪",
+      "title": "〈美股早盤〉油價回落舒緩市場壓力 主要指數開高",
+      "url": "https://news.cnyes.com/news/id/6387952"
+    },
+    {
+      "title": "03/17Meta大單加持 Nebius再籌37.5億美元衝AI",
+      "url": "https://news.cnyes.com/news/id/6387955"
+    },
+    {
+      "title": "03/17物流大戰白熱化！亞馬遜祭出1小時極速配送力抗沃爾瑪",
       "url": "https://news.cnyes.com/news/id/6387906"
     },
     {
@@ -44,14 +52,6 @@
     {
       "title": "03/17施壓盟友分擔護航成本 美國務卿促南韓協助重啟荷姆茲海峽",
       "url": "https://news.cnyes.com/news/id/6387229"
-    },
-    {
-      "title": "03/17中東戰火熄滅紅海復航希望 運價止跌回升、台灣貨櫃三雄2026展望優於歐洲對手",
-      "url": "https://news.cnyes.com/news/id/6386853"
-    },
-    {
-      "title": "03/17美國、伊朗戰爭下如何布局？高盛揭示「三大」潛力投資標的",
-      "url": "https://news.cnyes.com/news/id/6386857"
     }
   ],
   "error": null
