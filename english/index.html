@@ -337,6 +337,16 @@
     width: 100%; text-align: center;
   }
 
+  .phrase-zh-row {
+    text-align: center;
+    margin: -4px 0 6px 0;
+  }
+  .phrase-zh-text {
+    font-size: clamp(14px, 3.5vw, 18px);
+    color: #ff6b6b;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
   .card-phonetic {
     font-family: 'DM Mono', monospace;
     font-size: 14px; color: var(--text-muted);
@@ -857,6 +867,9 @@
             <div class="word-row">
               <div class="card-word" id="card-word">vocabulary</div>
             </div>
+            <div class="phrase-zh-row" id="phrase-zh-row" style="display:none">
+              <div class="phrase-zh-text" id="phrase-zh-text"></div>
+            </div>
             <div class="phonetic-row">
               <div class="card-phonetic" id="card-phonetic">/ˌvɒkæbjʊˈlæri/</div>
             </div>
@@ -1290,6 +1303,17 @@ function renderCard(word) {
   document.getElementById('card-phonetic').textContent = word.phonetic || '';
   document.getElementById('meaning-text').innerHTML = word.zh;
   document.getElementById('example-text').innerHTML = word.ex;
+
+  // Phrase: show Chinese translation directly below the phrase
+  const phraseRow = document.getElementById('phrase-zh-row');
+  const phraseZh  = document.getElementById('phrase-zh-text');
+  if (word.pos === 'phrase') {
+    phraseZh.textContent = word.zh;
+    phraseRow.style.display = '';
+  } else {
+    phraseRow.style.display = 'none';
+    phraseZh.textContent = '';
+  }
 
   // Difficulty dots
   const ws = state.wordStates[word.word];
@@ -2205,6 +2229,14 @@ function paShowCard(item) {
   set('card-phonetic', item.phonetic || '');
   set('meaning-text', item.zh, true);
   set('example-text', item.ex || '', true);
+
+  // Phrase: show Chinese directly below word
+  const pRow = document.getElementById('phrase-zh-row');
+  const pZh  = document.getElementById('phrase-zh-text');
+  if (pRow && pZh) {
+    if (item.pos === 'phrase') { pZh.textContent = item.zh.replace(/<[^>]+>/g,''); pRow.style.display = ''; }
+    else { pRow.style.display = 'none'; pZh.textContent = ''; }
+  }
   ['meaning-block','example-block'].forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('visible'); });
   ['btn-meaning','btn-example'].forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('revealed'); });
   const badge = document.getElementById('play-all-badge');
