@@ -1,16 +1,28 @@
 {
-  "updatedAt": "2026-03-17T22:53:46.600829+08:00",
+  "updatedAt": "2026-03-18T00:03:26.882591+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. OpenAI搶攻華府市場 攜AWS賣AI給政府；3. 03/17高通豪砸200億美元回購並調高股利 盤中股價漲逾2%；4. 03/17〈美股早盤〉油價回落舒緩市場壓力 主要指數開高；5. 03/17Meta大單加持 Nebius再籌37.5億美元衝AI。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 美股不懼中東戰火 要感謝分析師？標普500獲利預估逆勢創新高；3. 03/17否認退休傳聞！蘋果CEO庫克：無法想像沒有蘋果的人生；4. 03/17開源模型定勝負！輝達出資的Reflection AI打造「美國版特洛伊木馬」 爭全球基建主導權；5. 03/17OpenAI搶攻華府市場 攜AWS賣AI給政府。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "OpenAI搶攻華府市場 攜AWS賣AI給政府",
+      "title": "美股不懼中東戰火 要感謝分析師？標普500獲利預估逆勢創新高",
+      "url": "https://news.cnyes.com/news/id/6386815"
+    },
+    {
+      "title": "03/17否認退休傳聞！蘋果CEO庫克：無法想像沒有蘋果的人生",
+      "url": "https://news.cnyes.com/news/id/6388090"
+    },
+    {
+      "title": "03/17開源模型定勝負！輝達出資的Reflection AI打造「美國版特洛伊木馬」 爭全球基建主導權",
+      "url": "https://news.cnyes.com/news/id/6386833"
+    },
+    {
+      "title": "03/17OpenAI搶攻華府市場 攜AWS賣AI給政府",
       "url": "https://news.cnyes.com/news/id/6388049"
     },
     {
@@ -40,18 +52,6 @@
     {
       "title": "03/17英特爾Xeon 6 CPU獲輝達採用 導入DGX Rubin NVL8系統",
       "url": "https://news.cnyes.com/news/id/6387826"
-    },
-    {
-      "title": "03/17比通膨更糟！美銀警告：投資人忽略了伊朗戰爭「一個」更具破壞性的風險",
-      "url": "https://news.cnyes.com/news/id/6386856"
-    },
-    {
-      "title": "03/17「軟體末日」降臨？Reddit鄉民視股價大跌為撿便宜機會 看好5大軟體股",
-      "url": "https://news.cnyes.com/news/id/6387614"
-    },
-    {
-      "title": "03/17黃仁勳定義AI時代新貨幣：Token效能將決定企業生死",
-      "url": "https://news.cnyes.com/news/id/6387213"
     }
   ],
   "error": null
