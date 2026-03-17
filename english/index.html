@@ -592,6 +592,83 @@
     .quiz-body { padding: 20px 14px 32px; }
     .rating-btns { grid-template-columns: 1fr 1fr; }
   }
+
+  /* ════ HOME BTNS ════ */
+  .home-btns{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .btn-start-quiz{background:linear-gradient(135deg,#ff6ab0,#ff4e8a);color:#fff;border:none;border-radius:var(--radius-sm);padding:16px 24px;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.02em;transition:opacity .2s,transform .15s,box-shadow .2s;box-shadow:0 4px 24px rgba(255,106,176,.35)}
+  .btn-start-quiz:hover:not(:disabled){opacity:.9;transform:translateY(-1px);box-shadow:0 8px 32px rgba(255,106,176,.45)}
+  .btn-start-quiz:disabled{opacity:.3;cursor:not-allowed}
+  @media(max-width:480px){.home-btns{grid-template-columns:1fr}}
+
+  /* ════ SCORE DISPLAY in topbar ════ */
+  .score-display{display:flex;align-items:center;gap:5px;background:rgba(255,209,102,.1);border:1px solid rgba(255,209,102,.2);padding:5px 10px;border-radius:99px;font-family:'DM Mono',monospace;font-size:13px;color:var(--yellow)}
+
+  /* ════ TEST QUIZ SCREEN ════ */
+  .qz-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .qz-progress-text{font-family:'DM Mono',monospace;font-size:12px;color:var(--text-muted)}
+  .qz-score-live{display:flex;align-items:center;gap:6px;font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--yellow)}
+  .qz-progress-bar{height:5px;background:var(--border2);border-radius:99px;overflow:hidden;margin-bottom:20px}
+  .qz-progress-fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:99px;transition:width .4s}
+  .qz-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:var(--shadow)}
+  .qz-type-badge{display:inline-flex;align-items:center;gap:6px;font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:99px;margin-bottom:12px}
+  .qz-question{font-family:'Syne',sans-serif;font-size:clamp(18px,4vw,26px);font-weight:800;line-height:1.3;margin-bottom:6px;word-break:break-word}
+  .qz-hint{font-size:13px;color:var(--text-muted);margin-bottom:18px;font-style:italic}
+  .qz-card-body{padding:22px 20px}
+  .qz-choices{display:flex;flex-direction:column;gap:10px}
+  .qz-choice{width:100%;padding:13px 16px;border-radius:12px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:15px;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:left;transition:all .18s;line-height:1.4}
+  .qz-choice:hover:not(:disabled){border-color:var(--accent);color:var(--accent);background:rgba(124,106,255,.08)}
+  .qz-choice.correct{border-color:var(--easy)!important;background:rgba(54,232,180,.12)!important;color:var(--easy)!important}
+  .qz-choice.wrong{border-color:var(--not-familiar)!important;background:rgba(255,107,107,.12)!important;color:var(--not-familiar)!important}
+  .qz-choice:disabled{cursor:default}
+  .qz-input-wrap{display:flex;flex-direction:column;gap:10px}
+  .qz-input{width:100%;padding:14px 18px;border-radius:12px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:18px;font-family:'Syne',sans-serif;font-weight:700;letter-spacing:.02em;outline:none;transition:border-color .2s}
+  .qz-input:focus{border-color:var(--accent)}
+  .qz-input.correct-input{border-color:var(--easy);background:rgba(54,232,180,.08)}
+  .qz-input.wrong-input{border-color:var(--not-familiar);background:rgba(255,107,107,.08)}
+  .btn-submit{width:100%;padding:14px;border-radius:12px;border:none;background:var(--accent);color:#fff;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .2s,transform .15s;letter-spacing:.02em}
+  .btn-submit:hover:not(:disabled){opacity:.88;transform:translateY(-1px)}
+  .btn-submit:disabled{opacity:.3;cursor:not-allowed}
+  .qz-feedback{padding:14px 20px;border-top:1px solid var(--border);display:none;animation:fadeUp .2s ease}
+  .qz-feedback.visible{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .qz-feedback-text{font-size:14px;line-height:1.5}
+  .qz-feedback-correct{color:var(--easy)}
+  .qz-feedback-wrong{color:var(--not-familiar)}
+  .qz-feedback-answer{font-weight:600;color:var(--text)}
+  .btn-next{flex-shrink:0;padding:10px 18px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s}
+  .btn-next:hover{opacity:.88}
+  .score-pop{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Syne',sans-serif;font-size:34px;font-weight:800;pointer-events:none;z-index:999;animation:scorePop .7s forwards}
+  @keyframes scorePop{0%{opacity:1;transform:translate(-50%,-50%) scale(.5)}40%{opacity:1;transform:translate(-50%,-60%) scale(1.2)}100%{opacity:0;transform:translate(-50%,-90%) scale(1)}}
+
+  /* ════ RESULTS SCREEN ════ */
+  #screen-results{align-items:center;justify-content:flex-start;padding:0}
+  .results-body{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:28px 16px 40px;overflow-y:auto;width:100%}
+  .results-inner{max-width:520px;width:100%}
+  .results-trophy{font-size:60px;text-align:center;margin-bottom:10px;animation:trophyIn .5s cubic-bezier(.34,1.56,.64,1)}
+  @keyframes trophyIn{from{transform:scale(0) rotate(-20deg)}to{transform:scale(1) rotate(0)}}
+  .results-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;text-align:center;margin-bottom:5px}
+  .results-sub{text-align:center;color:var(--text-muted);font-size:14px;margin-bottom:24px}
+  .score-big{text-align:center;margin-bottom:20px}
+  .score-number{font-family:'Syne',sans-serif;font-size:68px;font-weight:800;line-height:1;letter-spacing:-.04em;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .score-label{font-size:12px;color:var(--text-muted);margin-top:3px}
+  .results-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+  .result-stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center}
+  .result-stat-val{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;margin-bottom:3px}
+  .result-stat-lbl{font-size:10px;color:var(--text-muted);letter-spacing:.05em;text-transform:uppercase}
+  .rank-badge{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px;text-align:center}
+  .rank-emoji{font-size:32px;margin-bottom:5px}
+  .rank-name{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;margin-bottom:3px}
+  .rank-desc{font-size:13px;color:var(--text-muted)}
+  .wrong-review{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:16px}
+  .wrong-review-title{font-size:11px;font-family:'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);margin-bottom:10px}
+  .wrong-item{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--border);font-size:14px}
+  .wrong-item:last-child{border-bottom:none}
+  .wrong-word{font-weight:600;color:var(--not-familiar)}
+  .wrong-ans{color:var(--text-muted);font-size:13px}
+  .results-btns{display:flex;flex-direction:column;gap:10px}
+  .btn-retry{width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .2s,transform .15s;letter-spacing:.02em}
+  .btn-retry:hover{opacity:.9;transform:translateY(-1px)}
+  .btn-home-results{width:100%;padding:13px;border-radius:12px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s}
+  .btn-home-results:hover{border-color:var(--accent);color:var(--accent)}
 </style>
 </head>
 <body>
@@ -604,7 +681,7 @@
     <div class="home-inner">
       <div class="logo-badge">🌊 WordWave</div>
       <h1 class="home-title">學英語，<br><span>更聰明</span>。</h1>
-      <p class="home-sub">根據你的學習狀況，自動調整複習頻率。<br>越練越輕鬆，讓每個單字都記住你。</p>
+      <p class="home-sub">自適應記憶 × Quiz 測驗積分<br>越練越輕鬆，讓每個單字都記住你。</p>
 
       <div class="level-grid">
         <div class="level-card" data-level="elementary" onclick="selectLevel(this)">
@@ -633,7 +710,10 @@
         </div>
       </div>
 
-      <button class="btn-start" id="btn-start" disabled onclick="startQuiz()">選擇學習級別開始 →</button>
+      <div class="home-btns">
+        <button class="btn-start" id="btn-start" disabled onclick="startPractice()">📖 練習模式</button>
+        <button class="btn-start-quiz" id="btn-start-quiz" disabled onclick="startTestQuiz()">🏆 Quiz 測驗</button>
+      </div>
     </div>
   </div>
 
@@ -808,7 +888,92 @@
       </div>
     </div>
   </div>
+
+
+<!-- ══════════════════════════════════
+     TEST QUIZ SCREEN
+══════════════════════════════════ -->
+<div class="screen" id="screen-testquiz">
+  <div class="quiz-topbar">
+    <div class="topbar-left">
+      <button class="btn-back" onclick="exitQuiz()">← 返回</button>
+      <div class="level-tag" id="qz-level-tag">Elementary</div>
+    </div>
+    <div class="topbar-stats">
+      <div class="score-display">⭐ <span id="qz-score-top">0</span></div>
+      <div class="streak-badge">🔥 <span id="qz-streak">0</span></div>
+    </div>
+  </div>
+  <div class="progress-wrap"><div class="progress-fill" id="qz-progress-bar" style="width:0%"></div></div>
+  <div class="quiz-body">
+    <div class="quiz-inner">
+      <div class="qz-header">
+        <div class="qz-progress-text" id="qz-q-counter">第 1 題 / 共 10 題</div>
+        <div class="qz-score-live">⭐ <span id="qz-score-live">0</span> 分</div>
+      </div>
+      <div class="qz-progress-bar"><div class="qz-progress-fill" id="qz-fill" style="width:0%"></div></div>
+      <div class="qz-card" id="qz-card">
+        <div class="qz-card-body">
+          <div class="qz-type-badge" id="qz-type-badge">📝 選擇題</div>
+          <div class="qz-question" id="qz-question">loading...</div>
+          <div class="qz-hint" id="qz-hint"></div>
+          <div class="qz-choices" id="qz-choices"></div>
+          <div class="qz-input-wrap" id="qz-input-wrap" style="display:none">
+            <input class="qz-input" id="qz-input" type="text" placeholder="輸入英文單字..." autocomplete="off" autocorrect="off" spellcheck="false">
+            <button class="btn-submit" id="btn-submit" onclick="submitFill()">確認答案 →</button>
+          </div>
+        </div>
+        <div class="qz-feedback" id="qz-feedback">
+          <div class="qz-feedback-text" id="qz-feedback-text"></div>
+          <button class="btn-next" id="btn-next" onclick="nextQuestion()">下一題 →</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<!-- ══════════════════════════════════
+     RESULTS SCREEN
+══════════════════════════════════ -->
+<div class="screen" id="screen-results">
+  <div class="quiz-topbar">
+    <div class="topbar-left">
+      <button class="btn-back" onclick="goHome()">← 首頁</button>
+      <div class="level-tag" id="res-level-tag">Elementary</div>
+    </div>
+  </div>
+  <div class="results-body">
+    <div class="results-inner">
+      <div class="results-trophy" id="res-trophy">🏆</div>
+      <div class="results-title" id="res-title">測驗完成！</div>
+      <div class="results-sub" id="res-sub">看看你的成績吧</div>
+      <div class="score-big">
+        <div class="score-number" id="res-score">0</div>
+        <div class="score-label">總積分</div>
+      </div>
+      <div class="results-stats-grid">
+        <div class="result-stat-card"><div class="result-stat-val" id="res-correct" style="color:var(--easy)">0</div><div class="result-stat-lbl">答對題數</div></div>
+        <div class="result-stat-card"><div class="result-stat-val" id="res-total">0</div><div class="result-stat-lbl">總題數</div></div>
+        <div class="result-stat-card"><div class="result-stat-val" id="res-accuracy" style="color:var(--accent)">0%</div><div class="result-stat-lbl">正確率</div></div>
+        <div class="result-stat-card"><div class="result-stat-val" id="res-streak" style="color:var(--yellow)">0</div><div class="result-stat-lbl">最高連勝</div></div>
+      </div>
+      <div class="rank-badge" id="rank-badge">
+        <div class="rank-emoji" id="rank-emoji">🥇</div>
+        <div class="rank-name" id="rank-name">單字大師</div>
+        <div class="rank-desc" id="rank-desc">表現優異！</div>
+      </div>
+      <div class="wrong-review" id="wrong-review" style="display:none">
+        <div class="wrong-review-title">❌ 答錯的單字</div>
+        <div id="wrong-list"></div>
+      </div>
+      <div class="results-btns">
+        <button class="btn-retry" onclick="startTestQuiz()">🔄 再測一次</button>
+        <button class="btn-home-results" onclick="goHome()">🏠 回首頁</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <script>
 // ════════════════════════════════════════
@@ -957,12 +1122,13 @@ function selectLevel(el) {
   el.classList.add('selected');
   state.level = el.dataset.level;
   document.getElementById('btn-start').disabled = false;
+  document.getElementById('btn-start-quiz').disabled = false;
 }
 
 // ════════════════════════════════════════
 //  INIT QUIZ
 // ════════════════════════════════════════
-function startQuiz() {
+function startPractice() {
   if (!state.level) return;
   loadState();
 
@@ -1361,6 +1527,212 @@ function speakExample() {
   speak(state.currentWord.ex, 'btn-tts-ex');
 }
 
+
+
+// ══════════════════════════════════════════
+//  QUIZ TEST ENGINE
+// ══════════════════════════════════════════
+const QUIZ_COUNT = 10;
+
+let quiz = {
+  questions:[], current:0, score:0, correct:0,
+  streak:0, maxStreak:0, wrongs:[], answered:false,
+  level:null
+};
+
+function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
+
+function generateQuestions(level){
+  const all=VOCAB[level];
+  const pool=shuffle([...all]).slice(0,QUIZ_COUNT);
+  const questions=[];
+  pool.forEach((item,idx)=>{
+    const typeNum=(idx%4)+1;
+    const distractors=all.filter(w=>w.word!==item.word);
+    if(typeNum===1){
+      const choices=shuffle([item,...shuffle(distractors).slice(0,3)]).map(w=>w.zh);
+      questions.push({type:1,item,question:item.word,hint:item.phonetic,choices,answer:item.zh});
+    } else if(typeNum===2){
+      const choices=shuffle([item,...shuffle(distractors).slice(0,3)]).map(w=>w.word);
+      questions.push({type:2,item,question:item.zh,hint:'('+item.pos+')',choices,answer:item.word});
+    } else if(typeNum===3){
+      const fl=item.word[0].toUpperCase();
+      questions.push({type:3,item,question:item.zh,hint:'詞性：'+item.pos+'　提示：'+fl+'＿＿',choices:null,answer:item.word});
+    } else {
+      const blank=item.ex.replace(/<strong>/g,'').replace(/<\/strong>/g,'').replace(item.word,'______');
+      const choices=shuffle([item,...shuffle(distractors).slice(0,3)]).map(w=>w.word);
+      questions.push({type:4,item,question:blank,hint:item.zh+'　('+item.pos+')',choices,answer:item.word});
+    }
+  });
+  return questions;
+}
+
+function startTestQuiz(){
+  if(!state.level) return;
+  loadState();
+  VOCAB[state.level].forEach(w=>{ if(!state.wordStates[w.word]) state.wordStates[w.word]={status:'new',freq:1,seen:0}; });
+  quiz.questions=generateQuestions(state.level);
+  quiz.current=0; quiz.score=0; quiz.correct=0;
+  quiz.streak=0; quiz.maxStreak=0; quiz.wrongs=[];
+  quiz.answered=false; quiz.level=state.level;
+  const L={elementary:'🌱 Elementary',junior:'📘 Junior High',high:'🎓 High School',university:'🏛️ University'};
+  document.getElementById('qz-level-tag').textContent=L[state.level];
+  document.getElementById('res-level-tag').textContent=L[state.level];
+  showScreen('testquiz');
+  renderQuestion();
+}
+
+function exitQuiz(){
+  if(quiz.current>0&&!confirm('確定要離開測驗嗎？進度不會儲存。')) return;
+  goHome();
+}
+
+function renderQuestion(){
+  const q=quiz.questions[quiz.current];
+  quiz.answered=false;
+  const pct=(quiz.current/quiz.questions.length)*100;
+  document.getElementById('qz-fill').style.width=pct+'%';
+  document.getElementById('qz-progress-bar').style.width=pct+'%';
+  document.getElementById('qz-q-counter').textContent='第 '+(quiz.current+1)+' 題 / 共 '+quiz.questions.length+' 題';
+  document.getElementById('qz-score-live').textContent=quiz.score;
+  document.getElementById('qz-score-top').textContent=quiz.score;
+  document.getElementById('qz-streak').textContent=quiz.streak;
+  const typeMeta=[null,
+    {label:'📝 英文 → 中文',color:'var(--accent)'},
+    {label:'🔄 中文 → 英文',color:'var(--accent2)'},
+    {label:'✏️ 填空拼寫',color:'var(--easy)'},
+    {label:'📖 句子填空',color:'var(--yellow)'}];
+  const tm=typeMeta[q.type];
+  const badge=document.getElementById('qz-type-badge');
+  badge.textContent=tm.label; badge.style.background=tm.color+'18'; badge.style.color=tm.color; badge.style.border='1px solid '+tm.color+'44';
+  document.getElementById('qz-question').textContent=q.question;
+  document.getElementById('qz-hint').textContent=q.hint||'';
+  document.getElementById('qz-feedback').classList.remove('visible');
+  const choicesEl=document.getElementById('qz-choices');
+  const inputWrap=document.getElementById('qz-input-wrap');
+  const inputEl=document.getElementById('qz-input');
+  if(q.type===3){
+    choicesEl.style.display='none'; inputWrap.style.display='flex';
+    inputEl.value=''; inputEl.className='qz-input'; inputEl.disabled=false;
+    document.getElementById('btn-submit').disabled=false;
+    setTimeout(()=>inputEl.focus(),100);
+    inputEl.onkeydown=(e)=>{ if(e.key==='Enter') submitFill(); };
+  } else {
+    inputWrap.style.display='none'; choicesEl.style.display='flex'; choicesEl.innerHTML='';
+    q.choices.forEach(ch=>{ const btn=document.createElement('button'); btn.className='qz-choice'; btn.textContent=ch; btn.onclick=()=>selectChoice(btn,ch,q); choicesEl.appendChild(btn); });
+  }
+}
+
+function selectChoice(btn,chosen,q){
+  if(quiz.answered) return;
+  quiz.answered=true;
+  const correct=chosen===q.answer;
+  document.querySelectorAll('.qz-choice').forEach(b=>{ b.disabled=true; if(b.textContent===q.answer) b.classList.add('correct'); });
+  if(!correct) btn.classList.add('wrong');
+  processAnswer(correct,q,chosen);
+}
+
+function submitFill(){
+  if(quiz.answered) return;
+  const inputEl=document.getElementById('qz-input');
+  const val=inputEl.value.trim().toLowerCase();
+  const q=quiz.questions[quiz.current];
+  const correct=val===q.answer.toLowerCase();
+  quiz.answered=true; inputEl.disabled=true;
+  document.getElementById('btn-submit').disabled=true;
+  inputEl.classList.add(correct?'correct-input':'wrong-input');
+  processAnswer(correct,q,val);
+}
+
+const SCORE_BASE=10, SCORE_FILL=20, SCORE_STREAK3=5, SCORE_STREAK5=15;
+
+function processAnswer(correct,q,chosen){
+  let gained=0;
+  if(correct){
+    quiz.correct++; quiz.streak++;
+    if(quiz.streak>quiz.maxStreak) quiz.maxStreak=quiz.streak;
+    gained+=q.type===3?SCORE_FILL:SCORE_BASE;
+    if(quiz.streak>0&&quiz.streak%5===0) gained+=SCORE_STREAK5;
+    else if(quiz.streak>0&&quiz.streak%3===0) gained+=SCORE_STREAK3;
+    quiz.score+=gained;
+    if(state.wordStates[q.item.word]){
+      const ws=state.wordStates[q.item.word];
+      if(ws.status==='not-familiar') ws.status='not-easy';
+      else if(ws.status==='not-easy') ws.status='familiar';
+    }
+    showScorePop('+'+gained,'#36e8b4');
+  } else {
+    quiz.streak=0;
+    quiz.wrongs.push({word:q.item.word,zh:q.item.zh,yours:chosen||'（未作答）',correct:q.answer});
+    if(state.wordStates[q.item.word]) state.wordStates[q.item.word].status='not-familiar';
+  }
+  document.getElementById('qz-streak').textContent=quiz.streak;
+  document.getElementById('qz-score-live').textContent=quiz.score;
+  document.getElementById('qz-score-top').textContent=quiz.score;
+  const fb=document.getElementById('qz-feedback');
+  const fbText=document.getElementById('qz-feedback-text');
+  if(correct){
+    const bonus=gained-(q.type===3?SCORE_FILL:SCORE_BASE);
+    const bonusMsg=bonus>0?' 🔥 連勝獎勵 +'+bonus+'!':'';
+    fbText.innerHTML='<span class="qz-feedback-correct">✅ 答對了！'+bonusMsg+'</span>';
+  } else {
+    fbText.innerHTML='<span class="qz-feedback-wrong">❌ 答錯了。</span><br><span style="font-size:13px;color:var(--text-muted)">正確答案：</span><span class="qz-feedback-answer"> '+q.answer+'</span>';
+  }
+  fb.classList.add('visible');
+  saveState();
+}
+
+function nextQuestion(){
+  quiz.current++;
+  if(quiz.current>=quiz.questions.length) showResults();
+  else renderQuestion();
+}
+
+function showScorePop(text,color){
+  const el=document.createElement('div'); el.className='score-pop'; el.textContent=text; el.style.color=color;
+  document.body.appendChild(el); setTimeout(()=>el.remove(),750);
+}
+
+function getRank(pct){
+  if(pct===100) return {emoji:'🏆',name:'單字大師',desc:'滿分！無懈可擊的表現！',color:'#ffd166'};
+  if(pct>=90)   return {emoji:'🥇',name:'金牌選手',desc:'非常優秀，繼續保持！',color:'#ffd166'};
+  if(pct>=80)   return {emoji:'🥈',name:'銀牌選手',desc:'表現很好，快接近滿分了！',color:'#c0c0c0'};
+  if(pct>=70)   return {emoji:'🥉',name:'銅牌選手',desc:'不錯的成績，再加把勁！',color:'#cd7f32'};
+  if(pct>=60)   return {emoji:'📘',name:'努力學習中',desc:'過半了！繼續練習加油！',color:'var(--accent)'};
+  if(pct>=40)   return {emoji:'📖',name:'初學探索者',desc:'打好基礎，慢慢就會進步！',color:'var(--text-muted)'};
+  return            {emoji:'🌱',name:'種子學習者',desc:'從頭開始練習，你可以的！',color:'var(--easy)'};
+}
+
+function showResults(){
+  const total=quiz.questions.length;
+  const pct=Math.round((quiz.correct/total)*100);
+  const rank=getRank(pct);
+  document.getElementById('res-trophy').textContent=rank.emoji;
+  document.getElementById('res-title').textContent=pct===100?'完美滿分！🎉':pct>=80?'太棒了！':pct>=60?'不錯喔！':'繼續加油！';
+  document.getElementById('res-sub').textContent='正確率 '+pct+'%，得到 '+quiz.score+' 積分';
+  document.getElementById('res-score').textContent=quiz.score;
+  document.getElementById('res-correct').textContent=quiz.correct;
+  document.getElementById('res-total').textContent=total;
+  document.getElementById('res-accuracy').textContent=pct+'%';
+  document.getElementById('res-streak').textContent=quiz.maxStreak;
+  const rb=document.getElementById('rank-badge');
+  document.getElementById('rank-emoji').textContent=rank.emoji;
+  document.getElementById('rank-name').textContent=rank.name;
+  document.getElementById('rank-desc').textContent=rank.desc;
+  rb.style.borderColor=rank.color+'44'; rb.style.background=rank.color+'0a';
+  state.totalScore=(state.totalScore||0)+quiz.score;
+  saveState();
+  const wrongReview=document.getElementById('wrong-review');
+  const wrongList=document.getElementById('wrong-list');
+  if(quiz.wrongs.length>0){
+    wrongReview.style.display='';
+    wrongList.innerHTML=quiz.wrongs.map(w=>'<div class="wrong-item"><span class="wrong-word">'+w.word+'</span><span class="wrong-ans">'+w.zh+'</span></div>').join('');
+  } else {
+    wrongReview.style.display='none';
+  }
+  showScreen('results');
+}
+
 // ════════════════════════════════════════
 //  INIT
 // ════════════════════════════════════════
@@ -1372,6 +1744,7 @@ if (state.level) {
   if (card) {
     card.classList.add('selected');
     document.getElementById('btn-start').disabled = false;
+  document.getElementById('btn-start-quiz').disabled = false;
   }
 }
 </script>
