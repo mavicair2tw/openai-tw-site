@@ -1,57 +1,57 @@
 {
-  "updatedAt": "2026-03-17T09:54:27.429007+08:00",
+  "updatedAt": "2026-03-17T12:16:42.873332+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 為何伊朗戰爭升溫 黃金價格卻下跌？；3. 01:10穆迪：油價若再高企幾週 美國衰退機率恐超50%；4. 01:05美光科技：開始為輝達量產HBM4記憶體 銅鑼廠年底前啟動第2座晶圓廠；5. 00:40黃仁勳：自駕「ChatGPT時刻」已經到來 比亞迪等4新夥伴加入輝達RoboTaxi Ready平台。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 矽谷創投大咖：很多人一夜致富 但AI泡沫即將破滅；3. 03:49Uber結盟輝達衝刺自駕商轉！2028年版圖擴及全球28城市 搶AI運輸商機；4. 03:45輝達推出企業級AI 代理平台NemoClaw！黃仁勳：每家公司都需制定OpenClaw策略；5. 03:34AI打亂軟體業賺錢模式 大摩警告：私募信貸違約率恐飆至8%。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "為何伊朗戰爭升溫 黃金價格卻下跌？",
+      "title": "矽谷創投大咖：很多人一夜致富 但AI泡沫即將破滅",
+      "url": "https://news.cnyes.com/news/id/6386765"
+    },
+    {
+      "title": "03:49Uber結盟輝達衝刺自駕商轉！2028年版圖擴及全球28城市 搶AI運輸商機",
+      "url": "https://news.cnyes.com/news/id/6386836"
+    },
+    {
+      "title": "03:45輝達推出企業級AI 代理平台NemoClaw！黃仁勳：每家公司都需制定OpenClaw策略",
+      "url": "https://news.cnyes.com/news/id/6386851"
+    },
+    {
+      "title": "03:34AI打亂軟體業賺錢模式 大摩警告：私募信貸違約率恐飆至8%",
+      "url": "https://news.cnyes.com/news/id/6387199"
+    },
+    {
+      "title": "03:20重磅佈局伺服器CPU！輝達正式推出Vera CPU 效率提升2倍 速度提升五成",
+      "url": "https://news.cnyes.com/news/id/6387329"
+    },
+    {
+      "title": "03:10美伊戰爭後 美元與加密貨幣成罕見贏家",
+      "url": "https://news.cnyes.com/news/id/6386768"
+    },
+    {
+      "title": "02:40OpenAI精簡「支線任務」！資源轉投程式和商用版圖 力抗Anthropic",
+      "url": "https://news.cnyes.com/news/id/6386855"
+    },
+    {
+      "title": "02:30輝達推出NemoClaw平台 搶攻AI代理軟體市場",
+      "url": "https://news.cnyes.com/news/id/6386789"
+    },
+    {
+      "title": "02:19台積電開盤衝1875元 再度上演秒填息秀",
+      "url": "https://news.cnyes.com/news/id/6387235"
+    },
+    {
+      "title": "02:00〈FOMC會議前瞻〉中東戰事衝擊經濟前景 Fed料按兵不動靜待情勢明朗",
+      "url": "https://news.cnyes.com/news/id/6386393"
+    },
+    {
+      "title": "01:40為何伊朗戰爭升溫 黃金價格卻下跌？",
       "url": "https://news.cnyes.com/news/id/6386794"
-    },
-    {
-      "title": "01:10穆迪：油價若再高企幾週 美國衰退機率恐超50%",
-      "url": "https://news.cnyes.com/news/id/6386874"
-    },
-    {
-      "title": "01:05美光科技：開始為輝達量產HBM4記憶體 銅鑼廠年底前啟動第2座晶圓廠",
-      "url": "https://news.cnyes.com/news/id/6386904"
-    },
-    {
-      "title": "00:40黃仁勳：自駕「ChatGPT時刻」已經到來 比亞迪等4新夥伴加入輝達RoboTaxi Ready平台",
-      "url": "https://news.cnyes.com/news/id/6386893"
-    },
-    {
-      "title": "00:40輝達推Groq 3 AI晶片與CPU伺服器 強攻資料中心市場 迎戰英特爾與AMD",
-      "url": "https://news.cnyes.com/news/id/6386790"
-    },
-    {
-      "title": "00:31AI題材回流帶動科技股反彈美股三大指數全面收高",
-      "url": "https://news.cnyes.com/news/id/6386902"
-    },
-    {
-      "title": "00:20記憶體超級周期 RBC上調美光目標價",
-      "url": "https://news.cnyes.com/news/id/6386764"
-    },
-    {
-      "title": "00:15SK海力士亮相輝達GTC展出HBM4等新一代AI產品 崔泰源：晶片晶圓短缺恐持續至2030年",
-      "url": "https://news.cnyes.com/news/id/6386860"
-    },
-    {
-      "title": "00:10沒有一定要輝達！搶攻中國智慧電動車 福斯改用本土晶片技術",
-      "url": "https://news.cnyes.com/news/id/6386835"
-    },
-    {
-      "title": "00:00美股重點新聞摘要2026年3月17日",
-      "url": "https://news.cnyes.com/news/id/6386787"
-    },
-    {
-      "title": "03/16輝達GTC重點一次看：黃仁勳喊兆美元AI晶片商機、加入OpenClaw熱潮、太空運算布局",
-      "url": "https://news.cnyes.com/news/id/6386762"
     }
   ],
   "error": null
