@@ -255,6 +255,12 @@
     border-color: var(--border2);
     color: var(--text);
   }
+  #btn-play-all { gap: 4px; }
+  #btn-play-all.playing {
+    background: #e05252 !important;
+    border-color: #e05252 !important;
+    color: #fff !important;
+  }
   .mode-tab .tab-dot {
     display: inline-block; width: 6px; height: 6px;
     border-radius: 50%; margin-right: 6px;
@@ -806,6 +812,9 @@
           </button>
           <button class="mode-tab" id="tab-review" onclick="setMode('review',this)">
             <span class="tab-dot" style="background:var(--not-familiar)"></span>不熟複習
+          </button>
+          <button class="mode-tab" id="btn-play-all" onclick="togglePlayAll(this)" style="background:var(--surface);border:1px solid var(--accent);color:var(--accent);font-weight:600;">
+            ▶ Play All
           </button>
         </div>
 
@@ -1435,12 +1444,13 @@ function resetPool() {
 //  TOAST
 // ════════════════════════════════════════
 let toastTimer;
-function showToast(msg) {
+function showToast(msg, duration) {
   const el = document.getElementById('toast');
   el.textContent = msg;
+  el.classList.remove('show');
+  void el.offsetWidth; // reflow to restart animation
   el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+  setTimeout(() => el.classList.remove('show'), duration || 2800);
 }
 
 // ════════════════════════════════════════
@@ -2131,6 +2141,114 @@ if (state.level) {
     document.getElementById('btn-start-quiz').disabled = false;
   }
 }
+
+// ════════════════════════════════════════
+//  PLAY ALL
+// ════════════════════════════════════════
+let playAllTimer = null;
+let playAllActive = false;
+let playAllQueue = [];
+let playAllIndex = 0;
+const PLAY_ALL_INTERVAL = 5000;
+
+function buildPlayAllQueue() {
+  const level = state.level;
+  if (!level || !VOCAB[level]) return [];
+  return shuffle(VOCAB[level].filter(w => {
+    const ws = state.wordStates[w.word];
+    return !ws || ws.status !== 'easy';
+  }));
+}
+
+function stopPlayAll() {
+  playAllActive = false;
+  clearTimeout(playAllTimer);
+  playAllTimer = null;
+  stopTTS();
+  const btn = document.getElementById('btn-play-all');
+  if (btn) {
+    btn.classList.remove('playing');
+    btn.innerHTML = '▶ Play All';
+  }
+}
+
+function playAllNext() {
+  if (!playAllActive) return;
+  if (playAllQueue.length === 0) { stopPlayAll(); showToast('✅ Play All 播放完畢！'); return; }
+  if (playAllIndex >= playAllQueue.length) playAllIndex = 0;
+
+  const item = playAllQueue[playAllIndex];
+  playAllIndex++;
+
+  stopTTS();
+  if (!isTTSAvailable()) { stopPlayAll(); showToast('⚠️ 此裝置不支援語音'); return; }
+  pickVoice();
+
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+  const doSpeak = () => {
+    try {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(item.word);
+      utter.lang = 'en-US';
+      utter.rate = 0.82;
+      utter.pitch = 1;
+      utter.volume = 1;
+      if (ttsVoice) utter.voice = ttsVoice;
+
+      showToast('🔊 ' + item.word + '　' + item.zh, 4500);
+
+      utter.onend = () => {
+        if (!playAllActive) return;
+        playAllTimer = setTimeout(playAllNext, PLAY_ALL_INTERVAL);
+      };
+      utter.onerror = (e) => {
+        if (!playAllActive) return;
+        if (e.error !== 'interrupted' && e.error !== 'canceled') {
+          playAllTimer = setTimeout(playAllNext, PLAY_ALL_INTERVAL);
+        }
+      };
+
+      window.speechSynthesis.speak(utter);
+      if (!isIOS && !isSafari) {
+        setTimeout(() => { try { window.speechSynthesis.resume(); } catch(e) {} }, 100);
+      }
+    } catch(err) {
+      if (playAllActive) playAllTimer = setTimeout(playAllNext, PLAY_ALL_INTERVAL);
+    }
+  };
+
+  if (isIOS || isSafari) doSpeak(); else setTimeout(doSpeak, 80);
+}
+
+function togglePlayAll(btn) {
+  if (playAllActive) {
+    stopPlayAll();
+    showToast('⏹ Play All 已停止');
+    return;
+  }
+  if (!isTTSAvailable()) { showToast('⚠️ 此裝置不支援語音'); return; }
+  if (!state.level) { showToast('請先選擇級別再使用 Play All'); return; }
+
+  playAllActive = true;
+  playAllQueue = buildPlayAllQueue();
+  playAllIndex = 0;
+
+  if (playAllQueue.length === 0) {
+    playAllActive = false;
+    showToast('⚠️ 沒有可播放的單字（全部已掌握）');
+    return;
+  }
+
+  btn.classList.add('playing');
+  btn.innerHTML = '⏹ Stop';
+  showToast('▶ 播放 ' + playAllQueue.length + ' 個單字，每 5 秒一個', 3000);
+
+  // Must call playAllNext synchronously (same gesture) for iOS
+  playAllNext();
+}
+
 </script>
 </body>
 </html>
