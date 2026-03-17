@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-17T14:43:36.935751+08:00",
+  "updatedAt": "2026-03-17T15:42:55.618099+08:00",
   "timezone": "Asia/Taipei",
   "market": "US",
   "items": [
@@ -749,26 +749,10 @@
       "label": "比特幣",
       "symbol": "BTC-USD",
       "type": "Crypto",
-      "price": 74267.0,
-      "change": 1477.09,
-      "changePercent": 2.03,
+      "price": 74370.27,
+      "change": 1580.36,
+      "changePercent": 2.17,
       "trend": [
-        {
-          "time": "08:45",
-          "close": 75204.6
-        },
-        {
-          "time": "09:00",
-          "close": 75810.38
-        },
-        {
-          "time": "09:15",
-          "close": 75954.97
-        },
-        {
-          "time": "09:30",
-          "close": 75549.38
-        },
         {
           "time": "09:45",
           "close": 75636.26
@@ -847,7 +831,23 @@
         },
         {
           "time": "14:30",
-          "close": 74267.0
+          "close": 74181.86
+        },
+        {
+          "time": "14:45",
+          "close": 74082.66
+        },
+        {
+          "time": "15:00",
+          "close": 74305.1
+        },
+        {
+          "time": "15:15",
+          "close": 74423.2
+        },
+        {
+          "time": "15:30",
+          "close": 74370.27
         }
       ]
     },
@@ -855,9 +855,9 @@
       "label": "黃金期貨",
       "symbol": "GC=F",
       "type": "Commodity",
-      "price": 5017.9,
-      "change": 23.9,
-      "changePercent": 0.48,
+      "price": 5026.6,
+      "change": 32.6,
+      "changePercent": 0.65,
       "trend": [
         {
           "time": "12:00",
@@ -901,7 +901,23 @@
         },
         {
           "time": "14:30",
-          "close": 5017.9
+          "close": 5018.8
+        },
+        {
+          "time": "14:45",
+          "close": 5013.9
+        },
+        {
+          "time": "15:00",
+          "close": 5018.3
+        },
+        {
+          "time": "15:15",
+          "close": 5020.6
+        },
+        {
+          "time": "15:30",
+          "close": 5026.6
         }
       ]
     }

@@ -1,29 +1,29 @@
 {
-  "updatedAt": "2026-03-17T14:43:38.914481+08:00",
+  "updatedAt": "2026-03-17T15:42:57.566397+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://news.cnyes.com/news/cat/tw_stock_news",
   "ok": true,
-  "summary": "今日台股新聞重點：1. 1.〈美股盤後〉黃仁勳喊1兆美元AI商機 油價回落 道瓊高升近400點；2. 2.輝達GTC重點一次看：黃仁勳喊兆美元AI晶片商機、加入OpenClaw熱潮、太空運算布局；3. 3.〈能源盤後〉荷姆茲海峽恢復通行 美可能再釋儲備 Brent跌約3% WTI重挫5%；4. 4.全球最大鋁土礦出口國醞釀出口控制 供應鏈緊張恐升溫；5. 5.輝達推出Vera Rubin Space-1晶片系統 進軍太空AI資料中心。建議優先關注權值股、ETF 資金流向與政策面消息。",
+  "summary": "今日台股新聞重點：1. 1.輝達GTC重點一次看：黃仁勳喊兆美元AI晶片商機、加入OpenClaw熱潮、太空運算布局；2. 2.橋水達利歐：美國、伊朗在荷姆茲海峽的「決戰」將改變全世界；3. 3.美伊戰爭何時了？伊朗外長：給美慘痛教訓才罷休 未來幾天將慶祝勝利；4. 4.〈能源盤後〉荷姆茲海峽恢復通行 美可能再釋儲備 Brent跌約3% WTI重挫5%；5. 5.矽谷創投大咖：很多人一夜致富 但AI泡沫即將破滅。建議優先關注權值股、ETF 資金流向與政策面消息。",
   "headlines": [
     {
-      "title": "1.〈美股盤後〉黃仁勳喊1兆美元AI商機 油價回落 道瓊高升近400點",
-      "url": "https://www.cnyes.com/news/id/6386763"
-    },
-    {
-      "title": "2.輝達GTC重點一次看：黃仁勳喊兆美元AI晶片商機、加入OpenClaw熱潮、太空運算布局",
+      "title": "1.輝達GTC重點一次看：黃仁勳喊兆美元AI晶片商機、加入OpenClaw熱潮、太空運算布局",
       "url": "https://www.cnyes.com/news/id/6386762"
     },
     {
-      "title": "3.〈能源盤後〉荷姆茲海峽恢復通行 美可能再釋儲備 Brent跌約3% WTI重挫5%",
+      "title": "2.橋水達利歐：美國、伊朗在荷姆茲海峽的「決戰」將改變全世界",
+      "url": "https://www.cnyes.com/news/id/6386849"
+    },
+    {
+      "title": "3.美伊戰爭何時了？伊朗外長：給美慘痛教訓才罷休 未來幾天將慶祝勝利",
+      "url": "https://www.cnyes.com/news/id/6387438"
+    },
+    {
+      "title": "4.〈能源盤後〉荷姆茲海峽恢復通行 美可能再釋儲備 Brent跌約3% WTI重挫5%",
       "url": "https://www.cnyes.com/news/id/6386670"
     },
     {
-      "title": "4.全球最大鋁土礦出口國醞釀出口控制 供應鏈緊張恐升溫",
-      "url": "https://www.cnyes.com/news/id/6386772"
-    },
-    {
-      "title": "5.輝達推出Vera Rubin Space-1晶片系統 進軍太空AI資料中心",
-      "url": "https://www.cnyes.com/news/id/6386792"
+      "title": "5.矽谷創投大咖：很多人一夜致富 但AI泡沫即將破滅",
+      "url": "https://www.cnyes.com/news/id/6386765"
     }
   ],
   "error": null
