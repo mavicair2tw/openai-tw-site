@@ -669,12 +669,61 @@
   .btn-retry:hover{opacity:.9;transform:translateY(-1px)}
   .btn-home-results{width:100%;padding:13px;border-radius:12px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s}
   .btn-home-results:hover{border-color:var(--accent);color:var(--accent)}
+
+  /* ════ LOGIN MODAL ════ */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+  .modal-overlay.hidden{display:none}
+  .modal{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:32px 28px;max-width:380px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,.8)}
+  .modal-logo{font-size:40px;text-align:center;margin-bottom:12px}
+  .modal-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;text-align:center;margin-bottom:6px}
+  .modal-sub{font-size:13px;color:var(--text-muted);text-align:center;margin-bottom:24px}
+  .modal-input{width:100%;padding:14px 18px;border-radius:12px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:16px;font-family:'Syne',sans-serif;font-weight:600;outline:none;transition:border-color .2s;margin-bottom:12px}
+  .modal-input:focus{border-color:var(--accent)}
+  .btn-modal-login{width:100%;padding:14px;border-radius:12px;border:none;background:var(--accent);color:#fff;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .2s;letter-spacing:.02em}
+  .btn-modal-login:hover{opacity:.88}
+  .btn-modal-login:disabled{opacity:.4;cursor:not-allowed}
+  .modal-skip{width:100%;padding:10px;border-radius:12px;border:none;background:transparent;color:var(--text-muted);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;margin-top:6px;transition:color .2s}
+  .modal-skip:hover{color:var(--text)}
+
+  /* user chip in topbar */
+  .user-chip{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);padding:5px 10px;border-radius:99px;font-size:12px;color:var(--text-muted);cursor:pointer;transition:border-color .2s}
+  .user-chip:hover{border-color:var(--border2);color:var(--text)}
+  .user-chip .avatar{width:20px;height:20px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+
+  /* ════ LEADERBOARD ════ */
+  .leaderboard-wrap{margin-top:18px;background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+  .leaderboard-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .leaderboard-title{font-size:11px;font-family:'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim)}
+  .lb-row{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);font-size:13px}
+  .lb-row:last-child{border-bottom:none}
+  .lb-rank{font-family:'Syne',sans-serif;font-weight:800;width:22px;text-align:center;flex-shrink:0}
+  .lb-name{flex:1;font-weight:500}
+  .lb-score{font-family:'DM Mono',monospace;color:var(--yellow);font-size:13px}
+  .lb-acc{font-size:11px;color:var(--text-muted);margin-left:6px}
+  .lb-empty{padding:20px;text-align:center;color:var(--text-dim);font-size:13px}
+
+  /* cloud sync indicator */
+  .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--easy);display:inline-block;margin-left:4px;animation:syncPulse 2s infinite}
+  @keyframes syncPulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .sync-dot.offline{background:var(--text-dim);animation:none}
 </style>
 </head>
 <body>
 <div id="app">
   <!-- TOAST -->
   <div class="toast" id="toast"></div>
+
+<!-- ══ LOGIN MODAL ══ -->
+<div class="modal-overlay" id="login-modal">
+  <div class="modal">
+    <div class="modal-logo">🌊</div>
+    <div class="modal-title">歡迎來到 WordWave</div>
+    <div class="modal-sub">輸入你的名字，雲端儲存學習進度與積分排名</div>
+    <input class="modal-input" id="login-name" type="text" placeholder="你的名字（例如：小明）" maxlength="30" autocomplete="off">
+    <button class="btn-modal-login" id="btn-modal-login" onclick="doLogin()">開始學習 →</button>
+    <button class="modal-skip" onclick="skipLogin()">先不了，離線使用</button>
+  </div>
+</div>
 
   <!-- ═══ HOME SCREEN ═══ -->
   <div class="screen active" id="screen-home">
@@ -1733,19 +1782,193 @@ function showResults(){
   showScreen('results');
 }
 
+
+// ══════════════════════════════════════════
+//  CLOUD API  (Cloudflare Worker + D1)
+// ══════════════════════════════════════════
+const API = 'https://wordwave-api.googselect.workers.dev';
+let currentUser = null;  // { id, name, level, total_score }
+
+// ── Login / Register ──────────────────────
+async function cloudLogin(name) {
+  try {
+    const res = await fetch(API + '/api/user/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    });
+    const data = await res.json();
+    if (data.user) {
+      currentUser = data.user;
+      localStorage.setItem('wordwave_user', JSON.stringify(currentUser));
+      return currentUser;
+    }
+  } catch (e) { console.warn('Cloud login failed, offline mode', e); }
+  return null;
+}
+
+// ── Sync progress to cloud ─────────────────
+async function cloudSaveProgress() {
+  if (!currentUser || !state.level) return;
+  try {
+    await fetch(`${API}/api/progress/${currentUser.id}/${state.level}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ wordStates: state.wordStates })
+    });
+  } catch (e) { /* offline, ignore */ }
+}
+
+// ── Load progress from cloud ───────────────
+async function cloudLoadProgress(level) {
+  if (!currentUser) return;
+  try {
+    const res = await fetch(`${API}/api/progress/${currentUser.id}/${level}`);
+    const data = await res.json();
+    if (data.progress && data.progress.length > 0) {
+      data.progress.forEach(row => {
+        state.wordStates[row.word] = { status: row.status, freq: row.freq, seen: row.seen };
+      });
+    }
+  } catch (e) { /* offline */ }
+}
+
+// ── Save quiz score to cloud ───────────────
+async function cloudSaveQuiz(level, score, correct, total, max_streak) {
+  if (!currentUser) return;
+  try {
+    await fetch(`${API}/api/quiz/${currentUser.id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ level, score, correct, total, max_streak })
+    });
+  } catch (e) { /* offline */ }
+}
+
+// ── Load leaderboard ──────────────────────
+async function cloudLeaderboard(level) {
+  try {
+    const res = await fetch(`${API}/api/leaderboard/${level}`);
+    const data = await res.json();
+    return data.leaderboard || [];
+  } catch (e) { return []; }
+}
+
+// ── Restore saved user from localStorage ──
+function restoreUser() {
+  try {
+    const saved = localStorage.getItem('wordwave_user');
+    if (saved) currentUser = JSON.parse(saved);
+  } catch (e) {}
+}
+
 // ════════════════════════════════════════
 //  INIT
 // ════════════════════════════════════════
 loadState();
 initTTS();
+
+// Show login modal if no saved user
+if (currentUser) {
+  updateUserChip();
+} else {
+  document.getElementById('login-modal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('login-name').focus(), 300);
+}
+document.getElementById('login-name').addEventListener('keydown', e => { if (e.key==='Enter') doLogin(); });
+
 // Restore last level if any
 if (state.level) {
   const card = document.querySelector(`.level-card[data-level="${state.level}"]`);
   if (card) {
     card.classList.add('selected');
     document.getElementById('btn-start').disabled = false;
-  document.getElementById('btn-start-quiz').disabled = false;
+    document.getElementById('btn-start-quiz').disabled = false;
   }
+}
+
+// ── Login helpers ──────────────────────
+async function doLogin() {
+  const name = document.getElementById('login-name').value.trim();
+  if (!name) { document.getElementById('login-name').focus(); return; }
+  const btn = document.getElementById('btn-modal-login');
+  btn.disabled = true; btn.textContent = '連線中...';
+  const user = await cloudLogin(name);
+  btn.disabled = false; btn.textContent = '開始學習 →';
+  document.getElementById('login-modal').classList.add('hidden');
+  if (user) {
+    updateUserChip();
+    showToast('👋 歡迎，' + user.name + '！');
+  } else {
+    currentUser = { id: name.toLowerCase().replace(/[^a-z0-9]/g,'_'), name, total_score: 0 };
+    localStorage.setItem('wordwave_user', JSON.stringify(currentUser));
+    updateUserChip();
+    showToast('📴 離線模式，進度存在本機');
+  }
+}
+function skipLogin() {
+  document.getElementById('login-modal').classList.add('hidden');
+  const dot = document.getElementById('sync-dot'); if(dot) dot.classList.add('offline');
+}
+function showLoginModal() {
+  document.getElementById('login-modal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('login-name').focus(), 100);
+}
+function updateUserChip() {
+  if (!currentUser) return;
+  const chip = document.getElementById('user-chip');
+  if (!chip) return;
+  chip.style.display = 'flex';
+  document.getElementById('user-avatar').textContent = currentUser.name[0].toUpperCase();
+  document.getElementById('user-name-chip').textContent = currentUser.name;
+}
+
+// Override startPractice to load cloud progress
+const _origStartPractice = startPractice;
+startPractice = async function() {
+  if (!state.level) return;
+  loadState();
+  VOCAB[state.level].forEach(w => { if (!state.wordStates[w.word]) state.wordStates[w.word]={status:'new',freq:1,seen:0}; });
+  await cloudLoadProgress(state.level);
+  showScreen('quiz');
+  updateLevelTag();
+  setMode('all', document.getElementById('tab-all'));
+  loadLeaderboard(state.level);
+};
+
+// Override rateWord to cloud-sync after each rating
+const _origRateWord = rateWord;
+rateWord = function(rating) {
+  _origRateWord(rating);
+  cloudSaveProgress();
+};
+
+// Override showResults to save quiz score to cloud
+const _origShowResults = showResults;
+showResults = async function() {
+  _origShowResults();
+  await cloudSaveQuiz(quiz.level||state.level, quiz.score, quiz.correct, quiz.questions.length, quiz.maxStreak);
+  loadLeaderboard(quiz.level||state.level);
+};
+
+// Leaderboard
+async function loadLeaderboard(level) {
+  const wrap = document.getElementById('leaderboard-wrap');
+  const list = document.getElementById('leaderboard-list');
+  if (!wrap || !currentUser) { if(wrap) wrap.style.display='none'; return; }
+  wrap.style.display='';
+  list.innerHTML='<div class="lb-empty">載入中...</div>';
+  const rows = await cloudLeaderboard(level);
+  if (!rows.length) { list.innerHTML='<div class="lb-empty">還沒有排行資料，完成 Quiz 成為第一名！</div>'; return; }
+  const medals=['🥇','🥈','🥉'];
+  list.innerHTML = rows.map((r,i) => {
+    const isMe = currentUser && r.name.toLowerCase()===currentUser.name.toLowerCase();
+    return '<div class="lb-row" style="'+(isMe?'background:rgba(124,106,255,.08)':'')+'">'+
+      '<div class="lb-rank">'+(medals[i]||(i+1))+'</div>'+
+      '<div class="lb-name">'+r.name+(isMe?' 👈':'')+'</div>'+
+      '<div class="lb-score">⭐ '+r.best_score+'</div>'+
+      '<div class="lb-acc">'+r.avg_accuracy+'%</div></div>';
+  }).join('');
 }
 </script>
 </body>
