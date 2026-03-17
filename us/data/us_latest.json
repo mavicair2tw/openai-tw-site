@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-18T06:05:57.919381+08:00",
+  "updatedAt": "2026-03-18T06:52:36.733684+08:00",
   "timezone": "Asia/Taipei",
   "market": "US",
   "items": [
@@ -749,22 +749,10 @@
       "label": "比特幣",
       "symbol": "BTC-USD",
       "type": "Crypto",
-      "price": 74761.8,
-      "change": -99.28,
-      "changePercent": -0.13,
+      "price": 74221.64,
+      "change": -639.45,
+      "changePercent": -0.85,
       "trend": [
-        {
-          "time": "00:15",
-          "close": 74225.8
-        },
-        {
-          "time": "00:30",
-          "close": 74138.46
-        },
-        {
-          "time": "00:45",
-          "close": 74139.87
-        },
         {
           "time": "01:00",
           "close": 74202.12
@@ -847,7 +835,19 @@
         },
         {
           "time": "06:00",
-          "close": 74761.8
+          "close": 74589.81
+        },
+        {
+          "time": "06:15",
+          "close": 74431.44
+        },
+        {
+          "time": "06:30",
+          "close": 74167.27
+        },
+        {
+          "time": "06:45",
+          "close": 74221.64
         }
       ]
     },
@@ -855,22 +855,10 @@
       "label": "黃金期貨",
       "symbol": "GC=F",
       "type": "Commodity",
-      "price": 5011.3,
-      "change": 17.3,
-      "changePercent": 0.35,
+      "price": 5002.5,
+      "change": 8.5,
+      "changePercent": 0.17,
       "trend": [
-        {
-          "time": "23:00",
-          "close": 5012.9
-        },
-        {
-          "time": "23:15",
-          "close": 4999.0
-        },
-        {
-          "time": "23:30",
-          "close": 4988.6
-        },
         {
           "time": "23:45",
           "close": 5002.6
@@ -954,6 +942,18 @@
         {
           "time": "04:45",
           "close": 5011.3
+        },
+        {
+          "time": "06:00",
+          "close": 5006.4
+        },
+        {
+          "time": "06:15",
+          "close": 5006.3
+        },
+        {
+          "time": "06:30",
+          "close": 5002.5
         }
       ]
     }
