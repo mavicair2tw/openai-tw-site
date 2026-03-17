@@ -1,16 +1,20 @@
 {
-  "updatedAt": "2026-03-18T01:17:47.342886+08:00",
+  "updatedAt": "2026-03-18T02:11:43.421630+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. Fed傳聲筒：戰爭與油價夾擊 聯準會利率路徑恐被改寫；3. 03/17美股不懼中東戰火 要感謝分析師？標普500獲利預估逆勢創新高；4. 03/17否認退休傳聞！蘋果CEO庫克：無法想像沒有蘋果的人生；5. 03/17開源模型定勝負！輝達出資的Reflection AI打造「美國版特洛伊木馬」 爭全球基建主導權。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 微軟AI策略升級 Copilot團隊重整；3. 03/17Fed傳聲筒：戰爭與油價夾擊 聯準會利率路徑恐被改寫；4. 03/17美股不懼中東戰火 要感謝分析師？標普500獲利預估逆勢創新高；5. 03/17否認退休傳聞！蘋果CEO庫克：無法想像沒有蘋果的人生。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "Fed傳聲筒：戰爭與油價夾擊 聯準會利率路徑恐被改寫",
+      "title": "微軟AI策略升級 Copilot團隊重整",
+      "url": "https://news.cnyes.com/news/id/6388101"
+    },
+    {
+      "title": "03/17Fed傳聲筒：戰爭與油價夾擊 聯準會利率路徑恐被改寫",
       "url": "https://news.cnyes.com/news/id/6387953"
     },
     {
@@ -48,10 +52,6 @@
     {
       "title": "03/17油價高漲恐引發股市「骨牌效應」！小摩警告標普500或下跌15%、衝擊美國經濟",
       "url": "https://news.cnyes.com/news/id/6385343"
-    },
-    {
-      "title": "03/17大摩明星分析師：美股震盪已近尾聲 別過度憂慮油價",
-      "url": "https://news.cnyes.com/news/id/6387596"
     }
   ],
   "error": null
