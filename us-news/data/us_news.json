@@ -1,16 +1,24 @@
 {
-  "updatedAt": "2026-03-18T05:41:06.003654+08:00",
+  "updatedAt": "2026-03-18T06:06:01.511267+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 〈美股盤後〉川普怒批多國拒護航 油價重返100美元上方 四大指數小幅收高；3. 03/17〈紐約匯市〉美元小跌 交易員聚焦Fed決策；4. 03/17油價飆升帶動能源股 華爾街警告漲勢恐見頂；5. 03/17〈輝達GTC大會〉AI熱潮有多大？黃仁勳：輝達整體業務規模可破1兆美元。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 特斯拉砸43億美元向LG能源採購電池 加碼儲能布局；3. 03/17輝達股價幾乎持平 這才是GTC真正贏家與輸家；4. 03/17〈美股盤後〉川普怒批多國拒護航 油價重返100美元上方 四大指數小幅收高；5. 03/17〈紐約匯市〉美元小跌 交易員聚焦Fed決策。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "〈美股盤後〉川普怒批多國拒護航 油價重返100美元上方 四大指數小幅收高",
+      "title": "特斯拉砸43億美元向LG能源採購電池 加碼儲能布局",
+      "url": "https://news.cnyes.com/news/id/6388182"
+    },
+    {
+      "title": "03/17輝達股價幾乎持平 這才是GTC真正贏家與輸家",
+      "url": "https://news.cnyes.com/news/id/6388169"
+    },
+    {
+      "title": "03/17〈美股盤後〉川普怒批多國拒護航 油價重返100美元上方 四大指數小幅收高",
       "url": "https://news.cnyes.com/news/id/6388128"
     },
     {
@@ -44,14 +52,6 @@
     {
       "title": "03/17開源模型定勝負！輝達出資的Reflection AI打造「美國版特洛伊木馬」 爭全球基建主導權",
       "url": "https://news.cnyes.com/news/id/6386833"
-    },
-    {
-      "title": "03/17OpenAI搶攻華府市場 攜AWS賣AI給政府",
-      "url": "https://news.cnyes.com/news/id/6388049"
-    },
-    {
-      "title": "03/17高通豪砸200億美元回購並調高股利 盤中股價漲逾2%",
-      "url": "https://news.cnyes.com/news/id/6388038"
     }
   ],
   "error": null
