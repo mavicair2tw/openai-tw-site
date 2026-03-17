@@ -2230,11 +2230,17 @@ function _paSay(text, onDone) {
       safeOnDone();
     };
 
-    window.speechSynthesis.speak(u);
-
-    // Android Chrome sometimes needs a resume() kick
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    if (!isIOS) setTimeout(() => { try { window.speechSynthesis.resume(); } catch(x){} }, 80);
+    // Android Chrome: delay speak() slightly after cancel() to avoid 'interrupted'
+    const isIOS2 = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const doSpeak = () => {
+      window.speechSynthesis.speak(u);
+      if (!isIOS2) setTimeout(() => { try { window.speechSynthesis.resume(); } catch(x){} }, 80);
+    };
+    if (isIOS2) {
+      doSpeak(); // iOS must be synchronous
+    } else {
+      setTimeout(doSpeak, 50); // Android: tiny delay after cancel
+    }
 
     // Safety fallback: if onend never fires after 10s, advance anyway
     _paTimer = setTimeout(safeOnDone, 10000);
@@ -2246,42 +2252,75 @@ function _paSay(text, onDone) {
 }
 
 // ── main step machine ─────────────────────────────────────────────
+function _paUpdateCard(item) {
+  // Update card UI directly — avoids calling renderCard which calls stopTTS()
+  const posColors = {
+    noun:'#7c6aff', verb:'#36e8b4', adjective:'#ff6ab0',
+    adverb:'#ffd166', phrase:'#ff6b6b', conjunction:'#36e8b4'
+  };
+  const posEl = document.getElementById('pos-tag');
+  if (posEl) {
+    posEl.textContent = item.pos || '';
+    const col = posColors[item.pos] || '#7c6aff';
+    posEl.style.background = col + '18';
+    posEl.style.color = col;
+    posEl.style.border = '1px solid ' + col + '44';
+  }
+  const wordEl = document.getElementById('card-word');
+  if (wordEl) wordEl.textContent = item.word;
+  const phonEl = document.getElementById('card-phonetic');
+  if (phonEl) phonEl.textContent = item.phonetic || '';
+  const meanEl = document.getElementById('meaning-text');
+  if (meanEl) meanEl.innerHTML = item.zh;
+  const exEl = document.getElementById('example-text');
+  if (exEl) exEl.innerHTML = item.ex || '';
+
+  // Auto-reveal meaning and example
+  document.getElementById('meaning-block').classList.add('visible');
+  document.getElementById('example-block').classList.add('visible');
+  document.getElementById('btn-meaning').classList.add('revealed');
+  document.getElementById('btn-example').classList.add('revealed');
+
+  // Show badge, hide rating
+  const badge = document.getElementById('play-all-badge');
+  if (badge) badge.classList.add('visible');
+  const rating = document.getElementById('rating-section');
+  if (rating) rating.style.display = 'none';
+}
+
 function _paNext() {
   if (!_paActive) return;
   if (_paIndex >= _paQueue.length) _paIndex = 0; // loop
 
   const item = _paQueue[_paIndex++];
 
-  // Update card UI
-  renderCard(item);
-  document.getElementById('meaning-block').classList.add('visible');
-  document.getElementById('example-block').classList.add('visible');
-  document.getElementById('btn-meaning').classList.add('revealed');
-  document.getElementById('btn-example').classList.add('revealed');
-  const badge = document.getElementById('play-all-badge');
-  if (badge) badge.classList.add('visible');
-  const rating = document.getElementById('rating-section');
-  if (rating) rating.style.display = 'none';
+  // Update card UI (does NOT call stopTTS)
+  _paUpdateCard(item);
 
-  // Step 1: say the word
-  _paStep = 'word';
-  _paSay(item.word, () => {
+  // Small delay after cancel so Android Chrome doesn't fire 'interrupted'
+  _paTimer = setTimeout(() => {
     if (!_paActive) return;
 
-    // Step 2: say the example sentence after 600ms
-    _paStep = 'example';
-    _paTimer = setTimeout(() => {
+    // Step 1: say the word
+    _paStep = 'word';
+    _paSay(item.word, () => {
       if (!_paActive) return;
-      const ex = (item.ex || '').replace(/<[^>]+>/g, '').trim();
-      _paSay(ex || item.zh, () => {
-        if (!_paActive) return;
 
-        // Step 3: wait PA_INTERVAL then play next
-        _paStep = 'wait';
-        _paTimer = setTimeout(_paNext, PA_INTERVAL);
-      });
-    }, 600);
-  });
+      // Step 2: say the example sentence after 800ms pause
+      _paStep = 'example';
+      _paTimer = setTimeout(() => {
+        if (!_paActive) return;
+        const ex = (item.ex || '').replace(/<[^>]+>/g, '').trim();
+        _paSay(ex || item.zh, () => {
+          if (!_paActive) return;
+
+          // Step 3: wait PA_INTERVAL then next word
+          _paStep = 'wait';
+          _paTimer = setTimeout(_paNext, PA_INTERVAL);
+        });
+      }, 800);
+    });
+  }, 300); // 300ms delay after card update before speaking
 }
 
 // ── public API ────────────────────────────────────────────────────
