@@ -2201,23 +2201,33 @@ function stopPlayAll() {
 function playAllSpeak(text, onDone) {
   // Utility: speak one utterance and call onDone when finished
   if (!playAllActive) return;
-  window.speechSynthesis.cancel();
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = 'en-US';
-  utter.rate = 0.82;
-  utter.pitch = 1;
-  utter.volume = 1;
-  if (ttsVoice) utter.voice = ttsVoice;
-  utter.onend = () => { if (playAllActive) onDone(); };
-  utter.onerror = (e) => {
-    if (!playAllActive) return;
-    if (e.error !== 'interrupted' && e.error !== 'canceled') onDone();
-  };
-  window.speechSynthesis.speak(utter);
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-  if (!isIOS && !isSafari) {
-    setTimeout(() => { try { window.speechSynthesis.resume(); } catch(e) {} }, 100);
+  try {
+    window.speechSynthesis.cancel();
+    const clean = text.replace(/<[^>]+>/g, '').trim();
+    if (!clean) { onDone(); return; }
+    const utter = new SpeechSynthesisUtterance(clean);
+    utter.lang = 'en-US';
+    utter.rate = 0.82;
+    utter.pitch = 1;
+    utter.volume = 1;
+    if (ttsVoice) utter.voice = ttsVoice;
+    utter.onend = () => { if (playAllActive) onDone(); };
+    utter.onerror = (e) => {
+      if (!playAllActive) return;
+      if (e.error !== 'interrupted' && e.error !== 'canceled') onDone();
+      // interrupted/canceled means stopPlayAll was called — do nothing
+    };
+    window.speechSynthesis.speak(utter);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    if (!isIOS && !isSafari) {
+      setTimeout(() => { try { window.speechSynthesis.resume(); } catch(e) {} }, 100);
+    }
+    // Safety: if onend never fires (some browsers bug), advance after 8s
+    playAllTimer = setTimeout(() => { if (playAllActive) onDone(); }, 8000);
+  } catch(err) {
+    console.warn('playAllSpeak error:', err);
+    if (playAllActive) onDone();
   }
 }
 
@@ -2255,6 +2265,7 @@ function playAllNext() {
   const startSpeak = () => {
     try {
       // Step 1: speak the WORD
+      clearTimeout(playAllTimer); // clear any previous safety timer
       playAllSpeak(item.word, () => {
         if (!playAllActive) return;
         // Step 2: 600ms pause then speak EXAMPLE SENTENCE
@@ -2280,7 +2291,7 @@ function playAllNext() {
   if (isIOS || isSafari) startSpeak(); else setTimeout(startSpeak, 80);
 }
 
-function togglePlayAll(btn) {
+async function togglePlayAll(btn) {
   if (playAllActive) {
     stopPlayAll();
     showToast('⏹ Play All 已停止');
@@ -2288,6 +2299,15 @@ function togglePlayAll(btn) {
   }
   if (!isTTSAvailable()) { showToast('⚠️ 此裝置不支援語音'); return; }
   if (!state.level) { showToast('請先選擇級別再使用 Play All'); return; }
+
+  // Load vocab from cloud if not yet loaded
+  if (!vocabLoaded[state.level]) {
+    btn.disabled = true;
+    btn.innerHTML = '⏳ 載入中...';
+    await loadVocabFromCloud(state.level);
+    btn.disabled = false;
+    btn.innerHTML = '▶ Play All';
+  }
 
   playAllActive = true;
   playAllQueue = buildPlayAllQueue();
@@ -2301,10 +2321,14 @@ function togglePlayAll(btn) {
 
   btn.classList.add('playing');
   btn.innerHTML = '⏹ Stop';
-  showToast('▶ 播放 ' + playAllQueue.length + ' 個單字，每 5 秒一個', 3000);
+  showToast('▶ 播放 ' + playAllQueue.length + ' 個單字，間隔 5 秒', 3000);
 
-  // Must call playAllNext synchronously (same gesture) for iOS
-  playAllNext();
+  // iOS requires speech to be triggered synchronously within the same gesture.
+  // Since we used await above which breaks the sync chain on iOS,
+  // we use a tiny setTimeout(0) to yield back to the event loop,
+  // then the first speech call happens inside a click-triggered async fn — 
+  // most iOS/Safari versions still allow this.
+  setTimeout(playAllNext, 50);
 }
 
 </script>
