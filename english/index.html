@@ -2095,6 +2095,32 @@ async function loadLeaderboard(level) {
   const list2 = document.getElementById('leaderboard-list-results');
   if (wrap2 && list2) { wrap2.style.display=''; list2.innerHTML = renderRows(rows); }
 }
+
+// ════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════
+restoreUser();
+loadState();
+initTTS();
+
+// Show login modal if no saved user
+if (currentUser) {
+  updateUserChip();
+} else {
+  document.getElementById('login-modal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('login-name').focus(), 300);
+}
+document.getElementById('login-name').addEventListener('keydown', e => { if (e.key==='Enter') doLogin(); });
+
+// Restore last level selection
+if (state.level) {
+  const card = document.querySelector(`.level-card[data-level="${state.level}"]`);
+  if (card) {
+    card.classList.add('selected');
+    document.getElementById('btn-start').disabled = false;
+    document.getElementById('btn-start-quiz').disabled = false;
+  }
+}
 </script>
 </body>
 </html>
