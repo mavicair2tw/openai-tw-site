@@ -1,16 +1,20 @@
 {
-  "updatedAt": "2026-03-18T07:29:54.691961+08:00",
+  "updatedAt": "2026-03-18T07:58:01.232606+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 亞馬遜AI布局加速 賈西：AWS未來營收大爆發 可達6000億美元；3. 23:15〈輝達GTC大會〉黃仁勳：Blackwell+Rubin銷售可望突破1兆美元 但這只是「基準」；4. 22:37伊朗戰事延燒 川普預估「川習會」5至6週內舉行；5. 22:30輝達重啟中國版AI晶片生產 黃仁勳：供應鏈開始運轉。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 美光大漲4.5%市值首破5000億美元 市場看好財報前景；3. 23:20亞馬遜AI布局加速 賈西：AWS未來營收大爆發 可達6000億美元；4. 23:15〈輝達GTC大會〉黃仁勳：Blackwell+Rubin銷售可望突破1兆美元 但這只是「基準」；5. 22:37伊朗戰事延燒 川普預估「川習會」5至6週內舉行。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "亞馬遜AI布局加速 賈西：AWS未來營收大爆發 可達6000億美元",
+      "title": "美光大漲4.5%市值首破5000億美元 市場看好財報前景",
+      "url": "https://news.cnyes.com/news/id/6388187"
+    },
+    {
+      "title": "23:20亞馬遜AI布局加速 賈西：AWS未來營收大爆發 可達6000億美元",
       "url": "https://news.cnyes.com/news/id/6388156"
     },
     {
@@ -48,10 +52,6 @@
     {
       "title": "21:22〈紐約匯市〉美元小跌 交易員聚焦Fed決策",
       "url": "https://news.cnyes.com/news/id/6388180"
-    },
-    {
-      "title": "19:00油價飆升帶動能源股 華爾街警告漲勢恐見頂",
-      "url": "https://news.cnyes.com/news/id/6387990"
     }
   ],
   "error": null
