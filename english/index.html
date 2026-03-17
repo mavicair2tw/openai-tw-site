@@ -261,6 +261,26 @@
     border-color: #e05252 !important;
     color: #fff !important;
   }
+  /* Play All: card highlight + now-playing badge */
+  .play-all-active #quiz-card {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+  #play-all-badge {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    padding: 4px 10px;
+    border: 1px solid var(--accent);
+    border-radius: 20px;
+    margin-bottom: 8px;
+  }
+  #play-all-badge.visible { display: flex; }
+  #play-all-badge::before { content: '▶'; font-size: 10px; }
   .mode-tab .tab-dot {
     display: inline-block; width: 6px; height: 6px;
     border-radius: 50%; margin-right: 6px;
@@ -821,6 +841,7 @@
         <!-- Quiz card -->
         <div class="card" id="quiz-card">
           <div class="card-header">
+            <div id="play-all-badge">Play All 播放中</div>
             <div class="card-meta">
               <div class="pos-tag" id="pos-tag">noun</div>
               <div class="difficulty-indicator">
@@ -2170,6 +2191,11 @@ function stopPlayAll() {
     btn.classList.remove('playing');
     btn.innerHTML = '▶ Play All';
   }
+  // Remove badge, restore rating buttons
+  const badge = document.getElementById('play-all-badge');
+  if (badge) badge.classList.remove('visible');
+  const ratingEl = document.getElementById('rating-section');
+  if (ratingEl) ratingEl.style.display = '';
 }
 
 function playAllSpeak(text, onDone) {
@@ -2207,8 +2233,21 @@ function playAllNext() {
   if (!isTTSAvailable()) { stopPlayAll(); showToast('⚠️ 此裝置不支援語音'); return; }
   pickVoice();
 
-  // Show word + Chinese on toast
-  showToast('🔊 ' + item.word + '　' + item.zh, 4500);
+  // ── Display word on the CARD (replaces toast) ──
+  // Use renderCard so pos/phonetic/dots all update correctly
+  renderCard(item);
+
+  // Auto-reveal meaning and example so user can read along
+  document.getElementById('meaning-block').classList.add('visible');
+  document.getElementById('example-block').classList.add('visible');
+  document.getElementById('btn-meaning').classList.add('revealed');
+  document.getElementById('btn-example').classList.add('revealed');
+
+  // Show Play All badge, hide rating buttons
+  const badge = document.getElementById('play-all-badge');
+  if (badge) badge.classList.add('visible');
+  const ratingEl = document.getElementById('rating-section');
+  if (ratingEl) ratingEl.style.display = 'none';
 
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
@@ -2218,7 +2257,7 @@ function playAllNext() {
       // Step 1: speak the WORD
       playAllSpeak(item.word, () => {
         if (!playAllActive) return;
-        // Step 2: short 600ms pause then speak EXAMPLE SENTENCE
+        // Step 2: 600ms pause then speak EXAMPLE SENTENCE
         playAllTimer = setTimeout(() => {
           if (!playAllActive) return;
           const exClean = (item.ex || '').replace(/<[^>]+>/g, '').trim();
