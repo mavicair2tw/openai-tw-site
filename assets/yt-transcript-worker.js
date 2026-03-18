@@ -1,6 +1,5 @@
-// yt-transcript Cloudflare Worker v6
-// Uses Supadata API to fetch real YouTube transcripts
-// API key stored as Worker secret: SUPADATA_API_KEY
+// yt-transcript Cloudflare Worker v7
+// Uses Supadata API — requests English, falls back to any available language
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -15,37 +14,42 @@ const json = (data, status = 200) =>
   });
 
 async function fetchTranscript(videoId, apiKey) {
-  const res = await fetch(
-    `https://api.supadata.ai/v1/youtube/transcript?videoId=${videoId}&text=false`,
-    { headers: { "x-api-key": apiKey } }
-  );
+  // Try English first, then fall back to any language
+  const langs = ["en", null];
 
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`Supadata error ${res.status}: ${body.slice(0, 200)}`);
+  for (const lang of langs) {
+    const url = lang
+      ? `https://api.supadata.ai/v1/youtube/transcript?videoId=${videoId}&lang=${lang}&text=false`
+      : `https://api.supadata.ai/v1/youtube/transcript?videoId=${videoId}&text=false`;
+
+    const res = await fetch(url, { headers: { "x-api-key": apiKey } });
+    if (!res.ok) {
+      const body = await res.text();
+      // 404 means language not available, try next
+      if (res.status === 404 && lang !== null) continue;
+      throw new Error(`Supadata error ${res.status}: ${body.slice(0, 200)}`);
+    }
+
+    const data = await res.json();
+    if (!data.content || data.content.length === 0) continue;
+
+    // Normalize to {start (seconds), duration (seconds), text}
+    const segments = data.content.map((c) => ({
+      start: (c.offset || 0) / 1000,
+      duration: (c.duration || 2000) / 1000,
+      text: c.text,
+    }));
+
+    return {
+      videoId,
+      title: data.title || "",
+      lang: data.lang || lang || "en",
+      segments,
+      availableLangs: (data.availableLangs || []).map((code) => ({ code, name: code })),
+    };
   }
 
-  const data = await res.json();
-
-  // Supadata returns { content: [{text, offset, duration, lang}], lang, availableLangs }
-  if (!data.content || data.content.length === 0) {
-    throw new Error("No transcript content returned — video may not have captions");
-  }
-
-  // Normalize to our segment format: {start (seconds), duration (seconds), text}
-  const segments = data.content.map((c) => ({
-    start: (c.offset || 0) / 1000,
-    duration: (c.duration || 2000) / 1000,
-    text: c.text,
-  }));
-
-  return {
-    videoId,
-    title: data.title || "",
-    lang: data.lang || "en",
-    segments,
-    availableLangs: (data.availableLangs || []).map((code) => ({ code, name: code })),
-  };
+  throw new Error("No transcript available for this video");
 }
 
 export default {
