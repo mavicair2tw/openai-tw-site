@@ -16,59 +16,66 @@ jobs:
           token: ${{ secrets.WORKFLOW_TOKEN }}
 
       - name: Restore protected pages
-        env:
-          GH_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}
         run: |
+          # Skip if this is our own restore commit
+          LAST_AUTHOR=$(git log -1 --format='%an')
+          if [ "$LAST_AUTHOR" = "page-protector" ]; then
+            echo "Skipping - this is our own commit"
+            exit 0
+          fi
+
           git config user.name "page-protector"
           git config user.email "protect@openai-tw.com"
 
-          CHANGED=false
-
-          # Restore each protected file if missing
+          # Restore missing files from protected-pages branch
           for F in "english/index.html" "srt/index.html" "etf/index.html" "五子棋/index.html"; do
             if [ ! -f "$F" ]; then
-              echo "Missing: $F"
+              echo "MISSING: $F - restoring..."
               mkdir -p "$(dirname "$F")"
-              git show origin/protected-pages:"$F" > "$F" 2>/dev/null && git add "$F" && CHANGED=true && echo "Restored: $F"
+              git show origin/protected-pages:"$F" > "$F" 2>/dev/null && git add "$F" && echo "Restored: $F"
             fi
           done
 
           # Fix homepage cards if missing
-          python3 -c "
+          python3 - << 'PYEOF'
 import re, sys
 c = open('index.html').read()
-cards = [('/etf/','etf'), ('/english/','english'), ('/srt/','srt'), ('五子棋','gomoku')]
-missing = [n for p,n in cards if p not in c]
-if not missing: sys.exit(0)
-BLOCK = '''        <a class=\"card\" href=\"/etf/\">
-          <div class=\"name\">ETF 投資工具</div>
-          <div class=\"desc\">配息試算、投資組合分析與 ETF 比較</div>
+missing = [n for p,n in [('/etf/','etf'),('/english/','english'),('/srt/','srt'),('五子棋','gomoku')] if p not in c]
+if not missing:
+    print('All cards present')
+    sys.exit(0)
+print('Missing cards:', missing)
+BLOCK = '''        <a class="card" href="/etf/">
+          <div class="name">ETF 投資工具</div>
+          <div class="desc">配息試算、投資組合分析與 ETF 比較</div>
         </a>
-        <a class=\"card\" href=\"/五子棋/\">
-          <div class=\"name\">五子棋 AI 對戰</div>
-          <div class=\"desc\">與 AI 對弈五子棋，四種難度，支援音效與悔棋</div>
+        <a class="card" href="/五子棋/">
+          <div class="name">五子棋 AI 對戰</div>
+          <div class="desc">與 AI 對弈五子棋，四種難度，支援音效與悔棋</div>
         </a>
-        <a class=\"card\" href=\"/english/\">
-          <div class=\"name\">🎓 AI School 英語學習</div>
-          <div class=\"desc\">英語、日語單字練習，雲端記錄，排行榜競賽</div>
+        <a class="card" href="/english/">
+          <div class="name">🎓 AI School 英語學習</div>
+          <div class="desc">英語、日語單字練習，雲端記錄，排行榜競賽</div>
         </a>
-        <a class=\"card\" href=\"/srt/\">
-          <div class=\"name\">🎬 SRT 字幕產生器</div>
-          <div class=\"desc\">上傳影片自動生成 SRT 字幕，支援多語言</div>
+        <a class="card" href="/srt/">
+          <div class="name">🎬 SRT 字幕產生器</div>
+          <div class="desc">上傳影片自動生成 SRT 字幕，支援多語言</div>
         </a>'''
-new = re.sub(r'<section class=\"featured-grid\">.*?</section>',
-    '<section class=\"featured-grid\">\n' + BLOCK + '\n      </section>',
+new = re.sub(r'<section class="featured-grid">.*?</section>',
+    '<section class="featured-grid">\n' + BLOCK + '\n      </section>',
     c, flags=re.DOTALL)
 if new != c:
     open('index.html','w').write(new)
-    print('Fixed homepage cards:', missing)
+    print('Fixed')
     sys.exit(2)
-"
-          [ $? -eq 2 ] && git add index.html && CHANGED=true
+PYEOF
+          [ $? -eq 2 ] && git add index.html
 
-          if [ "$CHANGED" = true ] && ! git diff --cached --quiet; then
-            git commit -m "auto-restore: protected pages"
+          # Commit and push if anything changed
+          if ! git diff --cached --quiet; then
+            git commit -m "auto-restore: protected pages and homepage cards"
             git push
+            echo "Done - restored and pushed"
           else
-            echo "All good"
+            echo "Done - nothing to restore"
           fi
