@@ -1,16 +1,24 @@
 {
-  "updatedAt": "2026-03-18T20:36:15.916616+08:00",
+  "updatedAt": "2026-03-18T22:06:45.698982+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 〈財報前瞻〉AI帶動記憶體漲價潮 美光業績成市場風向球；3. 11:39晶片合作升級！三星HBM4直供超微新AI加速器；4. 11:20慶祝成立50周年 蘋果執行長庫克現身成都 今年首度訪中；5. 10:24研調：輝達迎戰ASIC 採多元產品分攻AI訓練、推理市場。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 〈美股早盤〉油價飆升＋PPI升幅超預期！主要指數開低 市場緊盯Fed；3. 13:11美2月PPI升幅超預期 Fed今年可能只降息一次；4. 12:30〈財報前瞻〉AI帶動記憶體漲價潮 美光業績成市場風向球；5. 11:39晶片合作升級！三星HBM4直供超微新AI加速器。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "〈財報前瞻〉AI帶動記憶體漲價潮 美光業績成市場風向球",
+      "title": "〈美股早盤〉油價飆升＋PPI升幅超預期！主要指數開低 市場緊盯Fed",
+      "url": "https://news.cnyes.com/news/id/6389355"
+    },
+    {
+      "title": "13:11美2月PPI升幅超預期 Fed今年可能只降息一次",
+      "url": "https://news.cnyes.com/news/id/6389467"
+    },
+    {
+      "title": "12:30〈財報前瞻〉AI帶動記憶體漲價潮 美光業績成市場風向球",
       "url": "https://news.cnyes.com/news/id/6389394"
     },
     {
@@ -44,14 +52,6 @@
     {
       "title": "09:10巴隆：輝達揮出一記重拳 打崩買進特斯拉的理由",
       "url": "https://news.cnyes.com/news/id/6388251"
-    },
-    {
-      "title": "09:00Fed議息在即！停滯性通膨回歸+就業崩潰+高油價 決策官員在戰爭陰影下陷兩難",
-      "url": "https://news.cnyes.com/news/id/6388958"
-    },
-    {
-      "title": "09:00華爾街「聰明錢」不看好短債基金 這可能是一個黃金買點？",
-      "url": "https://news.cnyes.com/news/id/6388170"
     }
   ],
   "error": null
