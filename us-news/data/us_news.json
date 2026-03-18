@@ -1,57 +1,57 @@
 {
-  "updatedAt": "2026-03-19T07:03:11.051981+08:00",
+  "updatedAt": "2026-03-19T07:42:17.522565+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 油價飆漲近50% 美國通膨與經濟怎麼走？鮑爾：真的不知道；3. 03/18一文掌握Fed重點決策：高度「不確定性」、通膨進展遜預期、鮑爾未來動向；4. 03/18鮑爾：停滯性通膨是1970年代用語 非當前情況；5. 03/18〈紐約匯市〉美元小漲 Fed如預期維持利率不變。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 美債市場釋出訊號 停滯性通膨風險升溫；3. 23:10Fed傳聲筒：鮑爾首談去留 川普人事布局受牽制；4. 23:10輝達股價為何陷入停滯？；5. 22:40油價飆漲近50% 美國通膨與經濟怎麼走？鮑爾：真的不知道。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "油價飆漲近50% 美國通膨與經濟怎麼走？鮑爾：真的不知道",
+      "title": "美債市場釋出訊號 停滯性通膨風險升溫",
+      "url": "https://news.cnyes.com/news/id/6389715"
+    },
+    {
+      "title": "23:10Fed傳聲筒：鮑爾首談去留 川普人事布局受牽制",
+      "url": "https://news.cnyes.com/news/id/6389750"
+    },
+    {
+      "title": "23:10輝達股價為何陷入停滯？",
+      "url": "https://news.cnyes.com/news/id/6389708"
+    },
+    {
+      "title": "22:40油價飆漲近50% 美國通膨與經濟怎麼走？鮑爾：真的不知道",
       "url": "https://news.cnyes.com/news/id/6389680"
     },
     {
-      "title": "03/18一文掌握Fed重點決策：高度「不確定性」、通膨進展遜預期、鮑爾未來動向",
+      "title": "22:36一文掌握Fed重點決策：高度「不確定性」、通膨進展遜預期、鮑爾未來動向",
       "url": "https://news.cnyes.com/news/id/6389503"
     },
     {
-      "title": "03/18鮑爾：停滯性通膨是1970年代用語 非當前情況",
+      "title": "22:00鮑爾：停滯性通膨是1970年代用語 非當前情況",
       "url": "https://news.cnyes.com/news/id/6389711"
     },
     {
-      "title": "03/18〈紐約匯市〉美元小漲 Fed如預期維持利率不變",
+      "title": "21:30〈紐約匯市〉美元小漲 Fed如預期維持利率不變",
       "url": "https://news.cnyes.com/news/id/6389706"
     },
     {
-      "title": "03/18〈財報〉AI帶動HBM需求 美光Q2營收暴增近2倍 遠超預期 毛利率衝74%",
+      "title": "21:07〈財報〉AI帶動HBM需求 美光Q2營收3倍跳 遠超預期 毛利率衝74%",
       "url": "https://news.cnyes.com/news/id/6389690"
     },
     {
-      "title": "03/18〈美股盤後〉鮑爾一席話引來股債雙殺 道瓊急瀉近770點 摔破200日均線",
+      "title": "20:46〈美股盤後〉鮑爾一席話引來股債雙殺 道瓊急瀉近770點 摔破200日均線",
       "url": "https://news.cnyes.com/news/id/6389700"
     },
     {
-      "title": "03/18AI賺最大可能是它！分析師盤點亞馬遜五大優勢",
+      "title": "20:20AI賺最大可能是它！分析師盤點亞馬遜五大優勢",
       "url": "https://news.cnyes.com/news/id/6388249"
     },
     {
-      "title": "03/18萬斯緊急會晤石油高層 擬48小時內祭出穩定燃料策略",
+      "title": "20:10萬斯緊急會晤石油高層 擬48小時內祭出穩定燃料策略",
       "url": "https://news.cnyes.com/news/id/6389607"
-    },
-    {
-      "title": "03/18中東戰火成救星！軟體股擺脫「AI顛覆」論 止跌回升成黑馬",
-      "url": "https://news.cnyes.com/news/id/6388194"
-    },
-    {
-      "title": "03/18Fed 1月、3月聲明比一比：就業市場措辭調整 中東風險首度入列",
-      "url": "https://news.cnyes.com/news/id/6389594"
-    },
-    {
-      "title": "03/18Fed 3月聲明全文+最新經濟預測",
-      "url": "https://news.cnyes.com/news/id/6389593"
     }
   ],
   "error": null
