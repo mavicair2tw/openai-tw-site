@@ -34,7 +34,7 @@ jobs:
             NEED_RESTORE=true
           fi
           # Also check if homepage cards are missing (even without file deletion)
-          if ! grep -q '"/etf/"' index.html || ! grep -q '"五子棋"' index.html || ! grep -q '"/english/"' index.html; then
+          if ! grep -q '/etf/' index.html || ! grep -q '五子棋' index.html || ! grep -q '/english/' index.html; then
             echo "homepage_cards_missing=true" >> $GITHUB_OUTPUT
             NEED_RESTORE=true
           fi
@@ -94,7 +94,7 @@ TARGET = '''        <a class="card" href="/etf/">
         </a>
         <a class="card" href="/english/">
           <div class="name">🎓 AI School 英語學習</div>
-          <div class="desc">國小到大學四級英語單字，雲端記錄進度、Quiz 排行榜</div>
+          <div class="desc">英語、日語單字練習，雲端記錄，排行榜競賽</div>
         </a>
       </section>'''
 new_content = re.sub(
