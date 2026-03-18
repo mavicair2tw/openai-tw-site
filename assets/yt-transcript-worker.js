@@ -1,5 +1,6 @@
-// yt-transcript Cloudflare Worker
-// Uses YouTube Innertube WEB client + timedtext XML fallback
+// yt-transcript Cloudflare Worker v4
+// Strategy: fetch /watch page → extract playerData → get caption URL → fetch XML
+// With detailed debug info to diagnose issues
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -29,88 +30,97 @@ function parseXml(xml) {
 
 async function fetchTranscript(videoId) {
   const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
+  const debug = [];
 
-  // Try WEB client first
-  const playerRes = await fetch("https://www.youtube.com/youtubei/v1/player?prettyPrint=false", {
-    method: "POST",
+  // Step 1: Fetch watch page
+  const htmlRes = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
     headers: {
-      "Content-Type": "application/json",
       "User-Agent": UA,
-      "X-Youtube-Client-Name": "1",
-      "X-Youtube-Client-Version": "2.20240101.00.00",
-      "Origin": "https://www.youtube.com",
-      "Referer": `https://www.youtube.com/watch?v=${videoId}`,
+      "Accept-Language": "en-US,en;q=0.9",
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Cookie": "CONSENT=YES+; VISITOR_INFO1_LIVE=; GPS=1;",
     },
-    body: JSON.stringify({
-      context: {
-        client: {
-          clientName: "WEB",
-          clientVersion: "2.20240101.00.00",
-          hl: "en",
-          gl: "US",
-        },
-      },
-      videoId,
-    }),
   });
+  debug.push(`HTML fetch: ${htmlRes.status}`);
+  if (!htmlRes.ok) throw new Error(`Page fetch failed: ${htmlRes.status}`);
+  const html = await htmlRes.text();
+  debug.push(`HTML length: ${html.length}`);
 
-  let tracks = null;
+  // Check if we hit a consent page
+  if (html.includes("consent.youtube.com") || html.includes("Before you continue")) {
+    throw new Error("YouTube consent wall detected");
+  }
+
+  // Step 2: Find ytInitialPlayerResponse
+  // Try to find it as a script variable
+  const idx = html.indexOf("ytInitialPlayerResponse");
+  debug.push(`ytInitialPlayerResponse index: ${idx}`);
+
   let playerData = null;
 
-  if (playerRes.ok) {
-    playerData = await playerRes.json();
-    tracks = playerData?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+  // Method A: standard var assignment
+  const matchA = html.match(/ytInitialPlayerResponse\s*=\s*(\{.+?\})\s*;(?:var |const |let |\n|<)/s);
+  if (matchA) {
+    try { playerData = JSON.parse(matchA[1]); debug.push("Parsed via method A"); } catch(e) { debug.push("Method A parse error: " + e.message); }
   }
 
-  // Fallback: scrape /watch page HTML
-  if (!tracks || tracks.length === 0) {
-    const htmlRes = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
-      headers: {
-        "User-Agent": UA,
-        "Accept-Language": "en-US,en;q=0.9",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      },
-    });
-    if (!htmlRes.ok) throw new Error(`HTML fetch failed: ${htmlRes.status}`);
-    const html = await htmlRes.text();
-
-    // Try multiple regex patterns for ytInitialPlayerResponse
-    const patterns = [
-      /ytInitialPlayerResponse\s*=\s*(\{[\s\S]+?\})\s*;<\/script>/,
-      /ytInitialPlayerResponse\s*=\s*(\{[\s\S]+?\});/,
-      /var ytInitialPlayerResponse\s*=\s*(\{[\s\S]+?\});/,
-    ];
-    let scraped = null;
-    for (const pat of patterns) {
-      const match = html.match(pat);
-      if (match) {
-        try { scraped = JSON.parse(match[1]); break; } catch {}
-      }
+  // Method B: look for it inside a script tag more broadly
+  if (!playerData) {
+    const scriptMatch = html.match(/<script[^>]*>\s*(?:var\s+)?ytInitialPlayerResponse\s*=\s*(\{[\s\S]+?);\s*<\/script>/);
+    if (scriptMatch) {
+      try { playerData = JSON.parse(scriptMatch[1]); debug.push("Parsed via method B"); } catch(e) { debug.push("Method B parse error: " + e.message); }
     }
-    if (!scraped) throw new Error("Could not extract player data from page HTML");
-    tracks = scraped?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
-    if (!playerData) playerData = scraped;
-    if (!tracks || tracks.length === 0) throw new Error("No captions available for this video");
   }
 
-  // Pick best English track, else first available
+  // Method C: find JSON start and use bracket counting
+  if (!playerData && idx !== -1) {
+    const start = html.indexOf("{", idx);
+    if (start !== -1) {
+      let depth = 0, i = start, inStr = false, escape = false;
+      for (; i < html.length && i < start + 2000000; i++) {
+        const c = html[i];
+        if (escape) { escape = false; continue; }
+        if (c === "\\" && inStr) { escape = true; continue; }
+        if (c === '"') inStr = !inStr;
+        if (!inStr) {
+          if (c === "{") depth++;
+          else if (c === "}") { depth--; if (depth === 0) break; }
+        }
+      }
+      try {
+        playerData = JSON.parse(html.slice(start, i + 1));
+        debug.push("Parsed via method C (bracket counting)");
+      } catch(e) { debug.push("Method C parse error: " + e.message.slice(0, 100)); }
+    }
+  }
+
+  if (!playerData) throw new Error(`Could not parse player data. Debug: ${debug.join(" | ")}`);
+
+  const tracks = playerData?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+  debug.push(`Tracks found: ${tracks?.length ?? 0}`);
+
+  if (!tracks || tracks.length === 0) {
+    throw new Error(`No captions available. Debug: ${debug.join(" | ")}`);
+  }
+
   const track =
     tracks.find((t) => t.languageCode === "en" && t.kind !== "asr") ||
     tracks.find((t) => t.languageCode === "en") ||
     tracks.find((t) => t.languageCode?.startsWith("en")) ||
     tracks[0];
 
-  if (!track?.baseUrl) throw new Error("No caption track URL found");
+  if (!track?.baseUrl) throw new Error("No caption URL found");
+  debug.push(`Using track: ${track.languageCode} (${track.kind || "manual"})`);
 
-  // Fetch the timedtext XML
   const xmlRes = await fetch(track.baseUrl, {
     headers: { "User-Agent": UA, "Referer": "https://www.youtube.com/" },
   });
   if (!xmlRes.ok) throw new Error(`Timedtext fetch failed: ${xmlRes.status}`);
   const xml = await xmlRes.text();
+  debug.push(`XML length: ${xml.length}`);
 
   const segments = parseXml(xml);
-  if (segments.length === 0) throw new Error("Transcript parsed but no segments found");
+  if (segments.length === 0) throw new Error(`No segments parsed. XML snippet: ${xml.slice(0, 200)}`);
 
   return {
     videoId,
@@ -122,6 +132,7 @@ async function fetchTranscript(videoId) {
       name: t.name?.simpleText || t.languageCode,
       kind: t.kind || "standard",
     })),
+    debug,
   };
 }
 
