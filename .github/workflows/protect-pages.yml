@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: '*/30 * * * *'   # 每 30 分鐘主動檢查一次
+    - cron: '*/30 * * * *'
 
 jobs:
   restore:
@@ -18,56 +18,30 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.WORKFLOW_TOKEN }}
 
-      - name: Restore protected files from protected-pages branch
+      - name: Restore protected files and homepage cards
         run: |
           git config user.name "page-protector"
           git config user.email "protect@openai-tw.com"
 
+          NEED_COMMIT=false
+
           # ── 1. Restore missing files from protected-pages branch ──
-          PROTECTED_LIST="etf/index.html 五子棋/index.html english/index.html srt/index.html"
-          for PROTECTED in $PROTECTED_LIST; do
+          for PROTECTED in "etf/index.html" "五子棋/index.html" "english/index.html" "srt/index.html"; do
             if [ ! -f "$PROTECTED" ]; then
-              echo "MISSING: $PROTECTED — restoring from protected-pages branch..."
+              echo "MISSING: $PROTECTED"
               DIR=$(dirname "$PROTECTED")
               mkdir -p "$DIR"
-              git show origin/protected-pages:"$PROTECTED" > "$PROTECTED"
-              git add "$PROTECTED"
-              echo "Restored: $PROTECTED"
-            else
-              echo "OK: $PROTECTED"
+              if git show origin/protected-pages:"$PROTECTED" > "$PROTECTED" 2>/dev/null; then
+                git add "$PROTECTED"
+                echo "Restored from protected-pages: $PROTECTED"
+                NEED_COMMIT=true
+              else
+                echo "ERROR: not found in protected-pages branch either!"
+              fi
             fi
           done
 
-          # ── 2. Update protected-pages branch with latest versions ──
-          # (only if files exist in main - keeps backup fresh)
-          ALL_EXIST=true
-          for PROTECTED in $PROTECTED_LIST; do
-            [ ! -f "$PROTECTED" ] && ALL_EXIST=false
-          done
-          if [ "$ALL_EXIST" = true ]; then
-            git fetch origin protected-pages
-            NEEDS_UPDATE=false
-            for PROTECTED in $PROTECTED_LIST; do
-              if ! git diff origin/protected-pages:"$PROTECTED" -- "$PROTECTED" > /dev/null 2>&1; then
-                NEEDS_UPDATE=true
-              fi
-            done
-            if [ "$NEEDS_UPDATE" = true ]; then
-              git checkout origin/protected-pages 2>/dev/null || true
-              git checkout -B protected-pages origin/protected-pages
-              for PROTECTED in $PROTECTED_LIST; do
-                git show main:"$PROTECTED" > "$PROTECTED" 2>/dev/null || true
-              done
-              git add $PROTECTED_LIST 2>/dev/null || true
-              if ! git diff --cached --quiet; then
-                git commit -m "sync: update protected pages from main"
-                git push origin protected-pages
-              fi
-              git checkout main
-            fi
-          fi
-
-          # ── 3. Restore missing homepage cards ──
+          # ── 2. Fix homepage cards ──
           python3 - << 'PYEOF'
 import re, sys
 content = open('index.html').read()
@@ -87,40 +61,46 @@ CARDS = '''        <a class="card" href="/etf/">
           <div class="name">🎬 SRT 字幕產生器</div>
           <div class="desc">上傳影片自動生成 SRT 字幕，支援多語言</div>
         </a>'''
-missing = []
-if '/etf/' not in content: missing.append('etf')
-if '五子棋' not in content: missing.append('五子棋')
-if '/english/' not in content: missing.append('english')
-if '/srt/' not in content: missing.append('srt')
+missing = [x for x in ['/etf/','/english/','/srt/','五子棋'] if x not in content]
 if missing:
-    print(f"Homepage missing cards: {missing} — restoring...")
-    new_content = re.sub(
-        r'<section class="featured-grid">.*?</section>',
-        '<section class="featured-grid">\n' + CARDS + '\n      </section>',
-        content, flags=re.DOTALL
-    )
-    if new_content != content:
-        open('index.html', 'w').write(new_content)
-        print('featured-grid restored')
+    new = re.sub(r'<section class="featured-grid">.*?</section>',
+                 '<section class="featured-grid">\n' + CARDS + '\n      </section>',
+                 content, flags=re.DOTALL)
+    if new != content:
+        open('index.html','w').write(new)
+        print(f'Fixed homepage cards: {missing}')
         sys.exit(2)
-    else:
-        print('WARNING: featured-grid section not found')
-        sys.exit(0)
-else:
-    print('All homepage cards present')
-    sys.exit(0)
+sys.exit(0)
 PYEOF
+          [ $? -eq 2 ] && git add index.html && NEED_COMMIT=true
 
-          PY_EXIT=$?
-          if [ $PY_EXIT -eq 2 ]; then
-            git add index.html
+          # ── 3. Sync latest files TO protected-pages branch ──
+          ALL_OK=true
+          for F in "etf/index.html" "五子棋/index.html" "english/index.html" "srt/index.html"; do
+            [ ! -f "$F" ] && ALL_OK=false
+          done
+          if [ "$ALL_OK" = true ]; then
+            git fetch origin protected-pages 2>/dev/null
+            git checkout -B protected-pages origin/protected-pages 2>/dev/null || git checkout --orphan protected-pages
+            for F in "etf/index.html" "五子棋/index.html" "english/index.html" "srt/index.html"; do
+              DIR=$(dirname "$F")
+              mkdir -p "$DIR"
+              git show main:"$F" > "$F" 2>/dev/null
+              git add "$F"
+            done
+            if ! git diff --cached --quiet; then
+              git commit -m "sync: update protected-pages backup"
+              git push origin protected-pages --force
+              echo "Updated protected-pages branch"
+            fi
+            git checkout main
           fi
 
-          # ── 4. Commit & push to main if anything staged ──
-          if ! git diff --cached --quiet; then
+          # ── 4. Push restore to main ──
+          if [ "$NEED_COMMIT" = true ] && ! git diff --cached --quiet; then
             git commit -m "auto-restore: protected pages and homepage cards"
             git push origin main
-            echo "Pushed restore commit to main"
+            echo "Restored and pushed to main"
           else
-            echo "Nothing to restore - all good"
+            echo "All good - nothing to restore"
           fi
