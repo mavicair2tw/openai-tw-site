@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI School · 英語 / 日語學習平台</title>
+<title>AI School · 英語 / 日語 / 法語學習平台</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -104,7 +104,7 @@
   }
   .lang-tab-btn {
     flex: 1;
-    max-width: 160px;
+    max-width: 140px;
     padding: 10px 16px;
     border-radius: 12px;
     border: 1px solid var(--border);
@@ -802,6 +802,7 @@
       <div class="lang-tabs-home" id="lang-tabs-home">
         <button class="lang-tab-btn active" id="lang-btn-en" onclick="switchLang('en',this)">🇺🇸 English</button>
         <button class="lang-tab-btn" id="lang-btn-ja" onclick="switchLang('ja',this)">🇯🇵 日本語</button>
+        <button class="lang-tab-btn" id="lang-btn-fr" onclick="switchLang('fr',this)">🇫🇷 Français</button>
       </div>
 
       <!-- EN Level Cards -->
@@ -856,6 +857,34 @@
           <div class="lv-check">✓</div>
           <span class="lv-emoji">🎌</span>
           <div class="lv-name">JLPT N2</div>
+          <div class="lv-desc">中上級詞彙<br>書面語、複合文法</div>
+        </div>
+      </div>
+
+      <!-- FR Level Cards (DELF) -->
+      <div class="level-grid" id="level-grid-fr" style="display:none">
+        <div class="level-card" data-level="A1" onclick="selectLevel(this)">
+          <div class="lv-check">✓</div>
+          <span class="lv-emoji">🥐</span>
+          <div class="lv-name">DELF A1</div>
+          <div class="lv-desc">入門基礎詞彙<br>日常問候、基本動詞</div>
+        </div>
+        <div class="level-card" data-level="A2" onclick="selectLevel(this)">
+          <div class="lv-check">✓</div>
+          <span class="lv-emoji">🗼</span>
+          <div class="lv-name">DELF A2</div>
+          <div class="lv-desc">初級應用詞彙<br>日常對話、常用句型</div>
+        </div>
+        <div class="level-card" data-level="B1" onclick="selectLevel(this)">
+          <div class="lv-check">✓</div>
+          <span class="lv-emoji">🎨</span>
+          <div class="lv-name">DELF B1</div>
+          <div class="lv-desc">中級詞彙<br>進階表達、連接詞</div>
+        </div>
+        <div class="level-card" data-level="B2" onclick="selectLevel(this)">
+          <div class="lv-check">✓</div>
+          <span class="lv-emoji">🏰</span>
+          <div class="lv-name">DELF B2</div>
           <div class="lv-desc">中上級詞彙<br>書面語、複合文法</div>
         </div>
       </div>
@@ -1221,6 +1250,38 @@ const VOCAB_FALLBACK_JA = {
   ],
 };
 
+// French VOCAB fallback (shown before cloud data loads)
+const VOCAB_FALLBACK_FR = {
+  A1: [
+    {word:"bonjour",pos:"interjection",phonetic:"bɔ̃ʒuʁ",zh:"你好",ex:"Bonjour, comment allez-vous ?"},
+    {word:"merci",pos:"interjection",phonetic:"mɛʁsi",zh:"謝謝",ex:"Merci beaucoup pour votre aide."},
+    {word:"maison",pos:"noun",phonetic:"mɛzɔ̃",zh:"房子",ex:"La maison est grande."},
+    {word:"manger",pos:"verb",phonetic:"mɑ̃ʒe",zh:"吃",ex:"Je mange une pomme."},
+    {word:"livre",pos:"noun",phonetic:"livʁ",zh:"書",ex:"Je lis un livre intéressant."},
+  ],
+  A2: [
+    {word:"voyager",pos:"verb",phonetic:"vwajaʒe",zh:"旅行",ex:"J'aime voyager en été."},
+    {word:"comprendre",pos:"verb",phonetic:"kɔ̃pʁɑ̃dʁ",zh:"理解",ex:"Je comprends cette leçon."},
+    {word:"toujours",pos:"adverb",phonetic:"tuʒuʁ",zh:"總是；一直",ex:"Il est toujours en retard."},
+    {word:"quelquefois",pos:"adverb",phonetic:"kɛlkəfwa",zh:"有時",ex:"Quelquefois, je vais au cinéma."},
+    {word:"rencontrer",pos:"verb",phonetic:"ʁɑ̃kɔ̃tʁe",zh:"遇見",ex:"J'ai rencontré un vieil ami."},
+  ],
+  B1: [
+    {word:"cependant",pos:"conjunction",phonetic:"səpɑ̃dɑ̃",zh:"然而",ex:"Il pleut ; cependant, je sors."},
+    {word:"environ",pos:"adverb",phonetic:"ɑ̃viʁɔ̃",zh:"大約",ex:"Il y a environ cent personnes."},
+    {word:"développer",pos:"verb",phonetic:"devlɔpe",zh:"發展",ex:"Il faut développer cette idée."},
+    {word:"découvrir",pos:"verb",phonetic:"dekuvʁiʁ",zh:"發現",ex:"J'ai découvert un nouveau restaurant."},
+    {word:"quotidien",pos:"adjective",phonetic:"kɔtidjɛ̃",zh:"日常的",ex:"La vie quotidienne est agréable."},
+  ],
+  B2: [
+    {word:"néanmoins",pos:"adverb",phonetic:"neɑ̃mwɛ̃",zh:"儘管如此",ex:"Il est fatigué, néanmoins il travaille."},
+    {word:"approfondir",pos:"verb",phonetic:"apʁɔfɔ̃diʁ",zh:"深入研究",ex:"Il faut approfondir ce sujet."},
+    {word:"auparavant",pos:"adverb",phonetic:"opaʁavɑ̃",zh:"以前",ex:"Auparavant, il habitait à Paris."},
+    {word:"éventuel",pos:"adjective",phonetic:"evɑ̃tɥɛl",zh:"可能的",ex:"Un éventuel changement de plan."},
+    {word:"davantage",pos:"adverb",phonetic:"davɑ̃taʒ",zh:"更多",ex:"Je veux en savoir davantage."},
+  ],
+};
+
 // Live vocab loaded from D1 — starts as fallback, replaced on load
 let VOCAB = JSON.parse(JSON.stringify(VOCAB_FALLBACK));
 
@@ -1260,7 +1321,7 @@ async function loadVocabFromCloud(level) {
 // ════════════════════════════════════════
 let state = {
   level: null,
-  lang: 'en',   // 'en' | 'ja'
+  lang: 'en',   // 'en' | 'ja' | 'fr'
   // wordStates: { word: { status:'new'|'easy'|'familiar'|'not-easy'|'not-familiar', freq:1, seen:0 } }
   wordStates: {},
   streak: 0,
@@ -1614,12 +1675,26 @@ function pickVoice() {
   if (!isTTSAvailable()) return;
   const voices = window.speechSynthesis.getVoices();
   if (!voices.length) return;
-  ttsVoice =
-    voices.find(v => v.lang === 'en-US' && /google/i.test(v.name)) ||
-    voices.find(v => v.lang === 'en-US') ||
-    voices.find(v => v.lang === 'en-GB') ||
-    voices.find(v => v.lang.startsWith('en')) ||
-    voices[0] || null;
+  if (state.lang === 'ja') {
+    ttsVoice =
+      voices.find(v => v.lang === 'ja-JP' && /google/i.test(v.name)) ||
+      voices.find(v => v.lang === 'ja-JP') ||
+      voices.find(v => v.lang.startsWith('ja')) ||
+      voices[0] || null;
+  } else if (state.lang === 'fr') {
+    ttsVoice =
+      voices.find(v => v.lang === 'fr-FR' && /google/i.test(v.name)) ||
+      voices.find(v => v.lang === 'fr-FR') ||
+      voices.find(v => v.lang.startsWith('fr')) ||
+      voices[0] || null;
+  } else {
+    ttsVoice =
+      voices.find(v => v.lang === 'en-US' && /google/i.test(v.name)) ||
+      voices.find(v => v.lang === 'en-US') ||
+      voices.find(v => v.lang === 'en-GB') ||
+      voices.find(v => v.lang.startsWith('en')) ||
+      voices[0] || null;
+  }
 }
 
 function initTTS() {
@@ -1689,8 +1764,8 @@ function speak(text, btnId) {
       window.speechSynthesis.cancel();
 
       const utter = new SpeechSynthesisUtterance(clean);
-      utter.lang   = (state.lang === 'ja') ? 'ja-JP' : 'en-US';
-      utter.rate   = (state.lang === 'ja') ? 0.85 : 0.85;
+      utter.lang   = (state.lang === 'ja') ? 'ja-JP' : (state.lang === 'fr') ? 'fr-FR' : 'en-US';
+      utter.rate   = (state.lang === 'ja') ? 0.85 : (state.lang === 'fr') ? 0.9 : 0.85;
       utter.pitch  = 1;
       utter.volume = 1;
       if (ttsVoice) utter.voice = ttsVoice;
@@ -2274,15 +2349,17 @@ function switchLang(lang, btn) {
   // Show/hide level grids
   const enGrid = document.getElementById('level-grid-en');
   const jaGrid = document.getElementById('level-grid-ja');
+  const frGrid = document.getElementById('level-grid-fr');
   if (enGrid) enGrid.style.display = lang === 'en' ? '' : 'none';
   if (jaGrid) jaGrid.style.display = lang === 'ja' ? '' : 'none';
+  if (frGrid) frGrid.style.display = lang === 'fr' ? '' : 'none';
 
   // Update tab buttons
   document.querySelectorAll('.lang-tab-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
 
   // Switch VOCAB fallback to correct language
-  const fallback = lang === 'ja' ? VOCAB_FALLBACK_JA : VOCAB_FALLBACK;
+  const fallback = lang === 'ja' ? VOCAB_FALLBACK_JA : lang === 'fr' ? VOCAB_FALLBACK_FR : VOCAB_FALLBACK;
   Object.assign(VOCAB, JSON.parse(JSON.stringify(fallback)));
 
   // Update TTS language for Play All
@@ -2309,14 +2386,16 @@ document.getElementById('login-name').addEventListener('keydown', e => { if (e.k
 
 // Restore language selection
 const savedLang = state.lang || 'en';
-if (savedLang === 'ja') {
-  const jaBtn = document.getElementById('lang-btn-ja');
+if (savedLang === 'ja' || savedLang === 'fr') {
+  const langBtn = document.getElementById('lang-btn-' + savedLang);
   const enGrid = document.getElementById('level-grid-en');
   const jaGrid = document.getElementById('level-grid-ja');
-  if (jaBtn) { document.querySelectorAll('.lang-tab-btn').forEach(b=>b.classList.remove('active')); jaBtn.classList.add('active'); }
+  const frGrid = document.getElementById('level-grid-fr');
+  if (langBtn) { document.querySelectorAll('.lang-tab-btn').forEach(b=>b.classList.remove('active')); langBtn.classList.add('active'); }
   if (enGrid) enGrid.style.display = 'none';
-  if (jaGrid) jaGrid.style.display = '';
-  const fallback = VOCAB_FALLBACK_JA;
+  if (jaGrid) jaGrid.style.display = savedLang === 'ja' ? '' : 'none';
+  if (frGrid) frGrid.style.display = savedLang === 'fr' ? '' : 'none';
+  const fallback = savedLang === 'ja' ? VOCAB_FALLBACK_JA : VOCAB_FALLBACK_FR;
   Object.assign(VOCAB, JSON.parse(JSON.stringify(fallback)));
 }
 
@@ -2400,7 +2479,7 @@ function paSay(text, onDone) {
     window.speechSynthesis.cancel();
     pickVoice();
     const u = new SpeechSynthesisUtterance(clean);
-    u.lang = (state.lang === 'ja') ? 'ja-JP' : 'en-US'; u.rate = (state.lang === 'ja') ? 0.85 : 0.82; u.pitch = 1; u.volume = 1;
+    u.lang = (state.lang === 'ja') ? 'ja-JP' : (state.lang === 'fr') ? 'fr-FR' : 'en-US'; u.rate = (state.lang === 'ja') ? 0.85 : (state.lang === 'fr') ? 0.88 : 0.82; u.pitch = 1; u.volume = 1;
     if (ttsVoice) u.voice = ttsVoice;
     PA.utter = u;
     u.onend = done;
