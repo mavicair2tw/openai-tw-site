@@ -6,6 +6,9 @@ on:
   schedule:
     - cron: '*/30 * * * *'
 
+permissions:
+  contents: write
+
 jobs:
   restore:
     runs-on: ubuntu-latest
@@ -13,30 +16,27 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.WORKFLOW_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Restore protected pages
         run: |
-          # Skip if this is our own restore commit
           LAST_AUTHOR=$(git log -1 --format='%an')
           if [ "$LAST_AUTHOR" = "page-protector" ]; then
-            echo "Skipping - this is our own commit"
+            echo "Skipping own commit"
             exit 0
           fi
 
           git config user.name "page-protector"
           git config user.email "protect@openai-tw.com"
 
-          # Restore missing files from protected-pages branch
           for F in "english/index.html" "srt/index.html" "etf/index.html" "五子棋/index.html"; do
             if [ ! -f "$F" ]; then
-              echo "MISSING: $F - restoring..."
+              echo "MISSING: $F"
               mkdir -p "$(dirname "$F")"
               git show origin/protected-pages:"$F" > "$F" 2>/dev/null && git add "$F" && echo "Restored: $F"
             fi
           done
 
-          # Fix homepage cards if missing
           python3 - << 'PYEOF'
 import re, sys
 c = open('index.html').read()
@@ -44,7 +44,6 @@ missing = [n for p,n in [('/etf/','etf'),('/english/','english'),('/srt/','srt')
 if not missing:
     print('All cards present')
     sys.exit(0)
-print('Missing cards:', missing)
 BLOCK = '''        <a class="card" href="/etf/">
           <div class="name">ETF 投資工具</div>
           <div class="desc">配息試算、投資組合分析與 ETF 比較</div>
@@ -66,16 +65,14 @@ new = re.sub(r'<section class="featured-grid">.*?</section>',
     c, flags=re.DOTALL)
 if new != c:
     open('index.html','w').write(new)
-    print('Fixed')
+    print('Fixed cards:', missing)
     sys.exit(2)
 PYEOF
           [ $? -eq 2 ] && git add index.html
 
-          # Commit and push if anything changed
           if ! git diff --cached --quiet; then
             git commit -m "auto-restore: protected pages and homepage cards"
             git push
-            echo "Done - restored and pushed"
           else
-            echo "Done - nothing to restore"
+            echo "Nothing to restore"
           fi
