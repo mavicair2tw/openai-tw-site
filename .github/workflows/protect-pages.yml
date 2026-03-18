@@ -11,37 +11,63 @@ jobs:
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.author.name, 'page-protector')"
     steps:
-      - name: Checkout
+      - name: Checkout main
         uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
           token: ${{ secrets.WORKFLOW_TOKEN }}
 
-      - name: Restore protected files and homepage cards
+      - name: Restore protected files from protected-pages branch
         run: |
           git config user.name "page-protector"
           git config user.email "protect@openai-tw.com"
 
-          # ── 1. Restore missing protected files ──
-          for PROTECTED in "etf/index.html" "五子棋/index.html" "english/index.html" "srt/index.html"; do
+          # ── 1. Restore missing files from protected-pages branch ──
+          PROTECTED_LIST="etf/index.html 五子棋/index.html english/index.html srt/index.html"
+          for PROTECTED in $PROTECTED_LIST; do
             if [ ! -f "$PROTECTED" ]; then
-              echo "MISSING: $PROTECTED — restoring..."
+              echo "MISSING: $PROTECTED — restoring from protected-pages branch..."
               DIR=$(dirname "$PROTECTED")
-              COMMIT=$(git log --all --diff-filter=AM --oneline -- "$PROTECTED" | head -1 | awk '{print $1}')
-              if [ -n "$COMMIT" ]; then
-                mkdir -p "$DIR"
-                git show "$COMMIT":"$PROTECTED" > "$PROTECTED"
-                git add "$PROTECTED"
-                echo "Restored $PROTECTED from $COMMIT"
-              else
-                echo "ERROR: no good commit found for $PROTECTED"
-              fi
+              mkdir -p "$DIR"
+              git show origin/protected-pages:"$PROTECTED" > "$PROTECTED"
+              git add "$PROTECTED"
+              echo "Restored: $PROTECTED"
             else
-              echo "OK: $PROTECTED exists"
+              echo "OK: $PROTECTED"
             fi
           done
 
-          # ── 2. Restore missing homepage cards ──
+          # ── 2. Update protected-pages branch with latest versions ──
+          # (only if files exist in main - keeps backup fresh)
+          ALL_EXIST=true
+          for PROTECTED in $PROTECTED_LIST; do
+            [ ! -f "$PROTECTED" ] && ALL_EXIST=false
+          done
+          if [ "$ALL_EXIST" = true ]; then
+            git fetch origin protected-pages
+            NEEDS_UPDATE=false
+            for PROTECTED in $PROTECTED_LIST; do
+              if ! git diff origin/protected-pages:"$PROTECTED" -- "$PROTECTED" > /dev/null 2>&1; then
+                NEEDS_UPDATE=true
+              fi
+            done
+            if [ "$NEEDS_UPDATE" = true ]; then
+              git checkout origin/protected-pages 2>/dev/null || true
+              git checkout -B protected-pages origin/protected-pages
+              for PROTECTED in $PROTECTED_LIST; do
+                git show main:"$PROTECTED" > "$PROTECTED" 2>/dev/null || true
+              done
+              git add $PROTECTED_LIST 2>/dev/null || true
+              if ! git diff --cached --quiet; then
+                git commit -m "sync: update protected pages from main"
+                git push origin protected-pages
+              fi
+              git checkout main
+            fi
+          fi
+
+          # ── 3. Restore missing homepage cards ──
           python3 - << 'PYEOF'
 import re, sys
 content = open('index.html').read()
@@ -78,7 +104,7 @@ if missing:
         print('featured-grid restored')
         sys.exit(2)
     else:
-        print('WARNING: featured-grid section not found in index.html')
+        print('WARNING: featured-grid section not found')
         sys.exit(0)
 else:
     print('All homepage cards present')
@@ -90,11 +116,11 @@ PYEOF
             git add index.html
           fi
 
-          # ── 3. Commit & push if anything staged ──
+          # ── 4. Commit & push to main if anything staged ──
           if ! git diff --cached --quiet; then
             git commit -m "auto-restore: protected pages and homepage cards"
-            git push
-            echo "Pushed restore commit"
+            git push origin main
+            echo "Pushed restore commit to main"
           else
             echo "Nothing to restore - all good"
           fi
