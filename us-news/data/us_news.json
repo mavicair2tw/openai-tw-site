@@ -1,57 +1,57 @@
 {
-  "updatedAt": "2026-03-18T22:06:45.698982+08:00",
+  "updatedAt": "2026-03-18T23:38:17.927048+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 〈美股早盤〉油價飆升＋PPI升幅超預期！主要指數開低 市場緊盯Fed；3. 13:11美2月PPI升幅超預期 Fed今年可能只降息一次；4. 12:30〈財報前瞻〉AI帶動記憶體漲價潮 美光業績成市場風向球；5. 11:39晶片合作升級！三星HBM4直供超微新AI加速器。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 油價與通膨升溫 市場開始懷疑Fed今年是否降息；3. 03/18美元強勢回歸！與美股負相關逼近一年新高 避險地位重新確立；4. 03/18SEC想改革季報制度惹議 巴菲特、戴蒙：該砍的是財測；5. 03/18伊朗石油危機是曇花一現 還是新常態？看三大訊號判斷。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "〈美股早盤〉油價飆升＋PPI升幅超預期！主要指數開低 市場緊盯Fed",
+      "title": "油價與通膨升溫 市場開始懷疑Fed今年是否降息",
+      "url": "https://news.cnyes.com/news/id/6389517"
+    },
+    {
+      "title": "03/18美元強勢回歸！與美股負相關逼近一年新高 避險地位重新確立",
+      "url": "https://news.cnyes.com/news/id/6388191"
+    },
+    {
+      "title": "03/18SEC想改革季報制度惹議 巴菲特、戴蒙：該砍的是財測",
+      "url": "https://news.cnyes.com/news/id/6388253"
+    },
+    {
+      "title": "03/18伊朗石油危機是曇花一現 還是新常態？看三大訊號判斷",
+      "url": "https://news.cnyes.com/news/id/6388250"
+    },
+    {
+      "title": "03/18〈美股早盤〉油價飆升＋PPI升幅超預期！主要指數開低 市場緊盯Fed",
       "url": "https://news.cnyes.com/news/id/6389355"
     },
     {
-      "title": "13:11美2月PPI升幅超預期 Fed今年可能只降息一次",
+      "title": "03/18美2月PPI升幅超預期 Fed今年可能只降息一次",
       "url": "https://news.cnyes.com/news/id/6389467"
     },
     {
-      "title": "12:30〈財報前瞻〉AI帶動記憶體漲價潮 美光業績成市場風向球",
+      "title": "03/18〈財報前瞻〉AI帶動記憶體漲價潮 美光業績成市場風向球",
       "url": "https://news.cnyes.com/news/id/6389394"
     },
     {
-      "title": "11:39晶片合作升級！三星HBM4直供超微新AI加速器",
+      "title": "03/18晶片合作升級！三星HBM4直供超微新AI加速器",
       "url": "https://news.cnyes.com/news/id/6389374"
     },
     {
-      "title": "11:20慶祝成立50周年 蘋果執行長庫克現身成都 今年首度訪中",
+      "title": "03/18慶祝成立50周年 蘋果執行長庫克現身成都 今年首度訪中",
       "url": "https://news.cnyes.com/news/id/6389344"
     },
     {
-      "title": "10:24研調：輝達迎戰ASIC 採多元產品分攻AI訓練、推理市場",
+      "title": "03/18研調：輝達迎戰ASIC 採多元產品分攻AI訓練、推理市場",
       "url": "https://news.cnyes.com/news/id/6389255"
     },
     {
-      "title": "10:10軟體貸款違約恐創疫情以來新高！大摩示警：AI衝擊引發軟體業「到期牆」壓力",
+      "title": "03/18軟體貸款違約恐創疫情以來新高！大摩示警：AI衝擊引發軟體業「到期牆」壓力",
       "url": "https://news.cnyes.com/news/id/6388248"
-    },
-    {
-      "title": "10:00《紐時》社論：川普無法靠話術擺脫美伊戰爭",
-      "url": "https://news.cnyes.com/news/id/6388832"
-    },
-    {
-      "title": "10:00散戶靠「跟單」裴洛西 兩年賺150%、投資組合衝破百萬美元",
-      "url": "https://news.cnyes.com/news/id/6388172"
-    },
-    {
-      "title": "09:40平靜表面下危機四伏 專家解釋為何聯準會恐面臨「噩夢式局面」",
-      "url": "https://news.cnyes.com/news/id/6389009"
-    },
-    {
-      "title": "09:10巴隆：輝達揮出一記重拳 打崩買進特斯拉的理由",
-      "url": "https://news.cnyes.com/news/id/6388251"
     }
   ],
   "error": null
