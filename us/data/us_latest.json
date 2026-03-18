@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-19T06:36:12.763173+08:00",
+  "updatedAt": "2026-03-19T07:03:05.931525+08:00",
   "timezone": "Asia/Taipei",
   "market": "US",
   "items": [
@@ -749,18 +749,10 @@
       "label": "比特幣",
       "symbol": "BTC-USD",
       "type": "Crypto",
-      "price": 71027.61,
-      "change": -2894.87,
-      "changePercent": -3.92,
+      "price": 71119.54,
+      "change": -2802.94,
+      "changePercent": -3.79,
       "trend": [
-        {
-          "time": "00:45",
-          "close": 71329.97
-        },
-        {
-          "time": "01:00",
-          "close": 71309.01
-        },
         {
           "time": "01:15",
           "close": 71472.33
@@ -779,7 +771,7 @@
         },
         {
           "time": "02:15",
-          "close": 71639.93
+          "close": 71645.44
         },
         {
           "time": "02:30",
@@ -811,7 +803,7 @@
         },
         {
           "time": "04:15",
-          "close": 70945.41
+          "close": 70993.05
         },
         {
           "time": "04:30",
@@ -847,7 +839,15 @@
         },
         {
           "time": "06:30",
-          "close": 71027.61
+          "close": 71039.31
+        },
+        {
+          "time": "06:45",
+          "close": 71139.42
+        },
+        {
+          "time": "07:00",
+          "close": 71119.54
         }
       ]
     },
@@ -855,18 +855,10 @@
       "label": "黃金期貨",
       "symbol": "GC=F",
       "type": "Commodity",
-      "price": 4822.0,
-      "change": -179.0,
-      "changePercent": -3.58,
+      "price": 4838.2,
+      "change": -162.8,
+      "changePercent": -3.26,
       "trend": [
-        {
-          "time": "23:30",
-          "close": 4868.2
-        },
-        {
-          "time": "23:45",
-          "close": 4866.3
-        },
         {
           "time": "00:00",
           "close": 4881.7
@@ -953,7 +945,15 @@
         },
         {
           "time": "06:15",
-          "close": 4822.0
+          "close": 4818.0
+        },
+        {
+          "time": "06:30",
+          "close": 4830.3
+        },
+        {
+          "time": "06:45",
+          "close": 4838.2
         }
       ]
     }

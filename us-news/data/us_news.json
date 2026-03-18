@@ -1,16 +1,24 @@
 {
-  "updatedAt": "2026-03-19T06:36:15.910645+08:00",
+  "updatedAt": "2026-03-19T07:03:11.051981+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 鮑爾：停滯性通膨是1970年代用語 非當前情況；3. 03/18〈紐約匯市〉美元小漲 Fed如預期維持利率不變；4. 03/18〈財報〉AI帶動HBM需求 美光Q2營收暴增近3倍 遠超預期 毛利率衝74%；5. 03/18〈美股盤後〉鮑爾一席話引來股債雙殺 道瓊急瀉近770點 摔破200日均線。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 油價飆漲近50% 美國通膨與經濟怎麼走？鮑爾：真的不知道；3. 03/18一文掌握Fed重點決策：高度「不確定性」、通膨進展遜預期、鮑爾未來動向；4. 03/18鮑爾：停滯性通膨是1970年代用語 非當前情況；5. 03/18〈紐約匯市〉美元小漲 Fed如預期維持利率不變。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "鮑爾：停滯性通膨是1970年代用語 非當前情況",
+      "title": "油價飆漲近50% 美國通膨與經濟怎麼走？鮑爾：真的不知道",
+      "url": "https://news.cnyes.com/news/id/6389680"
+    },
+    {
+      "title": "03/18一文掌握Fed重點決策：高度「不確定性」、通膨進展遜預期、鮑爾未來動向",
+      "url": "https://news.cnyes.com/news/id/6389503"
+    },
+    {
+      "title": "03/18鮑爾：停滯性通膨是1970年代用語 非當前情況",
       "url": "https://news.cnyes.com/news/id/6389711"
     },
     {
@@ -18,7 +26,7 @@
       "url": "https://news.cnyes.com/news/id/6389706"
     },
     {
-      "title": "03/18〈財報〉AI帶動HBM需求 美光Q2營收暴增近3倍 遠超預期 毛利率衝74%",
+      "title": "03/18〈財報〉AI帶動HBM需求 美光Q2營收暴增近2倍 遠超預期 毛利率衝74%",
       "url": "https://news.cnyes.com/news/id/6389690"
     },
     {
@@ -44,14 +52,6 @@
     {
       "title": "03/18Fed 3月聲明全文+最新經濟預測",
       "url": "https://news.cnyes.com/news/id/6389593"
-    },
-    {
-      "title": "03/18Fed維持利率不變 中東戰事攪動通膨前景 暗示今年降息一次",
-      "url": "https://news.cnyes.com/news/id/6389504"
-    },
-    {
-      "title": "03/18美國1月工廠訂單小幅成長 製造業復甦仍有限",
-      "url": "https://news.cnyes.com/news/id/6389553"
     }
   ],
   "error": null
