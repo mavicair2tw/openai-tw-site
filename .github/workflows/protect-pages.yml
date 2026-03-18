@@ -9,98 +9,66 @@ on:
 jobs:
   restore:
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || !contains(github.event.head_commit.author.name, 'page-protector')
     steps:
-      - name: Checkout main
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          ref: main
           fetch-depth: 0
           token: ${{ secrets.WORKFLOW_TOKEN }}
 
-      - name: Restore protected files and homepage cards
+      - name: Restore protected pages
+        env:
+          GH_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}
         run: |
           git config user.name "page-protector"
           git config user.email "protect@openai-tw.com"
 
-          NEED_COMMIT=false
+          CHANGED=false
 
-          # ── 1. Restore missing files from protected-pages branch ──
-          for PROTECTED in "etf/index.html" "五子棋/index.html" "english/index.html" "srt/index.html"; do
-            if [ ! -f "$PROTECTED" ]; then
-              echo "MISSING: $PROTECTED"
-              DIR=$(dirname "$PROTECTED")
-              mkdir -p "$DIR"
-              if git show origin/protected-pages:"$PROTECTED" > "$PROTECTED" 2>/dev/null; then
-                git add "$PROTECTED"
-                echo "Restored from protected-pages: $PROTECTED"
-                NEED_COMMIT=true
-              else
-                echo "ERROR: not found in protected-pages branch either!"
-              fi
+          # Restore each protected file if missing
+          for F in "english/index.html" "srt/index.html" "etf/index.html" "五子棋/index.html"; do
+            if [ ! -f "$F" ]; then
+              echo "Missing: $F"
+              mkdir -p "$(dirname "$F")"
+              git show origin/protected-pages:"$F" > "$F" 2>/dev/null && git add "$F" && CHANGED=true && echo "Restored: $F"
             fi
           done
 
-          # ── 2. Fix homepage cards ──
-          python3 - << 'PYEOF'
+          # Fix homepage cards if missing
+          python3 -c "
 import re, sys
-content = open('index.html').read()
-CARDS = '''        <a class="card" href="/etf/">
-          <div class="name">ETF 投資工具</div>
-          <div class="desc">配息試算、投資組合分析與 ETF 比較</div>
+c = open('index.html').read()
+cards = [('/etf/','etf'), ('/english/','english'), ('/srt/','srt'), ('五子棋','gomoku')]
+missing = [n for p,n in cards if p not in c]
+if not missing: sys.exit(0)
+BLOCK = '''        <a class=\"card\" href=\"/etf/\">
+          <div class=\"name\">ETF 投資工具</div>
+          <div class=\"desc\">配息試算、投資組合分析與 ETF 比較</div>
         </a>
-        <a class="card" href="/五子棋/">
-          <div class="name">五子棋 AI 對戰</div>
-          <div class="desc">與 AI 對弈五子棋，四種難度，支援音效與悔棋</div>
+        <a class=\"card\" href=\"/五子棋/\">
+          <div class=\"name\">五子棋 AI 對戰</div>
+          <div class=\"desc\">與 AI 對弈五子棋，四種難度，支援音效與悔棋</div>
         </a>
-        <a class="card" href="/english/">
-          <div class="name">🎓 AI School 英語學習</div>
-          <div class="desc">英語、日語單字練習，雲端記錄，排行榜競賽</div>
+        <a class=\"card\" href=\"/english/\">
+          <div class=\"name\">🎓 AI School 英語學習</div>
+          <div class=\"desc\">英語、日語單字練習，雲端記錄，排行榜競賽</div>
         </a>
-        <a class="card" href="/srt/">
-          <div class="name">🎬 SRT 字幕產生器</div>
-          <div class="desc">上傳影片自動生成 SRT 字幕，支援多語言</div>
+        <a class=\"card\" href=\"/srt/\">
+          <div class=\"name\">🎬 SRT 字幕產生器</div>
+          <div class=\"desc\">上傳影片自動生成 SRT 字幕，支援多語言</div>
         </a>'''
-missing = [x for x in ['/etf/','/english/','/srt/','五子棋'] if x not in content]
-if missing:
-    new = re.sub(r'<section class="featured-grid">.*?</section>',
-                 '<section class="featured-grid">\n' + CARDS + '\n      </section>',
-                 content, flags=re.DOTALL)
-    if new != content:
-        open('index.html','w').write(new)
-        print(f'Fixed homepage cards: {missing}')
-        sys.exit(2)
-sys.exit(0)
-PYEOF
-          [ $? -eq 2 ] && git add index.html && NEED_COMMIT=true
+new = re.sub(r'<section class=\"featured-grid\">.*?</section>',
+    '<section class=\"featured-grid\">\n' + BLOCK + '\n      </section>',
+    c, flags=re.DOTALL)
+if new != c:
+    open('index.html','w').write(new)
+    print('Fixed homepage cards:', missing)
+    sys.exit(2)
+"
+          [ $? -eq 2 ] && git add index.html && CHANGED=true
 
-          # ── 3. Sync latest files TO protected-pages branch ──
-          ALL_OK=true
-          for F in "etf/index.html" "五子棋/index.html" "english/index.html" "srt/index.html"; do
-            [ ! -f "$F" ] && ALL_OK=false
-          done
-          if [ "$ALL_OK" = true ]; then
-            git fetch origin protected-pages 2>/dev/null
-            git checkout -B protected-pages origin/protected-pages 2>/dev/null || git checkout --orphan protected-pages
-            for F in "etf/index.html" "五子棋/index.html" "english/index.html" "srt/index.html"; do
-              DIR=$(dirname "$F")
-              mkdir -p "$DIR"
-              git show main:"$F" > "$F" 2>/dev/null
-              git add "$F"
-            done
-            if ! git diff --cached --quiet; then
-              git commit -m "sync: update protected-pages backup"
-              git push origin protected-pages --force
-              echo "Updated protected-pages branch"
-            fi
-            git checkout main
-          fi
-
-          # ── 4. Push restore to main ──
-          if [ "$NEED_COMMIT" = true ] && ! git diff --cached --quiet; then
-            git commit -m "auto-restore: protected pages and homepage cards"
-            git push origin main
-            echo "Restored and pushed to main"
+          if [ "$CHANGED" = true ] && ! git diff --cached --quiet; then
+            git commit -m "auto-restore: protected pages"
+            git push
           else
-            echo "All good - nothing to restore"
+            echo "All good"
           fi
