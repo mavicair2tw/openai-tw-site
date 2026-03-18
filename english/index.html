@@ -2237,61 +2237,100 @@ function showResults(){
 // ══════════════════════════════════════════
 const API = 'https://wordwave-api.googselect.workers.dev';
 
-// ═══ DICTIONARY (Anthropic API) ═══
+// ═══ DICTIONARY (hybrid: Free API for EN, Worker proxy for JA/FR) ═══
 (function(){
   const inp = document.getElementById('dict-input');
-  const btn = document.getElementById('dict-btn');
-  const res = document.getElementById('dict-result');
   if(inp) inp.addEventListener('keydown', e => { if(e.key==='Enter') dictSearch(); });
 })();
 
-async function dictSearch(){
+function detectLang(q) {
+  if (/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\u3400-\u4DBF]/.test(q)) return 'ja';
+  if (/[àâäéèêëïîôùûüÿçœæ]/i.test(q)) return 'fr';
+  return 'en';
+}
+
+// ── English: Free Dictionary API ──
+async function dictEN(q) {
+  const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(q)}`);
+  if (!res.ok) return null;
+  const data = await res.json();
+  if (!Array.isArray(data) || !data.length) return null;
+  const entry = data[0];
+  let html = `<div class="dr-word">${entry.word}</div>`;
+  const phonetic = entry.phonetic || (entry.phonetics||[]).map(p=>p.text).filter(Boolean)[0] || '';
+  if (phonetic) html += `<div class="dr-phonetic">${phonetic}</div>`;
+  for (const m of (entry.meanings||[])) {
+    html += `<div class="dr-pos">${m.partOfSpeech}</div>`;
+    for (const d of (m.definitions||[]).slice(0, 3)) {
+      html += `<div class="dr-def">${d.definition}</div>`;
+      if (d.example) html += `<div class="dr-ex">${d.example}</div>`;
+    }
+  }
+  return html;
+}
+
+// ── JA/FR: Worker proxy to Anthropic API ──
+async function dictAI(q, lang) {
+  const langName = lang === 'ja' ? '日語' : '法語';
+  const res = await fetch(`${API}/api/dict`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: q, lang })
+  });
+  if (!res.ok) throw new Error('proxy error');
+  const data = await res.json();
+  return data.html || null;
+}
+
+// ── EN fallback: 中文翻譯 via Worker ──
+async function dictENzh(q, enHtml) {
+  try {
+    const res = await fetch(`${API}/api/dict`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: q, lang: 'en' })
+    });
+    if (!res.ok) return enHtml;
+    const data = await res.json();
+    if (data.html) return data.html;
+  } catch(e) {}
+  return enHtml;
+}
+
+async function dictSearch() {
   const inp = document.getElementById('dict-input');
   const btn = document.getElementById('dict-btn');
   const res = document.getElementById('dict-result');
   const q = (inp.value||'').trim();
-  if(!q) return;
+  if (!q) return;
 
   btn.disabled = true;
   res.className = 'dict-result active';
   res.innerHTML = '<div class="dict-loading"><div class="dot-pulse"><span></span><span></span><span></span></div> 查詢中…</div>';
 
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content:
-          `你是一本多語字典。使用者輸入了：「${q}」
+    const lang = detectLang(q);
+    let html = null;
 
-請判斷這是英語、日語還是法語的單字或片語，然後回傳以下格式（純 HTML，不要 markdown）：
+    if (lang === 'en') {
+      // 先用免費 API 查基本定義
+      html = await dictEN(q);
+      if (html) {
+        res.innerHTML = html;
+        // 背景嘗試用 Worker 補中文翻譯
+        dictENzh(q, html).then(richHtml => {
+          if (richHtml !== html) res.innerHTML = richHtml;
+        });
+        btn.disabled = false;
+        return;
+      }
+      // 免費 API 查不到，嘗試 Worker
+      html = await dictAI(q, 'en').catch(() => null);
+    } else {
+      html = await dictAI(q, lang);
+    }
 
-<div class="dr-word">單字/片語</div>
-<div class="dr-phonetic">音標或假名讀音</div>
-
-然後列出每個詞性與定義：
-<div class="dr-pos">詞性 (例如 noun / 動詞 / nom)</div>
-<div class="dr-def">原語言定義</div>
-<div class="dr-zh">中文翻譯</div>
-<div class="dr-ex">例句（原文）</div>
-<div class="dr-ex">例句中文翻譯</div>
-
-如果有常見片語（phrases/idioms），也列出：
-<div class="dr-phrase-title">常見片語 Common Phrases</div>
-然後用同樣的 dr-def / dr-zh / dr-ex 格式列出 2~3 個片語。
-
-規則：
-- 只回傳上述 HTML，不要任何多餘文字
-- 中文翻譯用繁體中文
-- 如果查不到，回傳 <div class="dr-def">查無此字，請確認拼字。</div>`
-        }]
-      })
-    });
-    const data = await resp.json();
-    const text = (data.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('');
-    res.innerHTML = text || '<div class="dr-def">查無結果。</div>';
+    res.innerHTML = html || '<div class="dr-def">查無此字，請確認拼字。</div>';
   } catch(e) {
     res.innerHTML = '<div class="dr-def" style="color:var(--red-soft)">查詢失敗，請稍後再試。</div>';
   }
