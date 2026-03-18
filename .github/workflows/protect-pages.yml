@@ -3,11 +3,12 @@ name: Protect Custom Pages
 on:
   push:
     branches: [main]
+  schedule:
+    - cron: '*/30 * * * *'   # 每 30 分鐘主動檢查一次
 
 jobs:
   restore:
     runs-on: ubuntu-latest
-    # Skip if this push is already from the page-protector bot
     if: "!contains(github.event.head_commit.author.name, 'page-protector')"
     steps:
       - name: Checkout
@@ -24,7 +25,7 @@ jobs:
           # ── 1. Restore missing protected files ──
           for PROTECTED in "etf/index.html" "五子棋/index.html" "english/index.html" "srt/index.html"; do
             if [ ! -f "$PROTECTED" ]; then
-              echo "Missing: $PROTECTED — restoring..."
+              echo "MISSING: $PROTECTED — restoring..."
               DIR=$(dirname "$PROTECTED")
               COMMIT=$(git log --all --diff-filter=AM --oneline -- "$PROTECTED" | head -1 | awk '{print $1}')
               if [ -n "$COMMIT" ]; then
@@ -33,8 +34,10 @@ jobs:
                 git add "$PROTECTED"
                 echo "Restored $PROTECTED from $COMMIT"
               else
-                echo "Could not find a good commit for $PROTECTED"
+                echo "ERROR: no good commit found for $PROTECTED"
               fi
+            else
+              echo "OK: $PROTECTED exists"
             fi
           done
 
@@ -64,7 +67,7 @@ if '五子棋' not in content: missing.append('五子棋')
 if '/english/' not in content: missing.append('english')
 if '/srt/' not in content: missing.append('srt')
 if missing:
-    print(f"Homepage missing cards: {missing}")
+    print(f"Homepage missing cards: {missing} — restoring...")
     new_content = re.sub(
         r'<section class="featured-grid">.*?</section>',
         '<section class="featured-grid">\n' + CARDS + '\n      </section>',
@@ -75,7 +78,7 @@ if missing:
         print('featured-grid restored')
         sys.exit(2)
     else:
-        print('WARNING: could not find featured-grid to patch')
+        print('WARNING: featured-grid section not found in index.html')
         sys.exit(0)
 else:
     print('All homepage cards present')
