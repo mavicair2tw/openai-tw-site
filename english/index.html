@@ -832,7 +832,24 @@
     font-size: 18px; font-weight: 700;
     color: var(--accent);
     margin-bottom: 4px;
+    display: flex; align-items: center; gap: 8px;
   }
+  .dict-speak-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px;
+    background: rgba(124,106,255,0.15);
+    border: 1px solid rgba(124,106,255,0.3);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    flex-shrink: 0;
+  }
+  .dict-speak-btn:hover {
+    background: rgba(124,106,255,0.3);
+    transform: scale(1.1);
+  }
+  .dict-speak-btn:active { transform: scale(0.95); }
+  .dict-speak-btn svg { width: 16px; height: 16px; fill: var(--accent); }
   .dict-result .dr-phonetic {
     font-size: 13px;
     color: var(--text-muted);
@@ -2243,6 +2260,29 @@ const API = 'https://wordwave-api.googselect.workers.dev';
   if(inp) inp.addEventListener('keydown', e => { if(e.key==='Enter') dictSearch(); });
 })();
 
+var DICT_SPEAK_SVG = '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0014 8.5v7a4.49 4.49 0 002.5-3.5zM14 3.23v2.06a6.51 6.51 0 010 13.42v2.06A8.51 8.51 0 0014 3.23z"/></svg>';
+
+function dictSpeak(word, lang) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  var utter = new SpeechSynthesisUtterance(word);
+  if (lang === 'ja') utter.lang = 'ja-JP';
+  else if (lang === 'fr') utter.lang = 'fr-FR';
+  else utter.lang = 'en-US';
+  utter.rate = 0.85;
+  utter.pitch = 1;
+  utter.volume = 1;
+  // Try to pick a good voice
+  var voices = window.speechSynthesis.getVoices();
+  if (voices.length > 0) {
+    var v = voices.find(function(v){ return v.lang === utter.lang && /google/i.test(v.name); })
+         || voices.find(function(v){ return v.lang === utter.lang; })
+         || voices.find(function(v){ return v.lang.startsWith(utter.lang.split('-')[0]); });
+    if (v) utter.voice = v;
+  }
+  window.speechSynthesis.speak(utter);
+}
+
 async function dictSearch() {
   const inp = document.getElementById('dict-input');
   const btn = document.getElementById('dict-btn');
@@ -2261,7 +2301,20 @@ async function dictSearch() {
       body: JSON.stringify({ q })
     });
     const data = await resp.json();
-    res.innerHTML = data.html || '<div class="dr-def">查無此字，請確認拼字。</div>';
+    var html = data.html || '<div class="dr-def">查無此字，請確認拼字。</div>';
+    var lang = data.lang || 'en';
+    res.innerHTML = html;
+    // Inject play button into dr-word
+    var wordEl = res.querySelector('.dr-word');
+    if (wordEl) {
+      var wordText = wordEl.textContent.trim();
+      var playBtn = document.createElement('button');
+      playBtn.className = 'dict-speak-btn';
+      playBtn.title = '播放發音';
+      playBtn.innerHTML = DICT_SPEAK_SVG;
+      playBtn.onclick = function(){ dictSpeak(wordText, lang); };
+      wordEl.appendChild(playBtn);
+    }
   } catch(e) {
     res.innerHTML = '<div class="dr-def" style="color:var(--red-soft)">查詢失敗，請稍後再試。</div>';
   }
