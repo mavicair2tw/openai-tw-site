@@ -9,7 +9,7 @@ on:
 jobs:
   restore:
     runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.author.name, 'page-protector')"
+    if: github.event_name == 'schedule' || !contains(github.event.head_commit.author.name, 'page-protector')
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
