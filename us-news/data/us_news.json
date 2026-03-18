@@ -1,16 +1,20 @@
 {
-  "updatedAt": "2026-03-18T19:43:24.160235+08:00",
+  "updatedAt": "2026-03-18T20:36:15.916616+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 晶片合作升級！三星HBM4直供超微新AI加速器；3. 11:20慶祝成立50周年 蘋果執行長庫克現身成都 今年首度訪中；4. 10:24研調：輝達迎戰ASIC 採多元產品分攻AI訓練、推理市場；5. 10:10軟體貸款違約恐創疫情以來新高！大摩示警：AI衝擊引發軟體業「到期牆」壓力。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 〈財報前瞻〉AI帶動記憶體漲價潮 美光業績成市場風向球；3. 11:39晶片合作升級！三星HBM4直供超微新AI加速器；4. 11:20慶祝成立50周年 蘋果執行長庫克現身成都 今年首度訪中；5. 10:24研調：輝達迎戰ASIC 採多元產品分攻AI訓練、推理市場。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "晶片合作升級！三星HBM4直供超微新AI加速器",
+      "title": "〈財報前瞻〉AI帶動記憶體漲價潮 美光業績成市場風向球",
+      "url": "https://news.cnyes.com/news/id/6389394"
+    },
+    {
+      "title": "11:39晶片合作升級！三星HBM4直供超微新AI加速器",
       "url": "https://news.cnyes.com/news/id/6389374"
     },
     {
@@ -48,10 +52,6 @@
     {
       "title": "09:00華爾街「聰明錢」不看好短債基金 這可能是一個黃金買點？",
       "url": "https://news.cnyes.com/news/id/6388170"
-    },
-    {
-      "title": "06:30特斯拉新一代Roadster亮相再延！馬斯克最新發話：改鎖定「這時間」",
-      "url": "https://news.cnyes.com/news/id/6388246"
     }
   ],
   "error": null
