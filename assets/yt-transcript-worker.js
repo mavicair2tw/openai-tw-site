@@ -1,6 +1,5 @@
-// yt-transcript Cloudflare Worker v4
-// Strategy: fetch /watch page → extract playerData → get caption URL → fetch XML
-// With detailed debug info to diagnose issues
+// yt-transcript Cloudflare Worker v5
+// Uses Innertube /get_transcript endpoint (what YouTube UI actually calls)
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -28,112 +27,136 @@ function parseXml(xml) {
   return segments;
 }
 
+// Parse Innertube get_transcript response into segments
+function parseInnertubeTranscript(data) {
+  const segments = [];
+  try {
+    const body = data?.actions?.[0]?.updateEngagementPanelAction?.content
+      ?.transcriptRenderer?.body?.transcriptBodyRenderer?.cueGroups;
+    if (!body) return null;
+    for (const group of body) {
+      const cues = group?.transcriptCueGroupRenderer?.cues;
+      if (!cues) continue;
+      for (const cue of cues) {
+        const r = cue?.transcriptCueRenderer;
+        if (!r) continue;
+        const start = parseInt(r.startOffsetMs || "0") / 1000;
+        const duration = parseInt(r.durationMs || "0") / 1000;
+        const text = r.cue?.simpleText || "";
+        if (text.trim()) segments.push({ start, duration, text: text.trim() });
+      }
+    }
+  } catch {}
+  return segments.length > 0 ? segments : null;
+}
+
 async function fetchTranscript(videoId) {
   const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
-  const debug = [];
 
-  // Step 1: Fetch watch page
+  // Step 1: Get the watch page to extract API key + player params
   const htmlRes = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
     headers: {
       "User-Agent": UA,
       "Accept-Language": "en-US,en;q=0.9",
-      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      "Cookie": "CONSENT=YES+; VISITOR_INFO1_LIVE=; GPS=1;",
+      "Cookie": "CONSENT=YES+cb; GPS=1;",
     },
   });
-  debug.push(`HTML fetch: ${htmlRes.status}`);
   if (!htmlRes.ok) throw new Error(`Page fetch failed: ${htmlRes.status}`);
   const html = await htmlRes.text();
-  debug.push(`HTML length: ${html.length}`);
 
-  // Check if we hit a consent page
-  if (html.includes("consent.youtube.com") || html.includes("Before you continue")) {
-    throw new Error("YouTube consent wall detected");
+  // Extract INNERTUBE_API_KEY
+  const apiKeyMatch = html.match(/"INNERTUBE_API_KEY"\s*:\s*"([^"]+)"/);
+  const apiKey = apiKeyMatch ? apiKeyMatch[1] : "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8";
+
+  // Extract innertube context
+  const contextMatch = html.match(/"INNERTUBE_CONTEXT"\s*:\s*(\{[\s\S]+?\})\s*,\s*"/);
+  let context = { client: { clientName: "WEB", clientVersion: "2.20240101.00.00", hl: "en", gl: "US" } };
+  if (contextMatch) {
+    try { context = JSON.parse(contextMatch[1]); } catch {}
   }
 
-  // Step 2: Find ytInitialPlayerResponse
-  // Try to find it as a script variable
-  const idx = html.indexOf("ytInitialPlayerResponse");
-  debug.push(`ytInitialPlayerResponse index: ${idx}`);
-
-  let playerData = null;
-
-  // Method A: standard var assignment
-  const matchA = html.match(/ytInitialPlayerResponse\s*=\s*(\{.+?\})\s*;(?:var |const |let |\n|<)/s);
-  if (matchA) {
-    try { playerData = JSON.parse(matchA[1]); debug.push("Parsed via method A"); } catch(e) { debug.push("Method A parse error: " + e.message); }
-  }
-
-  // Method B: look for it inside a script tag more broadly
-  if (!playerData) {
-    const scriptMatch = html.match(/<script[^>]*>\s*(?:var\s+)?ytInitialPlayerResponse\s*=\s*(\{[\s\S]+?);\s*<\/script>/);
-    if (scriptMatch) {
-      try { playerData = JSON.parse(scriptMatch[1]); debug.push("Parsed via method B"); } catch(e) { debug.push("Method B parse error: " + e.message); }
-    }
-  }
-
-  // Method C: find JSON start and use bracket counting
-  if (!playerData && idx !== -1) {
-    const start = html.indexOf("{", idx);
-    if (start !== -1) {
-      let depth = 0, i = start, inStr = false, escape = false;
-      for (; i < html.length && i < start + 2000000; i++) {
-        const c = html[i];
-        if (escape) { escape = false; continue; }
-        if (c === "\\" && inStr) { escape = true; continue; }
-        if (c === '"') inStr = !inStr;
-        if (!inStr) {
-          if (c === "{") depth++;
-          else if (c === "}") { depth--; if (depth === 0) break; }
+  // Extract getTranscriptEndpoint params from ytInitialPlayerResponse
+  let transcriptParams = null;
+  const playerMatch = html.match(/ytInitialPlayerResponse\s*=\s*(\{[\s\S]+?\});\s*(?:var |const |let |<\/script>)/);
+  if (playerMatch) {
+    try {
+      const pd = JSON.parse(playerMatch[1]);
+      // Look for transcript panel endpoint
+      const panels = pd?.engagementPanels || [];
+      for (const panel of panels) {
+        const ep = panel?.engagementPanelSectionListRenderer?.header
+          ?.engagementPanelTitleHeaderRenderer?.menu?.sortFilterSubMenuRenderer
+          ?.subMenuItems;
+        if (ep) {
+          for (const item of ep) {
+            const p = item?.serviceEndpoint?.getTranscriptEndpoint?.params;
+            if (p) { transcriptParams = p; break; }
+          }
         }
+        if (transcriptParams) break;
       }
-      try {
-        playerData = JSON.parse(html.slice(start, i + 1));
-        debug.push("Parsed via method C (bracket counting)");
-      } catch(e) { debug.push("Method C parse error: " + e.message.slice(0, 100)); }
+      // Also try direct path
+      if (!transcriptParams) {
+        const raw = JSON.stringify(pd);
+        const pm = raw.match(/"getTranscriptEndpoint":\{"params":"([^"]+)"/);
+        if (pm) transcriptParams = pm[1];
+      }
+    } catch {}
+  }
+
+  // Step 2a: Try get_transcript endpoint if we have params
+  if (transcriptParams) {
+    const transcriptRes = await fetch(
+      `https://www.youtube.com/youtubei/v1/get_transcript?key=${apiKey}&prettyPrint=false`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "User-Agent": UA },
+        body: JSON.stringify({ context, params: transcriptParams }),
+      }
+    );
+    if (transcriptRes.ok) {
+      const tData = await transcriptRes.json();
+      const segments = parseInnertubeTranscript(tData);
+      if (segments && segments.length > 0) {
+        // Get title from player data
+        let title = "";
+        try {
+          const pm2 = html.match(/ytInitialPlayerResponse\s*=\s*(\{[\s\S]+?\});\s*(?:var |const |let |<\/script>)/);
+          if (pm2) title = JSON.parse(pm2[1])?.videoDetails?.title || "";
+        } catch {}
+        return { videoId, title, lang: "en", segments };
+      }
     }
   }
 
-  if (!playerData) throw new Error(`Could not parse player data. Debug: ${debug.join(" | ")}`);
-
-  const tracks = playerData?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
-  debug.push(`Tracks found: ${tracks?.length ?? 0}`);
-
-  if (!tracks || tracks.length === 0) {
-    throw new Error(`No captions available. Debug: ${debug.join(" | ")}`);
-  }
-
-  const track =
-    tracks.find((t) => t.languageCode === "en" && t.kind !== "asr") ||
-    tracks.find((t) => t.languageCode === "en") ||
-    tracks.find((t) => t.languageCode?.startsWith("en")) ||
-    tracks[0];
-
-  if (!track?.baseUrl) throw new Error("No caption URL found");
-  debug.push(`Using track: ${track.languageCode} (${track.kind || "manual"})`);
-
-  const xmlRes = await fetch(track.baseUrl, {
+  // Step 2b: Fallback — try timedtext API with known params format
+  // Build params for English captions: encodes {"1":{"1":"en"},"2":{"1":1},"3":{"1":0}}
+  const timedtextUrl = `https://www.youtube.com/api/timedtext?v=${videoId}&lang=en&fmt=srv3&xorb=2&xobt=3&xovt=3&cbr=Chrome&cbrver=122.0.0.0&c=WEB&cver=2.20240101.00.00`;
+  const ttRes = await fetch(timedtextUrl, {
     headers: { "User-Agent": UA, "Referer": "https://www.youtube.com/" },
   });
-  if (!xmlRes.ok) throw new Error(`Timedtext fetch failed: ${xmlRes.status}`);
-  const xml = await xmlRes.text();
-  debug.push(`XML length: ${xml.length}`);
+  if (ttRes.ok) {
+    const xml = await ttRes.text();
+    if (xml.includes("<text ")) {
+      const segments = parseXml(xml);
+      if (segments.length > 0) {
+        return { videoId, title: "", lang: "en", segments };
+      }
+    }
+  }
 
-  const segments = parseXml(xml);
-  if (segments.length === 0) throw new Error(`No segments parsed. XML snippet: ${xml.slice(0, 200)}`);
+  // Step 2c: Fallback — try video.google.com timedtext
+  const legacyUrl = `https://video.google.com/timedtext?type=track&v=${videoId}&lang=en`;
+  const legacyRes = await fetch(legacyUrl, { headers: { "User-Agent": UA } });
+  if (legacyRes.ok) {
+    const xml = await legacyRes.text();
+    if (xml.includes("<text ")) {
+      const segments = parseXml(xml);
+      if (segments.length > 0) return { videoId, title: "", lang: "en", segments };
+    }
+  }
 
-  return {
-    videoId,
-    title: playerData?.videoDetails?.title || "",
-    lang: track.languageCode,
-    segments,
-    availableLangs: tracks.map((t) => ({
-      code: t.languageCode,
-      name: t.name?.simpleText || t.languageCode,
-      kind: t.kind || "standard",
-    })),
-    debug,
-  };
+  throw new Error("Could not fetch transcript — video may not have captions, or YouTube is blocking server requests");
 }
 
 export default {
