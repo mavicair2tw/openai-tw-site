@@ -18,7 +18,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Restore protected pages
+      - name: Restore protected pages and cards
         run: |
           LAST_AUTHOR=$(git log -1 --format='%an')
           if [ "$LAST_AUTHOR" = "page-protector" ]; then
@@ -31,6 +31,7 @@ jobs:
 
           NEED_COMMIT=false
 
+          # 1. Restore deleted protected pages
           for F in "english/index.html" "srt/index.html" "etf/index.html" "五子棋/index.html"; do
             if [ ! -f "$F" ]; then
               echo "MISSING: $F — restoring from protected-pages branch"
@@ -39,9 +40,20 @@ jobs:
             fi
           done
 
+          # 2. Ensure AI School card exists on main index.html
+          if [ -f "index.html" ]; then
+            if ! grep -q '/english/' index.html; then
+              echo "AI School card missing from index.html — injecting"
+              CARD='        <a class="card" href="/english/">\n          <div class="name">📖 AI School · 語言學習<\/div>\n          <div class="desc">英語 \/ 日語 \/ 法語字典、單字練習與 Quiz 測驗<\/div>\n        <\/a>'
+              sed -i "s|<section class=\"featured-grid\">|<section class=\"featured-grid\">\n${CARD}|" index.html
+              git add index.html && NEED_COMMIT=true
+              echo "Injected AI School card"
+            fi
+          fi
+
           if [ "$NEED_COMMIT" = true ]; then
-            git commit -m "auto-restore: protected pages"
+            git commit -m "auto-restore: protected pages and homepage cards"
             git push
           else
-            echo "All protected pages intact"
+            echo "All protected pages and cards intact"
           fi
