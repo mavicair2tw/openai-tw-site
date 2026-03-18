@@ -29,20 +29,19 @@ jobs:
           git config user.name "page-protector"
           git config user.email "protect@openai-tw.com"
 
+          NEED_COMMIT=false
+
           for F in "english/index.html" "srt/index.html" "etf/index.html" "五子棋/index.html"; do
             if [ ! -f "$F" ]; then
-              echo "MISSING: $F"
+              echo "MISSING: $F — restoring from protected-pages branch"
               mkdir -p "$(dirname "$F")"
-              git show origin/protected-pages:"$F" > "$F" 2>/dev/null && git add "$F" && echo "Restored: $F"
+              git show origin/protected-pages:"$F" > "$F" 2>/dev/null && git add "$F" && echo "Restored: $F" && NEED_COMMIT=true
             fi
           done
 
-          python3 .github/workflows/fix_cards.py
-          [ $? -eq 2 ] && git add index.html
-
-          if ! git diff --cached --quiet; then
-            git commit -m "auto-restore: protected pages and homepage cards"
+          if [ "$NEED_COMMIT" = true ]; then
+            git commit -m "auto-restore: protected pages"
             git push
           else
-            echo "Nothing to restore"
+            echo "All protected pages intact"
           fi
