@@ -18,30 +18,25 @@ jobs:
         run: |
           git config user.name "page-protector"
           git config user.email "protect@openai-tw.com"
-          CHANGED=false
 
-          restore_file() {
-            local FILE="$1"
-            local DIR=$(dirname "$FILE")
-            local COMMIT=$(git log --all --diff-filter=AM --oneline -- "$FILE" | head -1 | awk '{print $1}')
-            if [ -n "$COMMIT" ]; then
-              mkdir -p "$DIR"
-              git show "$COMMIT":"$FILE" > "$FILE"
-              git add "$FILE"
-              echo "Restored $FILE from $COMMIT"
-              CHANGED=true
-            else
-              echo "Could not find a good commit for $FILE"
-            fi
-          }
-
+          # ── 1. Restore missing protected files ──
           for PROTECTED in "etf/index.html" "五子棋/index.html" "english/index.html"; do
             if [ ! -f "$PROTECTED" ]; then
               echo "Missing: $PROTECTED — restoring..."
-              restore_file "$PROTECTED"
+              DIR=$(dirname "$PROTECTED")
+              COMMIT=$(git log --all --diff-filter=AM --oneline -- "$PROTECTED" | head -1 | awk '{print $1}')
+              if [ -n "$COMMIT" ]; then
+                mkdir -p "$DIR"
+                git show "$COMMIT":"$PROTECTED" > "$PROTECTED"
+                git add "$PROTECTED"
+                echo "Restored $PROTECTED from $COMMIT"
+              else
+                echo "Could not find a good commit for $PROTECTED"
+              fi
             fi
           done
 
+          # ── 2. Restore missing homepage cards ──
           python3 - << 'PYEOF'
 import re, sys
 content = open('index.html').read()
@@ -62,7 +57,7 @@ if '/etf/' not in content: missing.append('etf')
 if '五子棋' not in content: missing.append('五子棋')
 if '/english/' not in content: missing.append('english')
 if missing:
-    print(f"Homepage missing: {missing}")
+    print(f"Homepage missing cards: {missing}")
     new_content = re.sub(
         r'<section class="featured-grid">.*?</section>',
         '<section class="featured-grid">\n' + CARDS + '\n      </section>',
@@ -72,20 +67,24 @@ if missing:
         open('index.html', 'w').write(new_content)
         print('featured-grid restored')
         sys.exit(2)
+    else:
+        print('WARNING: could not find featured-grid to patch')
+        sys.exit(0)
 else:
-    print('All homepage cards present')
+    print('All homepage cards present - no action needed')
     sys.exit(0)
 PYEOF
 
           PY_EXIT=$?
           if [ $PY_EXIT -eq 2 ]; then
             git add index.html
-            CHANGED=true
           fi
 
-          if [ "$CHANGED" = true ] && ! git diff --cached --quiet; then
+          # ── 3. Commit & push if anything staged ──
+          if ! git diff --cached --quiet; then
             git commit -m "auto-restore: protected pages and homepage cards [skip ci]"
             git push
+            echo "Pushed restore commit"
           else
-            echo "Nothing to restore"
+            echo "Nothing to restore - all good"
           fi
