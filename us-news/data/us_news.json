@@ -1,16 +1,24 @@
 {
-  "updatedAt": "2026-03-19T00:42:56.967723+08:00",
+  "updatedAt": "2026-03-19T01:45:59.602911+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. AI讓市場更難預測 霍華馬克思警告：既有投資邏輯恐失效；3. 03/18油價與通膨升溫 市場開始懷疑Fed今年是否降息；4. 03/18美元強勢回歸！與美股負相關逼近一年新高 避險地位重新確立；5. 03/18SEC想改革季報制度惹議 巴菲特、戴蒙：該砍的是財測。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 美國1月工廠訂單小幅成長 製造業復甦仍有限；3. 03/18美國原油庫存創近兩年新高 國際油價仍站高檔；4. 03/18AI讓市場更難預測 霍華馬克思警告：既有投資邏輯恐失效；5. 03/18油價與通膨升溫 市場開始懷疑Fed今年是否降息。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "AI讓市場更難預測 霍華馬克思警告：既有投資邏輯恐失效",
+      "title": "美國1月工廠訂單小幅成長 製造業復甦仍有限",
+      "url": "https://news.cnyes.com/news/id/6389553"
+    },
+    {
+      "title": "03/18美國原油庫存創近兩年新高 國際油價仍站高檔",
+      "url": "https://news.cnyes.com/news/id/6389552"
+    },
+    {
+      "title": "03/18AI讓市場更難預測 霍華馬克思警告：既有投資邏輯恐失效",
       "url": "https://news.cnyes.com/news/id/6388192"
     },
     {
@@ -44,14 +52,6 @@
     {
       "title": "03/18晶片合作升級！三星HBM4直供超微新AI加速器",
       "url": "https://news.cnyes.com/news/id/6389374"
-    },
-    {
-      "title": "03/18慶祝成立50周年 蘋果執行長庫克現身成都 今年首度訪中",
-      "url": "https://news.cnyes.com/news/id/6389344"
-    },
-    {
-      "title": "03/18研調：輝達迎戰ASIC 採多元產品分攻AI訓練、推理市場",
-      "url": "https://news.cnyes.com/news/id/6389255"
     }
   ],
   "error": null
