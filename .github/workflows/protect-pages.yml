@@ -7,84 +7,45 @@ on:
 jobs:
   restore:
     runs-on: ubuntu-latest
-    # Run on ALL pushes (not just deploy bot) to catch any deletion
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
           token: ${{ secrets.WORKFLOW_TOKEN }}
 
-      - name: Check if custom pages were deleted
-        id: check
-        run: |
-          DELETED=$(git diff HEAD~1 HEAD --name-only --diff-filter=D)
-          echo "Deleted files: $DELETED"
-          NEED_RESTORE=false
-          if echo "$DELETED" | grep -q "etf/index.html"; then
-            echo "etf_deleted=true" >> $GITHUB_OUTPUT
-            NEED_RESTORE=true
-          fi
-          if echo "$DELETED" | grep -qP "五子棋/index.html"; then
-            echo "gomoku_deleted=true" >> $GITHUB_OUTPUT
-            NEED_RESTORE=true
-          fi
-          if echo "$DELETED" | grep -q "english/index.html"; then
-            echo "english_deleted=true" >> $GITHUB_OUTPUT
-            NEED_RESTORE=true
-          fi
-          # Also check if homepage cards are missing (even without file deletion)
-          if ! grep -q '/etf/' index.html || ! grep -q '五子棋' index.html || ! grep -q '/english/' index.html; then
-            echo "homepage_cards_missing=true" >> $GITHUB_OUTPUT
-            NEED_RESTORE=true
-          fi
-          echo "need_restore=$NEED_RESTORE" >> $GITHUB_OUTPUT
-
-      - name: Restore deleted pages
-        if: steps.check.outputs.need_restore == 'true'
+      - name: Restore protected files and homepage cards
         run: |
           git config user.name "page-protector"
           git config user.email "protect@openai-tw.com"
+          CHANGED=false
 
-          # Restore etf page from last known good commit
-          if [ "${{ steps.check.outputs.etf_deleted }}" == "true" ]; then
-            COMMIT=$(git log --all --oneline -- etf/index.html | head -1 | awk '{print $1}')
+          restore_file() {
+            local FILE="$1"
+            local DIR=$(dirname "$FILE")
+            local COMMIT=$(git log --all --diff-filter=AM --oneline -- "$FILE" | head -1 | awk '{print $1}')
             if [ -n "$COMMIT" ]; then
-              mkdir -p etf
-              git show $COMMIT:etf/index.html > etf/index.html
-              git add etf/index.html
-              echo "✅ Restored etf/index.html from $COMMIT"
+              mkdir -p "$DIR"
+              git show "$COMMIT":"$FILE" > "$FILE"
+              git add "$FILE"
+              echo "Restored $FILE from $COMMIT"
+              CHANGED=true
+            else
+              echo "Could not find a good commit for $FILE"
             fi
-          fi
+          }
 
-          # Restore 五子棋 page
-          if [ "${{ steps.check.outputs.gomoku_deleted }}" == "true" ]; then
-            COMMIT=$(git log --all --oneline -- "五子棋/index.html" | head -1 | awk '{print $1}')
-            if [ -n "$COMMIT" ]; then
-              mkdir -p 五子棋
-              git show $COMMIT:"五子棋/index.html" > "五子棋/index.html"
-              git add "五子棋/index.html"
-              echo "✅ Restored 五子棋/index.html from $COMMIT"
+          for PROTECTED in "etf/index.html" "五子棋/index.html" "english/index.html"; do
+            if [ ! -f "$PROTECTED" ]; then
+              echo "Missing: $PROTECTED — restoring..."
+              restore_file "$PROTECTED"
             fi
-          fi
+          done
 
-          # Restore english page
-          if [ "${{ steps.check.outputs.english_deleted }}" == "true" ]; then
-            COMMIT=$(git log --all --oneline -- english/index.html | head -1 | awk '{print $1}')
-            if [ -n "$COMMIT" ]; then
-              mkdir -p english
-              git show $COMMIT:english/index.html > english/index.html
-              git add english/index.html
-              echo "✅ Restored english/index.html from $COMMIT"
-            fi
-          fi
-
-          # Always ensure all 3 homepage cards exist
-          if [ "${{ steps.check.outputs.homepage_cards_missing }}" == "true" ]; then
-            python3 - << 'PYEOF'
-import re
+          python3 - << 'PYEOF'
+import re, sys
 content = open('index.html').read()
-TARGET = '''        <a class="card" href="/etf/">
+CARDS = '''        <a class="card" href="/etf/">
           <div class="name">ETF 投資工具</div>
           <div class="desc">配息試算、投資組合分析與 ETF 比較</div>
         </a>
@@ -95,24 +56,36 @@ TARGET = '''        <a class="card" href="/etf/">
         <a class="card" href="/english/">
           <div class="name">🎓 AI School 英語學習</div>
           <div class="desc">英語、日語單字練習，雲端記錄，排行榜競賽</div>
-        </a>
-      </section>'''
-new_content = re.sub(
-    r'<section class="featured-grid">.*?</section>',
-    '<section class="featured-grid">\n' + TARGET,
-    content, flags=re.DOTALL
-)
-if new_content != content:
-    open('index.html', 'w').write(new_content)
-    print('✅ Restored all homepage featured-grid cards')
+        </a>'''
+missing = []
+if '/etf/' not in content: missing.append('etf')
+if '五子棋' not in content: missing.append('五子棋')
+if '/english/' not in content: missing.append('english')
+if missing:
+    print(f"Homepage missing: {missing}")
+    new_content = re.sub(
+        r'<section class="featured-grid">.*?</section>',
+        '<section class="featured-grid">\n' + CARDS + '\n      </section>',
+        content, flags=re.DOTALL
+    )
+    if new_content != content:
+        open('index.html', 'w').write(new_content)
+        print('featured-grid restored')
+        sys.exit(2)
+else:
+    print('All homepage cards present')
+    sys.exit(0)
 PYEOF
+
+          PY_EXIT=$?
+          if [ $PY_EXIT -eq 2 ]; then
             git add index.html
+            CHANGED=true
           fi
 
-          # Commit only if there are staged changes
-          if git diff --cached --quiet; then
-            echo "Nothing to restore"
-          else
-            git commit -m "auto-restore: recover custom pages and homepage cards"
+          if [ "$CHANGED" = true ] && ! git diff --cached --quiet; then
+            git commit -m "auto-restore: protected pages and homepage cards [skip ci]"
             git push
+          else
+            echo "Nothing to restore"
           fi
