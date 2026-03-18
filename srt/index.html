@@ -38,30 +38,16 @@ const LANGUAGES = [
   { code: "ja",    label: "日本語",   flag: "🇯🇵" },
 ];
 
-// ─── SIMULATED TRANSCRIPT ───
-// SIMULATED: Replace simulateTranscript() with a real backend call
-// (e.g. youtube-transcript npm pkg via a proxy) when a server is available.
-function simulateTranscript(videoId) {
-  return [
-    { start: 0,    duration: 3,   text: "Welcome to this video." },
-    { start: 3,    duration: 4,   text: "Today we're going to explore something fascinating." },
-    { start: 7,    duration: 3.5, text: "Let's start with the basics." },
-    { start: 10.5, duration: 4,   text: "There are many ways to approach this topic." },
-    { start: 14.5, duration: 3,   text: "First, let's understand the fundamentals." },
-    { start: 17.5, duration: 4.5, text: "This concept has been around for decades." },
-    { start: 22,   duration: 3,   text: "Many experts have studied this extensively." },
-    { start: 25,   duration: 4,   text: "The results have been quite surprising." },
-    { start: 29,   duration: 3.5, text: "Let me show you some examples." },
-    { start: 32.5, duration: 4,   text: "As you can see, this is quite remarkable." },
-    { start: 36.5, duration: 3,   text: "Now let's move on to the next part." },
-    { start: 39.5, duration: 4.5, text: "This section covers the more advanced aspects." },
-    { start: 44,   duration: 3,   text: "Don't worry if this seems complex at first." },
-    { start: 47,   duration: 4,   text: "With practice, it becomes much easier to understand." },
-    { start: 51,   duration: 3.5, text: "Let's summarize what we've learned so far." },
-    { start: 54.5, duration: 4,   text: "Thank you so much for watching this video." },
-    { start: 58.5, duration: 3,   text: "Please like and subscribe for more content." },
-    { start: 61.5, duration: 3.5, text: "See you in the next one!" },
-  ];
+// ─── WORKER CONFIG ───
+const WORKER_URL = "https://yt-transcript.googselect.workers.dev";
+
+// ─── REAL TRANSCRIPT FETCHER (via Cloudflare Worker proxy) ───
+async function fetchRealTranscript(videoId) {
+  const res = await fetch(`${WORKER_URL}/transcript?v=${videoId}`);
+  if (!res.ok) throw new Error(`Worker responded ${res.status}`);
+  const data = await res.json();
+  if (!data.ok) throw new Error(data.error || "Worker error");
+  return { segments: data.segments, title: data.title || "" };
 }
 
 // ─── MOCK TRANSLATION ───
@@ -209,17 +195,24 @@ function App() {
     if (!id) { setError("Invalid YouTube URL. Please check the link and try again."); return; }
     setLoading(true);
     try {
-      await new Promise(r => setTimeout(r, 800));
-      const raw = simulateTranscript(id);
+      // Fetch real transcript via Cloudflare Worker proxy
+      const { segments, title: videoTitle } = await fetchRealTranscript(id);
+      if (!segments || segments.length === 0) throw new Error("No transcript segments returned");
+      // Auto-fill title if user hasn't set one
+      if ((!title || title === "subtitles") && videoTitle) setTitle(videoTitle.slice(0, 60));
       const out = {}; const srts = {};
-      await Promise.all(LANGUAGES.map(async ({ code }) => {
-        const segs = await Promise.all(raw.map(async s => ({ ...s, text: await translate(s.text, code) })));
+      // English: use raw segments directly (already English)
+      out["en"] = segments;
+      srts["en"] = buildSrt(segments);
+      // Other languages: pass through mock translation layer
+      await Promise.all(LANGUAGES.filter(l => l.code !== "en").map(async ({ code }) => {
+        const segs = await Promise.all(segments.map(async s => ({ ...s, text: await translate(s.text, code) })));
         out[code] = segs; srts[code] = buildSrt(segs);
       }));
       setResults(out); setSrtMap(srts); setTab("en");
-    } catch { setError("Something went wrong. Please try again."); }
+    } catch(e) { setError("Error: " + (e.message || "Something went wrong. Please try again.")); }
     finally { setLoading(false); }
-  }, [url]);
+  }, [url, title]);
 
   const download = (code) => {
     const blob = new Blob([srtMap[code] || ""], { type: "text/plain;charset=utf-8" });
@@ -295,7 +288,7 @@ function App() {
             </button>
 
             <p className="text-[11px] text-center text-neutral-400 dark:text-neutral-600">
-              ⚠️ Transcript data is <strong>simulated</strong> in this demo. A real backend is needed for actual transcripts.
+              ✅ Powered by a real Cloudflare Worker — fetches actual YouTube transcripts. Videos must have captions enabled.
             </p>
           </div>
 
