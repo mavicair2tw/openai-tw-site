@@ -2237,65 +2237,11 @@ function showResults(){
 // ══════════════════════════════════════════
 const API = 'https://wordwave-api.googselect.workers.dev';
 
-// ═══ DICTIONARY (hybrid: Free API for EN, Worker proxy for JA/FR) ═══
+// ═══ DICTIONARY — uses Worker /api/dictionary ═══
 (function(){
   const inp = document.getElementById('dict-input');
   if(inp) inp.addEventListener('keydown', e => { if(e.key==='Enter') dictSearch(); });
 })();
-
-function detectLang(q) {
-  if (/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\u3400-\u4DBF]/.test(q)) return 'ja';
-  if (/[àâäéèêëïîôùûüÿçœæ]/i.test(q)) return 'fr';
-  return 'en';
-}
-
-// ── English: Free Dictionary API ──
-async function dictEN(q) {
-  const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(q)}`);
-  if (!res.ok) return null;
-  const data = await res.json();
-  if (!Array.isArray(data) || !data.length) return null;
-  const entry = data[0];
-  let html = `<div class="dr-word">${entry.word}</div>`;
-  const phonetic = entry.phonetic || (entry.phonetics||[]).map(p=>p.text).filter(Boolean)[0] || '';
-  if (phonetic) html += `<div class="dr-phonetic">${phonetic}</div>`;
-  for (const m of (entry.meanings||[])) {
-    html += `<div class="dr-pos">${m.partOfSpeech}</div>`;
-    for (const d of (m.definitions||[]).slice(0, 3)) {
-      html += `<div class="dr-def">${d.definition}</div>`;
-      if (d.example) html += `<div class="dr-ex">${d.example}</div>`;
-    }
-  }
-  return html;
-}
-
-// ── JA/FR: Worker proxy to Anthropic API ──
-async function dictAI(q, lang) {
-  const langName = lang === 'ja' ? '日語' : '法語';
-  const res = await fetch(`${API}/api/dict`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query: q, lang })
-  });
-  if (!res.ok) throw new Error('proxy error');
-  const data = await res.json();
-  return data.html || null;
-}
-
-// ── EN fallback: 中文翻譯 via Worker ──
-async function dictENzh(q, enHtml) {
-  try {
-    const res = await fetch(`${API}/api/dict`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query: q, lang: 'en' })
-    });
-    if (!res.ok) return enHtml;
-    const data = await res.json();
-    if (data.html) return data.html;
-  } catch(e) {}
-  return enHtml;
-}
 
 async function dictSearch() {
   const inp = document.getElementById('dict-input');
@@ -2309,28 +2255,13 @@ async function dictSearch() {
   res.innerHTML = '<div class="dict-loading"><div class="dot-pulse"><span></span><span></span><span></span></div> 查詢中…</div>';
 
   try {
-    const lang = detectLang(q);
-    let html = null;
-
-    if (lang === 'en') {
-      // 先用免費 API 查基本定義
-      html = await dictEN(q);
-      if (html) {
-        res.innerHTML = html;
-        // 背景嘗試用 Worker 補中文翻譯
-        dictENzh(q, html).then(richHtml => {
-          if (richHtml !== html) res.innerHTML = richHtml;
-        });
-        btn.disabled = false;
-        return;
-      }
-      // 免費 API 查不到，嘗試 Worker
-      html = await dictAI(q, 'en').catch(() => null);
-    } else {
-      html = await dictAI(q, lang);
-    }
-
-    res.innerHTML = html || '<div class="dr-def">查無此字，請確認拼字。</div>';
+    const resp = await fetch(`${API}/api/dictionary`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ q })
+    });
+    const data = await resp.json();
+    res.innerHTML = data.html || '<div class="dr-def">查無此字，請確認拼字。</div>';
   } catch(e) {
     res.innerHTML = '<div class="dr-def" style="color:var(--red-soft)">查詢失敗，請稍後再試。</div>';
   }
