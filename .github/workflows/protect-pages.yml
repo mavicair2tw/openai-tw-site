@@ -20,7 +20,7 @@ jobs:
           git config user.email "protect@openai-tw.com"
 
           # ── 1. Restore missing protected files ──
-          for PROTECTED in "etf/index.html" "五子棋/index.html" "english/index.html"; do
+          for PROTECTED in "etf/index.html" "五子棋/index.html" "english/index.html" "srt/index.html"; do
             if [ ! -f "$PROTECTED" ]; then
               echo "Missing: $PROTECTED — restoring..."
               DIR=$(dirname "$PROTECTED")
@@ -51,11 +51,16 @@ CARDS = '''        <a class="card" href="/etf/">
         <a class="card" href="/english/">
           <div class="name">🎓 AI School 英語學習</div>
           <div class="desc">英語、日語單字練習，雲端記錄，排行榜競賽</div>
+        </a>
+        <a class="card" href="/srt/">
+          <div class="name">🎬 SRT 字幕產生器</div>
+          <div class="desc">上傳影片自動生成 SRT 字幕，支援多語言</div>
         </a>'''
 missing = []
 if '/etf/' not in content: missing.append('etf')
 if '五子棋' not in content: missing.append('五子棋')
 if '/english/' not in content: missing.append('english')
+if '/srt/' not in content: missing.append('srt')
 if missing:
     print(f"Homepage missing cards: {missing}")
     new_content = re.sub(
