@@ -1,5 +1,5 @@
 // yt-transcript Cloudflare Worker
-// Uses YouTube's Innertube API (POST) — more reliable than HTML scraping
+// Uses YouTube Innertube WEB client + timedtext XML fallback
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -30,53 +30,70 @@ function parseXml(xml) {
 async function fetchTranscript(videoId) {
   const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
 
-  // Primary: Innertube POST API with ANDROID client
-  const playerRes = await fetch("https://www.youtube.com/youtubei/v1/player", {
+  // Try WEB client first
+  const playerRes = await fetch("https://www.youtube.com/youtubei/v1/player?prettyPrint=false", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "User-Agent": UA,
-      "X-Youtube-Client-Name": "3",
-      "X-Youtube-Client-Version": "19.09.37",
-      Origin: "https://www.youtube.com",
-      Referer: "https://www.youtube.com/",
+      "X-Youtube-Client-Name": "1",
+      "X-Youtube-Client-Version": "2.20240101.00.00",
+      "Origin": "https://www.youtube.com",
+      "Referer": `https://www.youtube.com/watch?v=${videoId}`,
     },
     body: JSON.stringify({
       context: {
         client: {
-          clientName: "ANDROID",
-          clientVersion: "19.09.37",
-          androidSdkVersion: 30,
+          clientName: "WEB",
+          clientVersion: "2.20240101.00.00",
           hl: "en",
           gl: "US",
-          utcOffsetMinutes: 0,
         },
       },
       videoId,
     }),
   });
 
-  if (!playerRes.ok) throw new Error(`Innertube failed: ${playerRes.status}`);
-  const playerData = await playerRes.json();
+  let tracks = null;
+  let playerData = null;
 
-  let tracks = playerData?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+  if (playerRes.ok) {
+    playerData = await playerRes.json();
+    tracks = playerData?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+  }
 
-  // Fallback: scrape HTML page
+  // Fallback: scrape /watch page HTML
   if (!tracks || tracks.length === 0) {
     const htmlRes = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
-      headers: { "User-Agent": UA, "Accept-Language": "en-US,en;q=0.9" },
+      headers: {
+        "User-Agent": UA,
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      },
     });
     if (!htmlRes.ok) throw new Error(`HTML fetch failed: ${htmlRes.status}`);
     const html = await htmlRes.text();
-    const match = html.match(/ytInitialPlayerResponse\s*=\s*(\{[\s\S]+?\});/);
-    if (!match) throw new Error("No captions found and ytInitialPlayerResponse missing");
-    try {
-      const scraped = JSON.parse(match[1]);
-      tracks = scraped?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
-    } catch { throw new Error("Failed to parse scraped player response"); }
+
+    // Try multiple regex patterns for ytInitialPlayerResponse
+    const patterns = [
+      /ytInitialPlayerResponse\s*=\s*(\{[\s\S]+?\})\s*;<\/script>/,
+      /ytInitialPlayerResponse\s*=\s*(\{[\s\S]+?\});/,
+      /var ytInitialPlayerResponse\s*=\s*(\{[\s\S]+?\});/,
+    ];
+    let scraped = null;
+    for (const pat of patterns) {
+      const match = html.match(pat);
+      if (match) {
+        try { scraped = JSON.parse(match[1]); break; } catch {}
+      }
+    }
+    if (!scraped) throw new Error("Could not extract player data from page HTML");
+    tracks = scraped?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+    if (!playerData) playerData = scraped;
     if (!tracks || tracks.length === 0) throw new Error("No captions available for this video");
   }
 
+  // Pick best English track, else first available
   const track =
     tracks.find((t) => t.languageCode === "en" && t.kind !== "asr") ||
     tracks.find((t) => t.languageCode === "en") ||
@@ -85,12 +102,15 @@ async function fetchTranscript(videoId) {
 
   if (!track?.baseUrl) throw new Error("No caption track URL found");
 
-  const xmlRes = await fetch(track.baseUrl, { headers: { "User-Agent": UA } });
+  // Fetch the timedtext XML
+  const xmlRes = await fetch(track.baseUrl, {
+    headers: { "User-Agent": UA, "Referer": "https://www.youtube.com/" },
+  });
   if (!xmlRes.ok) throw new Error(`Timedtext fetch failed: ${xmlRes.status}`);
   const xml = await xmlRes.text();
 
   const segments = parseXml(xml);
-  if (segments.length === 0) throw new Error("Transcript empty after parsing");
+  if (segments.length === 0) throw new Error("Transcript parsed but no segments found");
 
   return {
     videoId,
