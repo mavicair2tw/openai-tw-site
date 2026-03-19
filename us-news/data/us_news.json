@@ -1,16 +1,28 @@
 {
-  "updatedAt": "2026-03-20T07:28:03.395081+08:00",
+  "updatedAt": "2026-03-20T07:54:20.156130+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 美更新俄油豁免條款 明確排除北韓、古巴與克里米亞交易；3. 22:52美日推稀土聯盟 鎖定關鍵礦產「價格下限」抗供應風險；4. 22:37儘管財報表現宛如輝達 為何美光股價仍下滑？；5. 22:30伊朗戰事拖長 油價衝166美元？中東市場預示全球走勢。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 美超微盤後暴跌超12% 美國指控高層走私輝達晶片到中國；3. 23:31尼坦雅胡稱「我們正在取勝」伊朗已無法生產濃縮鈾和製造飛彈；4. 23:302031年前上路5萬輛！Uber加碼自駕市場 砸12.5億美元聯手Rivian布局全球；5. 22:59美更新俄油豁免條款 明確排除北韓、古巴與克里米亞交易。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "美更新俄油豁免條款 明確排除北韓、古巴與克里米亞交易",
+      "title": "美超微盤後暴跌超12% 美國指控高層走私輝達晶片到中國",
+      "url": "https://news.cnyes.com/news/id/6391279"
+    },
+    {
+      "title": "23:31尼坦雅胡稱「我們正在取勝」伊朗已無法生產濃縮鈾和製造飛彈",
+      "url": "https://news.cnyes.com/news/id/6391209"
+    },
+    {
+      "title": "23:302031年前上路5萬輛！Uber加碼自駕市場 砸12.5億美元聯手Rivian布局全球",
+      "url": "https://news.cnyes.com/news/id/6391179"
+    },
+    {
+      "title": "22:59美更新俄油豁免條款 明確排除北韓、古巴與克里米亞交易",
       "url": "https://news.cnyes.com/news/id/6391208"
     },
     {
@@ -40,18 +52,6 @@
     {
       "title": "21:40川普政府「目前」沒有考慮原油出口禁令",
       "url": "https://news.cnyes.com/news/id/6391217"
-    },
-    {
-      "title": "21:30Codex用戶破200萬！OpenAI再出手 收購Astral壯大AI寫程式實力",
-      "url": "https://news.cnyes.com/news/id/6391171"
-    },
-    {
-      "title": "21:19〈紐約匯市〉美元回落 市場評估伊朗戰事與各國央行訊號",
-      "url": "https://news.cnyes.com/news/id/6391221"
-    },
-    {
-      "title": "20:30降本增效！Meta削減外包人力 AI接手內容審查",
-      "url": "https://news.cnyes.com/news/id/6391162"
     }
   ],
   "error": null
