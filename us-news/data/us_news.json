@@ -1,57 +1,57 @@
 {
-  "updatedAt": "2026-03-19T14:10:39.798310+08:00",
+  "updatedAt": "2026-03-19T15:13:55.891280+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 星巴克砸重金改造 為何仍難打動年輕族群？；3. 03/19漲價潮蔓延！全球雲端運算巨頭集體調高價格 有的大模型狂漲逾460%；4. 03/19鮑爾最新表態 重擊華許迅速降息的計畫；5. 03/19AI助攻 SanDisk能否躋身兆美元俱樂部？。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 債務螺旋警報響起 美債總額跨越39兆美元歷史門檻；3. 06:36馬斯克：SpaceX AI與特斯拉會持續掃購輝達晶片；4. 06:02星巴克砸重金改造 為何仍難打動年輕族群？；5. 04:40漲價潮蔓延！全球雲端運算巨頭集體調高價格 有的大模型狂漲逾460%。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "星巴克砸重金改造 為何仍難打動年輕族群？",
+      "title": "債務螺旋警報響起 美債總額跨越39兆美元歷史門檻",
+      "url": "https://news.cnyes.com/news/id/6390467"
+    },
+    {
+      "title": "06:36馬斯克：SpaceX AI與特斯拉會持續掃購輝達晶片",
+      "url": "https://news.cnyes.com/news/id/6390372"
+    },
+    {
+      "title": "06:02星巴克砸重金改造 為何仍難打動年輕族群？",
       "url": "https://news.cnyes.com/news/id/6389714"
     },
     {
-      "title": "03/19漲價潮蔓延！全球雲端運算巨頭集體調高價格 有的大模型狂漲逾460%",
+      "title": "04:40漲價潮蔓延！全球雲端運算巨頭集體調高價格 有的大模型狂漲逾460%",
       "url": "https://news.cnyes.com/news/id/6389825"
     },
     {
-      "title": "03/19鮑爾最新表態 重擊華許迅速降息的計畫",
+      "title": "04:30鮑爾最新表態 重擊華許迅速降息的計畫",
       "url": "https://news.cnyes.com/news/id/6389699"
     },
     {
-      "title": "03/19AI助攻 SanDisk能否躋身兆美元俱樂部？",
+      "title": "04:00AI助攻 SanDisk能否躋身兆美元俱樂部？",
       "url": "https://news.cnyes.com/news/id/6389713"
     },
     {
-      "title": "03/19瑞銀警告：若中東戰火持續延燒 全球股市可能下跌30%",
+      "title": "03:50瑞銀警告：若中東戰火持續延燒 全球股市可能下跌30%",
       "url": "https://news.cnyes.com/news/id/6389672"
     },
     {
-      "title": "03/19《大賣空》貝瑞：美國市場為何越來越脆弱",
+      "title": "03:20《大賣空》貝瑞：美國市場為何越來越脆弱",
       "url": "https://news.cnyes.com/news/id/6389874"
     },
     {
-      "title": "03/19「帶血黃金」湧入美國 哥倫比亞非法採金收益反超古柯鹼",
+      "title": "03:10「帶血黃金」湧入美國 哥倫比亞非法採金收益反超古柯鹼",
       "url": "https://news.cnyes.com/news/id/6388171"
     },
     {
-      "title": "03/19大摩：特斯拉今年最關鍵催化劑在這裡",
+      "title": "02:00大摩：特斯拉今年最關鍵催化劑在這裡",
       "url": "https://news.cnyes.com/news/id/6389710"
     },
     {
-      "title": "03/19南韓新世界集團攜手Reflection AI建資料中心 外媒：美加速出口AI晶片大模型 謀求全球AI霸權",
+      "title": "01:35南韓新世界集團攜手Reflection AI建資料中心 外媒：美加速出口AI晶片大模型 謀求全球AI霸權",
       "url": "https://news.cnyes.com/news/id/6389887"
-    },
-    {
-      "title": "03/19聯準會釋出偏鷹訊號美股重挫、三大指數同步收低",
-      "url": "https://news.cnyes.com/news/id/6390063"
-    },
-    {
-      "title": "03/19瑞銀示警：中東衝突若延長 全球股市恐暴跌30%",
-      "url": "https://news.cnyes.com/news/id/6389762"
     }
   ],
   "error": null
