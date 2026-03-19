@@ -1,16 +1,20 @@
 {
-  "updatedAt": "2026-03-20T03:14:33.209494+08:00",
+  "updatedAt": "2026-03-20T03:54:18.078104+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. VMware合作夥伴被踢出局？博通遭歐洲雲端業者投訴；3. 18:00Apple Watch禁令危機解除？ITC初步裁定挺蘋果；4. 17:00川普支持調查鮑爾 Fed人事安排再陷政治角力；5. 16:30Fed主席交接添變數！貝森特：鮑爾留任理事不符歷史慣例。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 三巫日來襲！美股5.7兆美元期權周五到期 市場恐掀波動；3. 19:00VMware合作夥伴被踢出局？博通遭歐洲雲端業者投訴；4. 18:00Apple Watch禁令危機解除？ITC初步裁定挺蘋果；5. 17:00川普支持調查鮑爾 Fed人事安排再陷政治角力。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "VMware合作夥伴被踢出局？博通遭歐洲雲端業者投訴",
+      "title": "三巫日來襲！美股5.7兆美元期權周五到期 市場恐掀波動",
+      "url": "https://news.cnyes.com/news/id/6391167"
+    },
+    {
+      "title": "19:00VMware合作夥伴被踢出局？博通遭歐洲雲端業者投訴",
       "url": "https://news.cnyes.com/news/id/6391131"
     },
     {
@@ -48,10 +52,6 @@
     {
       "title": "13:20美上周初領失業金人數降至1月以來低點 就業市場仍具韌性",
       "url": "https://news.cnyes.com/news/id/6390985"
-    },
-    {
-      "title": "12:20摩根大通：投資者對伊朗戰爭過於自滿 恐低估油價飆升的衝擊",
-      "url": "https://news.cnyes.com/news/id/6390893"
     }
   ],
   "error": null
