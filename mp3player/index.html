@@ -187,6 +187,30 @@ body::before{
 .file-btn:hover{border-color:var(--accent);color:var(--accent);border-style:solid}
 #file-input{display:none}
 
+/* ===== VOLUME ===== */
+.volume-row{
+  display:flex;align-items:center;gap:10px;padding:4px 28px 16px;
+}
+.volume-icon{color:var(--text-muted);display:flex;align-items:center;flex-shrink:0}
+.volume-icon svg{width:18px;height:18px;fill:currentColor}
+.volume-slider{
+  flex:1;-webkit-appearance:none;appearance:none;height:4px;
+  background:var(--surface2);border-radius:2px;outline:none;cursor:pointer;
+}
+.volume-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+  background:var(--accent2);box-shadow:0 0 8px var(--accent-glow);cursor:pointer;
+  border:none;
+}
+.volume-slider::-moz-range-thumb{
+  width:14px;height:14px;border-radius:50%;
+  background:var(--accent2);box-shadow:0 0 8px var(--accent-glow);cursor:pointer;
+  border:none;
+}
+.volume-pct{
+  font-size:0.65rem;color:var(--text-muted);width:32px;text-align:right;flex-shrink:0;
+}
+
 /* ===== NATIVE AUDIO ===== */
 .native-audio{padding:0 28px 24px}
 .native-audio audio{width:100%;height:36px;border-radius:8px;outline:none}
@@ -252,6 +276,15 @@ body::before{
     <button class="ctrl-btn" id="btn-next" title="Next">
       <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
     </button>
+  </div>
+
+  <!-- VOLUME -->
+  <div class="volume-row">
+    <div class="volume-icon">
+      <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+    </div>
+    <input type="range" class="volume-slider" id="volume-slider" min="0" max="100" value="100">
+    <span class="volume-pct" id="volume-pct">100%</span>
   </div>
 
   <!-- PLAYLIST -->
@@ -467,6 +500,18 @@ audio.addEventListener('play', () => {
 });
 audio.addEventListener('pause', () => {
   isPlaying = false; vinyl.classList.remove('spinning'); updatePlayIcon(); renderPlaylist();
+});
+
+// ===== VOLUME =====
+const volumeSlider = document.getElementById('volume-slider');
+const volumePct = document.getElementById('volume-pct');
+audio.volume = 1.0;
+volumeSlider.value = 100;
+
+volumeSlider.addEventListener('input', () => {
+  const v = volumeSlider.value / 100;
+  audio.volume = v;
+  volumePct.textContent = volumeSlider.value + '%';
 });
 
 // ===== TRY DEFAULT FILE =====
