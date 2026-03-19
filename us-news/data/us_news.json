@@ -1,16 +1,32 @@
 {
-  "updatedAt": "2026-03-19T20:58:57.573096+08:00",
+  "updatedAt": "2026-03-19T22:10:25.181761+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 摩根大通：投資者對伊朗戰爭過於自滿 恐低估油價飆升的衝擊；3. 11:40SEC正式批准納斯達克證券代幣化試點；4. 10:00記憶體漲價潮擾動市場！今年前9周蘋果在中國銷量逆勢增23% 專家：凸顯供應鏈掌控優勢；5. 09:00油價破百背後的更大風暴：美元也破百。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 馬斯克：特斯拉有望在12月完成AI6晶片的流片；3. 14:00油價飆升與央行訊號衝擊 債市不再押注Fed今年降息；4. 13:41〈美股早盤〉能源衝擊再起 主要指數開低、債市同步走弱；5. 13:20美上周初領失業金人數降至1月以來低點 就業市場仍具韌性。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "摩根大通：投資者對伊朗戰爭過於自滿 恐低估油價飆升的衝擊",
+      "title": "馬斯克：特斯拉有望在12月完成AI6晶片的流片",
+      "url": "https://news.cnyes.com/news/id/6390951"
+    },
+    {
+      "title": "14:00油價飆升與央行訊號衝擊 債市不再押注Fed今年降息",
+      "url": "https://news.cnyes.com/news/id/6391002"
+    },
+    {
+      "title": "13:41〈美股早盤〉能源衝擊再起 主要指數開低、債市同步走弱",
+      "url": "https://news.cnyes.com/news/id/6390919"
+    },
+    {
+      "title": "13:20美上周初領失業金人數降至1月以來低點 就業市場仍具韌性",
+      "url": "https://news.cnyes.com/news/id/6390985"
+    },
+    {
+      "title": "12:20摩根大通：投資者對伊朗戰爭過於自滿 恐低估油價飆升的衝擊",
       "url": "https://news.cnyes.com/news/id/6390893"
     },
     {
@@ -36,22 +52,6 @@
     {
       "title": "08:00黃仁勳預言成真！AI資料中心建設熱潮帶火傳統技工 意外引爆電工高薪潮",
       "url": "https://news.cnyes.com/news/id/6390365"
-    },
-    {
-      "title": "06:50債務螺旋警報響起 美債總額跨越39兆美元歷史門檻",
-      "url": "https://news.cnyes.com/news/id/6390467"
-    },
-    {
-      "title": "06:36馬斯克：SpaceX AI與特斯拉會持續掃購輝達晶片",
-      "url": "https://news.cnyes.com/news/id/6390372"
-    },
-    {
-      "title": "06:02星巴克砸重金改造 為何仍難打動年輕族群？",
-      "url": "https://news.cnyes.com/news/id/6389714"
-    },
-    {
-      "title": "04:40漲價潮蔓延！全球雲端運算巨頭集體調高價格 有的大模型狂漲逾460%",
-      "url": "https://news.cnyes.com/news/id/6389825"
     }
   ],
   "error": null
