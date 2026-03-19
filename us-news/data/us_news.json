@@ -1,16 +1,28 @@
 {
-  "updatedAt": "2026-03-19T16:43:08.891123+08:00",
+  "updatedAt": "2026-03-19T17:29:10.672144+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 黃仁勳預言成真！AI資料中心建設熱潮帶火傳統技工 意外引爆電工高薪潮；3. 06:50債務螺旋警報響起 美債總額跨越39兆美元歷史門檻；4. 06:36馬斯克：SpaceX AI與特斯拉會持續掃購輝達晶片；5. 06:02星巴克砸重金改造 為何仍難打動年輕族群？。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 油價破百背後的更大風暴：美元也破百；3. 08:58川普警告：若伊朗持續攻擊卡達 美將「大規模炸毀」整個南帕爾斯地區；4. 08:55imec取得High-NA EUV系統 推動業界步入埃米世代；5. 08:00黃仁勳預言成真！AI資料中心建設熱潮帶火傳統技工 意外引爆電工高薪潮。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "黃仁勳預言成真！AI資料中心建設熱潮帶火傳統技工 意外引爆電工高薪潮",
+      "title": "油價破百背後的更大風暴：美元也破百",
+      "url": "https://news.cnyes.com/news/id/6390367"
+    },
+    {
+      "title": "08:58川普警告：若伊朗持續攻擊卡達 美將「大規模炸毀」整個南帕爾斯地區",
+      "url": "https://news.cnyes.com/news/id/6390664"
+    },
+    {
+      "title": "08:55imec取得High-NA EUV系統 推動業界步入埃米世代",
+      "url": "https://news.cnyes.com/news/id/6390666"
+    },
+    {
+      "title": "08:00黃仁勳預言成真！AI資料中心建設熱潮帶火傳統技工 意外引爆電工高薪潮",
       "url": "https://news.cnyes.com/news/id/6390365"
     },
     {
@@ -40,18 +52,6 @@
     {
       "title": "03:50瑞銀警告：若中東戰火持續延燒 全球股市可能下跌30%",
       "url": "https://news.cnyes.com/news/id/6389672"
-    },
-    {
-      "title": "03:20《大賣空》貝瑞：美國市場為何越來越脆弱",
-      "url": "https://news.cnyes.com/news/id/6389874"
-    },
-    {
-      "title": "03:10「帶血黃金」湧入美國 哥倫比亞非法採金收益反超古柯鹼",
-      "url": "https://news.cnyes.com/news/id/6388171"
-    },
-    {
-      "title": "02:00大摩：特斯拉今年最關鍵催化劑在這裡",
-      "url": "https://news.cnyes.com/news/id/6389710"
     }
   ],
   "error": null
