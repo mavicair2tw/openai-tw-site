@@ -32,7 +32,7 @@ jobs:
           NEED_COMMIT=false
 
           # 1. Restore deleted protected pages
-          for F in "english/index.html" "srt/index.html" "etf/index.html" "五子棋/index.html" "ibelieve/index.html"; do
+          for F in "english/index.html" "srt/index.html" "etf/index.html" "五子棋/index.html" "ibelieve/index.html" "mp3player/index.html" "mp3player/qr.png"; do
             if [ ! -f "$F" ]; then
               echo "MISSING: $F — restoring from protected-pages branch"
               mkdir -p "$(dirname "$F")"
