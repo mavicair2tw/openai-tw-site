@@ -1,16 +1,28 @@
 {
-  "updatedAt": "2026-03-20T06:25:37.894085+08:00",
+  "updatedAt": "2026-03-20T06:55:41.612259+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 瘦瘦針大戰！諾和諾德Wegovy高劑量版4月上市 迎戰禮來Zepbound；3. 22:03〈美股盤後〉尼坦雅胡釋中東戰局降溫訊號 油價回落 三大指數連二黑；4. 22:00川普親電尼坦雅胡 要求停止攻擊伊朗天然氣命脈；5. 21:40川普政府「目前」沒有考慮原油出口禁令。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 美日推稀土聯盟 鎖定關鍵礦產「價格下限」抗供應風險；3. 22:37儘管財報表現宛如輝達 為何美光股價仍下滑？；4. 22:30伊朗戰事拖長 油價衝166美元？中東市場預示全球走勢；5. 22:20瘦瘦針大戰！諾和諾德Wegovy高劑量版4月上市 迎戰禮來Zepbound。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "瘦瘦針大戰！諾和諾德Wegovy高劑量版4月上市 迎戰禮來Zepbound",
+      "title": "美日推稀土聯盟 鎖定關鍵礦產「價格下限」抗供應風險",
+      "url": "https://news.cnyes.com/news/id/6391224"
+    },
+    {
+      "title": "22:37儘管財報表現宛如輝達 為何美光股價仍下滑？",
+      "url": "https://news.cnyes.com/news/id/6391212"
+    },
+    {
+      "title": "22:30伊朗戰事拖長 油價衝166美元？中東市場預示全球走勢",
+      "url": "https://news.cnyes.com/news/id/6391225"
+    },
+    {
+      "title": "22:20瘦瘦針大戰！諾和諾德Wegovy高劑量版4月上市 迎戰禮來Zepbound",
       "url": "https://news.cnyes.com/news/id/6391172"
     },
     {
@@ -40,18 +52,6 @@
     {
       "title": "19:30三巫日來襲！美股5.7兆美元期權周五到期 市場恐掀波動",
       "url": "https://news.cnyes.com/news/id/6391167"
-    },
-    {
-      "title": "19:00VMware合作夥伴被踢出局？博通遭歐洲雲端業者投訴",
-      "url": "https://news.cnyes.com/news/id/6391131"
-    },
-    {
-      "title": "18:00Apple Watch禁令危機解除？ITC初步裁定挺蘋果",
-      "url": "https://news.cnyes.com/news/id/6391135"
-    },
-    {
-      "title": "17:00川普支持調查鮑爾 Fed人事安排再陷政治角力",
-      "url": "https://news.cnyes.com/news/id/6391134"
     }
   ],
   "error": null
