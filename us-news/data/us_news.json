@@ -1,16 +1,20 @@
 {
-  "updatedAt": "2026-03-20T01:14:43.109386+08:00",
+  "updatedAt": "2026-03-20T02:04:43.736205+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 川普支持調查鮑爾 Fed人事安排再陷政治角力；3. 16:30Fed主席交接添變數！貝森特：鮑爾留任理事不符歷史慣例；4. 15:30油價與戰事夾擊！全球債市大拋售 降息預期瓦解；5. 15:00AI資料中心建設大爆發 「新領」人才稀有、年薪上看六位數。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. Apple Watch禁令危機解除？ITC初步裁定挺蘋果；3. 17:00川普支持調查鮑爾 Fed人事安排再陷政治角力；4. 16:30Fed主席交接添變數！貝森特：鮑爾留任理事不符歷史慣例；5. 15:30油價與戰事夾擊！全球債市大拋售 降息預期瓦解。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "川普支持調查鮑爾 Fed人事安排再陷政治角力",
+      "title": "Apple Watch禁令危機解除？ITC初步裁定挺蘋果",
+      "url": "https://news.cnyes.com/news/id/6391135"
+    },
+    {
+      "title": "17:00川普支持調查鮑爾 Fed人事安排再陷政治角力",
       "url": "https://news.cnyes.com/news/id/6391134"
     },
     {
@@ -48,10 +52,6 @@
     {
       "title": "11:40SEC正式批准納斯達克證券代幣化試點",
       "url": "https://news.cnyes.com/news/id/6390784"
-    },
-    {
-      "title": "10:00記憶體漲價潮擾動市場！今年前9周蘋果在中國銷量逆勢增23% 專家：凸顯供應鏈掌控優勢",
-      "url": "https://news.cnyes.com/news/id/6390614"
     }
   ],
   "error": null
