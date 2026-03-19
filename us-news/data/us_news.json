@@ -1,16 +1,28 @@
 {
-  "updatedAt": "2026-03-20T05:54:08.031237+08:00",
+  "updatedAt": "2026-03-20T06:25:37.894085+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 川普政府「目前」沒有考慮原油出口禁令；3. 21:30Codex用戶破200萬！OpenAI再出手 收購Astral壯大AI寫程式實力；4. 21:19〈紐約匯市〉美元回落 市場評估伊朗戰事與各國央行訊號；5. 20:30降本增效！Meta削減外包人力 AI接手內容審查。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 瘦瘦針大戰！諾和諾德Wegovy高劑量版4月上市 迎戰禮來Zepbound；3. 22:03〈美股盤後〉尼坦雅胡釋中東戰局降溫訊號 油價回落 三大指數連二黑；4. 22:00川普親電尼坦雅胡 要求停止攻擊伊朗天然氣命脈；5. 21:40川普政府「目前」沒有考慮原油出口禁令。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "川普政府「目前」沒有考慮原油出口禁令",
+      "title": "瘦瘦針大戰！諾和諾德Wegovy高劑量版4月上市 迎戰禮來Zepbound",
+      "url": "https://news.cnyes.com/news/id/6391172"
+    },
+    {
+      "title": "22:03〈美股盤後〉尼坦雅胡釋中東戰局降溫訊號 油價回落 三大指數連二黑",
+      "url": "https://news.cnyes.com/news/id/6391213"
+    },
+    {
+      "title": "22:00川普親電尼坦雅胡 要求停止攻擊伊朗天然氣命脈",
+      "url": "https://news.cnyes.com/news/id/6391218"
+    },
+    {
+      "title": "21:40川普政府「目前」沒有考慮原油出口禁令",
       "url": "https://news.cnyes.com/news/id/6391217"
     },
     {
@@ -40,18 +52,6 @@
     {
       "title": "17:00川普支持調查鮑爾 Fed人事安排再陷政治角力",
       "url": "https://news.cnyes.com/news/id/6391134"
-    },
-    {
-      "title": "16:30Fed主席交接添變數！貝森特：鮑爾留任理事不符歷史慣例",
-      "url": "https://news.cnyes.com/news/id/6391019"
-    },
-    {
-      "title": "15:30油價與戰事夾擊！全球債市大拋售 降息預期瓦解",
-      "url": "https://news.cnyes.com/news/id/6391093"
-    },
-    {
-      "title": "15:00AI資料中心建設大爆發 「新領」人才稀有、年薪上看六位數",
-      "url": "https://news.cnyes.com/news/id/6389756"
     }
   ],
   "error": null
