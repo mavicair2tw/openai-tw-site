@@ -1,16 +1,28 @@
 {
-  "updatedAt": "2026-03-20T05:19:19.286253+08:00",
+  "updatedAt": "2026-03-20T05:54:08.031237+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 降本增效！Meta削減外包人力 AI接手內容審查；3. 19:30三巫日來襲！美股5.7兆美元期權周五到期 市場恐掀波動；4. 19:00VMware合作夥伴被踢出局？博通遭歐洲雲端業者投訴；5. 18:00Apple Watch禁令危機解除？ITC初步裁定挺蘋果。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 川普政府「目前」沒有考慮原油出口禁令；3. 21:30Codex用戶破200萬！OpenAI再出手 收購Astral壯大AI寫程式實力；4. 21:19〈紐約匯市〉美元回落 市場評估伊朗戰事與各國央行訊號；5. 20:30降本增效！Meta削減外包人力 AI接手內容審查。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "降本增效！Meta削減外包人力 AI接手內容審查",
+      "title": "川普政府「目前」沒有考慮原油出口禁令",
+      "url": "https://news.cnyes.com/news/id/6391217"
+    },
+    {
+      "title": "21:30Codex用戶破200萬！OpenAI再出手 收購Astral壯大AI寫程式實力",
+      "url": "https://news.cnyes.com/news/id/6391171"
+    },
+    {
+      "title": "21:19〈紐約匯市〉美元回落 市場評估伊朗戰事與各國央行訊號",
+      "url": "https://news.cnyes.com/news/id/6391221"
+    },
+    {
+      "title": "20:30降本增效！Meta削減外包人力 AI接手內容審查",
       "url": "https://news.cnyes.com/news/id/6391162"
     },
     {
@@ -40,18 +52,6 @@
     {
       "title": "15:00AI資料中心建設大爆發 「新領」人才稀有、年薪上看六位數",
       "url": "https://news.cnyes.com/news/id/6389756"
-    },
-    {
-      "title": "14:00馬斯克：特斯拉有望在12月完成AI6晶片的流片",
-      "url": "https://news.cnyes.com/news/id/6390951"
-    },
-    {
-      "title": "14:00油價飆升與央行訊號衝擊 債市不再押注Fed今年降息",
-      "url": "https://news.cnyes.com/news/id/6391002"
-    },
-    {
-      "title": "13:41〈美股早盤〉能源衝擊再起 主要指數開低、債市同步走弱",
-      "url": "https://news.cnyes.com/news/id/6390919"
     }
   ],
   "error": null
