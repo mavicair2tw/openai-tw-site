@@ -2696,24 +2696,64 @@ function paSay(text, onDone) {
   } catch(e) { done(); }
 }
 
+function paSayZh(text, onDone) {
+  if (!PA.active) return;
+  const clean = (text||'').replace(/<[^>]+>/g,'').trim();
+  if (!clean) { PA.timer = setTimeout(onDone, 100); return; }
+
+  let fired = false;
+  const done = () => { if (!fired) { fired = true; clearTimeout(PA.timer); if (PA.active) onDone(); } };
+
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(clean);
+    u.lang = 'zh-TW'; u.rate = 0.9; u.pitch = 1; u.volume = 1;
+    // Try to find a zh-TW voice
+    const voices = window.speechSynthesis.getVoices();
+    const zhVoice = voices.find(v => v.lang === 'zh-TW')
+                 || voices.find(v => v.lang.startsWith('zh'));
+    if (zhVoice) u.voice = zhVoice;
+    PA.utter = u;
+    u.onend = done;
+    u.onerror = (e) => { if (e.error !== 'interrupted' && e.error !== 'canceled') done(); };
+    const ms = Math.max(2000, clean.length * 200);
+    PA.timer = setTimeout(done, ms);
+    setTimeout(() => {
+      if (!PA.active) return;
+      window.speechSynthesis.speak(u);
+      setTimeout(() => { try { window.speechSynthesis.resume(); } catch(x){} }, 100);
+    }, 50);
+  } catch(e) { done(); }
+}
+
 function paNext() {
   if (!PA.active) return;
   if (PA.idx >= PA.queue.length) PA.idx = 0;
   const item = PA.queue[PA.idx++];
   paShowCard(item);
-  // Step 1: word
+  // Step 1: word (in target language)
   paSay(item.word, () => {
     if (!PA.active) return;
-    // Step 2: example after 700ms
+    // Step 2: Chinese translation after 500ms
     PA.timer = setTimeout(() => {
       if (!PA.active) return;
-      const ex = (item.ex||'').replace(/<[^>]+>/g,'').trim();
-      paSay(ex || item.zh, () => {
+      paSayZh(item.zh, () => {
         if (!PA.active) return;
-        // Step 3: wait then next
-        PA.timer = setTimeout(paNext, PA_GAP);
+        // Step 3: example sentence after 500ms
+        PA.timer = setTimeout(() => {
+          if (!PA.active) return;
+          const ex = (item.ex||'').replace(/<[^>]+>/g,'').trim();
+          if (ex) {
+            paSay(ex, () => {
+              if (!PA.active) return;
+              PA.timer = setTimeout(paNext, PA_GAP);
+            });
+          } else {
+            PA.timer = setTimeout(paNext, PA_GAP);
+          }
+        }, 500);
       });
-    }, 700);
+    }, 500);
   });
 }
 
