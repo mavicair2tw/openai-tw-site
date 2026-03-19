@@ -215,6 +215,13 @@ body::before{
 .native-audio{padding:0 28px 24px}
 .native-audio audio{width:100%;height:36px;border-radius:8px;outline:none}
 
+/* ===== QR CODE ===== */
+.qr-section{border-top:1px solid var(--border);padding:20px 28px 28px;text-align:center}
+.qr-wrap{display:inline-flex;flex-direction:column;align-items:center;gap:10px;
+  background:#fff;border-radius:12px;padding:16px 16px 12px}
+.qr-wrap img{width:160px;height:160px;border-radius:2px;image-rendering:pixelated}
+.qr-url{font-size:0.6rem;color:#666;letter-spacing:0.08em;font-family:var(--font-body)}
+
 /* ===== RESPONSIVE ===== */
 @media(max-width:500px){
   .player{border-radius:16px}
@@ -304,6 +311,15 @@ body::before{
   <!-- NATIVE AUDIO -->
   <div class="native-audio">
     <audio id="audio" preload="auto" controls></audio>
+  </div>
+
+  <!-- QR CODE -->
+  <div class="qr-section">
+    <div class="playlist-title" style="margin-bottom:12px">Scan to open on mobile</div>
+    <div class="qr-wrap">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https://openai-tw.com/mp3player/" alt="QR Code for MP3 Player">
+      <div class="qr-url">openai-tw.com/mp3player</div>
+    </div>
   </div>
 </div>
 
