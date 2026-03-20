@@ -211,10 +211,6 @@ body::before{
   font-size:0.65rem;color:var(--text-muted);width:32px;text-align:right;flex-shrink:0;
 }
 
-/* ===== NATIVE AUDIO ===== */
-.native-audio{padding:0 28px 24px}
-.native-audio audio{width:100%;height:36px;border-radius:8px;outline:none}
-
 /* ===== QR CODE ===== */
 .qr-section{border-top:1px solid var(--border);padding:20px 28px 28px;text-align:center}
 .qr-wrap{display:inline-flex;flex-direction:column;align-items:center;gap:10px;
@@ -308,10 +304,8 @@ body::before{
     <input type="file" id="file-input" accept=".mp3,audio/*">
   </div>
 
-  <!-- NATIVE AUDIO -->
-  <div class="native-audio">
-    <audio id="audio" preload="auto" controls></audio>
-  </div>
+  <!-- AUDIO (hidden, controlled by custom UI) -->
+  <audio id="audio" preload="auto"></audio>
 
   <!-- QR CODE -->
   <div class="qr-section">
@@ -393,6 +387,8 @@ function loadTrack(index, autoplay = false) {
   currentIndex = index;
   const track = PLAYLIST[index];
   audio.src = track.src;
+  audio.volume = 1.0;
+  audio.muted = false;
   trackTitle.textContent = track.title;
   trackFile.textContent = track.file;
   renderPlaylist();
