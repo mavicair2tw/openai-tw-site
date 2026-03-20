@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-03-20 19:18",
+  "updatedAt": "2026-03-20 19:52",
   "timezone": "Asia/Taipei",
-  "summary": "今日咖啡新聞重點｜中文：1. 從深山到世界，一杯雲南咖啡的躍遷--經濟·科技--人民網 - 人民网财经；2. 東亞咖啡市場異軍突起 全球店鋪數超越歐美成新重心 - 蕃新聞｜English: 1. Why the coffee industry’s future will be made in East Asia - World Coffee Portal；2. Coffee industry byproduct shows promise for lowering cholesterol and weight - NutraIngredients.com",
+  "summary": "今日咖啡新聞重點｜中文：1. 從深山到世界，一杯雲南咖啡的躍遷--經濟·科技--人民網 - 人民网财经；2. 客座總編輯｜臺灣咖啡產業策略聯盟召集人林哲豪 抓緊第三波浪潮 讓臺灣咖啡成為消費者選項 - 農傳媒｜English: 1. Why the coffee industry’s future will be made in East Asia - World Coffee Portal；2. XBOT Robot Barista debuts at Coffee Fest in Javits Center in Manhattan - Comunicaffe International",
   "newsZh": [
     {
       "title": "從深山到世界，一杯雲南咖啡的躍遷--經濟·科技--人民網 - 人民网财经",
@@ -12,19 +12,19 @@
       "lang": "zh"
     },
     {
-      "title": "東亞咖啡市場異軍突起 全球店鋪數超越歐美成新重心 - 蕃新聞",
-      "titleZh": "東亞咖啡市場異軍突起 全球店鋪數超越歐美成新重心 - 蕃新聞",
-      "titleEn": "",
-      "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE5CaTFwa1pvd3RqVzNSQVNURnM3SGJXT0xXOFNieEpkVzBleDdUemM0UkZVeER4TDFwTVJyZjMxVnhNdlF3UWJ6RG10OFU2ZEV6MWc?oc=5",
-      "lang": "zh"
-    },
-    {
       "title": "客座總編輯｜臺灣咖啡產業策略聯盟召集人林哲豪 抓緊第三波浪潮 讓臺灣咖啡成為消費者選項 - 農傳媒",
       "titleZh": "客座總編輯｜臺灣咖啡產業策略聯盟召集人林哲豪 抓緊第三波浪潮 讓臺灣咖啡成為消費者選項 - 農傳媒",
       "titleEn": "",
       "note": "Source: Google News aggregation",
       "url": "https://news.google.com/rss/articles/CBMiVEFVX3lxTE0wVlM4WjlwNllaQXlsYVBNSXF2cEpyZFVoaUlRSGl3ajh0aWdJd2NLOUs3RTh1MHRhanNLeEF4MjR4SkJkX2lFbG1rQlg5djk2SXFJOA?oc=5",
+      "lang": "zh"
+    },
+    {
+      "title": "東亞咖啡市場異軍突起 全球店鋪數超越歐美成新重心 - 蕃新聞",
+      "titleZh": "東亞咖啡市場異軍突起 全球店鋪數超越歐美成新重心 - 蕃新聞",
+      "titleEn": "",
+      "note": "Source: Google News aggregation",
+      "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE5CaTFwa1pvd3RqVzNSQVNURnM3SGJXT0xXOFNieEpkVzBleDdUemM0UkZVeER4TDFwTVJyZjMxVnhNdlF3UWJ6RG10OFU2ZEV6MWc?oc=5",
       "lang": "zh"
     },
     {
@@ -54,6 +54,14 @@
       "lang": "en"
     },
     {
+      "title": "XBOT Robot Barista debuts at Coffee Fest in Javits Center in Manhattan - Comunicaffe International",
+      "titleZh": "",
+      "titleEn": "XBOT Robot Barista debuts at Coffee Fest in Javits Center in Manhattan - Comunicaffe International",
+      "note": "Source: Google News aggregation",
+      "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQYy11RUUxSk92RHdLY2IwcWs0LTNLalB0UWRNXzRySFI2Q1B6VzBsS183Q0l6NFJmTGlQYjBSRGwzWGo3SkNUUEhUSTNWMWpnRGExdG14QS1iUUFQRVRJOC14NG1QYlQ0dXp2a2Z0RzAzZ2Y3WG1vNnQxNnNpV0wtbTRMYm8yaVJxNDNjS3d6RDdUemYzOVJla1FfQU5Jc1du?oc=5",
+      "lang": "en"
+    },
+    {
       "title": "Coffee industry byproduct shows promise for lowering cholesterol and weight - NutraIngredients.com",
       "titleZh": "",
       "titleEn": "Coffee industry byproduct shows promise for lowering cholesterol and weight - NutraIngredients.com",
@@ -76,14 +84,6 @@
       "note": "Source: Google News aggregation",
       "url": "https://news.google.com/rss/articles/CBMi8AFBVV95cUxNNE9DRFNGUGpBZ0Q5ME5LcllhWlJpRjdRZ2V4QnFWNUk4MmU0Y3NvZzc5a3FQTVNWQ1ZRazFSN3ByTjdBVlB5dk03Q1RuRnFiaENWOXN3ZzlCemxHb01vbk9vSWlOdThKOHU0ZnJmUEZJWXJMdVlpUEhRVEo1NXExdnJqQml6eFk0ejBadzc5cVdwMVNjTGRPZ1VmeUJhRlRqZ1VYeDRNcW5Gb3VicXVxcGZidzFId1I2ZG1Sb2tkUk9jSkJyRXZFby0zZjZ2bnVKMUlaWHdPMjZuNFRDMEs4azBQMlI5WU00Si1MMng2Nng?oc=5",
       "lang": "en"
-    },
-    {
-      "title": "Inside Coffee’s Inflation-Resistant Appeal, from a Restaurant Chain CEO - QSR Magazine",
-      "titleZh": "",
-      "titleEn": "Inside Coffee’s Inflation-Resistant Appeal, from a Restaurant Chain CEO - QSR Magazine",
-      "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQLU93NlJsMkViczhLMDJiZ1MxUU5vRHlheTJzVUhEQ3JvelIzZWFEdGc2M2ZLWk5XcGZJb0l6eGdzaGhrQTFlUjRQRVY5LTdxeEk2WHNlTGFyX1luOC0zbHN0U0g5QXBYdFJTU2VlV1lzdkxXX1hKWUYzb3ZFVXpTMFRfMG1Xb3c4a28wRE5nNHZiQ3JObF9EU0NhSHdSNlRBWk5fRWQzNA?oc=5",
-      "lang": "en"
     }
   ],
   "news": [
@@ -96,19 +96,19 @@
       "lang": "zh"
     },
     {
-      "title": "東亞咖啡市場異軍突起 全球店鋪數超越歐美成新重心 - 蕃新聞",
-      "titleZh": "東亞咖啡市場異軍突起 全球店鋪數超越歐美成新重心 - 蕃新聞",
-      "titleEn": "",
-      "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE5CaTFwa1pvd3RqVzNSQVNURnM3SGJXT0xXOFNieEpkVzBleDdUemM0UkZVeER4TDFwTVJyZjMxVnhNdlF3UWJ6RG10OFU2ZEV6MWc?oc=5",
-      "lang": "zh"
-    },
-    {
       "title": "客座總編輯｜臺灣咖啡產業策略聯盟召集人林哲豪 抓緊第三波浪潮 讓臺灣咖啡成為消費者選項 - 農傳媒",
       "titleZh": "客座總編輯｜臺灣咖啡產業策略聯盟召集人林哲豪 抓緊第三波浪潮 讓臺灣咖啡成為消費者選項 - 農傳媒",
       "titleEn": "",
       "note": "Source: Google News aggregation",
       "url": "https://news.google.com/rss/articles/CBMiVEFVX3lxTE0wVlM4WjlwNllaQXlsYVBNSXF2cEpyZFVoaUlRSGl3ajh0aWdJd2NLOUs3RTh1MHRhanNLeEF4MjR4SkJkX2lFbG1rQlg5djk2SXFJOA?oc=5",
+      "lang": "zh"
+    },
+    {
+      "title": "東亞咖啡市場異軍突起 全球店鋪數超越歐美成新重心 - 蕃新聞",
+      "titleZh": "東亞咖啡市場異軍突起 全球店鋪數超越歐美成新重心 - 蕃新聞",
+      "titleEn": "",
+      "note": "Source: Google News aggregation",
+      "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE5CaTFwa1pvd3RqVzNSQVNURnM3SGJXT0xXOFNieEpkVzBleDdUemM0UkZVeER4TDFwTVJyZjMxVnhNdlF3UWJ6RG10OFU2ZEV6MWc?oc=5",
       "lang": "zh"
     },
     {
@@ -136,6 +136,14 @@
       "lang": "en"
     },
     {
+      "title": "XBOT Robot Barista debuts at Coffee Fest in Javits Center in Manhattan - Comunicaffe International",
+      "titleZh": "",
+      "titleEn": "XBOT Robot Barista debuts at Coffee Fest in Javits Center in Manhattan - Comunicaffe International",
+      "note": "Source: Google News aggregation",
+      "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQYy11RUUxSk92RHdLY2IwcWs0LTNLalB0UWRNXzRySFI2Q1B6VzBsS183Q0l6NFJmTGlQYjBSRGwzWGo3SkNUUEhUSTNWMWpnRGExdG14QS1iUUFQRVRJOC14NG1QYlQ0dXp2a2Z0RzAzZ2Y3WG1vNnQxNnNpV0wtbTRMYm8yaVJxNDNjS3d6RDdUemYzOVJla1FfQU5Jc1du?oc=5",
+      "lang": "en"
+    },
+    {
       "title": "Coffee industry byproduct shows promise for lowering cholesterol and weight - NutraIngredients.com",
       "titleZh": "",
       "titleEn": "Coffee industry byproduct shows promise for lowering cholesterol and weight - NutraIngredients.com",
@@ -157,14 +165,6 @@
       "titleEn": "\"We need more labor\": coffee industry faces challenges of lack of harvesters - WJournalpr",
       "note": "Source: Google News aggregation",
       "url": "https://news.google.com/rss/articles/CBMi8AFBVV95cUxNNE9DRFNGUGpBZ0Q5ME5LcllhWlJpRjdRZ2V4QnFWNUk4MmU0Y3NvZzc5a3FQTVNWQ1ZRazFSN3ByTjdBVlB5dk03Q1RuRnFiaENWOXN3ZzlCemxHb01vbk9vSWlOdThKOHU0ZnJmUEZJWXJMdVlpUEhRVEo1NXExdnJqQml6eFk0ejBadzc5cVdwMVNjTGRPZ1VmeUJhRlRqZ1VYeDRNcW5Gb3VicXVxcGZidzFId1I2ZG1Sb2tkUk9jSkJyRXZFby0zZjZ2bnVKMUlaWHdPMjZuNFRDMEs4azBQMlI5WU00Si1MMng2Nng?oc=5",
-      "lang": "en"
-    },
-    {
-      "title": "Inside Coffee’s Inflation-Resistant Appeal, from a Restaurant Chain CEO - QSR Magazine",
-      "titleZh": "",
-      "titleEn": "Inside Coffee’s Inflation-Resistant Appeal, from a Restaurant Chain CEO - QSR Magazine",
-      "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQLU93NlJsMkViczhLMDJiZ1MxUU5vRHlheTJzVUhEQ3JvelIzZWFEdGc2M2ZLWk5XcGZJb0l6eGdzaGhrQTFlUjRQRVY5LTdxeEk2WHNlTGFyX1luOC0zbHN0U0g5QXBYdFJTU2VlV1lzdkxXX1hKWUYzb3ZFVXpTMFRfMG1Xb3c4a28wRE5nNHZiQ3JObF9EU0NhSHdSNlRBWk5fRWQzNA?oc=5",
       "lang": "en"
     }
   ],
