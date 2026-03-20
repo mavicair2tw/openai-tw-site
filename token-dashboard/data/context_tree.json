@@ -919,40 +919,6 @@
           ]
         },
         {
-          "name": "btc-hourly",
-          "path": "openai-tw-site/btc-hourly",
-          "type": "directory",
-          "size_bytes": 15135,
-          "est_tokens": 3784,
-          "children": [
-            {
-              "name": "data",
-              "path": "openai-tw-site/btc-hourly/data",
-              "type": "directory",
-              "size_bytes": 7870,
-              "est_tokens": 1968,
-              "children": [
-                {
-                  "name": "latest.json",
-                  "path": "openai-tw-site/btc-hourly/data/latest.json",
-                  "type": "file",
-                  "size_bytes": 7870,
-                  "est_tokens": 1968,
-                  "category": "other"
-                }
-              ]
-            },
-            {
-              "name": "index.html",
-              "path": "openai-tw-site/btc-hourly/index.html",
-              "type": "file",
-              "size_bytes": 7265,
-              "est_tokens": 1817,
-              "category": "other"
-            }
-          ]
-        },
-        {
           "name": "chat",
           "path": "openai-tw-site/chat",
           "type": "directory",
@@ -2023,74 +1989,6 @@
           ]
         },
         {
-          "name": "btc-hourly-site",
-          "path": "stock-report-site-repo/btc-hourly-site",
-          "type": "directory",
-          "size_bytes": 18083,
-          "est_tokens": 4521,
-          "children": [
-            {
-              "name": "data",
-              "path": "stock-report-site-repo/btc-hourly-site/data",
-              "type": "directory",
-              "size_bytes": 7876,
-              "est_tokens": 1969,
-              "children": [
-                {
-                  "name": "latest.json",
-                  "path": "stock-report-site-repo/btc-hourly-site/data/latest.json",
-                  "type": "file",
-                  "size_bytes": 7876,
-                  "est_tokens": 1969,
-                  "category": "other"
-                }
-              ]
-            },
-            {
-              "name": "public",
-              "path": "stock-report-site-repo/btc-hourly-site/public",
-              "type": "directory",
-              "size_bytes": 7265,
-              "est_tokens": 1817,
-              "children": [
-                {
-                  "name": "index.html",
-                  "path": "stock-report-site-repo/btc-hourly-site/public/index.html",
-                  "type": "file",
-                  "size_bytes": 7265,
-                  "est_tokens": 1817,
-                  "category": "other"
-                }
-              ]
-            },
-            {
-              "name": "README.md",
-              "path": "stock-report-site-repo/btc-hourly-site/README.md",
-              "type": "file",
-              "size_bytes": 349,
-              "est_tokens": 88,
-              "category": "doc"
-            },
-            {
-              "name": "scripts",
-              "path": "stock-report-site-repo/btc-hourly-site/scripts",
-              "type": "directory",
-              "size_bytes": 2593,
-              "est_tokens": 649,
-              "children": [
-                {
-                  "name": "update_btc_report.py",
-                  "path": "stock-report-site-repo/btc-hourly-site/scripts/update_btc_report.py",
-                  "type": "file",
-                  "size_bytes": 2593,
-                  "est_tokens": 649,
-                  "category": "other"
-                }
-              ]
-            }
-          ]
-        },
-        {
           "name": "cloudflare-chat-worker",
           "path": "stock-report-site-repo/cloudflare-chat-worker",
           "type": "directory",
@@ -3010,31 +2908,6 @@
                       "category": "other"
                     }
                   ]
-                },
-                {
-                  "name": "btc-hourly",
-                  "path": "stock-report-site-repo/stock-report-site/public/btc-hourly",
-                  "type": "directory",
-                  "size_bytes": 7091,
-                  "est_tokens": 1773,
-                  "children": [
-                    {
-                      "name": "index.html",
-                      "path": "stock-report-site-repo/stock-report-site/public/btc-hourly/index.html",
-                      "type": "file",
-                      "size_bytes": 7091,
-                      "est_tokens": 1773,
-                      "category": "other"
-                    }
-                  ]
-                },
-                {
-                  "name": "btc-hourly.html",
-                  "path": "stock-report-site-repo/stock-report-site/public/btc-hourly.html",
-                  "type": "file",
-                  "size_bytes": 7867,
-                  "est_tokens": 1967,
-                  "category": "other"
                 },
                 {
                   "name": "chat",
