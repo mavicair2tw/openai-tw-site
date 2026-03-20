@@ -19,36 +19,112 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Restore protected pages and cards
+        shell: bash
         run: |
+          set -euo pipefail
+
           LAST_AUTHOR=$(git log -1 --format='%an')
           if [ "$LAST_AUTHOR" = "page-protector" ]; then
             echo "Skipping own commit"
             exit 0
           fi
 
+          git fetch origin protected-pages --depth=1 || true
+
           git config user.name "page-protector"
           git config user.email "protect@openai-tw.com"
 
           NEED_COMMIT=false
 
-          # 1. Restore deleted protected pages
-          for F in "english/index.html" "srt/index.html" "etf/index.html" "五子棋/index.html" "ibelieve/index.html" "mp3player/index.html" "mp3player/qr.png" "mp3player/P1.mp3" "mp3player/P2.mp3" "assets/P1.mp3" "assets/P2.mp3" "assets/2010-1.mp3" "assets/2010-2.mp3"; do
+          restore_file() {
+            local path="$1"
+            local dir
+            dir=$(dirname "$path")
+            mkdir -p "$dir"
+
+            if git cat-file -e "origin/protected-pages:$path" 2>/dev/null; then
+              git show "origin/protected-pages:$path" > "$path"
+              git add "$path"
+              echo "Restored from protected-pages: $path"
+              NEED_COMMIT=true
+              return 0
+            fi
+
+            local commit
+            commit=$(git log --all --format='%H %s' -- "$path" \
+              | grep -v ' Deploy site ' \
+              | grep -v '^.* auto-restore:' \
+              | head -n 1 \
+              | awk '{print $1}')
+
+            if [ -n "${commit:-}" ]; then
+              git show "$commit:$path" > "$path"
+              git add "$path"
+              echo "Restored from commit $commit: $path"
+              NEED_COMMIT=true
+              return 0
+            fi
+
+            echo "WARN: No backup source found for $path"
+            return 1
+          }
+
+          for F in \
+            "english/index.html" \
+            "srt/index.html" \
+            "etf/index.html" \
+            "五子棋/index.html" \
+            "ibelieve/index.html" \
+            "mp3player/index.html" \
+            "mp3player/qr.png" \
+            "mp3player/bg.jpg" \
+            "assets/P1.mp3" \
+            "assets/P2.mp3"; do
             if [ ! -f "$F" ]; then
-              echo "MISSING: $F — restoring from protected-pages branch"
-              mkdir -p "$(dirname "$F")"
-              git show origin/protected-pages:"$F" > "$F" 2>/dev/null && git add "$F" && echo "Restored: $F" && NEED_COMMIT=true
+              echo "MISSING: $F"
+              restore_file "$F" || true
             fi
           done
 
-          # 2. Ensure AI School card exists on main index.html
-          if [ -f "index.html" ]; then
-            if ! grep -q '/english/' index.html; then
-              echo "AI School card missing from index.html — injecting"
-              CARD='        <a class="card" href="/english/">\n          <div class="name">📖 AI School · 語言學習<\/div>\n          <div class="desc">英語 \/ 日語 \/ 法語字典、單字練習與 Quiz 測驗<\/div>\n        <\/a>'
-              sed -i "s|<section class=\"featured-grid\">|<section class=\"featured-grid\">\n${CARD}|" index.html
-              git add index.html && NEED_COMMIT=true
-              echo "Injected AI School card"
-            fi
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path('index.html')
+          if not p.exists():
+              raise SystemExit(0)
+
+          content = p.read_text()
+          changed = False
+          marker = '<section class="featured-grid">'
+
+          cards = [
+              ('/english/', '📖 AI School · 語言學習', '英語 / 日語 / 法語字典、單字練習與 Quiz 測驗'),
+              ('/etf/', 'ETF 投資工具', '配息試算、投資組合分析與 ETF 比較'),
+              ('/五子棋/', '五子棋 AI 對戰', '與 AI 對弈五子棋，四種難度，支援音效與悔棋'),
+          ]
+
+          inserts = []
+          for href, title, desc in cards:
+              if href not in content:
+                  inserts.append(
+                      f'        <a class="card" href="{href}">\n'
+                      f'          <div class="name">{title}</div>\n'
+                      f'          <div class="desc">{desc}</div>\n'
+                      f'        </a>'
+                  )
+
+          if inserts and marker in content:
+              content = content.replace(marker, marker + '\n' + '\n'.join(inserts), 1)
+              changed = True
+
+          if changed:
+              p.write_text(content)
+              print('Updated homepage cards')
+          PY
+
+          if ! git diff --quiet -- index.html; then
+            git add index.html
+            NEED_COMMIT=true
           fi
 
           if [ "$NEED_COMMIT" = true ]; then
