@@ -28,12 +28,12 @@
 }
 html{scroll-behavior:smooth}
 body{
-  background:url(/mp3player/bg.jpg) center center / cover fixed no-repeat;color:var(--text);font-family:var(--font-body);
+  background:var(--bg);color:var(--text);font-family:var(--font-body);
   font-size:14px;line-height:1.7;min-height:100vh;
   display:flex;align-items:center;justify-content:center;
   padding:20px;
 }
-body::before{display:none;
+body::before{
   content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   background:
     radial-gradient(ellipse 600px 400px at 30% 20%,rgba(255,107,74,0.05),transparent),
@@ -42,7 +42,7 @@ body::before{display:none;
 
 .player{
   position:relative;z-index:1;width:100%;max-width:480px;
-  background:rgba(12,12,16,0.72);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--border);
+  background:var(--surface);border:1px solid var(--border);
   border-radius:20px;overflow:hidden;
   box-shadow:0 24px 80px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.03) inset;
 }
