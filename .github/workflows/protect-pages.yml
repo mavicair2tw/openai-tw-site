@@ -18,7 +18,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Restore protected pages and cards
+      - name: Restore protected pages, cards, and MP3 files
         shell: bash
         run: |
           set -euo pipefail
@@ -77,14 +77,21 @@ jobs:
             "ibelieve/index.html" \
             "mp3player/index.html" \
             "mp3player/qr.png" \
-            "mp3player/bg.jpg" \
-            "assets/P1.mp3" \
-            "assets/P2.mp3"; do
+            "mp3player/bg.jpg"; do
             if [ ! -f "$F" ]; then
               echo "MISSING: $F"
               restore_file "$F" || true
             fi
           done
+
+          echo "Checking tracked MP3 files from protected-pages..."
+          while IFS= read -r mp3; do
+            [ -n "$mp3" ] || continue
+            if [ ! -f "$mp3" ]; then
+              echo "MISSING MP3: $mp3"
+              restore_file "$mp3" || true
+            fi
+          done < <(git ls-tree --name-only -r origin/protected-pages | grep '\.mp3$' || true)
 
           python3 - <<'PY'
           from pathlib import Path
@@ -101,6 +108,7 @@ jobs:
               ('/english/', '📖 AI School · 語言學習', '英語 / 日語 / 法語字典、單字練習與 Quiz 測驗'),
               ('/etf/', 'ETF 投資工具', '配息試算、投資組合分析與 ETF 比較'),
               ('/五子棋/', '五子棋 AI 對戰', '與 AI 對弈五子棋，四種難度，支援音效與悔棋'),
+              ('/ibelieve/', 'iBelieve', '信念、靈感與沉靜閱讀空間'),
           ]
 
           inserts = []
@@ -128,8 +136,8 @@ jobs:
           fi
 
           if [ "$NEED_COMMIT" = true ]; then
-            git commit -m "auto-restore: protected pages and homepage cards"
+            git commit -m "auto-restore: protected pages, cards, and MP3 files"
             git push
           else
-            echo "All protected pages and cards intact"
+            echo "All protected pages, cards, and MP3 files intact"
           fi
