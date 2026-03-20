@@ -27,16 +27,11 @@
       .logo{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;border:1px solid #35558d;background:linear-gradient(135deg,#132547 0%,#1c3563 100%);color:#dbeafe;font-weight:800;font-size:13px}
       .weather-box{min-width:280px;max-width:360px;padding:10px 12px;border-radius:10px;border:1px solid #2a3a5e;background:#101a33;color:#dbeafe;font-size:13px}
       .weather-meta{color:#b9cae6;line-height:1.45}
-      .top-tags{display:flex;flex-wrap:wrap;gap:10px}
       .top-left{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
       .top-right{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;justify-content:flex-end}
       .quick-search{display:flex;gap:8px;align-items:center}
       .quick-search-input{width:220px;max-width:42vw;background:#0f1730;color:#e6edf3;border:1px solid #223055;border-radius:999px;padding:6px 10px;font-size:12px}
       .quick-search-btn{padding:6px 10px;border-radius:999px;border:1px solid #35558d;background:#1a315f;color:#fff;font-size:12px;font-weight:700;cursor:pointer}
-      .nav-item{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
-      .tag{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid #35558d;color:#cfe2ff;text-decoration:none;font-size:12px;font-weight:700}
-      .tag-sub{color:#8fa3bf;font-size:11px;line-height:1;padding-left:8px}
-      .tag.active{border-color:#60a5fa;background:#1a315f;color:#fff}
       .hero-tag {
         display: inline-block;
         padding: 6px 12px;
@@ -60,6 +55,12 @@
       }
       .sub { margin: 0 0 20px; color: var(--muted); }
       .counter { color: var(--muted); margin-bottom: 20px; }
+      .featured-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
+      }
       .grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
@@ -147,12 +148,6 @@
           </form>
         </div>
       </div>
-      <div class="top-tags">
-        <div class="nav-item">
-          <a class="tag" href="/prompt-builder/">Prompt Builder</a>
-          <span class="tag-sub">AI 提示詞工具</span>
-        </div>
-      </div>
       <div class="hero-image-wrap">
         <img class="hero-image" src="/assets/hero.jpg" alt="Main page visual" />
       </div>
@@ -162,6 +157,21 @@
       </div>
       <p class="sub">主入口：選擇你要看的報表與內容。</p>
       <div class="counter" id="viewCounter">點閱數：--</div>
+
+      <section class="featured-grid">
+        <a class="card" href="/english/">
+          <div class="name">📖 AI School · 語言學習</div>
+          <div class="desc">英語 / 日語 / 法語字典、單字練習與 Quiz 測驗</div>
+        </a>
+        <a class="card" href="/etf/">
+          <div class="name">ETF 投資工具</div>
+          <div class="desc">配息試算、投資組合分析與 ETF 比較</div>
+        </a>
+        <a class="card" href="/五子棋/">
+          <div class="name">五子棋 AI 對戰</div>
+          <div class="desc">與 AI 對弈五子棋，四種難度，支援音效與悔棋</div>
+        </a>
+      </section>
 
       <section class="grid">
         <a class="card" href="https://openai-tw.com/tw/">
@@ -242,14 +252,6 @@
           <div class="desc">健康勾選、風險分級、飲食注意與建議科別</div>
         </a>
 
-        <a class="card" href="/etf/">
-          <div class="name">ETF 投資工具</div>
-          <div class="desc">配息試算、投資組合分析與 ETF 比較</div>
-        </a>
-        <a class="card" href="/五子棋/">
-          <div class="name">五子棋 AI 對戰</div>
-          <div class="desc">與 AI 對弈五子棋，四種難度，支援音效與悔棋</div>
-        </a>
       </section>
 
       <div class="foot">提示：紅色 = 上漲，綠色 = 下跌。</div>
