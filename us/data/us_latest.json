@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-20T17:57:50.925752+08:00",
+  "updatedAt": "2026-03-20T18:42:25.250203+08:00",
   "timezone": "Asia/Taipei",
   "market": "US",
   "items": [
@@ -749,22 +749,10 @@
       "label": "比特幣",
       "symbol": "BTC-USD",
       "type": "Crypto",
-      "price": 70496.54,
-      "change": 583.75,
-      "changePercent": 0.83,
+      "price": 70508.71,
+      "change": 595.92,
+      "changePercent": 0.85,
       "trend": [
-        {
-          "time": "12:00",
-          "close": 70924.78
-        },
-        {
-          "time": "12:15",
-          "close": 70904.09
-        },
-        {
-          "time": "12:30",
-          "close": 70580.04
-        },
         {
           "time": "12:45",
           "close": 70785.05
@@ -847,7 +835,19 @@
         },
         {
           "time": "17:45",
-          "close": 70496.54
+          "close": 70564.0
+        },
+        {
+          "time": "18:00",
+          "close": 70365.78
+        },
+        {
+          "time": "18:15",
+          "close": 70309.71
+        },
+        {
+          "time": "18:30",
+          "close": 70508.71
         }
       ]
     },
@@ -855,22 +855,10 @@
       "label": "黃金期貨",
       "symbol": "GC=F",
       "type": "Commodity",
-      "price": 4667.8,
-      "change": 67.1,
-      "changePercent": 1.46,
+      "price": 4652.4,
+      "change": 51.7,
+      "changePercent": 1.12,
       "trend": [
-        {
-          "time": "12:00",
-          "close": 4719.4
-        },
-        {
-          "time": "12:15",
-          "close": 4723.6
-        },
-        {
-          "time": "12:30",
-          "close": 4720.5
-        },
         {
           "time": "12:45",
           "close": 4722.0
@@ -953,7 +941,19 @@
         },
         {
           "time": "17:45",
-          "close": 4667.8
+          "close": 4668.4
+        },
+        {
+          "time": "18:00",
+          "close": 4663.6
+        },
+        {
+          "time": "18:15",
+          "close": 4658.3
+        },
+        {
+          "time": "18:30",
+          "close": 4652.4
         }
       ]
     }
