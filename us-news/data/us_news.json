@@ -1,16 +1,24 @@
 {
-  "updatedAt": "2026-03-20T12:12:42.175170+08:00",
+  "updatedAt": "2026-03-20T13:30:27.483894+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 新債王警示：美債殖利率走勢暗示Fed升息；3. 03:51特斯拉計劃採購中國太陽光電設備？企業回應：確有此事；4. 03:38特斯拉多線布局加速 股價卻異常平靜；5. 03:10鮑爾表態留任至繼任者獲確認 川普陣營醞釀對策。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 貝佐斯傳募資1000億美元 打造AI自動化基金、規模直逼軟銀Vision Fund；3. 05:00債市出現2008年金融海嘯前罕見訊號；4. 04:10新債王警示：美債殖利率走勢暗示Fed升息；5. 03:51特斯拉計劃採購中國太陽光電設備？企業回應：確有此事。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "新債王警示：美債殖利率走勢暗示Fed升息",
+      "title": "貝佐斯傳募資1000億美元 打造AI自動化基金、規模直逼軟銀Vision Fund",
+      "url": "https://news.cnyes.com/news/id/6391260"
+    },
+    {
+      "title": "05:00債市出現2008年金融海嘯前罕見訊號",
+      "url": "https://news.cnyes.com/news/id/6391215"
+    },
+    {
+      "title": "04:10新債王警示：美債殖利率走勢暗示Fed升息",
       "url": "https://news.cnyes.com/news/id/6391205"
     },
     {
@@ -44,14 +52,6 @@
     {
       "title": "01:02標普500閃現看跌訊號 市場內部壓力升溫",
       "url": "https://news.cnyes.com/news/id/6391227"
-    },
-    {
-      "title": "00:30輝達攜手亞馬遜 AWS將在2027年前採購100萬顆GPU",
-      "url": "https://news.cnyes.com/news/id/6391259"
-    },
-    {
-      "title": "00:10小摩大砍標普目標價兩成至7200點：投資人可能嚴重誤判伊朗戰爭風險",
-      "url": "https://news.cnyes.com/news/id/6390950"
     }
   ],
   "error": null
