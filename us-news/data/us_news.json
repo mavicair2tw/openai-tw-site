@@ -1,57 +1,57 @@
 {
-  "updatedAt": "2026-03-20T16:22:56.672846+08:00",
+  "updatedAt": "2026-03-20T17:05:14.906247+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 聯合利華洽談將旗下食品業務售予McCormick；3. 03/20輝達黃仁勳：散熱系統將是太空資料中心最大難題 解決恐需數年時間；4. 03/20川普在MAGA群體支持率達100%？CNN民調數據引發正反面辯論；5. 03/20啟動紅色警戒！ OpenAI打造桌面版「超級App」 鎖定企業級AI代理市場。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. AI需求未見降溫：從晶片到資料中心，雲端資本支出持續創高；3. 09:00市場誤判戰局影響 資管龍頭：三大壓力才是真正風險；4. 09:00AI持續顛覆軟體股！受谷歌AI設計工具Stitch橫空出世影響 Figma股價兩日挫跌12%；5. 08:00聯合利華洽談將旗下食品業務售予McCormick。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "聯合利華洽談將旗下食品業務售予McCormick",
+      "title": "AI需求未見降溫：從晶片到資料中心，雲端資本支出持續創高",
+      "url": "https://news.cnyes.com/news/id/6392228"
+    },
+    {
+      "title": "09:00市場誤判戰局影響 資管龍頭：三大壓力才是真正風險",
+      "url": "https://news.cnyes.com/news/id/6391983"
+    },
+    {
+      "title": "09:00AI持續顛覆軟體股！受谷歌AI設計工具Stitch橫空出世影響 Figma股價兩日挫跌12%",
+      "url": "https://news.cnyes.com/news/id/6391821"
+    },
+    {
+      "title": "08:00聯合利華洽談將旗下食品業務售予McCormick",
       "url": "https://news.cnyes.com/news/id/6392155"
     },
     {
-      "title": "03/20輝達黃仁勳：散熱系統將是太空資料中心最大難題 解決恐需數年時間",
+      "title": "08:00輝達黃仁勳：散熱系統將是太空資料中心最大難題 解決恐需數年時間",
       "url": "https://news.cnyes.com/news/id/6392146"
     },
     {
-      "title": "03/20川普在MAGA群體支持率達100%？CNN民調數據引發正反面辯論",
+      "title": "07:50川普在MAGA群體支持率達100%？CNN民調數據引發正反面辯論",
       "url": "https://news.cnyes.com/news/id/6392040"
     },
     {
-      "title": "03/20啟動紅色警戒！ OpenAI打造桌面版「超級App」 鎖定企業級AI代理市場",
+      "title": "07:40啟動紅色警戒！ OpenAI打造桌面版「超級App」 鎖定企業級AI代理市場",
       "url": "https://news.cnyes.com/news/id/6391801"
     },
     {
-      "title": "03/20輝達黃仁勳呼籲勿過度渲染AI恐懼 罕見觸及台海議題",
+      "title": "06:30輝達黃仁勳呼籲勿過度渲染AI恐懼 罕見觸及台海議題",
       "url": "https://news.cnyes.com/news/id/6391241"
     },
     {
-      "title": "03/20私募信貸市場現「黃燈警告」 美股金融股寫2020年來最差第一季表現",
+      "title": "06:10私募信貸市場現「黃燈警告」 美股金融股寫2020年來最差第一季表現",
       "url": "https://news.cnyes.com/news/id/6392013"
     },
     {
-      "title": "03/20日月光展現AI節能實力 攜手供應鏈啟動智慧淨零新未來",
+      "title": "06:02日月光展現AI節能實力 攜手供應鏈啟動智慧淨零新未來",
       "url": "https://news.cnyes.com/news/id/6392018"
     },
     {
-      "title": "03/20消息人士：馬斯克團隊採購中國太陽光電設備 預計5月第一周發貨",
+      "title": "05:46消息人士：馬斯克團隊採購中國太陽光電設備 預計5月第一周發貨",
       "url": "https://news.cnyes.com/news/id/6392014"
-    },
-    {
-      "title": "03/20貝佐斯傳募資1000億美元 打造AI自動化基金、規模直逼軟銀Vision Fund",
-      "url": "https://news.cnyes.com/news/id/6391260"
-    },
-    {
-      "title": "03/20債市出現2008年金融海嘯前罕見訊號",
-      "url": "https://news.cnyes.com/news/id/6391215"
-    },
-    {
-      "title": "03/20新債王警示：美債殖利率走勢暗示Fed升息",
-      "url": "https://news.cnyes.com/news/id/6391205"
     }
   ],
   "error": null
