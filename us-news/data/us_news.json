@@ -1,16 +1,40 @@
 {
-  "updatedAt": "2026-03-20T09:53:56.355226+08:00",
+  "updatedAt": "2026-03-20T12:12:42.175170+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. NASA大改登月計畫 SpaceX取代波音成關鍵推進主力；3. 01:10美考慮釋出1.3億桶伊朗海上原油 抑制油價漲勢；4. 01:02標普500閃現看跌訊號 市場內部壓力升溫；5. 00:30輝達攜手亞馬遜 AWS將在2027年前採購100萬顆GPU。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 新債王警示：美債殖利率走勢暗示Fed升息；3. 03:51特斯拉計劃採購中國太陽光電設備？企業回應：確有此事；4. 03:38特斯拉多線布局加速 股價卻異常平靜；5. 03:10鮑爾表態留任至繼任者獲確認 川普陣營醞釀對策。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "NASA大改登月計畫 SpaceX取代波音成關鍵推進主力",
+      "title": "新債王警示：美債殖利率走勢暗示Fed升息",
+      "url": "https://news.cnyes.com/news/id/6391205"
+    },
+    {
+      "title": "03:51特斯拉計劃採購中國太陽光電設備？企業回應：確有此事",
+      "url": "https://news.cnyes.com/news/id/6391911"
+    },
+    {
+      "title": "03:38特斯拉多線布局加速 股價卻異常平靜",
+      "url": "https://news.cnyes.com/news/id/6391226"
+    },
+    {
+      "title": "03:10鮑爾表態留任至繼任者獲確認 川普陣營醞釀對策",
+      "url": "https://news.cnyes.com/news/id/6391214"
+    },
+    {
+      "title": "02:30標普恐下探6000點？BTIG：機率「不低」關鍵支撐在這",
+      "url": "https://news.cnyes.com/news/id/6391223"
+    },
+    {
+      "title": "02:00油價飆升之際 美銀策略師喊買消費股：市場可能錯殺機會",
+      "url": "https://news.cnyes.com/news/id/6391018"
+    },
+    {
+      "title": "01:45NASA大改登月計畫 SpaceX取代波音成關鍵推進主力",
       "url": "https://news.cnyes.com/news/id/6391329"
     },
     {
@@ -28,30 +52,6 @@
     {
       "title": "00:10小摩大砍標普目標價兩成至7200點：投資人可能嚴重誤判伊朗戰爭風險",
       "url": "https://news.cnyes.com/news/id/6390950"
-    },
-    {
-      "title": "00:00美股重點新聞摘要2026年3月20日",
-      "url": "https://news.cnyes.com/news/id/6391222"
-    },
-    {
-      "title": "00:00這款間諜軟體可滲透數百萬支裝置iPhone",
-      "url": "https://news.cnyes.com/news/id/6389616"
-    },
-    {
-      "title": "03/19美超微盤後暴跌超12% 美國指控高層走私輝達晶片到中國",
-      "url": "https://news.cnyes.com/news/id/6391279"
-    },
-    {
-      "title": "03/19尼坦雅胡稱「我們正在取勝」伊朗已無法生產濃縮鈾和製造飛彈",
-      "url": "https://news.cnyes.com/news/id/6391209"
-    },
-    {
-      "title": "03/192031年前上路5萬輛！Uber加碼自駕市場 砸12.5億美元聯手Rivian布局全球",
-      "url": "https://news.cnyes.com/news/id/6391179"
-    },
-    {
-      "title": "03/19美更新俄油豁免條款 明確排除北韓、古巴與克里米亞交易",
-      "url": "https://news.cnyes.com/news/id/6391208"
     }
   ],
   "error": null

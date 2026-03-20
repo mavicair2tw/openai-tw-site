@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-20T09:53:51.863801+08:00",
+  "updatedAt": "2026-03-20T12:12:36.347339+08:00",
   "timezone": "Asia/Taipei",
   "dataDate": "2026-03-20",
   "source": {
@@ -19,9 +19,9 @@
       "label": "加權指數",
       "symbol": "^TWII",
       "type": "Index",
-      "price": 33665.35,
-      "change": -24.33,
-      "changePercent": -0.07,
+      "price": 33597.52,
+      "change": -92.16,
+      "changePercent": -0.27,
       "currency": "TWD",
       "trend": [
         {
@@ -29,11 +29,11 @@
           "close": 33689.68
         },
         {
-          "time": "09:53",
-          "close": 33665.35
+          "time": "12:12",
+          "close": 33597.52
         }
       ],
-      "timestamp": "2026-03-20T09:53:50+08:00"
+      "timestamp": "2026-03-20T12:12:30+08:00"
     },
     {
       "label": "台積電",
@@ -49,7 +49,7 @@
           "close": 1850.0
         }
       ],
-      "timestamp": "2026-03-20T09:53:45+08:00"
+      "timestamp": "2026-03-20T12:12:30+08:00"
     },
     {
       "label": "富邦科技",
@@ -65,27 +65,23 @@
           "close": 45.54
         }
       ],
-      "timestamp": "2026-03-20T09:53:44+08:00"
+      "timestamp": "2026-03-20T12:12:34+08:00"
     },
     {
       "label": "元大台灣50",
       "symbol": "0050.TW",
       "type": "ETF",
-      "price": 76.0,
-      "change": 0.0,
-      "changePercent": 0.0,
+      "price": null,
+      "change": null,
+      "changePercent": null,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
           "close": 76.0
-        },
-        {
-          "time": "09:53",
-          "close": 76.0
         }
       ],
-      "timestamp": "2026-03-20T09:53:44+08:00"
+      "timestamp": "2026-03-20T12:12:34+08:00"
     },
     {
       "label": "凱基台灣TOP50",
@@ -101,7 +97,7 @@
           "close": 10.82
         }
       ],
-      "timestamp": "2026-03-20T09:53:44+08:00"
+      "timestamp": "2026-03-20T12:12:34+08:00"
     },
     {
       "label": "群益台灣精選高息",
@@ -117,7 +113,7 @@
           "close": 23.0
         }
       ],
-      "timestamp": "2026-03-20T09:53:49+08:00"
+      "timestamp": "2026-03-20T12:12:29+08:00"
     },
     {
       "label": "國泰數位支付服務",
@@ -133,7 +129,7 @@
           "close": 39.85
         }
       ],
-      "timestamp": "2026-03-20T09:53:43+08:00"
+      "timestamp": "2026-03-20T12:12:13+08:00"
     }
   ]
 }
