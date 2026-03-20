@@ -1,16 +1,32 @@
 {
-  "updatedAt": "2026-03-20T13:30:27.483894+08:00",
+  "updatedAt": "2026-03-20T14:30:57.423894+08:00",
   "timezone": "Asia/Taipei",
   "source": "https://www.cnyes.com/usstock",
   "ok": true,
-  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 貝佐斯傳募資1000億美元 打造AI自動化基金、規模直逼軟銀Vision Fund；3. 05:00債市出現2008年金融海嘯前罕見訊號；4. 04:10新債王警示：美債殖利率走勢暗示Fed升息；5. 03:51特斯拉計劃採購中國太陽光電設備？企業回應：確有此事。建議優先關注與財報、利率及大型科技股相關消息。",
+  "summary": "今日美股新聞重點：1. ESG企業風雲榜；2. 輝達黃仁勳呼籲勿過度渲染AI恐懼 罕見觸及台海議題；3. 06:10私募信貸市場現「黃燈警告」 美股金融股寫2020年來最差第一季表現；4. 06:02日月光展現AI節能實力 攜手供應鏈啟動智慧淨零新未來；5. 05:46消息人士：馬斯克團隊採購中國太陽光電設備 預計5月第一周發貨。建議優先關注與財報、利率及大型科技股相關消息。",
   "headlines": [
     {
       "title": "ESG企業風雲榜",
       "url": "http://campaign.cnyes.com/topics/ESG/index.html"
     },
     {
-      "title": "貝佐斯傳募資1000億美元 打造AI自動化基金、規模直逼軟銀Vision Fund",
+      "title": "輝達黃仁勳呼籲勿過度渲染AI恐懼 罕見觸及台海議題",
+      "url": "https://news.cnyes.com/news/id/6391241"
+    },
+    {
+      "title": "06:10私募信貸市場現「黃燈警告」 美股金融股寫2020年來最差第一季表現",
+      "url": "https://news.cnyes.com/news/id/6392013"
+    },
+    {
+      "title": "06:02日月光展現AI節能實力 攜手供應鏈啟動智慧淨零新未來",
+      "url": "https://news.cnyes.com/news/id/6392018"
+    },
+    {
+      "title": "05:46消息人士：馬斯克團隊採購中國太陽光電設備 預計5月第一周發貨",
+      "url": "https://news.cnyes.com/news/id/6392014"
+    },
+    {
+      "title": "05:21貝佐斯傳募資1000億美元 打造AI自動化基金、規模直逼軟銀Vision Fund",
       "url": "https://news.cnyes.com/news/id/6391260"
     },
     {
@@ -36,22 +52,6 @@
     {
       "title": "02:30標普恐下探6000點？BTIG：機率「不低」關鍵支撐在這",
       "url": "https://news.cnyes.com/news/id/6391223"
-    },
-    {
-      "title": "02:00油價飆升之際 美銀策略師喊買消費股：市場可能錯殺機會",
-      "url": "https://news.cnyes.com/news/id/6391018"
-    },
-    {
-      "title": "01:45NASA大改登月計畫 SpaceX取代波音成關鍵推進主力",
-      "url": "https://news.cnyes.com/news/id/6391329"
-    },
-    {
-      "title": "01:10美考慮釋出1.3億桶伊朗海上原油 抑制油價漲勢",
-      "url": "https://news.cnyes.com/news/id/6391211"
-    },
-    {
-      "title": "01:02標普500閃現看跌訊號 市場內部壓力升溫",
-      "url": "https://news.cnyes.com/news/id/6391227"
     }
   ],
   "error": null
