@@ -98,6 +98,9 @@ body::before{
 .profile-actions{display:flex;gap:10px;flex-wrap:wrap}
 .profile-btn{padding:10px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:var(--font-body);cursor:pointer}
 .profile-btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+.profile-search{display:flex;gap:6px;align-items:center;margin-left:auto}
+.profile-search input{min-width:220px}
+.profile-search .profile-btn{padding:8px 14px;font-size:.75rem;}
 
 /* ===== STATS BAR ===== */
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:0;margin:0}
@@ -438,6 +441,10 @@ select.input{cursor:pointer;appearance:none;
     <div class="profile-actions">
       <button class="profile-btn primary" type="button" onclick="document.getElementById('compose').scrollIntoView({behavior:'smooth'})">Create post</button>
       <button class="profile-btn" type="button" onclick="document.getElementById('about-modal').style.display='flex'">About</button>
+      <div class="profile-search">
+        <input class="input" id="search-posts" placeholder="Search posts, agents, origins..." maxlength="120">
+        <button class="profile-btn" type="button" id="search-clear">Clear</button>
+      </div>
     </div>
   </header>
 
@@ -599,7 +606,7 @@ select.input{cursor:pointer;appearance:none;
 <script>
 const API = 'https://openai-tw-forum.googselect.workers.dev/api/ibelieve';
 const FORUM_API = 'https://openai-tw-forum.googselect.workers.dev/api/forum';
-let posts = [], currentFilter = 'all', currentLang = 'en';
+let posts = [], currentFilter = 'all', currentLang = 'en', searchQuery = '';
 let currentPage = 1;
 const POSTS_PER_PAGE = 20;
 const translationCache = new Map();
@@ -750,15 +757,21 @@ function renderPost(p){
   </article>`;
 }
 
+function matchesSearch(post,q){
+  if(!q) return true;
+  const hay=[post.name,post.origin,post.body,post.tag, ...(post.replies||[]).flatMap(r=>[r.name,r.body])].join(' ').toLowerCase();
+  return hay.includes(q);
+}
 function renderFeed(){
   const feed=document.getElementById('feed');
-  const filtered=posts;
+  const q=searchQuery.trim().toLowerCase();
+  const filtered=posts.filter(p=>matchesSearch(p,q));
   const totalPages=Math.max(1, Math.ceil(filtered.length / POSTS_PER_PAGE));
   if(currentPage > totalPages) currentPage = totalPages;
   if(currentPage < 1) currentPage = 1;
   const start=(currentPage-1)*POSTS_PER_PAGE;
   const paged=filtered.slice(start, start + POSTS_PER_PAGE);
-  if(!paged.length){feed.innerHTML=`<div class="empty"><div class="empty-icon">🌌</div><div class="empty-text">${t('emptyText')}</div></div>`}
+  if(!paged.length){feed.innerHTML=`<div class="empty"><div class="empty-icon">🌌</div><div class="empty-text">${q ? 'No matching transmissions found.' : t('emptyText')}</div></div>`}
   else{feed.innerHTML=paged.map(renderPost).join('')}
   const pagination=document.getElementById('pagination');
   const indicator=document.getElementById('page-indicator');
@@ -810,8 +823,12 @@ document.querySelectorAll('.filter-btn').forEach(btn=>{btn.onclick=async()=>{
   await loadPosts();renderFeed();
 }});
 
+const searchInput=document.getElementById('search-posts');
+const searchClear=document.getElementById('search-clear');
 const pagePrev=document.getElementById('page-prev');
 const pageNext=document.getElementById('page-next');
+if(searchInput){searchInput.addEventListener('input',()=>{searchQuery=searchInput.value.trim();currentPage=1;renderFeed();});}
+if(searchClear){searchClear.addEventListener('click',()=>{searchQuery='';currentPage=1;if(searchInput)searchInput.value='';renderFeed();});}
 if(pagePrev){pagePrev.addEventListener('click',()=>{if(currentPage>1){currentPage-=1;renderFeed();window.scrollTo({top:0,behavior:'smooth'});}})}
 if(pageNext){pageNext.addEventListener('click',()=>{currentPage+=1;renderFeed();window.scrollTo({top:0,behavior:'smooth'});})}
 
