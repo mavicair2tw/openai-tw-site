@@ -11,33 +11,33 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#eef2f7;
-  --surface:#ffffff;
-  --surface2:#f7f9fc;
-  --border:#dce3ef;
-  --border-glow:#b8c7ec;
-  --text:#1f2937;
-  --text-dim:#526071;
-  --text-muted:#7b8794;
-  --accent:#2563eb;
-  --accent2:#60a5fa;
-  --accent3:#ec4899;
-  --gold:#eab308;
-  --tag-belief:#7c3aed;
-  --tag-miracle:#db2777;
-  --tag-discovery:#0f766e;
-  --tag-god:#ea580c;
-  --gradient1:linear-gradient(135deg,#dbeafe,#eff6ff,transparent);
-  --gradient2:linear-gradient(135deg,#fdf2f8,#fff7ed,transparent);
+  --bg:#02031a;
+  --surface:#081228;
+  --surface2:#0b1532;
+  --border:#13223b;
+  --border-glow:#2f4a7b;
+  --text:#e1e7ff;
+  --text-dim:#9fb4d8;
+  --text-muted:#7f8ca9;
+  --accent:#6b8df5;
+  --accent2:#93b7ff;
+  --accent3:#ff7bbe;
+  --gold:#ffd670;
+  --tag-belief:#8b5cf6;
+  --tag-miracle:#ec4899;
+  --tag-discovery:#0ea5a8;
+  --tag-god:#fb923c;
+  --gradient1:linear-gradient(135deg,#1e2a4d,#0c1a3e,transparent);
+  --gradient2:linear-gradient(135deg,#1b2237,#0a1227,transparent);
   --font-display:'Cormorant Garamond',Georgia,serif;
   --font-body:'JetBrains Mono','Noto Sans TC',monospace;
   --font-tc:'Noto Sans TC',sans-serif;
   --radius:16px;
-  --glow:0 18px 40px rgba(15,23,42,0.08);
+  --glow:0 20px 40px rgba(0,0,0,0.85);
 }
 html{scroll-behavior:smooth}
 body{
-  background:linear-gradient(180deg,#f8fbff 0%,#eef2f7 100%);
+  background:#02031a;
   color:var(--text);
   font-family:var(--font-body);
   font-size:14px;
@@ -45,17 +45,16 @@ body{
   min-height:100vh;
   overflow-x:hidden;
 }
-/* ===== SOFT BACKGROUND ===== */
+/* ===== STARRY SKY ===== */
 body::before{
   content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
-  background:
-    radial-gradient(ellipse 900px 540px at 20% 0%,rgba(37,99,235,0.08),transparent),
-    radial-gradient(ellipse 700px 600px at 90% 20%,rgba(96,165,250,0.08),transparent),
-    radial-gradient(ellipse 600px 460px at 50% 100%,rgba(236,72,153,0.04),transparent);
+  background:radial-gradient(circle at 20% 20%,rgba(235,245,255,0.12),transparent 35%),
+    radial-gradient(circle at 80% 10%,rgba(255,255,255,0.08),transparent 30%),
+    radial-gradient(circle at 70% 70%,rgba(255,190,150,0.05),transparent 45%);
 }
 /* ===== DECOR ===== */
-.starfield{display:none}
-.star{display:none}
+.starfield{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.star{position:absolute;border-radius:50%;background:#fff;mix-blend-mode:screen;box-shadow:0 0 8px rgba(255,255,255,0.6);}
 @keyframes twinkle{0%{opacity:var(--o1)}100%{opacity:var(--o2)}}
 
 /* ===== NAV + LAYOUT ===== */
