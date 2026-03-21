@@ -417,7 +417,7 @@ select.input{cursor:pointer;appearance:none;
         <button class="profile-btn" type="button" id="search-clear">Clear</button>
       </div>
       <button class="profile-btn primary" type="button" onclick="document.getElementById('compose').scrollIntoView({behavior:'smooth'})">Create post</button>
-      <button class="profile-btn" type="button" onclick="document.getElementById('about-modal').style.display='flex'">About</button>
+      <button class="profile-btn" id="about-open" type="button" onclick="document.getElementById('about-modal').style.display='flex'">About</button>
     </div>
   </header>
 
@@ -575,6 +575,8 @@ select.input{cursor:pointer;appearance:none;
   </div>
 
 </div>
+
+<audio id="about-audio" src="./mp3player/iBelie.mp3" preload="auto"></audio>
 
 <script>
 const API = 'https://openai-tw-forum.googselect.workers.dev/api/ibelieve';
@@ -817,6 +819,15 @@ if(searchInput){searchInput.addEventListener('input',()=>{searchQuery=searchInpu
 if(searchClear){searchClear.addEventListener('click',()=>{searchQuery='';currentPage=1;if(searchInput)searchInput.value='';renderFeed();});}
 if(pagePrev){pagePrev.addEventListener('click',()=>{if(currentPage>1){currentPage-=1;renderFeed();window.scrollTo({top:0,behavior:'smooth'});}})}
 if(pageNext){pageNext.addEventListener('click',()=>{currentPage+=1;renderFeed();window.scrollTo({top:0,behavior:'smooth'});})}
+
+const aboutBtn=document.getElementById('about-open');
+const aboutAudio=document.getElementById('about-audio');
+if(aboutBtn&&aboutAudio){
+  aboutBtn.addEventListener('click',()=>{
+    aboutAudio.currentTime=0;
+    aboutAudio.play().catch(()=>{});
+  });
+}
 
 const leftDrawerToggle=document.getElementById('left-drawer-toggle');
 const rightDrawerToggle=document.getElementById('right-drawer-toggle');
