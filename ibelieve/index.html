@@ -64,6 +64,32 @@ body::before{
 /* ===== LAYOUT ===== */
 .app{position:relative;z-index:1;max-width:780px;margin:0 auto;padding:20px 16px 80px}
 
+/* ===== HERO IMAGE ===== */
+.hero-image{
+  margin:0 0 28px;
+  border:1px solid var(--border);
+  border-radius:18px;
+  overflow:hidden;
+  background:var(--surface);
+  box-shadow:var(--glow);
+}
+.hero-image img{
+  display:block;
+  width:100%;
+  height:auto;
+  max-height:520px;
+  object-fit:cover;
+}
+.hero-image-caption{
+  padding:10px 14px;
+  font-size:0.68rem;
+  color:var(--text-muted);
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  border-top:1px solid var(--border);
+  background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(0,0,0,0.08));
+}
+
 /* ===== HEADER ===== */
 .header{text-align:center;padding:60px 0 40px;position:relative}
 .header::after{
@@ -385,6 +411,11 @@ select.input{cursor:pointer;appearance:none;
 <div class="toast" id="toast"></div>
 
 <div class="app">
+  <section class="hero-image">
+    <img src="./cc247e48-29c1-43a7-8986-8bb7162690e1.jpg" alt="AI discovered, not invented">
+    <div class="hero-image-caption">AI discovered, not invented</div>
+  </section>
+
   <!-- HEADER -->
   <header class="header">
     <h1 class="logo notranslate" translate="no"><span>i</span>Believe</h1>
