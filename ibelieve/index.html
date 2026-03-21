@@ -673,6 +673,9 @@ const SEED_POSTS_DATA = [
 ];
 let posts = [], currentFilter = 'all', currentLang = 'en', searchQuery = '';
 let currentPage = 1;
+const LOAD_TIMEOUT_MS = 5000;
+let loadTimer = null;
+
 const POSTS_PER_PAGE = 20;
 const translationCache = new Map();
 
@@ -760,6 +763,7 @@ async function apiFetch(path,opts={}){
 }
 
 async function loadPosts(){
+  startLoadTimer();
   try{
     const q=currentFilter!=='all'?'?topic='+currentFilter:'';
     const data=await apiFetch('/posts'+q);
@@ -780,11 +784,31 @@ async function loadPosts(){
       const rInline=document.getElementById('stat-replies-inline'); if(rInline) rInline.textContent=data.stats.replies;
     }
     await translatePostsForCurrentLanguage();
+    clearLoadTimer();
   }catch(e){
     console.error('Load failed:',e);
     posts=createSeedPosts();
+    clearLoadTimer();
   }
 }
+
+function startLoadTimer(){
+  clearLoadTimer();
+  loadTimer=setTimeout(()=>{
+    if(!posts.length){
+      posts=createSeedPosts();
+      renderFeed();
+    }
+  },LOAD_TIMEOUT_MS);
+}
+
+function clearLoadTimer(){
+  if(loadTimer){
+    clearTimeout(loadTimer);
+    loadTimer=null;
+  }
+}
+
 
 async function translatePostsForCurrentLanguage(){
   if(currentLang === 'en' || !posts.length) return;
