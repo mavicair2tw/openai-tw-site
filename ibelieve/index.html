@@ -349,15 +349,23 @@ select.input{cursor:pointer;appearance:none;
   .drawer-toggle{display:none}
 }
 @media(max-width:600px){
-  .app{padding:12px 10px 60px}
-  .hero-image img{height:220px}
-  .header{margin:-56px 8px 18px;padding:18px}
-  .profile-avatar{width:92px;height:92px;font-size:2.2rem}
-  .compose{padding:16px}
-  .post{padding:18px}
-  .stats{gap:10px}
+  .app{padding:12px 10px 80px}
+  .cover-banner img,.hero-image img{height:200px}
+  .header{margin:-50px 8px 18px;padding:16px;flex-direction:column;align-items:flex-start}
+  .profile-avatar{width:88px;height:88px;font-size:2rem;margin-bottom:6px}
+  .profile-actions{flex-direction:column;align-items:flex-start}
+  .profile-search{width:100%;max-width:none}
+  .compose{padding:14px}
+  .post{padding:16px}
+  .stats{gap:8px;grid-template-columns:repeat(2,minmax(0,1fr));}
   .compose-row{flex-direction:column;gap:6px}
   .compose-row label{min-width:auto}
+  .lang-bar{position:static}
+}
+@media(max-width:480px){
+  .content-grid{grid-template-columns:1fr}
+  .panel-shell{border-radius:14px;padding:12px}
+  .filters{gap:4px}
 }
 
 /* ===== SCROLL BAR ===== */
