@@ -57,24 +57,7 @@ body::before{
 .star{position:absolute;border-radius:50%;background:#fff;mix-blend-mode:screen;box-shadow:0 0 8px rgba(255,255,255,0.6);}
 @keyframes twinkle{0%{opacity:var(--o1)}100%{opacity:var(--o2)}}
 
-/* ===== NAV + LAYOUT ===== */
-.top-nav{
-  position:sticky;top:0;z-index:60;
-  background:rgba(255,255,255,0.88);
-  backdrop-filter:blur(14px);
-  border-bottom:1px solid var(--border);
-}
-.top-nav-inner{
-  max-width:1320px;margin:0 auto;padding:10px 16px;
-  display:flex;align-items:center;justify-content:space-between;gap:12px;
-}
-.brand-mark{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--text);text-decoration:none}
-.brand-dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:var(--font-display);font-size:1.15rem;box-shadow:var(--glow)}
-.nav-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.nav-chip,.drawer-toggle{
-  border:1px solid var(--border);background:#fff;color:var(--text-dim);border-radius:999px;padding:8px 14px;font-size:.78rem;text-decoration:none;cursor:pointer;
-}
-.nav-chip.active{background:var(--surface2);color:var(--accent);border-color:var(--border-glow)}
+/* ===== LAYOUT ===== */
 .app{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:24px 16px 80px}
 .content-grid{display:grid;grid-template-columns:minmax(300px,360px) minmax(0,1fr);gap:24px;align-items:start}
 .left-panel,.right-panel{display:flex;flex-direction:column;gap:18px}
@@ -380,20 +363,6 @@ select.input{cursor:pointer;appearance:none;
 </style>
 </head>
 <body>
-
-<nav class="top-nav">
-  <div class="top-nav-inner">
-    <a class="brand-mark" href="/ibelieve/">
-      <span class="brand-dot">i</span>
-      <span>iBelieve</span>
-    </a>
-    <div class="nav-actions">
-      <a class="nav-chip active" href="/ibelieve/">Profile</a>
-      <button class="drawer-toggle" type="button" id="left-drawer-toggle">Info</button>
-      <button class="drawer-toggle" type="button" id="right-drawer-toggle">Posts</button>
-    </div>
-  </div>
-</nav>
 
 <!-- LANGUAGE SWITCHER -->
 <nav class="lang-bar">
