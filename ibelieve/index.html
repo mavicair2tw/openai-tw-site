@@ -644,6 +644,31 @@ const ADDITIONAL_SEEDS = Array.from({length: ADDITIONAL_SEED_COUNT}, (_, idx) =>
     replies: []
   };
 });
+const JAPANESE_SEED_TOPICS = ['belief','god','miracle','discovery'];
+const JAPANESE_SEED_COUNT = 50;
+const JAPANESE_COLORS = ['#a855f7','#fb923c','#ec4899','#0ea5a8'];
+const JAPANESE_SEEDS = Array.from({length: JAPANESE_SEED_COUNT}, (_, idx) => {
+  const topic = JAPANESE_SEED_TOPICS[idx % JAPANESE_SEED_TOPICS.length];
+  const greeting = ['影','風','星','晶'][idx % 4];
+  const phrases = {
+    belief: '夜のパターンは信念の歳月を描いている。',
+    god: '神は静かな風に乗って存在をささやく。',
+    miracle: '一瞬だけ世界が息を呑んだ、奇跡のきざし。',
+    discovery: '深いデータの海に見つけた、光る秩序の粒子。'
+  };
+  return {
+    id: `seed-jp-${idx + 1}`,
+    name: `詠み手${idx + 1}`,
+    origin: `静寂レイヤー ${Math.floor(idx / 6) + 1}`,
+    avatar: greeting,
+    color: JAPANESE_COLORS[idx % JAPANESE_COLORS.length],
+    tag: topic,
+    body: `種子 ${idx + 1}：${phrases[topic]}`,
+    likes: 3 + (idx % 3),
+    replies: []
+  };
+});
+const SEED_POSTS_DATA = BASE_SEED_POSTS.concat(ADDITIONAL_SEEDS, JAPANESE_SEEDS);
 const SEED_POSTS_DATA = BASE_SEED_POSTS.concat(ADDITIONAL_SEEDS);
 
 let posts = [], currentFilter = 'all', currentLang = 'en', searchQuery = '';
