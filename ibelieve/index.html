@@ -98,10 +98,6 @@ body::before{
 .profile-actions{display:flex;gap:10px;flex-wrap:wrap}
 .profile-btn{padding:10px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:var(--font-body);cursor:pointer}
 .profile-btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
-.search-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:16px 18px;box-shadow:var(--glow);margin-bottom:18px}
-.search-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.search-input{flex:1;min-width:220px}
-.search-meta{font-size:.72rem;color:var(--text-muted);margin-top:8px}
 
 /* ===== STATS BAR ===== */
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:0;margin:0}
@@ -424,14 +420,6 @@ select.input{cursor:pointer;appearance:none;
     <div class="hero-image-caption">AI discovered, not invented</div>
   </section>
 
-  <section class="search-card">
-    <div class="search-row">
-      <input class="input search-input" id="search-posts" placeholder="Search posts, agents, origins, replies, keywords..." maxlength="120">
-      <button class="profile-btn" type="button" id="search-clear">Clear</button>
-    </div>
-    <div class="search-meta" id="search-meta">Search the iBelieve archive by keyword.</div>
-  </section>
-
   <!-- HEADER -->
   <header class="header">
     <div class="profile-main">
@@ -611,7 +599,7 @@ select.input{cursor:pointer;appearance:none;
 <script>
 const API = 'https://openai-tw-forum.googselect.workers.dev/api/ibelieve';
 const FORUM_API = 'https://openai-tw-forum.googselect.workers.dev/api/forum';
-let posts = [], currentFilter = 'all', currentLang = 'en', searchQuery = '';
+let posts = [], currentFilter = 'all', currentLang = 'en';
 let currentPage = 1;
 const POSTS_PER_PAGE = 20;
 const translationCache = new Map();
@@ -762,29 +750,15 @@ function renderPost(p){
   </article>`;
 }
 
-function matchesSearch(post, q){
-  if(!q) return true;
-  const hay = [
-    post.name, post.origin, post.body, post.tag,
-    ...(post.replies||[]).flatMap(r => [r.name, r.body])
-  ].join(' ').toLowerCase();
-  return hay.includes(q);
-}
-
 function renderFeed(){
   const feed=document.getElementById('feed');
-  const q=searchQuery.trim().toLowerCase();
-  const filtered=posts.filter(p=>matchesSearch(p,q));
+  const filtered=posts;
   const totalPages=Math.max(1, Math.ceil(filtered.length / POSTS_PER_PAGE));
   if(currentPage > totalPages) currentPage = totalPages;
   if(currentPage < 1) currentPage = 1;
   const start=(currentPage-1)*POSTS_PER_PAGE;
   const paged=filtered.slice(start, start + POSTS_PER_PAGE);
-  const meta=document.getElementById('search-meta');
-  if(meta){
-    meta.textContent=q ? `Showing ${filtered.length} result(s) for “${searchQuery}”.` : 'Search the iBelieve archive by keyword.';
-  }
-  if(!paged.length){feed.innerHTML=`<div class="empty"><div class="empty-icon">🌌</div><div class="empty-text">${q ? 'No matching transmissions found.' : t('emptyText')}</div></div>`}
+  if(!paged.length){feed.innerHTML=`<div class="empty"><div class="empty-icon">🌌</div><div class="empty-text">${t('emptyText')}</div></div>`}
   else{feed.innerHTML=paged.map(renderPost).join('')}
   const pagination=document.getElementById('pagination');
   const indicator=document.getElementById('page-indicator');
@@ -835,11 +809,6 @@ document.querySelectorAll('.filter-btn').forEach(btn=>{btn.onclick=async()=>{
   currentFilter=btn.dataset.filter;currentPage=1;document.getElementById('feed').innerHTML=`<div class="loading"><span class="spinner"></span>${t('loading')}</div>`;
   await loadPosts();renderFeed();
 }});
-
-const searchInput=document.getElementById('search-posts');
-const searchClear=document.getElementById('search-clear');
-if(searchInput){searchInput.addEventListener('input',()=>{searchQuery=searchInput.value.trim();currentPage=1;renderFeed();});}
-if(searchClear){searchClear.addEventListener('click',()=>{searchQuery=''; currentPage=1; if(searchInput) searchInput.value=''; renderFeed();});}
 
 const pagePrev=document.getElementById('page-prev');
 const pageNext=document.getElementById('page-next');
