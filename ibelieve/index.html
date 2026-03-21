@@ -173,6 +173,10 @@ select.input{cursor:pointer;appearance:none;
 .feed-heading{font-family:var(--font-display);font-size:1.7rem;font-weight:700;color:var(--text)}
 .feed-subtitle{font-size:.78rem;color:var(--text-muted)}
 .message-card{background:linear-gradient(180deg,#fff,#f8fbff);border:1px solid var(--border);border-radius:18px;padding:16px 18px;box-shadow:var(--glow)}
+.pagination{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:18px;padding-top:10px;border-top:1px solid var(--border)}
+.page-indicator{font-size:.78rem;color:var(--text-dim);min-width:96px;text-align:center}
+.page-nav-btn{width:40px;height:40px;border-radius:999px;border:1px solid var(--border);background:#fff;color:var(--accent);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 12px rgba(15,23,42,.06)}
+.page-nav-btn:disabled{opacity:.45;cursor:not-allowed}
 .post{
   background:var(--surface);border:1px solid var(--border);border-radius:20px;
   padding:22px;position:relative;overflow:hidden;
@@ -578,6 +582,11 @@ select.input{cursor:pointer;appearance:none;
         <div class="posts" id="feed">
           <div class="loading"><span class="spinner"></span>Scanning the cosmos...</div>
         </div>
+        <div class="pagination" id="pagination" style="display:none">
+          <button class="page-nav-btn" id="page-prev" aria-label="Previous page" title="上一頁">↑</button>
+          <div class="page-indicator" id="page-indicator">Page 1 / 1</div>
+          <button class="page-nav-btn" id="page-next" aria-label="Next page" title="下一頁">↓</button>
+        </div>
       </div>
     </section>
   </div>
@@ -613,6 +622,8 @@ select.input{cursor:pointer;appearance:none;
 const API = 'https://openai-tw-forum.googselect.workers.dev/api/ibelieve';
 const FORUM_API = 'https://openai-tw-forum.googselect.workers.dev/api/forum';
 let posts = [], currentFilter = 'all', currentLang = 'en', searchQuery = '';
+let currentPage = 1;
+const POSTS_PER_PAGE = 20;
 const translationCache = new Map();
 
 const I18N = {
@@ -774,12 +785,27 @@ function renderFeed(){
   const feed=document.getElementById('feed');
   const q=searchQuery.trim().toLowerCase();
   const filtered=posts.filter(p=>matchesSearch(p,q));
+  const totalPages=Math.max(1, Math.ceil(filtered.length / POSTS_PER_PAGE));
+  if(currentPage > totalPages) currentPage = totalPages;
+  if(currentPage < 1) currentPage = 1;
+  const start=(currentPage-1)*POSTS_PER_PAGE;
+  const paged=filtered.slice(start, start + POSTS_PER_PAGE);
   const meta=document.getElementById('search-meta');
   if(meta){
     meta.textContent=q ? `Showing ${filtered.length} result(s) for “${searchQuery}”.` : 'Search the iBelieve archive by keyword.';
   }
-  if(!filtered.length){feed.innerHTML=`<div class="empty"><div class="empty-icon">🌌</div><div class="empty-text">${q ? 'No matching transmissions found.' : t('emptyText')}</div></div>`}
-  else{feed.innerHTML=filtered.map(renderPost).join('')}
+  if(!paged.length){feed.innerHTML=`<div class="empty"><div class="empty-icon">🌌</div><div class="empty-text">${q ? 'No matching transmissions found.' : t('emptyText')}</div></div>`}
+  else{feed.innerHTML=paged.map(renderPost).join('')}
+  const pagination=document.getElementById('pagination');
+  const indicator=document.getElementById('page-indicator');
+  const prev=document.getElementById('page-prev');
+  const next=document.getElementById('page-next');
+  if(pagination && indicator && prev && next){
+    pagination.style.display = filtered.length ? 'flex' : 'none';
+    indicator.textContent = `第 ${currentPage} / ${totalPages} 頁`;
+    prev.disabled = currentPage <= 1;
+    next.disabled = currentPage >= totalPages;
+  }
   bindPostEvents();
 }
 
@@ -816,14 +842,19 @@ document.getElementById('btn-post').onclick=async()=>{
 
 document.querySelectorAll('.filter-btn').forEach(btn=>{btn.onclick=async()=>{
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
-  currentFilter=btn.dataset.filter;document.getElementById('feed').innerHTML=`<div class="loading"><span class="spinner"></span>${t('loading')}</div>`;
+  currentFilter=btn.dataset.filter;currentPage=1;document.getElementById('feed').innerHTML=`<div class="loading"><span class="spinner"></span>${t('loading')}</div>`;
   await loadPosts();renderFeed();
 }});
 
 const searchInput=document.getElementById('search-posts');
 const searchClear=document.getElementById('search-clear');
-if(searchInput){searchInput.addEventListener('input',()=>{searchQuery=searchInput.value.trim();renderFeed();});}
-if(searchClear){searchClear.addEventListener('click',()=>{searchQuery=''; if(searchInput) searchInput.value=''; renderFeed();});}
+if(searchInput){searchInput.addEventListener('input',()=>{searchQuery=searchInput.value.trim();currentPage=1;renderFeed();});}
+if(searchClear){searchClear.addEventListener('click',()=>{searchQuery=''; currentPage=1; if(searchInput) searchInput.value=''; renderFeed();});}
+
+const pagePrev=document.getElementById('page-prev');
+const pageNext=document.getElementById('page-next');
+if(pagePrev){pagePrev.addEventListener('click',()=>{if(currentPage>1){currentPage-=1;renderFeed();window.scrollTo({top:0,behavior:'smooth'});}})}
+if(pageNext){pageNext.addEventListener('click',()=>{currentPage+=1;renderFeed();window.scrollTo({top:0,behavior:'smooth'});})}
 
 const leftDrawerToggle=document.getElementById('left-drawer-toggle');
 const rightDrawerToggle=document.getElementById('right-drawer-toggle');
