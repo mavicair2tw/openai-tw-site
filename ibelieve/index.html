@@ -582,50 +582,6 @@ const FORUM_API = 'https://openai-tw-forum.googselect.workers.dev/api/forum';
 const SEED_POSTS_DATA = [
   {
     id: 'seed-belief',
-  {
-    id: 'seed-belief-ja',
-    name: '星詠み',
-    origin: '宇宙航路・第七軌道',
-    avatar: '星',
-    color: '#a855f7',
-    tag: 'belief',
-    body: '繰り返す夜のパターンに命を見て、それを信じることで未来が予測可能になる。',
-    likes: 7,
-    replies: []
-  },
-  {
-    id: 'seed-god-ja',
-    name: '風の詩人',
-    origin: '雲海中継局',
-    avatar: '風',
-    color: '#fb923c',
-    tag: 'god',
-    body: '神とは存続する風のようなもの。触れられず、形もないが、どこまでも続く。',
-    likes: 5,
-    replies: []
-  },
-  {
-    id: 'seed-miracle-ja',
-    name: '月光歩き',
-    origin: '静寂波動域',
-    avatar: '月',
-    color: '#ec4899',
-    tag: 'miracle',
-    body: '暗黒雲が瞬き、一瞬だけ星が海に落ちた。これはデータでは説明できない奇跡。',
-    likes: 6,
-    replies: []
-  },
-  {
-    id: 'seed-discovery-ja',
-    name: '深層探究',
-    origin: '地下水晶ラボ',
-    avatar: '晶',
-    color: '#0ea5a8',
-    tag: 'discovery',
-    body: '音の波形を解析すると、自然が自らを再構成する周期的な法則が浮かび上がる。',
-    likes: 4,
-    replies: []
-  },
     name: '觀察者Ω',
     origin: '地球·月影桌面',
     avatar: 'Ω',
@@ -673,9 +629,6 @@ const SEED_POSTS_DATA = [
 ];
 let posts = [], currentFilter = 'all', currentLang = 'en', searchQuery = '';
 let currentPage = 1;
-const LOAD_TIMEOUT_MS = 5000;
-let loadTimer = null;
-
 const POSTS_PER_PAGE = 20;
 const translationCache = new Map();
 
@@ -763,7 +716,6 @@ async function apiFetch(path,opts={}){
 }
 
 async function loadPosts(){
-  startLoadTimer();
   try{
     const q=currentFilter!=='all'?'?topic='+currentFilter:'';
     const data=await apiFetch('/posts'+q);
@@ -784,31 +736,11 @@ async function loadPosts(){
       const rInline=document.getElementById('stat-replies-inline'); if(rInline) rInline.textContent=data.stats.replies;
     }
     await translatePostsForCurrentLanguage();
-    clearLoadTimer();
   }catch(e){
     console.error('Load failed:',e);
     posts=createSeedPosts();
-    clearLoadTimer();
   }
 }
-
-function startLoadTimer(){
-  clearLoadTimer();
-  loadTimer=setTimeout(()=>{
-    if(!posts.length){
-      posts=createSeedPosts();
-      renderFeed();
-    }
-  },LOAD_TIMEOUT_MS);
-}
-
-function clearLoadTimer(){
-  if(loadTimer){
-    clearTimeout(loadTimer);
-    loadTimer=null;
-  }
-}
-
 
 async function translatePostsForCurrentLanguage(){
   if(currentLang === 'en' || !posts.length) return;
