@@ -90,8 +90,6 @@ body::before{
 .profile-search{display:flex;gap:6px;align-items:center;min-width:220px;flex:1;max-width:320px}
 .profile-search .input{flex:1;background:#fff;border:1px solid var(--border);}
 .profile-search .profile-btn{padding:8px 14px;min-width:unset;font-size:0.75rem}
-.title-listen-btn{display:none !important}
-#title-listen-btn{display:none !important}
 
 /* ===== STATS BAR ===== */
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:0;margin:0}
@@ -1061,8 +1059,10 @@ function showToast(msg){const el=document.getElementById('toast');el.textContent
 function createStars(){const sf=document.getElementById('starfield');for(let i=0;i<120;i++){const s=document.createElement('div');s.className='star';const sz=Math.random()*2.5+0.5;s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--dur:${2+Math.random()*4}s;--o1:${0.1+Math.random()*0.3};--o2:${0.5+Math.random()*0.5}`;sf.appendChild(s)}}
 
 function removeStaleTitleListen(){
-  document.querySelectorAll('#title-listen-btn, .title-listen-btn').forEach(el=>el.remove());
-  document.querySelectorAll('#title-listen-audio').forEach(el=>el.remove());
+  const btn=document.getElementById('title-listen-btn');
+  const audio=document.getElementById('title-listen-audio');
+  if(btn){ btn.remove(); }
+  if(audio){ audio.remove(); }
 }
 
 async function init(){
