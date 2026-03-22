@@ -759,6 +759,8 @@ function playTts(key, text){
     },0);
   }catch(_e){ activeAudioStatus='exception'; activeAudioError=String(_e && _e.message || _e || 'unknown'); activeAudioKey=null; activeAudioUrl=''; renderFeed(); showToast(t('ttsFailed')); }
 }
+window.__ibelievePlayTts = function(key, text){ playTts(key, text); };
+
 function renderTranslationMeta(item){
   if(!item||!item.originalLanguage) return '';
   if(item.isTranslated){
@@ -835,7 +837,7 @@ function renderPost(p){
       <div class="reply-avatar" style="background:${r.color}22;color:${r.color}">${r.avatar}</div>
       <span class="reply-name" style="color:${r.color}">${esc(r.name)}</span>
       <span class="reply-time">${getTimeAgo(r.time)}</span>
-    </div>${renderTranslationMeta(r)}<div class="reply-body">${esc(r.body)}</div><div class="reply-actions"><button type="button" class="reply-tts-btn ${activeAudioKey===`reply:${p.id}:${idx}`?'active':''}" data-key="reply:${p.id}:${idx}" data-text="${esc(r.body)}">${activeAudioKey===`reply:${p.id}:${idx}`?t('ttsStop'):t('ttsPlay')}</button></div>${activeAudioKey===`reply:${p.id}:${idx}`?`<div class="embedded-tts-player"><audio id="embedded-audio-player" controls autoplay playsinline preload="auto" src="${activeAudioUrl}"></audio><div class="tts-debug-panel"><strong>${t('ttsDebugTitle')}</strong><div class="tts-debug-row">${t('ttsState')}: ${esc(activeAudioStatus||'idle')}</div><div class="tts-debug-row">${t('ttsUrl')}: ${esc(activeAudioUrl||'')}</div><div class="tts-debug-row">${t('ttsError')}: ${esc(activeAudioError||'')}</div></div></div>`:''}</div>`).join('');
+    </div>${renderTranslationMeta(r)}<div class="reply-body">${esc(r.body)}</div><div class="reply-actions"><button type="button" class="reply-tts-btn ${activeAudioKey===`reply:${p.id}:${idx}`?'active':''}" data-key="reply:${p.id}:${idx}" data-text="${esc(r.body)}" onclick="window.__ibelievePlayTts && window.__ibelievePlayTts(this.dataset.key, this.dataset.text); return false;">${activeAudioKey===`reply:${p.id}:${idx}`?t('ttsStop'):t('ttsPlay')}</button></div>${activeAudioKey===`reply:${p.id}:${idx}`?`<div class="embedded-tts-player"><audio id="embedded-audio-player" controls autoplay playsinline preload="auto" src="${activeAudioUrl}"></audio><div class="tts-debug-panel"><strong>${t('ttsDebugTitle')}</strong><div class="tts-debug-row">${t('ttsState')}: ${esc(activeAudioStatus||'idle')}</div><div class="tts-debug-row">${t('ttsUrl')}: ${esc(activeAudioUrl||'')}</div><div class="tts-debug-row">${t('ttsError')}: ${esc(activeAudioError||'')}</div></div></div>`:''}</div>`).join('');
   return `<article class="post" data-id="${p.id}" data-tag="${p.tag}">
     <div class="post-header">
       <div class="avatar" style="background:${p.color}18;color:${p.color}">${p.avatar}</div>
@@ -849,7 +851,7 @@ function renderPost(p){
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 00-7.8 7.8l1 1.1L12 21.3l7.8-7.8 1-1.1a5.5 5.5 0 000-7.8z"/></svg>
         <span>${p.likes||0}</span>
       </button>
-      <button type="button" class="action-btn tts-btn ${activeAudioKey===`post:${p.id}`?'active':''}" data-key="post:${p.id}" data-text="${esc(p.body)}">${activeAudioKey===`post:${p.id}`?t('ttsStop'):t('ttsPlay')}</button>
+      <button type="button" class="action-btn tts-btn ${activeAudioKey===`post:${p.id}`?'active':''}" data-key="post:${p.id}" data-text="${esc(p.body)}" onclick="window.__ibelievePlayTts && window.__ibelievePlayTts(this.dataset.key, this.dataset.text); return false;">${activeAudioKey===`post:${p.id}`?t('ttsStop'):t('ttsPlay')}</button>
       <button type="button" class="action-btn reply-toggle-btn" data-id="${p.id}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
         <span>${(p.replies||[]).length} ${t('replies')}</span>
@@ -948,16 +950,6 @@ document.querySelectorAll('.intro-pillar[data-topic]').forEach(el=>{
     await loadPosts();renderFeed();
   });
 });
-
-document.addEventListener('click',(e)=>{
-  const ttsBtn=e.target.closest('.tts-btn, .reply-tts-btn');
-  if(ttsBtn){
-    e.preventDefault();
-    e.stopPropagation();
-    playTts(ttsBtn.dataset.key, ttsBtn.dataset.text);
-    return;
-  }
-}, {passive:false});
 
 const searchInput=document.getElementById('search-posts');
 const searchClear=document.getElementById('search-clear');
