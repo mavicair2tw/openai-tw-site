@@ -680,6 +680,26 @@ function collectTopicNarrationText(){
 let topicNarrationAudio=null;
 let topicNarrationObjectUrl='';
 
+function isEnglishNarration(){
+  return currentLang === 'en';
+}
+
+function pickEnglishNarrationVoice(){
+  if(!('speechSynthesis' in window)) return null;
+  const voices=window.speechSynthesis.getVoices?.() || [];
+  if(!voices.length) return null;
+  const preferred=['Samantha','Ava','Allison','Susan','Jenny','Aria'];
+  for(const name of preferred){
+    const match=voices.find(v=>(v.lang||'').toLowerCase().startsWith('en-us') && v.name===name);
+    if(match) return match;
+  }
+  return voices.find(v=>{
+    const name=(v.name||'').toLowerCase();
+    const lang=(v.lang||'').toLowerCase();
+    return lang.startsWith('en-us') && /(samantha|ava|allison|susan|jenny|aria|female|woman|girl|zira)/.test(name);
+  }) || voices.find(v=>(v.lang||'').toLowerCase().startsWith('en-us')) || null;
+}
+
 function buildTopicNarrationText(){
   return collectTopicNarrationText().join('\n\n');
 }
@@ -697,10 +717,15 @@ function stopTopicNarration(){
     URL.revokeObjectURL(topicNarrationObjectUrl);
     topicNarrationObjectUrl='';
   }
+  if('speechSynthesis' in window){
+    window.speechSynthesis.cancel();
+  }
 }
 
 function isTopicNarrationPlaying(){
-  return !!(topicNarrationAudio && !topicNarrationAudio.paused && !topicNarrationAudio.ended);
+  const audioPlaying=!!(topicNarrationAudio && !topicNarrationAudio.paused && !topicNarrationAudio.ended);
+  const speechPlaying=('speechSynthesis' in window) && (window.speechSynthesis.speaking || window.speechSynthesis.pending);
+  return audioPlaying || speechPlaying;
 }
 
 function syncTopListenButton(){
@@ -715,26 +740,41 @@ function syncTopListenButton(){
 async function playTopicNarration(){
   const text=buildTopicNarrationText();
   if(!text) return;
-  if(!topicNarrationAudio){
-    topicNarrationAudio=new Audio();
-    ['play','pause','ended','error'].forEach(evt=>topicNarrationAudio.addEventListener(evt, syncTopListenButton));
-  }
   try{
     stopTopicNarration();
-    const res=await fetch(getTopicNarrationEndpoint(), {
-      method:'POST',
-      mode:'cors',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        text:text.slice(0, 4000),
-        lang:getNarrationApiLang()
-      })
-    });
-    if(!res.ok) throw new Error(`TTS ${res.status}`);
-    const blob=await res.blob();
-    topicNarrationObjectUrl=URL.createObjectURL(blob);
-    topicNarrationAudio.src=topicNarrationObjectUrl;
-    await topicNarrationAudio.play();
+    if(isEnglishNarration()){
+      if(!('speechSynthesis' in window)) throw new Error('speechSynthesis unavailable');
+      const voice=pickEnglishNarrationVoice();
+      const utter=new SpeechSynthesisUtterance(text);
+      utter.lang='en-US';
+      if(voice) utter.voice=voice;
+      utter.rate=0.9;
+      utter.pitch=1.08;
+      utter.volume=1;
+      utter.onstart=()=>syncTopListenButton();
+      utter.onend=()=>setTimeout(syncTopListenButton,50);
+      utter.onerror=()=>{showToast(t('toastError')); syncTopListenButton();};
+      window.speechSynthesis.speak(utter);
+    }else{
+      if(!topicNarrationAudio){
+        topicNarrationAudio=new Audio();
+        ['play','pause','ended','error'].forEach(evt=>topicNarrationAudio.addEventListener(evt, syncTopListenButton));
+      }
+      const res=await fetch(getTopicNarrationEndpoint(), {
+        method:'POST',
+        mode:'cors',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          text:text.slice(0, 4000),
+          lang:getNarrationApiLang()
+        })
+      });
+      if(!res.ok) throw new Error(`TTS ${res.status}`);
+      const blob=await res.blob();
+      topicNarrationObjectUrl=URL.createObjectURL(blob);
+      topicNarrationAudio.src=topicNarrationObjectUrl;
+      await topicNarrationAudio.play();
+    }
   }catch(err){
     console.error('topic narration play failed', err);
     showToast(t('toastError'));
