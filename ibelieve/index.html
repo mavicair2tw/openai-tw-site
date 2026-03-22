@@ -699,7 +699,17 @@ function isEnglishNarration(){
 }
 
 function pickEnglishNarrationVoice(){
-  return null;
+  if(!('speechSynthesis' in window)) return null;
+  const voices=window.speechSynthesis.getVoices?.() || [];
+  if(!voices.length) return null;
+
+  const exactSamantha=voices.find(v=>v.name==='Samantha');
+  if(exactSamantha) return exactSamantha;
+
+  const namedSamantha=voices.find(v=>(v.name||'').toLowerCase().includes('samantha'));
+  if(namedSamantha) return namedSamantha;
+
+  return voices.find(v=>(v.lang||'').toLowerCase().startsWith('en-us')) || null;
 }
 
 function buildTopicNarrationText(){
