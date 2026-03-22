@@ -708,6 +708,14 @@ function getTopicNarrationEndpoint(){
   return 'https://openai-tw-forum.googselect.workers.dev/api/ibelieve/tts';
 }
 
+function buildTopicNarrationUrl(){
+  const text=buildTopicNarrationText();
+  const params=new URLSearchParams();
+  params.set('text', text.slice(0, 4000));
+  params.set('lang', getNarrationApiLang());
+  return `${getTopicNarrationEndpoint()}?${params.toString()}`;
+}
+
 function stopTopicNarration(){
   if(topicNarrationAudio){
     topicNarrationAudio.pause();
@@ -760,15 +768,7 @@ async function playTopicNarration(){
         topicNarrationAudio=new Audio();
         ['play','pause','ended','error'].forEach(evt=>topicNarrationAudio.addEventListener(evt, syncTopListenButton));
       }
-      const res=await fetch(getTopicNarrationEndpoint(), {
-        method:'POST',
-        mode:'cors',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-          text:text.slice(0, 4000),
-          lang:getNarrationApiLang()
-        })
-      });
+      const res=await fetch(buildTopicNarrationUrl(), { mode:'cors' });
       if(!res.ok) throw new Error(`TTS ${res.status}`);
       const blob=await res.blob();
       topicNarrationObjectUrl=URL.createObjectURL(blob);
