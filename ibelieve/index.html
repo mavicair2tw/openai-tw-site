@@ -710,12 +710,26 @@ function pickSpeechLang(text){
   const detected=detectSubmissionLanguage(text, currentLang);
   return ({'zh-TW':'zh-TW','zh-CN':'zh-CN','ja':'ja-JP','ko':'ko-KR','en':'en-US','es':'es-ES','fr':'fr-FR','de':'de-DE'})[detected] || 'en-US';
 }
+function pickEnglishSystemVoice(){
+  if(!('speechSynthesis' in window)) return null;
+  const voices=window.speechSynthesis.getVoices?.() || [];
+  if(!voices.length) return null;
+  return voices.find(v=>v.name==='Alex')
+    || voices.find(v=>(v.name||'').toLowerCase().includes('alex'))
+    || voices.find(v=>(v.lang||'').toLowerCase().startsWith('en-us'))
+    || null;
+}
+
 function speakWithBrowserTts(text, options={}){
   if(!('speechSynthesis' in window)) throw new Error('speechSynthesis unavailable');
   const utter=new SpeechSynthesisUtterance(String(text||'').trim());
   if(!utter.text) throw new Error('empty text');
   utter.lang=options.lang||pickSpeechLang(text);
   if(options.voice) utter.voice=options.voice;
+  if(!options.voice && (options.lang||pickSpeechLang(text))==='en-US'){
+    const englishVoice=pickEnglishSystemVoice();
+    if(englishVoice) utter.voice=englishVoice;
+  }
   utter.rate=options.rate||1;
   utter.pitch=options.pitch||1;
   utter.volume=1;
