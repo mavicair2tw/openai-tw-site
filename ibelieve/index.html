@@ -1252,7 +1252,14 @@ async function jumpToTopic(topic){
   await loadPosts();
   renderFeed();
   const panel = document.getElementById('posts-panel') || document.getElementById('feed');
-  if(panel) panel.scrollIntoView({behavior:'smooth', block:'start'});
+  if(panel){
+    const top = Math.max(0, panel.getBoundingClientRect().top + window.scrollY - 72);
+    try{
+      window.scrollTo({ top, behavior:'smooth' });
+    }catch(_){
+      window.scrollTo(0, top);
+    }
+  }
 }
 
 async function init(){
