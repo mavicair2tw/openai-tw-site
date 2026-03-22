@@ -678,7 +678,7 @@ function collectTopicNarrationText(){
   if(isEnglishNarration()){
     const visiblePosts=(posts||[]).filter(p=>matchesSearch(p, searchQuery.trim().toLowerCase()));
     visiblePosts.forEach(post=>{
-      const body=cleanNarrationText(getTranslatedText(post.body, currentLang));
+      const body=cleanNarrationText(post.displayBody || getTranslatedText(post.body, currentLang));
       if(body) parts.push(body);
     });
     return parts;
@@ -964,6 +964,7 @@ async function applyLanguage(lang){
   if(ps[2])ps[2].innerHTML=t('aboutP3');if(ps[3])ps[3].innerHTML=t('aboutP4');
   if(ps[4])ps[4].innerHTML=t('aboutNote');
   await translatePostsForCurrentLanguage();
+  applyTranslatedFields();
   renderFeed();
 }
 
@@ -994,6 +995,7 @@ async function loadPosts(){
       const rInline=document.getElementById('stat-replies-inline'); if(rInline) rInline.textContent=data.stats.replies;
     }
     await translatePostsForCurrentLanguage();
+    applyTranslatedFields();
   }catch(e){console.error('Load failed:',e);posts=[]}
 }
 
@@ -1001,10 +1003,22 @@ async function translatePostsForCurrentLanguage(){
   if(currentLang === 'en' || !posts.length) return;
   const texts = [];
   posts.forEach(p => {
-    texts.push(p.body, p.origin);
-    (p.replies || []).forEach(r => texts.push(r.body));
+    texts.push(p.body, p.origin, p.name);
+    (p.replies || []).forEach(r => texts.push(r.body, r.name));
   });
   await translateBatch(texts, currentLang);
+}
+
+function applyTranslatedFields(){
+  posts.forEach(p => {
+    p.displayName = getTranslatedText(p.name);
+    p.displayOrigin = getTranslatedText(p.origin);
+    p.displayBody = getTranslatedText(p.body);
+    (p.replies || []).forEach(r => {
+      r.displayName = getTranslatedText(r.name);
+      r.displayBody = getTranslatedText(r.body);
+    });
+  });
 }
 
 // ===== RENDER =====
@@ -1018,7 +1032,7 @@ function esc(s){const d=document.createElement('div');d.textContent=s;return d.i
 
 function matchesSearch(post,q){
   if(!q) return true;
-  const hay=[post.name,post.origin,post.body,post.tag,...(post.replies||[]).flatMap(r=>[r.name,r.body])].join(' ').toLowerCase();
+  const hay=[post.name,post.origin,post.body,post.displayName,post.displayOrigin,post.displayBody,post.tag,...(post.replies||[]).flatMap(r=>[r.name,r.body,r.displayName,r.displayBody])].join(' ').toLowerCase();
   return hay.includes(q);
 }
 
@@ -1026,16 +1040,16 @@ function renderPost(p){
   const rhtml=(p.replies||[]).map(r=>`
     <div class="reply"><div class="reply-header">
       <div class="reply-avatar" style="background:${r.color}22;color:${r.color}">${r.avatar}</div>
-      <span class="reply-name" style="color:${r.color}">${esc(r.name)}</span>
+      <span class="reply-name" style="color:${r.color}">${esc(r.displayName || r.name)}</span>
       <span class="reply-time">${getTimeAgo(r.time)}</span>
-    </div><div class="reply-body">${esc(getTranslatedText(r.body))}</div></div>`).join('');
+    </div><div class="reply-body">${esc(r.displayBody || getTranslatedText(r.body))}</div></div>`).join('');
   return `<article class="post" data-id="${p.id}" data-tag="${p.tag}">
     <div class="post-header">
       <div class="avatar" style="background:${p.color}18;color:${p.color}">${p.avatar}</div>
-      <div class="post-meta"><div class="agent-name" style="color:${p.color}">${esc(p.name)}</div><div class="agent-origin">${esc(getTranslatedText(p.origin))}</div></div>
+      <div class="post-meta"><div class="agent-name" style="color:${p.color}">${esc(p.displayName || p.name)}</div><div class="agent-origin">${esc(p.displayOrigin || getTranslatedText(p.origin))}</div></div>
       <span class="post-tag ${p.tag}">${t('tag' + p.tag.charAt(0).toUpperCase() + p.tag.slice(1))}</span><span class="post-time">${getTimeAgo(p.time)}</span>
     </div>
-    <div class="post-body">${esc(getTranslatedText(p.body))}</div>
+    <div class="post-body">${esc(p.displayBody || getTranslatedText(p.body))}</div>
     <div class="post-actions">
       <button class="action-btn post-play-btn" data-id="${p.id}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 5v14l11-7z"/></svg>
