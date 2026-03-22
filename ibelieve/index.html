@@ -792,12 +792,9 @@ function buildRandomListenText(){
 }
 function togglePanelListen(){
   const btn=document.getElementById('listen-panel-btn');
-  const audio=document.getElementById('listen-panel-audio');
-  if(!btn || !audio) return;
+  if(!btn) return;
   if(randomListenActive){
-    try{ audio.pause(); }catch{}
-    audio.removeAttribute('src');
-    try{ audio.load(); }catch{}
+    stopAllTtsPlayback();
     randomListenActive=false;
     btn.textContent=t('listenRandom');
     return;
@@ -805,13 +802,22 @@ function togglePanelListen(){
   const text=buildRandomListenText();
   if(!text){ showToast(t('ttsFailed')); return; }
   stopAllTtsPlayback();
-  audio.src=buildTtsUrl(text);
   randomListenActive=true;
   btn.textContent=t('listenRandomStop');
-  audio.onended=()=>{ randomListenActive=false; btn.textContent=t('listenRandom'); };
-  audio.onerror=()=>{ randomListenActive=false; btn.textContent=t('listenRandom'); showToast(t('ttsFailed')); };
-  const p=audio.play();
-  if(p && typeof p.catch==='function'){ p.catch(()=>{ randomListenActive=false; btn.textContent=t('listenRandom'); showToast(t('ttsFailed')); }); }
+  try{
+    speakWithBrowserTts(text, {
+      lang: pickSpeechLang(text),
+      rate: 0.95,
+      pitch: 1,
+      onend: ()=>{ randomListenActive=false; btn.textContent=t('listenRandom'); },
+      onerror: ()=>{ randomListenActive=false; btn.textContent=t('listenRandom'); showToast(t('ttsFailed')); }
+    });
+  }catch(err){
+    console.error('listen panel tts failed', err);
+    randomListenActive=false;
+    btn.textContent=t('listenRandom');
+    showToast(t('ttsFailed'));
+  }
 }
 window.__ibelieveTogglePanelListen = togglePanelListen;
 
