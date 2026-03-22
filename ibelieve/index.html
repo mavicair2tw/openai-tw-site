@@ -731,21 +731,20 @@ function buildTopicNarrationUrl(){
   return `${getTopicNarrationEndpoint()}?${params.toString()}`;
 }
 
-async function fetchTopicNarrationBlob(){
-  const res=await fetch(buildTopicNarrationUrl(), { mode:'cors' });
-  if(!res.ok) throw new Error(`TTS ${res.status}`);
-  return await res.blob();
-}
-
-async function fetchPostNarrationBlob(text){
-  const clean=cleanNarrationText(text).slice(0, 4000);
-  if(!clean) throw new Error('empty post');
-  const params=new URLSearchParams();
-  params.set('text', clean);
-  params.set('lang', getNarrationApiLang());
-  const res=await fetch(`${getTopicNarrationEndpoint()}?${params.toString()}`, { mode:'cors' });
-  if(!res.ok) throw new Error(`TTS ${res.status}`);
-  return await res.blob();
+function speakWithBrowserTts(text, options={}){
+  const clean=cleanNarrationText(text);
+  if(!clean) throw new Error('empty text');
+  if(!('speechSynthesis' in window)) throw new Error('speechSynthesis unavailable');
+  const utter=new SpeechSynthesisUtterance(clean);
+  utter.lang=options.lang || getNarrationLang();
+  if(options.voice) utter.voice=options.voice;
+  utter.rate=options.rate ?? 0.95;
+  utter.pitch=options.pitch ?? 1;
+  utter.volume=1;
+  if(options.onstart) utter.onstart=options.onstart;
+  if(options.onend) utter.onend=options.onend;
+  if(options.onerror) utter.onerror=options.onerror;
+  window.speechSynthesis.speak(utter);
 }
 
 async function playPostNarration(post, btn){
@@ -759,30 +758,14 @@ async function playPostNarration(post, btn){
     const label=btn.querySelector('.post-play-label');
     if(label) label.textContent=t('stopListening');
 
-    if(currentLang==='en'){
-      if(!('speechSynthesis' in window)) throw new Error('speechSynthesis unavailable');
-      const utter=new SpeechSynthesisUtterance(cleanNarrationText(post.body));
-      utter.lang='en-US';
-      const voice=pickEnglishNarrationVoice();
-      if(voice) utter.voice=voice;
-      utter.rate=0.9;
-      utter.pitch=1.08;
-      utter.onend=()=>setTimeout(resetActivePostPlayButton,50);
-      utter.onerror=()=>{ resetActivePostPlayButton(); showToast(t('toastError')); };
-      window.speechSynthesis.speak(utter);
-      return;
-    }
-
-    if(!postNarrationAudio){
-      postNarrationAudio=new Audio();
-      postNarrationAudio.addEventListener('ended', resetActivePostPlayButton);
-      postNarrationAudio.addEventListener('pause', ()=>{ if(postNarrationAudio.ended || postNarrationAudio.currentTime===0) resetActivePostPlayButton(); });
-      postNarrationAudio.addEventListener('error', ()=>{ resetActivePostPlayButton(); showToast(t('toastError')); });
-    }
-    const blob=await fetchPostNarrationBlob(post.body);
-    postNarrationObjectUrl=URL.createObjectURL(blob);
-    postNarrationAudio.src=postNarrationObjectUrl;
-    await postNarrationAudio.play();
+    speakWithBrowserTts(post.body, {
+      lang: currentLang==='en' ? 'en-US' : getNarrationLang(),
+      voice: currentLang==='en' ? pickEnglishNarrationVoice() : null,
+      rate: currentLang==='en' ? 0.9 : 0.95,
+      pitch: currentLang==='en' ? 1.08 : 1,
+      onend: ()=>setTimeout(resetActivePostPlayButton,50),
+      onerror: ()=>{ resetActivePostPlayButton(); showToast(t('toastError')); }
+    });
   }catch(err){
     console.error('post narration play failed', err);
     resetActivePostPlayButton();
@@ -846,28 +829,15 @@ async function playTopicNarration(){
   try{
     stopTopicNarration();
     stopPostNarration();
-    if(isEnglishNarration()){
-      if(!('speechSynthesis' in window)) throw new Error('speechSynthesis unavailable');
-      const utter=new SpeechSynthesisUtterance(text);
-      utter.lang='en-US';
-      const voice=pickEnglishNarrationVoice();
-      if(voice) utter.voice=voice;
-      utter.rate=0.9;
-      utter.pitch=1.08;
-      utter.onstart=()=>syncTopListenButton();
-      utter.onend=()=>setTimeout(syncTopListenButton,50);
-      utter.onerror=()=>{ showToast(t('toastError')); syncTopListenButton(); };
-      window.speechSynthesis.speak(utter);
-    }else{
-      if(!topicNarrationAudio){
-        topicNarrationAudio=new Audio();
-        ['play','pause','ended','error'].forEach(evt=>topicNarrationAudio.addEventListener(evt, syncTopListenButton));
-      }
-      const blob=await fetchTopicNarrationBlob();
-      topicNarrationObjectUrl=URL.createObjectURL(blob);
-      topicNarrationAudio.src=topicNarrationObjectUrl;
-      await topicNarrationAudio.play();
-    }
+    speakWithBrowserTts(text, {
+      lang: currentLang==='en' ? 'en-US' : getNarrationLang(),
+      voice: currentLang==='en' ? pickEnglishNarrationVoice() : null,
+      rate: currentLang==='en' ? 0.9 : 0.95,
+      pitch: currentLang==='en' ? 1.08 : 1,
+      onstart: ()=>syncTopListenButton(),
+      onend: ()=>setTimeout(syncTopListenButton,50),
+      onerror: ()=>{ showToast(t('toastError')); syncTopListenButton(); }
+    });
   }catch(err){
     console.error('topic narration play failed', err);
     showToast(t('toastError'));
@@ -913,7 +883,7 @@ async function applyLanguage(lang){
   if(ps[0])ps[0].innerHTML=t('aboutP1');if(ps[1])ps[1].innerHTML=t('aboutP2');
   if(ps[2])ps[2].innerHTML=t('aboutP3');if(ps[3])ps[3].innerHTML=t('aboutP4');
   if(ps[4])ps[4].innerHTML=t('aboutNote');
-  await translatePostsForCurrentLanguage();
+  await loadPosts();
   renderFeed();
 }
 
