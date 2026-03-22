@@ -721,22 +721,25 @@ function buildTtsUrl(text){
   return `https://openai-tw-forum.googselect.workers.dev/api/ibelieve/tts?${params.toString()}`;
 }
 function stopTts(){
-  if(audioPlayer){ try{ audioPlayer.pause(); }catch{} audioPlayer.src=''; }
+  const active=document.getElementById('embedded-audio-player');
+  if(active){ try{ active.pause(); }catch{} active.removeAttribute('src'); }
   activeAudioKey=null;
+  activeAudioUrl='';
 }
 function playTts(key, text){
   if(activeAudioKey===key){ stopTts(); renderFeed(); return; }
   try{
-    if(!audioPlayer) audioPlayer = new Audio();
     stopTts();
-    const url = buildTtsUrl(text);
-    audioPlayer.src = url;
-    audioPlayer.onended = ()=>{ activeAudioKey=null; renderFeed(); };
-    audioPlayer.onerror = (e)=>{ console.error('audio error', e, url); activeAudioKey=null; renderFeed(); showToast(t('ttsFailed')); };
     activeAudioKey = key;
+    activeAudioUrl = buildTtsUrl(text);
     renderFeed();
-    audioPlayer.play().catch((err)=>{ console.error('audio play rejected', err, url); activeAudioKey=null; renderFeed(); showToast(t('ttsFailed')); });
-  }catch(_e){ console.error(_e); activeAudioKey=null; renderFeed(); showToast(t('ttsFailed')); }
+    setTimeout(()=>{
+      const player=document.getElementById('embedded-audio-player');
+      if(!player) return;
+      player.onended=()=>{ activeAudioKey=null; activeAudioUrl=''; renderFeed(); };
+      player.onerror=()=>{ activeAudioKey=null; activeAudioUrl=''; renderFeed(); showToast(t('ttsFailed')); };
+    },0);
+  }catch(_e){ activeAudioKey=null; activeAudioUrl=''; renderFeed(); showToast(t('ttsFailed')); }
 }
 function renderTranslationMeta(item){
   if(!item||!item.originalLanguage) return '';
@@ -768,7 +771,7 @@ function pickSpeechLang(text){
 }
 function stopSpeech(){
   if(audioPlayer){ try{ audioPlayer.pause(); }catch{} audioPlayer.src=''; }
-  activeSpeechPostId=null;
+  activeAudioKey=null;
 }
 function buildTtsUrl(text){
   const params=new URLSearchParams();
@@ -788,17 +791,17 @@ function runTtsTest(){
 function speakPost(postId){
   const post=posts.find(p=>p.id===postId);
   if(!post) return;
-  if(activeSpeechPostId===postId){ stopSpeech(); renderFeed(); return; }
+  if(activeAudioKey===postId){ stopSpeech(); renderFeed(); return; }
   try{
     if(!audioPlayer) audioPlayer = new Audio();
     stopSpeech();
     audioPlayer.src=buildTtsUrl(`${post.name}. ${post.body}`);
-    audioPlayer.onended=()=>{ activeSpeechPostId=null; renderFeed(); };
-    audioPlayer.onerror=(e)=>{ console.error('tts playback failed', e); activeSpeechPostId=null; renderFeed(); showToast(t('ttsFailed')); };
-    activeSpeechPostId=postId;
+    audioPlayer.onended=()=>{ activeAudioKey=null; renderFeed(); };
+    audioPlayer.onerror=(e)=>{ console.error('tts playback failed', e); activeAudioKey=null; renderFeed(); showToast(t('ttsFailed')); };
+    activeAudioKey=postId;
     renderFeed();
-    audioPlayer.play().catch(err=>{ console.error(err); activeSpeechPostId=null; renderFeed(); showToast(t('ttsFailed')); });
-  }catch(err){ console.error(err); activeSpeechPostId=null; renderFeed(); showToast(t('ttsFailed')); }
+    audioPlayer.play().catch(err=>{ console.error(err); activeAudioKey=null; renderFeed(); showToast(t('ttsFailed')); });
+  }catch(err){ console.error(err); activeAudioKey=null; renderFeed(); showToast(t('ttsFailed')); }
 }
 
 function matchesSearch(post,q){
@@ -828,11 +831,13 @@ function renderPost(p){
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 00-7.8 7.8l1 1.1L12 21.3l7.8-7.8 1-1.1a5.5 5.5 0 000-7.8z"/></svg>
         <span>${p.likes||0}</span>
       </button>
+      <button class="action-btn tts-btn ${activeAudioKey===`post:${p.id}`?'active':''}" data-key="post:${p.id}" data-text="${esc(p.body)}">${activeAudioKey===`post:${p.id}`?t('ttsStop'):t('ttsPlay')}</button>
       <button class="action-btn reply-toggle-btn" data-id="${p.id}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
         <span>${(p.replies||[]).length} ${t('replies')}</span>
       </button>
     </div>
+    ${activeAudioKey===`post:${p.id}`?`<div class="embedded-tts-player"><audio id="embedded-audio-player" controls autoplay playsinline preload="auto" src="${activeAudioUrl}"></audio></div>`:''}
     ${activeAudioKey===`post:${p.id}`?`<div class="embedded-tts-player"><audio id="embedded-audio-player" controls autoplay playsinline preload="auto" src="${activeAudioUrl}"></audio></div>`:''}
     <div class="replies" style="display:none" id="replies-${p.id}">
       ${rhtml}
@@ -882,7 +887,6 @@ function bindPostEvents(){
     try{const d=await apiFetch('/posts/'+btn.dataset.id+'/like',{method:'POST'});
     const p=posts.find(x=>x.id===btn.dataset.id);if(p&&d.post)p.likes=d.post.like_count;renderFeed()}catch(e){console.error(e)}
   }});
-  document.querySelectorAll('.tts-btn').forEach(btn=>{btn.onclick=()=>{speakPost(btn.dataset.id); renderFeed();};});
   document.querySelectorAll('.tts-btn').forEach(btn=>{btn.onclick=()=>{playTts(btn.dataset.key, btn.dataset.text);};});
   document.querySelectorAll('.reply-tts-btn').forEach(btn=>{btn.onclick=()=>{playTts(btn.dataset.key, btn.dataset.text);};});
   document.querySelectorAll('.reply-toggle-btn').forEach(btn=>{btn.onclick=()=>{
