@@ -652,7 +652,7 @@ async function applyLanguage(lang){
   document.getElementById('inp-origin').placeholder=t('placeholderOrigin');
   document.getElementById('inp-body').placeholder=t('placeholderBody');
   document.getElementById('btn-post').textContent=t('btnPost');
-  const titleListenBtn=document.querySelector('[data-tts-play="title-listen"]'); if(titleListenBtn) titleListenBtn.textContent='🔊 Listen';
+  const titleListenBtn=document.querySelector('[data-tts-play="title-listen"]'); if(titleListenBtn) titleListenBtn.textContent=titleListenActive?t('titleListenStop'):t('titleListen');
   const listenPanelBtn=document.getElementById('listen-panel-btn'); if(listenPanelBtn) listenPanelBtn.textContent=randomListenActive?t('listenRandomStop'):t('listenRandom');
   const listenPanelDesc=document.getElementById('listen-panel-desc'); if(listenPanelDesc) listenPanelDesc.textContent=t('listenRandomDesc');
   const autoTranslateNote=document.getElementById('auto-translate-note'); if(autoTranslateNote) autoTranslateNote.textContent=t('autoTranslateNote');
@@ -771,12 +771,14 @@ function stopAllTtsPlayback(){
   if(embedded){ embedded.removeAttribute('src'); try{ embedded.load(); }catch{} }
   randomListenActive = false;
 }
-function randomSingleListenText(){
-  if(!posts.length) return '';
-  const picked=[...posts].sort(()=>Math.random()-0.5)[0];
-  if(!picked) return '';
-  const body=String(picked.body||'').split(/\s+/).join(' ').trim().slice(0,140);
-  return body;
+function buildTitleListenQueue(){
+  const groups={belief:[],god:[],miracle:[],discovery:[]};
+  posts.forEach(p=>{ if(groups[p.tag]) groups[p.tag].push(p); });
+  const picked=[];
+  Object.keys(groups).forEach(tag=>{ const arr=groups[tag]; if(arr.length) picked.push(arr[Math.floor(Math.random()*arr.length)]); });
+  const rest=posts.filter(p=>!picked.includes(p)).sort(()=>Math.random()-0.5);
+  while(picked.length<Math.min(10, posts.length) && rest.length) picked.push(rest.shift());
+  return picked.slice(0,10).map(p=>String(p.body||'').split(/\s+/).join(' ').trim().slice(0,140)).filter(Boolean);
 }
 function buildRandomListenText(){
   const groups={belief:[],god:[],miracle:[],discovery:[]};
@@ -843,7 +845,24 @@ function buildRandomListenText(){
 function activateTtsButton(btn){
   if(!btn) return;
   const key=btn.dataset.ttsPlay;
-  if(key==='title-listen'){ btn.dataset.text = randomSingleListenText(); btn.textContent=t('titleListenStop'); }
+  if(key==='title-listen'){
+    const audio=btn.closest('[data-tts-box]')?.querySelector('audio');
+    if(!audio) return;
+    if(titleListenActive){
+      titleListenActive=false; titleListenQueue=[]; titleListenIndex=0;
+      try{ audio.pause(); }catch{}
+      audio.removeAttribute('src'); try{ audio.load(); }catch{}
+      btn.textContent=t('titleListen');
+      return;
+    }
+    stopAllTtsPlayback();
+    titleListenQueue = buildTitleListenQueue();
+    titleListenIndex = 0;
+    if(!titleListenQueue.length){ showToast(t('ttsFailed')); return; }
+    titleListenActive=true;
+    btn.dataset.text = titleListenQueue[0];
+    btn.textContent=t('titleListenStop');
+  }
   const text=btn.dataset.text || '';
   const box=btn.closest('[data-tts-box]');
   const audio=box ? box.querySelector('audio') : null;
@@ -856,9 +875,26 @@ function activateTtsButton(btn){
   try{ audio.load(); }catch{}
   audio.dataset.active='1';
   btn.textContent=t('ttsStop');
-  audio.onended = ()=>{ audio.dataset.active='0'; btn.textContent=key==='title-listen'?t('titleListen'):t('ttsPlay'); };
-  audio.onerror = ()=>{ audio.dataset.active='0'; btn.textContent=key==='title-listen'?t('titleListen'):t('ttsPlay'); showToast(t('ttsFailed')); };
-  audio.play().catch(()=>{ audio.dataset.active='0'; btn.textContent=key==='title-listen'?t('titleListen'):t('ttsPlay'); showToast(t('ttsFailed')); });
+  audio.onended = ()=>{
+    audio.dataset.active='0';
+    if(key==='title-listen' && titleListenActive){
+      titleListenIndex += 1;
+      if(titleListenIndex < titleListenQueue.length){
+        btn.dataset.text = titleListenQueue[titleListenIndex];
+        audio.src = buildTtsUrl(btn.dataset.text);
+        try{ audio.load(); }catch{}
+        audio.dataset.active='1';
+        audio.play().catch(()=>{ titleListenActive=false; titleListenQueue=[]; titleListenIndex=0; btn.textContent=t('titleListen'); showToast(t('ttsFailed')); });
+        return;
+      }
+      titleListenActive=false; titleListenQueue=[]; titleListenIndex=0;
+      btn.textContent=t('titleListen');
+      return;
+    }
+    btn.textContent=key==='title-listen'?t('titleListen'):t('ttsPlay');
+  };
+  audio.onerror = ()=>{ audio.dataset.active='0'; if(key==='title-listen'){ titleListenActive=false; titleListenQueue=[]; titleListenIndex=0; } btn.textContent=key==='title-listen'?t('titleListen'):t('ttsPlay'); showToast(t('ttsFailed')); };
+  audio.play().catch(()=>{ audio.dataset.active='0'; if(key==='title-listen'){ titleListenActive=false; titleListenQueue=[]; titleListenIndex=0; } btn.textContent=key==='title-listen'?t('titleListen'):t('ttsPlay'); showToast(t('ttsFailed')); });
 }
 function renderTranslationMeta(item){
   if(!item||!item.originalLanguage) return '';
