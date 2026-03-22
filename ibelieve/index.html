@@ -1061,8 +1061,16 @@ function showToast(msg){const el=document.getElementById('toast');el.textContent
 
 function createStars(){const sf=document.getElementById('starfield');for(let i=0;i<120;i++){const s=document.createElement('div');s.className='star';const sz=Math.random()*2.5+0.5;s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--dur:${2+Math.random()*4}s;--o1:${0.1+Math.random()*0.3};--o2:${0.5+Math.random()*0.5}`;sf.appendChild(s)}}
 
+function removeStaleTitleListen(){
+  const btn=document.getElementById('title-listen-btn');
+  const audio=document.getElementById('title-listen-audio');
+  if(btn){ btn.remove(); }
+  if(audio){ audio.remove(); }
+}
+
 async function init(){
   try{
+    removeStaleTitleListen();
     createStars();
     const savedLang=localStorage.getItem('ibelieve-lang');
     if(savedLang&&I18N[savedLang]) currentLang=savedLang;
