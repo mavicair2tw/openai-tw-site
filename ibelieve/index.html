@@ -208,6 +208,7 @@ select.input{cursor:pointer;appearance:none;
 }
 .action-btn:hover{color:var(--accent)}
 .action-btn.liked{color:var(--accent3)}
+.action-btn.speaking{color:var(--accent2)}
 .action-btn svg{width:16px;height:16px}
 
 /* ===== REPLIES ===== */
@@ -716,6 +717,30 @@ function detectSubmissionLanguage(text, fallback=currentLang){
   if(/[\u4e00-\u9fff]/.test(value)) return 'zh-TW';
   return 'en';
 }
+function pickSpeechLang(text){
+  const detected=detectSubmissionLanguage(text, currentLang);
+  return ({'zh-TW':'zh-TW','zh-CN':'zh-CN','ja':'ja-JP','ko':'ko-KR','en':'en-US','es':'es-ES','fr':'fr-FR','de':'de-DE'})[detected] || 'en-US';
+}
+function stopSpeech(){
+  if(!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  activeSpeechPostId=null;
+}
+function speakPost(postId){
+  const post=posts.find(p=>p.id===postId);
+  if(!post) return;
+  if(!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined'){ showToast(t('ttsUnavailable')); return; }
+  if(activeSpeechPostId===postId){ stopSpeech(); renderFeed(); return; }
+  stopSpeech();
+  const utterance=new SpeechSynthesisUtterance(`${post.name}. ${post.body}`);
+  utterance.lang=pickSpeechLang(post.body);
+  utterance.rate=0.96;
+  utterance.pitch=1;
+  utterance.onend=()=>{ activeSpeechPostId=null; renderFeed(); };
+  utterance.onerror=()=>{ activeSpeechPostId=null; renderFeed(); };
+  activeSpeechPostId=postId;
+  window.speechSynthesis.speak(utterance);
+}
 
 function matchesSearch(post,q){
   if(!q) return true;
@@ -742,6 +767,10 @@ function renderPost(p){
       <button class="action-btn like-btn" data-id="${p.id}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 00-7.8 7.8l1 1.1L12 21.3l7.8-7.8 1-1.1a5.5 5.5 0 000-7.8z"/></svg>
         <span>${p.likes||0}</span>
+      </button>
+      <button class="action-btn tts-btn ${activeSpeechPostId===p.id?'speaking':''}" data-id="${p.id}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+        <span>${activeSpeechPostId===p.id?t('ttsStop'):t('ttsPlay')}</span>
       </button>
       <button class="action-btn reply-toggle-btn" data-id="${p.id}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
@@ -788,6 +817,7 @@ function bindPostEvents(){
     try{const d=await apiFetch('/posts/'+btn.dataset.id+'/like',{method:'POST'});
     const p=posts.find(x=>x.id===btn.dataset.id);if(p&&d.post)p.likes=d.post.like_count;renderFeed()}catch(e){console.error(e)}
   }});
+  document.querySelectorAll('.tts-btn').forEach(btn=>{btn.onclick=()=>{speakPost(btn.dataset.id); renderFeed();};});
   document.querySelectorAll('.reply-toggle-btn').forEach(btn=>{btn.onclick=()=>{
     const el=document.getElementById('replies-'+btn.dataset.id);el.style.display=el.style.display==='none'?'block':'none';
   }});
