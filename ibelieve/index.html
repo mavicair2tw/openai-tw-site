@@ -714,6 +714,20 @@ function pickSpeechLang(text){
   const detected=detectSubmissionLanguage(text, currentLang);
   return ({'zh-TW':'zh-TW','zh-CN':'zh-CN','ja':'ja-JP','ko':'ko-KR','en':'en-US','es':'es-ES','fr':'fr-FR','de':'de-DE'})[detected] || 'en-US';
 }
+function speakWithBrowserTts(text, options={}){
+  if(!('speechSynthesis' in window)) throw new Error('speechSynthesis unavailable');
+  const utter=new SpeechSynthesisUtterance(String(text||'').trim());
+  if(!utter.text) throw new Error('empty text');
+  utter.lang=options.lang||pickSpeechLang(text);
+  if(options.voice) utter.voice=options.voice;
+  utter.rate=options.rate||1;
+  utter.pitch=options.pitch||1;
+  utter.volume=1;
+  if(options.onstart) utter.onstart=options.onstart;
+  if(options.onend) utter.onend=options.onend;
+  if(options.onerror) utter.onerror=options.onerror;
+  window.speechSynthesis.speak(utter);
+}
 function syncSpotifyEmbedLanguage(){
   const iframe=document.getElementById('spotify-embed');
   if(!iframe) return;
@@ -740,13 +754,9 @@ function buildTtsUrl(text){
 }
 
 function stopAllTtsPlayback(){
-  document.querySelectorAll('audio').forEach(a=>{ try{ a.pause(); }catch{} });
-  const panelAudio=document.getElementById('listen-panel-audio');
-  if(panelAudio){ panelAudio.removeAttribute('src'); try{ panelAudio.load(); }catch{} }
-  document.querySelectorAll('.minimal-tts-audio').forEach(a=>{ a.removeAttribute('src'); try{ a.load(); }catch{} });
-  const embedded=document.getElementById('embedded-audio-player');
-  if(embedded){ embedded.removeAttribute('src'); try{ embedded.load(); }catch{} }
+  document.querySelectorAll('[data-tts-play]').forEach(b=>{ b.dataset.active='0'; b.textContent=t('ttsPlay'); });
   randomListenActive = false;
+  if('speechSynthesis' in window){ try{ window.speechSynthesis.cancel(); }catch{} }
 }
 function buildRandomListenText(){
   const groups={belief:[],god:[],miracle:[],discovery:[]};
@@ -789,7 +799,7 @@ function mountTtsBlock(key, text){
   const box=document.querySelector(`[data-tts-box="${key}"]`);
   if(!box) return;
   const encoded = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  box.innerHTML = `<button type="button" class="minimal-tts-btn" data-tts-play="${key}" data-text="${encoded}">${t('ttsPlay')}</button><audio class="minimal-tts-audio" controls playsinline preload="none"></audio>`;
+  box.innerHTML = `<button type="button" class="minimal-tts-btn" data-tts-play="${key}" data-text="${encoded}">${t('ttsPlay')}</button>`;
 }
 function buildRandomListenText(){
   const groups={belief:[],god:[],miracle:[],discovery:[]};
@@ -812,24 +822,28 @@ function buildRandomListenText(){
 }
 function activateTtsButton(btn){
   if(!btn) return;
-  const key=btn.dataset.ttsPlay;
   stopSpotifyEmbed();
   const text=btn.dataset.text || '';
-  const box=btn.closest('[data-tts-box]');
-  const audio=box ? box.querySelector('audio') : null;
-  if(!audio) return;
-  if(audio.dataset.active==='1'){ audio.pause(); audio.removeAttribute('src'); audio.load(); audio.dataset.active='0'; btn.textContent=t('ttsPlay'); return; }
+  if(!text.trim()){ showToast(t('ttsFailed')); return; }
+  const active = btn.dataset.active === '1';
   stopAllTtsPlayback();
-  document.querySelectorAll('[data-tts-play]').forEach(b=>{ b.textContent=b.dataset.ttsPlay==='title-listen'?t('titleListen'):t('ttsPlay'); });
-  const listenPanelBtn=document.getElementById('listen-panel-btn'); if(listenPanelBtn) listenPanelBtn.textContent=t('listenRandom');
-  if(!String(text||'').trim()){ btn.textContent=t('ttsPlay'); showToast(t('ttsFailed')); return; }
-  audio.src = buildTtsUrl(text);
-  try{ audio.load(); }catch{}
-  audio.dataset.active='1';
+  if(active){ return; }
+  btn.dataset.active='1';
   btn.textContent=t('ttsStop');
-  audio.onended = ()=>{ audio.dataset.active='0'; btn.textContent=t('ttsPlay'); };
-  audio.onerror = ()=>{ audio.dataset.active='0'; btn.textContent=t('ttsPlay'); showToast(t('ttsFailed')); };
-  audio.play().catch(()=>{ audio.dataset.active='0'; btn.textContent=t('ttsPlay'); showToast(t('ttsFailed')); });
+  try{
+    speakWithBrowserTts(text, {
+      lang: pickSpeechLang(text),
+      rate: 0.95,
+      pitch: 1,
+      onend: ()=>{ btn.dataset.active='0'; btn.textContent=t('ttsPlay'); },
+      onerror: ()=>{ btn.dataset.active='0'; btn.textContent=t('ttsPlay'); showToast(t('ttsFailed')); }
+    });
+  }catch(err){
+    console.error('tts speak failed', err);
+    btn.dataset.active='0';
+    btn.textContent=t('ttsPlay');
+    showToast(t('ttsFailed'));
+  }
 }
 
 function renderTranslationMeta(item){
