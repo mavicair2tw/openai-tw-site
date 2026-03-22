@@ -787,7 +787,17 @@ function buildRandomListenText(){
   Object.keys(groups).forEach(tag=>{ const arr=groups[tag]; if(arr.length) picked.push(arr[Math.floor(Math.random()*arr.length)]); });
   const rest=posts.filter(p=>!picked.includes(p)).sort(()=>Math.random()-0.5);
   while(picked.length<Math.min(10, posts.length) && rest.length) picked.push(rest.shift());
-  return picked.slice(0,10).map((p,i)=>`${i+1}. ${p.name}. ${p.body}`).join(' ');
+  const maxChars = 1200;
+  let total = 0;
+  const parts = [];
+  for (const [i, p] of picked.slice(0,10).entries()) {
+    const body = String(p.body||'').replace(/\s+/g,' ').trim().slice(0, 90);
+    const line = `${i+1}. ${p.name}. ${body}`;
+    if (total + line.length > maxChars && parts.length) break;
+    parts.push(line);
+    total += line.length + 1;
+  }
+  return parts.join(' ');
 }
 function activateTtsButton(btn){
   if(!btn) return;
