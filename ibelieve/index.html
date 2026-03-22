@@ -795,7 +795,7 @@ function buildRandomListenText(){
   });
   const rest=posts.filter(p=>!picked.includes(p)).sort(()=>Math.random()-0.5);
   while(picked.length<Math.min(10, posts.length) && rest.length) picked.push(rest.shift());
-  return picked.slice(0,10).map((p,i)=>`${i+1}. ${p.name}. ${p.body}`).join(' ');
+  return picked.slice(0,10).map((p)=>`${p.name}. ${p.body}`).join(' ');
 }
 function togglePanelListen(){
   const btn=document.getElementById('listen-panel-btn');
@@ -846,7 +846,7 @@ function buildRandomListenText(){
   const parts = [];
   for (const [i, p] of picked.slice(0,10).entries()) {
     const body = String(p.body||'').replace(/\s+/g,' ').trim().slice(0, 48);
-    const line = `${i+1}. ${body}`;
+    const line = body;
     if (total + line.length > maxChars && parts.length) break;
     parts.push(line);
     total += line.length + 1;
