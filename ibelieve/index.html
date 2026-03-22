@@ -726,6 +726,15 @@ function buildTtsUrl(text){
   params.set('lang', pickSpeechLang(text));
   return `https://openai-tw-forum.googselect.workers.dev/api/ibelieve/tts?${params.toString()}`;
 }
+function stopAllTtsPlayback(){
+  document.querySelectorAll('audio').forEach(a=>{ try{ a.pause(); }catch{} });
+  const panelAudio=document.getElementById('listen-panel-audio');
+  if(panelAudio){ panelAudio.removeAttribute('src'); try{ panelAudio.load(); }catch{} }
+  document.querySelectorAll('.minimal-tts-audio').forEach(a=>{ a.removeAttribute('src'); try{ a.load(); }catch{} });
+  const embedded=document.getElementById('embedded-audio-player');
+  if(embedded){ embedded.removeAttribute('src'); try{ embedded.load(); }catch{} }
+  randomListenActive = false;
+}
 function buildRandomListenText(){
   const groups={belief:[],god:[],miracle:[],discovery:[]};
   posts.forEach(p=>{ if(groups[p.tag]) groups[p.tag].push(p); });
@@ -743,13 +752,11 @@ function togglePanelListen(){
   const audio=document.getElementById('listen-panel-audio');
   if(!audio) return;
   if(randomListenActive){
-    try{audio.pause();}catch{}
-    audio.removeAttribute('src');
-    audio.load();
-    randomListenActive=false;
+    stopAllTtsPlayback();
     if(btn) btn.textContent=t('listenRandom');
     return;
   }
+  stopAllTtsPlayback();
   const text=buildRandomListenText();
   if(!text){ showToast(t('ttsFailed')); return; }
   audio.src=buildTtsUrl(text);
@@ -774,6 +781,9 @@ function activateTtsButton(btn){
   const audio=box ? box.querySelector('audio') : null;
   if(!audio) return;
   if(audio.dataset.active==='1'){ audio.pause(); audio.removeAttribute('src'); audio.load(); audio.dataset.active='0'; btn.textContent=t('ttsPlay'); return; }
+  stopAllTtsPlayback();
+  document.querySelectorAll('[data-tts-play]').forEach(b=>{ b.textContent=t('ttsPlay'); });
+  const listenPanelBtn=document.getElementById('listen-panel-btn'); if(listenPanelBtn) listenPanelBtn.textContent=t('listenRandom');
   audio.src = buildTtsUrl(text);
   audio.dataset.active='1';
   btn.textContent=t('ttsStop');
