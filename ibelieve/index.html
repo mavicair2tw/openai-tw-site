@@ -801,7 +801,7 @@ function buildRandomListenItems(){
   });
   const rest=posts.filter(p=>!picked.includes(p)).sort(()=>Math.random()-0.5);
   while(picked.length<Math.min(10, posts.length) && rest.length) picked.push(rest.shift());
-  return picked.slice(0,10).map((p)=>`${p.name}. ${p.body}`);
+  return picked.slice(0,10).map((p)=>`${p.body}`);
 }
 function setListenPanelSubtitle(text=''){
   const el=document.getElementById('listen-panel-subtitle');
