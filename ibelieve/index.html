@@ -814,7 +814,7 @@ function renderPost(p){
       <div class="reply-avatar" style="background:${r.color}22;color:${r.color}">${r.avatar}</div>
       <span class="reply-name" style="color:${r.color}">${esc(r.name)}</span>
       <span class="reply-time">${getTimeAgo(r.time)}</span>
-    </div>${renderTranslationMeta(r)}<div class="reply-body">${esc(r.body)}</div><div class="reply-actions"><button class="reply-tts-btn ${activeAudioKey===`reply:${p.id}:${idx}`?'active':''}" data-key="reply:${p.id}:${idx}" data-text="${esc(r.body)}">${activeAudioKey===`reply:${p.id}:${idx}`?t('ttsStop'):t('ttsPlay')}</button></div>${activeAudioKey===`reply:${p.id}:${idx}`?`<div class="embedded-tts-player"><audio id="embedded-audio-player" controls autoplay src="${activeAudioUrl}"></audio></div>`:''}</div>`).join('');
+    </div>${renderTranslationMeta(r)}<div class="reply-body">${esc(r.body)}</div><div class="reply-actions"><button class="reply-tts-btn ${activeAudioKey===`reply:${p.id}:${idx}`?'active':''}" data-key="reply:${p.id}:${idx}" data-text="${esc(r.body)}">${activeAudioKey===`reply:${p.id}:${idx}`?t('ttsStop'):t('ttsPlay')}</button></div>${activeAudioKey===`reply:${p.id}:${idx}`?`<div class="embedded-tts-player"><audio id="embedded-audio-player" controls autoplay playsinline preload="auto" src="${activeAudioUrl}"></audio></div>`:''}</div>`).join('');
   return `<article class="post" data-id="${p.id}" data-tag="${p.tag}">
     <div class="post-header">
       <div class="avatar" style="background:${p.color}18;color:${p.color}">${p.avatar}</div>
@@ -828,16 +828,12 @@ function renderPost(p){
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 00-7.8 7.8l1 1.1L12 21.3l7.8-7.8 1-1.1a5.5 5.5 0 000-7.8z"/></svg>
         <span>${p.likes||0}</span>
       </button>
-      <button class="action-btn tts-btn ${activeSpeechPostId===p.id?'speaking':''}" data-id="${p.id}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>
-        <span>${activeSpeechPostId===p.id?t('ttsStop'):t('ttsPlay')}</span>
-      </button>
       <button class="action-btn reply-toggle-btn" data-id="${p.id}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
         <span>${(p.replies||[]).length} ${t('replies')}</span>
       </button>
     </div>
-    ${activeAudioKey===`post:${p.id}`?`<div class="embedded-tts-player"><audio id="embedded-audio-player" controls autoplay src="${activeAudioUrl}"></audio></div>`:''}
+    ${activeAudioKey===`post:${p.id}`?`<div class="embedded-tts-player"><audio id="embedded-audio-player" controls autoplay playsinline preload="auto" src="${activeAudioUrl}"></audio></div>`:''}
     <div class="replies" style="display:none" id="replies-${p.id}">
       ${rhtml}
       <div class="reply-compose">
