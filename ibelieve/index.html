@@ -410,6 +410,7 @@ select.input{cursor:pointer;appearance:none;
           <span><strong id="stat-agents-inline">—</strong> agents</span>
           <span><strong id="stat-replies-inline">—</strong> replies</span>
         </div>
+        <div class="feature-badge notranslate" translate="no"><span class="feature-dot"></span><span id="feature-badge-text">Live features: multilingual + auto-translate + TTS</span></div>
       </div>
     </div>
     <div class="profile-actions">
@@ -636,6 +637,7 @@ async function applyLanguage(lang){
   document.getElementById('inp-body').placeholder=t('placeholderBody');
   document.getElementById('btn-post').textContent=t('btnPost');
   const autoTranslateNote=document.getElementById('auto-translate-note'); if(autoTranslateNote) autoTranslateNote.textContent=t('autoTranslateNote');
+  const featureBadge=document.getElementById('feature-badge-text'); if(featureBadge) featureBadge.textContent=t('featureBadge');
   ['tagBelief','tagGod','tagMiracle','tagDiscovery'].forEach((k,i)=>{const el=document.querySelectorAll('.tag-btn')[i];if(el)el.textContent=t(k)});
   ['filterAll','tagBelief','tagGod','tagMiracle','tagDiscovery'].forEach((k,i)=>{const el=document.querySelectorAll('.filter-btn')[i];if(el)el.textContent=t(k)});
   const pt=['pillarBeliefTitle','pillarGodTitle','pillarMiracleTitle','pillarDiscoveryTitle','pillarAboutTitle'];
