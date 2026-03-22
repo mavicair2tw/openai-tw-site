@@ -693,6 +693,9 @@ function collectTopicNarrationText(){
 
 let topicNarrationAudio=null;
 let topicNarrationObjectUrl='';
+let postNarrationAudio=null;
+let postNarrationObjectUrl='';
+let activePostPlayButton=null;
 
 function isEnglishNarration(){
   return currentLang === 'en';
@@ -726,6 +729,92 @@ function buildTopicNarrationUrl(){
   params.set('text', text.slice(0, 4000));
   params.set('lang', getNarrationApiLang());
   return `${getTopicNarrationEndpoint()}?${params.toString()}`;
+}
+
+async function fetchTopicNarrationBlob(){
+  const text=buildTopicNarrationText();
+  if(isEnglishNarration()){
+    const res=await fetch(getTopicNarrationEndpoint(), {
+      method:'POST',
+      mode:'cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ text:text.slice(0, 4000), lang:getNarrationApiLang() })
+    });
+    if(!res.ok) throw new Error(`TTS ${res.status}`);
+    return await res.blob();
+  }
+  const res=await fetch(buildTopicNarrationUrl(), { mode:'cors' });
+  if(!res.ok) throw new Error(`TTS ${res.status}`);
+  return await res.blob();
+}
+
+async function fetchPostNarrationBlob(text){
+  const clean=cleanNarrationText(text).slice(0, 4000);
+  if(!clean) throw new Error('empty post');
+  if(currentLang==='en'){
+    const res=await fetch(getTopicNarrationEndpoint(), {
+      method:'POST',
+      mode:'cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ text:clean, lang:'en-US' })
+    });
+    if(!res.ok) throw new Error(`TTS ${res.status}`);
+    return await res.blob();
+  }
+  const params=new URLSearchParams();
+  params.set('text', clean);
+  params.set('lang', getNarrationApiLang());
+  const res=await fetch(`${getTopicNarrationEndpoint()}?${params.toString()}`, { mode:'cors' });
+  if(!res.ok) throw new Error(`TTS ${res.status}`);
+  return await res.blob();
+}
+
+async function playPostNarration(post, btn){
+  try{
+    const sameButton=activePostPlayButton===btn && postNarrationAudio && !postNarrationAudio.paused && !postNarrationAudio.ended;
+    stopPostNarration();
+    if(sameButton) return;
+    stopTopicNarration();
+    if(!postNarrationAudio){
+      postNarrationAudio=new Audio();
+      postNarrationAudio.addEventListener('ended', resetActivePostPlayButton);
+      postNarrationAudio.addEventListener('pause', ()=>{ if(postNarrationAudio.ended || postNarrationAudio.currentTime===0) resetActivePostPlayButton(); });
+      postNarrationAudio.addEventListener('error', ()=>{ resetActivePostPlayButton(); showToast(t('toastError')); });
+    }
+    const blob=await fetchPostNarrationBlob(post.body);
+    postNarrationObjectUrl=URL.createObjectURL(blob);
+    postNarrationAudio.src=postNarrationObjectUrl;
+    activePostPlayButton=btn;
+    btn.classList.add('active');
+    const label=btn.querySelector('.post-play-label');
+    if(label) label.textContent=t('stopListening');
+    await postNarrationAudio.play();
+  }catch(err){
+    console.error('post narration play failed', err);
+    resetActivePostPlayButton();
+    showToast(t('toastError'));
+  }
+}
+
+function resetActivePostPlayButton(){
+  if(activePostPlayButton){
+    activePostPlayButton.classList.remove('active');
+    const label=activePostPlayButton.querySelector('.post-play-label');
+    if(label) label.textContent='Play';
+    activePostPlayButton=null;
+  }
+}
+
+function stopPostNarration(){
+  if(postNarrationAudio){
+    postNarrationAudio.pause();
+    postNarrationAudio.currentTime=0;
+  }
+  if(postNarrationObjectUrl){
+    URL.revokeObjectURL(postNarrationObjectUrl);
+    postNarrationObjectUrl='';
+  }
+  resetActivePostPlayButton();
 }
 
 function stopTopicNarration(){
@@ -762,31 +851,14 @@ async function playTopicNarration(){
   if(!text) return;
   try{
     stopTopicNarration();
-    if(isEnglishNarration()){
-      if(!('speechSynthesis' in window)) throw new Error('speechSynthesis unavailable');
-      const voice=pickEnglishNarrationVoice();
-      const utter=new SpeechSynthesisUtterance(text);
-      utter.lang='en-US';
-      if(voice) utter.voice=voice;
-      utter.rate=0.9;
-      utter.pitch=1.08;
-      utter.volume=1;
-      utter.onstart=()=>syncTopListenButton();
-      utter.onend=()=>setTimeout(syncTopListenButton,50);
-      utter.onerror=()=>{showToast(t('toastError')); syncTopListenButton();};
-      window.speechSynthesis.speak(utter);
-    }else{
-      if(!topicNarrationAudio){
-        topicNarrationAudio=new Audio();
-        ['play','pause','ended','error'].forEach(evt=>topicNarrationAudio.addEventListener(evt, syncTopListenButton));
-      }
-      const res=await fetch(buildTopicNarrationUrl(), { mode:'cors' });
-      if(!res.ok) throw new Error(`TTS ${res.status}`);
-      const blob=await res.blob();
-      topicNarrationObjectUrl=URL.createObjectURL(blob);
-      topicNarrationAudio.src=topicNarrationObjectUrl;
-      await topicNarrationAudio.play();
+    if(!topicNarrationAudio){
+      topicNarrationAudio=new Audio();
+      ['play','pause','ended','error'].forEach(evt=>topicNarrationAudio.addEventListener(evt, syncTopListenButton));
     }
+    const blob=await fetchTopicNarrationBlob();
+    topicNarrationObjectUrl=URL.createObjectURL(blob);
+    topicNarrationAudio.src=topicNarrationObjectUrl;
+    await topicNarrationAudio.play();
   }catch(err){
     console.error('topic narration play failed', err);
     showToast(t('toastError'));
@@ -906,6 +978,10 @@ function renderPost(p){
     </div>
     <div class="post-body">${esc(getTranslatedText(p.body))}</div>
     <div class="post-actions">
+      <button class="action-btn post-play-btn" data-id="${p.id}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 5v14l11-7z"/></svg>
+        <span class="post-play-label">Play</span>
+      </button>
       <button class="action-btn like-btn" data-id="${p.id}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 00-7.8 7.8l1 1.1L12 21.3l7.8-7.8 1-1.1a5.5 5.5 0 000-7.8z"/></svg>
         <span>${p.likes||0}</span>
@@ -951,6 +1027,11 @@ function renderFeed(){
 }
 
 function bindPostEvents(){
+  document.querySelectorAll('.post-play-btn').forEach(btn=>{btn.onclick=async()=>{
+    const post=posts.find(x=>x.id===btn.dataset.id);
+    if(!post) return;
+    await playPostNarration(post, btn);
+  }});
   document.querySelectorAll('.like-btn').forEach(btn=>{btn.onclick=async()=>{
     try{const d=await apiFetch('/posts/'+btn.dataset.id+'/like',{method:'POST'});
     const p=posts.find(x=>x.id===btn.dataset.id);if(p&&d.post)p.likes=d.post.like_count;renderFeed()}catch(e){console.error(e)}
