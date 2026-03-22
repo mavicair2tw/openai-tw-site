@@ -696,6 +696,9 @@ let topicNarrationObjectUrl='';
 let postNarrationAudio=null;
 let postNarrationObjectUrl='';
 let activePostPlayButton=null;
+let activeSystemUtterance=null;
+let activeSystemPostButton=null;
+let topicSystemSpeaking=false;
 
 function isEnglishNarration(){
   return currentLang === 'en';
@@ -717,6 +720,35 @@ function pickEnglishNarrationVoice(){
 
 function buildTopicNarrationText(){
   return collectTopicNarrationText().join('\n\n');
+}
+
+function getSystemTtsLang(){
+  return (getNarrationApiLang && getNarrationApiLang()) || 'en-US';
+}
+
+function canUseSystemTts(){
+  return 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined';
+}
+
+function speakWithSystemTts(text, { onEnd, onError } = {}){
+  if(!canUseSystemTts()) return false;
+  try{
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(String(text||'').slice(0, 4000));
+    utter.lang = getSystemTtsLang();
+    const voice = currentLang==='en' ? pickEnglishNarrationVoice() : null;
+    if(voice) utter.voice = voice;
+    utter.rate = 1;
+    utter.pitch = 1;
+    utter.onend = () => { activeSystemUtterance=null; if(onEnd) onEnd(); };
+    utter.onerror = (e) => { activeSystemUtterance=null; if(onError) onError(e); };
+    activeSystemUtterance = utter;
+    window.speechSynthesis.speak(utter);
+    return true;
+  }catch(e){
+    activeSystemUtterance=null;
+    return false;
+  }
 }
 
 function getTopicNarrationEndpoint(){
@@ -771,10 +803,23 @@ async function fetchPostNarrationBlob(text){
 
 async function playPostNarration(post, btn){
   try{
-    const sameButton=activePostPlayButton===btn && postNarrationAudio && !postNarrationAudio.paused && !postNarrationAudio.ended;
+    const sameSystemButton=activeSystemPostButton===btn && ('speechSynthesis' in window) && (window.speechSynthesis.speaking || window.speechSynthesis.pending);
+    const sameAudioButton=activePostPlayButton===btn && postNarrationAudio && !postNarrationAudio.paused && !postNarrationAudio.ended;
     stopPostNarration();
-    if(sameButton) return;
+    if(sameSystemButton || sameAudioButton) return;
     stopTopicNarration();
+    activePostPlayButton=btn;
+    activeSystemPostButton=btn;
+    btn.classList.add('active');
+    const label=btn.querySelector('.post-play-label');
+    if(label) label.textContent=t('stopListening');
+
+    const usedSystem = speakWithSystemTts(post.body, {
+      onEnd: resetActivePostPlayButton,
+      onError: ()=>{ resetActivePostPlayButton(); showToast(t('toastError')); }
+    });
+    if(usedSystem) return;
+
     if(!postNarrationAudio){
       postNarrationAudio=new Audio();
       postNarrationAudio.addEventListener('ended', resetActivePostPlayButton);
@@ -784,10 +829,6 @@ async function playPostNarration(post, btn){
     const blob=await fetchPostNarrationBlob(post.body);
     postNarrationObjectUrl=URL.createObjectURL(blob);
     postNarrationAudio.src=postNarrationObjectUrl;
-    activePostPlayButton=btn;
-    btn.classList.add('active');
-    const label=btn.querySelector('.post-play-label');
-    if(label) label.textContent=t('stopListening');
     await postNarrationAudio.play();
   }catch(err){
     console.error('post narration play failed', err);
@@ -814,6 +855,11 @@ function stopPostNarration(){
     URL.revokeObjectURL(postNarrationObjectUrl);
     postNarrationObjectUrl='';
   }
+  if(activeSystemUtterance && 'speechSynthesis' in window){
+    window.speechSynthesis.cancel();
+    activeSystemUtterance=null;
+  }
+  activeSystemPostButton=null;
   resetActivePostPlayButton();
 }
 
@@ -851,6 +897,15 @@ async function playTopicNarration(){
   if(!text) return;
   try{
     stopTopicNarration();
+    const usedSystem = speakWithSystemTts(text, {
+      onEnd: ()=>{ topicSystemSpeaking=false; syncTopListenButton(); },
+      onError: ()=>{ topicSystemSpeaking=false; syncTopListenButton(); showToast(t('toastError')); }
+    });
+    if(usedSystem){
+      topicSystemSpeaking=true;
+      syncTopListenButton();
+      return;
+    }
     if(!topicNarrationAudio){
       topicNarrationAudio=new Audio();
       ['play','pause','ended','error'].forEach(evt=>topicNarrationAudio.addEventListener(evt, syncTopListenButton));
