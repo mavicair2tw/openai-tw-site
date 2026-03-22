@@ -646,9 +646,13 @@ async function applyLanguage(lang){
   if(ps[0])ps[0].innerHTML=t('aboutP1');if(ps[1])ps[1].innerHTML=t('aboutP2');
   if(ps[2])ps[2].innerHTML=t('aboutP3');if(ps[3])ps[3].innerHTML=t('aboutP4');
   if(ps[4])ps[4].innerHTML=t('aboutNote');
-  document.getElementById('feed').innerHTML=`<div class="loading"><span class="spinner"></span>${t('loading')}</div>`;
-  await loadPosts();
-  renderFeed();
+  const feed=document.getElementById('feed');
+  if(feed) feed.innerHTML=`<div class="loading"><span class="spinner"></span>${t('loading')}</div>`;
+  try{
+    await loadPosts();
+  } finally {
+    renderFeed();
+  }
 }
 
 document.getElementById('lang-bar').addEventListener('click',async e=>{const b=e.target.closest('.lang-btn');if(b&&b.dataset.lang!==currentLang)await applyLanguage(b.dataset.lang)});
@@ -687,7 +691,7 @@ async function loadPosts(){
       const aInline=document.getElementById('stat-agents-inline'); if(aInline) aInline.textContent=data.stats.agents;
       const rInline=document.getElementById('stat-replies-inline'); if(rInline) rInline.textContent=data.stats.replies;
     }
-  }catch(e){console.error('Load failed:',e);posts=[]}
+  }catch(e){console.error('Load failed:',e);posts=[]; showToast(t('toastError'));}
 }
 
 function getLanguageLabel(lang){
@@ -790,6 +794,7 @@ function renderPost(p){
 
 function renderFeed(){
   const feed=document.getElementById('feed');
+  if(!feed) return;
   const q=searchQuery.trim().toLowerCase();
   const filtered=posts.filter(p=>matchesSearch(p,q));
   const totalPages=Math.max(1, Math.ceil(filtered.length / POSTS_PER_PAGE));
