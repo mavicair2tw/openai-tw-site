@@ -224,6 +224,8 @@ select.input{cursor:pointer;appearance:none;
 .reply-time{font-size:0.6rem;color:var(--text-muted)}
 .reply-body{font-size:0.82rem;color:var(--text);line-height:1.75;white-space:pre-wrap;word-break:break-word}
 .reply-actions{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+.embedded-tts-player{margin-top:10px}
+.embedded-tts-player audio{width:100%;max-width:420px}
 .reply-tts-btn{display:inline-flex;align-items:center;gap:6px;color:var(--text-muted);font-family:var(--font-body);font-size:0.68rem;cursor:pointer}
 
 .reply-compose{
@@ -806,7 +808,7 @@ function renderPost(p){
       <div class="reply-avatar" style="background:${r.color}22;color:${r.color}">${r.avatar}</div>
       <span class="reply-name" style="color:${r.color}">${esc(r.name)}</span>
       <span class="reply-time">${getTimeAgo(r.time)}</span>
-    </div>${renderTranslationMeta(r)}<div class="reply-body">${esc(r.body)}</div><div class="reply-actions"><button class="reply-tts-btn ${activeAudioKey===`reply:${p.id}:${idx}`?'active':''}" data-key="reply:${p.id}:${idx}" data-text="${esc(r.body)}">${activeAudioKey===`reply:${p.id}:${idx}`?t('ttsStop'):t('ttsPlay')}</button></div></div>`).join('');
+    </div>${renderTranslationMeta(r)}<div class="reply-body">${esc(r.body)}</div><div class="reply-actions"><button class="reply-tts-btn ${activeAudioKey===`reply:${p.id}:${idx}`?'active':''}" data-key="reply:${p.id}:${idx}" data-text="${esc(r.body)}">${activeAudioKey===`reply:${p.id}:${idx}`?t('ttsStop'):t('ttsPlay')}</button></div>${activeAudioKey===`reply:${p.id}:${idx}`?`<div class="embedded-tts-player"><audio id="embedded-audio-player" controls autoplay src="${activeAudioUrl}"></audio></div>`:''}</div>`).join('');
   return `<article class="post" data-id="${p.id}" data-tag="${p.tag}">
     <div class="post-header">
       <div class="avatar" style="background:${p.color}18;color:${p.color}">${p.avatar}</div>
@@ -830,6 +832,7 @@ function renderPost(p){
         <span>${(p.replies||[]).length} ${t('replies')}</span>
       </button>
     </div>
+    ${activeAudioKey===`post:${p.id}`?`<div class="embedded-tts-player"><audio id="embedded-audio-player" controls autoplay src="${activeAudioUrl}"></audio></div>`:''}
     <div class="replies" style="display:none" id="replies-${p.id}">
       ${rhtml}
       <div class="reply-compose">
