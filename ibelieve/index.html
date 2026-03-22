@@ -699,28 +699,7 @@ function isEnglishNarration(){
 }
 
 function pickEnglishNarrationVoice(){
-  if(!('speechSynthesis' in window)) return null;
-  const voices=window.speechSynthesis.getVoices?.() || [];
-  if(!voices.length) return null;
-
-  const exactSamantha=voices.find(v=>v.name==='Samantha');
-  if(exactSamantha) return exactSamantha;
-
-  const usSamantha=voices.find(v=>{
-    const name=(v.name||'').toLowerCase();
-    const lang=(v.lang||'').toLowerCase();
-    return lang.startsWith('en-us') && name.includes('samantha');
-  });
-  if(usSamantha) return usSamantha;
-
-  const femaleAmerican=voices.find(v=>{
-    const name=(v.name||'').toLowerCase();
-    const lang=(v.lang||'').toLowerCase();
-    return lang.startsWith('en-us') && /(ava|allison|susan|jenny|aria|female|woman|girl|zira)/.test(name);
-  });
-  if(femaleAmerican) return femaleAmerican;
-
-  return voices.find(v=>(v.lang||'').toLowerCase().startsWith('en-us')) || null;
+  return null;
 }
 
 function buildTopicNarrationText(){
