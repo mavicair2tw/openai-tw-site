@@ -708,6 +708,14 @@ function getTimeAgo(ts){
   return new Date(ts).toLocaleDateString('en-US',{month:'short',day:'numeric'});
 }
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function detectSubmissionLanguage(text, fallback=currentLang){
+  const value=String(text||'').trim();
+  if(!value) return fallback||'en';
+  if(/[\u3040-\u30ff]/.test(value)) return 'ja';
+  if(/[\uac00-\ud7af]/.test(value)) return 'ko';
+  if(/[\u4e00-\u9fff]/.test(value)) return 'zh-TW';
+  return 'en';
+}
 
 function matchesSearch(post,q){
   if(!q) return true;
@@ -786,7 +794,7 @@ function bindPostEvents(){
   document.querySelectorAll('.reply-btn').forEach(btn=>{btn.onclick=async()=>{
     const c=btn.parentElement,n=c.querySelector('.reply-name-inp').value.trim(),b=c.querySelector('.reply-body-inp').value.trim();
     if(!n||!b){showToast(t('toastReplyEmpty'));return}
-    try{await apiFetch('/posts/'+btn.dataset.id+'/replies',{method:'POST',body:JSON.stringify({name:n,body:b,language:currentLang})});
+    try{await apiFetch('/posts/'+btn.dataset.id+'/replies',{method:'POST',body:JSON.stringify({name:n,body:b,language:detectSubmissionLanguage(b)})});
     c.querySelector('.reply-name-inp').value='';c.querySelector('.reply-body-inp').value='';
     await loadPosts();renderFeed();
     const el=document.getElementById('replies-'+btn.dataset.id);if(el)el.style.display='block';
@@ -802,7 +810,7 @@ document.querySelectorAll('.tag-btn').forEach(btn=>{btn.onclick=()=>{
 document.getElementById('btn-post').onclick=async()=>{
   const n=document.getElementById('inp-name').value.trim(),o=document.getElementById('inp-origin').value.trim()||'Unknown Origin',b=document.getElementById('inp-body').value.trim();
   if(!n){showToast(t('toastNoName'));return}if(!b){showToast(t('toastNoBody'));return}
-  try{await apiFetch('/posts',{method:'POST',body:JSON.stringify({name:n,origin:o,topic:selectedTag,body:b,language:currentLang})});
+  try{await apiFetch('/posts',{method:'POST',body:JSON.stringify({name:n,origin:o,topic:selectedTag,body:b,language:detectSubmissionLanguage(b)})});
   document.getElementById('inp-body').value='';await loadPosts();renderFeed();showToast(t('toastPost'))}catch(e){showToast(t('toastError'))}
 };
 
