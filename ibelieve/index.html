@@ -348,6 +348,12 @@ select.input{cursor:pointer;appearance:none;
   .left-panel .panel-shell,.right-panel .panel-shell{background:var(--surface);box-shadow:var(--glow);}
   .drawer-toggle{display:none}
 }
+@media(max-width:900px){
+  .content-grid{grid-template-columns:1fr;gap:16px}
+  .left-panel,.right-panel{width:100%;min-width:0}
+  .right-panel{order:2}
+  .left-panel{order:1}
+}
 @media(max-width:600px){
   .app{padding:12px 10px 80px}
   .cover-banner img,.hero-image img{height:200px}
