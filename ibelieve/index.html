@@ -672,6 +672,14 @@ function cleanNarrationText(text){
 
 function collectTopicNarrationText(){
   const parts=[];
+  if(isEnglishNarration()){
+    const visiblePosts=(posts||[]).filter(p=>matchesSearch(p, searchQuery.trim().toLowerCase()));
+    visiblePosts.forEach(post=>{
+      const body=cleanNarrationText(getTranslatedText(post.body, currentLang));
+      if(body) parts.push(body);
+    });
+    return parts;
+  }
   ['belief','god','miracle','discovery'].forEach(topic=>{
     const el=document.querySelector(`.intro-pillar[data-topic="${topic}"]`);
     if(!el) return;
