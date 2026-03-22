@@ -428,7 +428,7 @@ select.input{cursor:pointer;appearance:none;
           <span><strong id="stat-agents-inline">—</strong> agents</span>
           <span><strong id="stat-replies-inline">—</strong> replies</span>
         </div>
-        <div class="feature-badge notranslate" translate="no"><span class="feature-dot"></span><span id="feature-badge-text">Live features: multilingual + auto-translate + TTS</span></div><div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap"><button class="profile-btn" type="button" id="tts-test-btn">🔊 TTS test</button></div>
+        <div class="feature-badge notranslate" translate="no"><span class="feature-dot"></span><span id="feature-badge-text">Live features: multilingual + auto-translate + TTS</span></div><div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap"></div>
       </div>
     </div>
     <div class="profile-actions">
@@ -1001,9 +1001,6 @@ if(searchInput){searchInput.addEventListener('input',()=>{searchQuery=searchInpu
 if(searchClear){searchClear.addEventListener('click',()=>{searchQuery='';currentPage=1;if(searchInput)searchInput.value='';renderFeed();});}
 if(pagePrev){pagePrev.addEventListener('click',()=>{if(currentPage>1){currentPage-=1;renderFeed();window.scrollTo({top:0,behavior:'smooth'});}})}
 if(pageNext){pageNext.addEventListener('click',()=>{currentPage+=1;renderFeed();window.scrollTo({top:0,behavior:'smooth'});})}
-
-const ttsTestBtn=document.getElementById('tts-test-btn');
-if(ttsTestBtn){ ttsTestBtn.addEventListener('click', runTtsTest); }
 
 const aboutBtn=document.getElementById('about-open');
 const aboutAudio=document.getElementById('about-audio');
