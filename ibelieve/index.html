@@ -728,68 +728,39 @@ function pickSpeechLang(text){
   const detected=detectSubmissionLanguage(text, currentLang);
   return ({'zh-TW':'zh-TW','zh-CN':'zh-CN','ja':'ja-JP','ko':'ko-KR','en':'en-US','es':'es-ES','fr':'fr-FR','de':'de-DE'})[detected] || 'en-US';
 }
-function normalizeVoiceLang(lang=''){
-  return String(lang||'').toLowerCase().replace('_','-');
-}
-function chooseVoiceForLang(lang){
-  const voices=speechVoices.length ? speechVoices : (window.speechSynthesis ? window.speechSynthesis.getVoices() : []);
-  if(!voices.length) return null;
-  const wanted=normalizeVoiceLang(lang);
-  const base=wanted.split('-')[0];
-  return voices.find(v=>normalizeVoiceLang(v.lang)===wanted)
-    || voices.find(v=>normalizeVoiceLang(v.lang).startsWith(wanted+'-'))
-    || voices.find(v=>normalizeVoiceLang(v.lang).startsWith(base))
-    || voices.find(v=>/google|microsoft|apple|samantha|ting-ting|mei-jia|sin-ji|kyoko|yuna/i.test(String(v.name||'')))
-    || voices[0];
-}
-async function ensureVoicesLoaded(){
-  if(!('speechSynthesis' in window)) return [];
-  speechVoices = window.speechSynthesis.getVoices() || [];
-  if(speechVoices.length) return speechVoices;
-  return await new Promise(resolve=>{
-    let done=false;
-    const finish=()=>{ if(done) return; done=true; speechVoices = window.speechSynthesis.getVoices() || []; resolve(speechVoices); };
-    const timer=setTimeout(finish, 1200);
-    window.speechSynthesis.onvoiceschanged=()=>{ clearTimeout(timer); finish(); };
-  });
-}
 function stopSpeech(){
-  if(!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
+  if(audioPlayer){ try{ audioPlayer.pause(); }catch{} audioPlayer.src=''; }
   activeSpeechPostId=null;
 }
-async function runTtsTest(){
-  if(!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined'){ showToast(t('ttsUnavailable')); return; }
-  showToast(t('ttsLoading'));
-  await ensureVoicesLoaded();
-  stopSpeech();
-  const utterance=new SpeechSynthesisUtterance(t('ttsTestMessage'));
-  utterance.lang=pickSpeechLang(t('ttsTestMessage'));
-  const voice=chooseVoiceForLang(utterance.lang);
-  if(voice) utterance.voice=voice;
-  utterance.onerror=(e)=>{ console.error('tts test failed', e); showToast(t('ttsFailed')); };
-  window.speechSynthesis.speak(utterance);
+function buildTtsUrl(text){
+  const params=new URLSearchParams();
+  params.set('text', String(text||'').slice(0, 1500));
+  params.set('lang', pickSpeechLang(text));
+  return `${API}/tts?${params.toString()}`;
 }
-async function speakPost(postId){
+function runTtsTest(){
+  const message=t('ttsTestMessage');
+  try{
+    if(!audioPlayer) audioPlayer = new Audio();
+    audioPlayer.pause();
+    audioPlayer.src=buildTtsUrl(message);
+    audioPlayer.play().catch(err=>{ console.error('tts test failed', err); showToast(t('ttsFailed')); });
+  }catch(err){ console.error(err); showToast(t('ttsFailed')); }
+}
+function speakPost(postId){
   const post=posts.find(p=>p.id===postId);
   if(!post) return;
-  if(!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined'){ showToast(t('ttsUnavailable')); return; }
   if(activeSpeechPostId===postId){ stopSpeech(); renderFeed(); return; }
-  showToast(t('ttsLoading'));
-  await ensureVoicesLoaded();
-  stopSpeech();
-  const utterance=new SpeechSynthesisUtterance(`${post.name}. ${post.body}`);
-  utterance.lang=pickSpeechLang(post.body);
-  const voice=chooseVoiceForLang(utterance.lang);
-  if(!voice && utterance.lang !== 'en-US'){ console.warn('No matching voice for', utterance.lang); }
-  if(voice) utterance.voice=voice;
-  utterance.rate=0.96;
-  utterance.pitch=1;
-  utterance.onend=()=>{ activeSpeechPostId=null; renderFeed(); };
-  utterance.onerror=(e)=>{ console.error('tts playback failed', e); activeSpeechPostId=null; renderFeed(); showToast(t('ttsFailed')); };
-  activeSpeechPostId=postId;
-  renderFeed();
-  try{ window.speechSynthesis.speak(utterance); }catch(err){ console.error(err); activeSpeechPostId=null; renderFeed(); showToast(t('ttsFailed')); }
+  try{
+    if(!audioPlayer) audioPlayer = new Audio();
+    stopSpeech();
+    audioPlayer.src=buildTtsUrl(`${post.name}. ${post.body}`);
+    audioPlayer.onended=()=>{ activeSpeechPostId=null; renderFeed(); };
+    audioPlayer.onerror=(e)=>{ console.error('tts playback failed', e); activeSpeechPostId=null; renderFeed(); showToast(t('ttsFailed')); };
+    activeSpeechPostId=postId;
+    renderFeed();
+    audioPlayer.play().catch(err=>{ console.error(err); activeSpeechPostId=null; renderFeed(); showToast(t('ttsFailed')); });
+  }catch(err){ console.error(err); activeSpeechPostId=null; renderFeed(); showToast(t('ttsFailed')); }
 }
 
 function matchesSearch(post,q){
