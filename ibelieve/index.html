@@ -750,22 +750,27 @@ function buildRandomListenText(){
 function togglePanelListen(){
   const btn=document.getElementById('listen-panel-btn');
   const audio=document.getElementById('listen-panel-audio');
-  if(!audio) return;
+  if(!btn || !audio) return;
   if(randomListenActive){
-    stopAllTtsPlayback();
-    if(btn) btn.textContent=t('listenRandom');
+    try{ audio.pause(); }catch{}
+    audio.removeAttribute('src');
+    try{ audio.load(); }catch{}
+    randomListenActive=false;
+    btn.textContent=t('listenRandom');
     return;
   }
-  stopAllTtsPlayback();
   const text=buildRandomListenText();
   if(!text){ showToast(t('ttsFailed')); return; }
+  stopAllTtsPlayback();
   audio.src=buildTtsUrl(text);
   randomListenActive=true;
-  if(btn) btn.textContent=t('listenRandomStop');
-  audio.onended=()=>{ randomListenActive=false; if(btn) btn.textContent=t('listenRandom'); };
-  audio.onerror=()=>{ randomListenActive=false; if(btn) btn.textContent=t('listenRandom'); showToast(t('ttsFailed')); };
-  audio.play().catch(()=>{ randomListenActive=false; if(btn) btn.textContent=t('listenRandom'); showToast(t('ttsFailed')); });
+  btn.textContent=t('listenRandomStop');
+  audio.onended=()=>{ randomListenActive=false; btn.textContent=t('listenRandom'); };
+  audio.onerror=()=>{ randomListenActive=false; btn.textContent=t('listenRandom'); showToast(t('ttsFailed')); };
+  const p=audio.play();
+  if(p && typeof p.catch==='function'){ p.catch(()=>{ randomListenActive=false; btn.textContent=t('listenRandom'); showToast(t('ttsFailed')); }); }
 }
+window.__ibelieveTogglePanelListen = togglePanelListen;
 
 function mountTtsBlock(key, text){
   const box=document.querySelector(`[data-tts-box="${key}"]`);
@@ -985,9 +990,6 @@ document.querySelectorAll('.intro-pillar[data-topic]').forEach(el=>{
     await loadPosts();renderFeed();
   });
 });
-
-const listenPanelBtn=document.getElementById('listen-panel-btn');
-if(listenPanelBtn){ listenPanelBtn.addEventListener('click', togglePanelListen); }
 
 const searchInput=document.getElementById('search-posts');
 const searchClear=document.getElementById('search-clear');
