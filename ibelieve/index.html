@@ -666,11 +666,17 @@ function getNarrationApiLang(){
   return ({'zh-TW':'zh-TW','ja':'ja','ko':'ko','es':'es','fr':'fr','de':'de','en':'en-US'})[currentLang] || 'en-US';
 }
 
+function cleanNarrationText(text){
+  return String(text||'').replace(/^[✦◈✧◉\s]+/g,'').replace(/\s+/g,' ').trim();
+}
+
 function collectTopicNarrationText(){
   const parts=[];
-  document.querySelectorAll('.intro-pillar[data-topic]').forEach(el=>{
-    const title=el.querySelector('.pillar-title')?.textContent?.trim();
-    const desc=el.querySelector('.pillar-desc')?.textContent?.trim();
+  ['belief','god','miracle','discovery'].forEach(topic=>{
+    const el=document.querySelector(`.intro-pillar[data-topic="${topic}"]`);
+    if(!el) return;
+    const title=cleanNarrationText(el.querySelector('.pillar-title')?.textContent);
+    const desc=cleanNarrationText(el.querySelector('.pillar-desc')?.textContent);
     if(title) parts.push(title);
     if(desc) parts.push(desc);
   });
