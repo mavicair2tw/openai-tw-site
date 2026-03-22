@@ -808,14 +808,14 @@ function activateTtsButton(btn){
   stopAllTtsPlayback();
   document.querySelectorAll('[data-tts-play]').forEach(b=>{ b.textContent=b.dataset.ttsPlay==='title-listen'?t('titleListen'):t('ttsPlay'); });
   const listenPanelBtn=document.getElementById('listen-panel-btn'); if(listenPanelBtn) listenPanelBtn.textContent=t('listenRandom');
-  if(!String(text||'').trim()){ btn.textContent=key==='title-listen'?t('titleListen'):t('ttsPlay'); showToast(t('ttsFailed')); return; }
+  if(!String(text||'').trim()){ btn.textContent=t('ttsPlay'); showToast(t('ttsFailed')); return; }
   audio.src = buildTtsUrl(text);
   try{ audio.load(); }catch{}
   audio.dataset.active='1';
   btn.textContent=t('ttsStop');
-  audio.onended = ()=>{ audio.dataset.active='0'; if(key==='title-listen'){ titleListenActive=false; } btn.textContent=key==='title-listen'?t('titleListen'):t('ttsPlay'); };
-  audio.onerror = ()=>{ audio.dataset.active='0'; if(key==='title-listen'){ titleListenActive=false; } btn.textContent=key==='title-listen'?t('titleListen'):t('ttsPlay'); showToast(t('ttsFailed')); };
-  audio.play().catch(()=>{ audio.dataset.active='0'; if(key==='title-listen'){ titleListenActive=false; } btn.textContent=key==='title-listen'?t('titleListen'):t('ttsPlay'); showToast(t('ttsFailed')); });
+  audio.onended = ()=>{ audio.dataset.active='0'; btn.textContent=t('ttsPlay'); };
+  audio.onerror = ()=>{ audio.dataset.active='0'; btn.textContent=t('ttsPlay'); showToast(t('ttsFailed')); };
+  audio.play().catch(()=>{ audio.dataset.active='0'; btn.textContent=t('ttsPlay'); showToast(t('ttsFailed')); });
 }
 
 function renderTranslationMeta(item){
