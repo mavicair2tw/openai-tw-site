@@ -66,6 +66,8 @@ body::before{
 .right-panel .panel-shell{min-height:420px}
 .listen-panel{display:flex;flex-direction:column;gap:10px}
 .listen-panel-desc{font-size:.74rem;color:var(--text-muted);line-height:1.6}
+.listen-panel-subtitle{min-height:48px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);font-size:.8rem;line-height:1.7;color:var(--text-dim);white-space:pre-wrap}
+.listen-panel-subtitle.active{color:var(--text)}
 .listen-panel-audio{display:none !important;width:0;height:0;opacity:0;pointer-events:none}
 
 /* ===== HERO + PROFILE ===== */
@@ -445,6 +447,7 @@ select.input{cursor:pointer;appearance:none;
           <div class="listen-panel-title">Listen to Cosmos</div>
           <div class="listen-panel-desc">Hear a curated sequence of posts in your selected language.</div>
           <button class="profile-btn primary" id="listen-panel-btn" type="button">Listen</button>
+          <div class="listen-panel-subtitle" id="listen-panel-subtitle"></div>
           <audio class="listen-panel-audio" id="listen-panel-audio" preload="none"></audio>
         </div>
       </section>
@@ -603,6 +606,7 @@ let currentPage = 1;
 const POSTS_PER_PAGE = 12;
 const translationCache = new Map();
 let randomListenActive = false;
+let randomListenQueue = [];
 let audioPlayer = null;
 let activeAudioKey = null;
 
@@ -783,9 +787,11 @@ function buildTtsUrl(text){
 function stopAllTtsPlayback(){
   document.querySelectorAll('[data-tts-play]').forEach(b=>{ b.dataset.active='0'; b.textContent=t('ttsPlay'); });
   randomListenActive = false;
+  randomListenQueue = [];
+  setListenPanelSubtitle('');
   if('speechSynthesis' in window){ try{ window.speechSynthesis.cancel(); }catch{} }
 }
-function buildRandomListenText(){
+function buildRandomListenItems(){
   const groups={belief:[],god:[],miracle:[],discovery:[]};
   posts.forEach(p=>{ if(groups[p.tag]) groups[p.tag].push(p); });
   const picked=[];
@@ -795,36 +801,63 @@ function buildRandomListenText(){
   });
   const rest=posts.filter(p=>!picked.includes(p)).sort(()=>Math.random()-0.5);
   while(picked.length<Math.min(10, posts.length) && rest.length) picked.push(rest.shift());
-  return picked.slice(0,10).map((p)=>`${p.name}. ${p.body}`).join(' ');
+  return picked.slice(0,10).map((p)=>`${p.name}. ${p.body}`);
 }
+function setListenPanelSubtitle(text=''){
+  const el=document.getElementById('listen-panel-subtitle');
+  if(!el) return;
+  el.textContent=text;
+  el.classList.toggle('active', !!text);
+}
+
+function speakListenQueue(index=0){
+  const btn=document.getElementById('listen-panel-btn');
+  if(!randomListenActive || !btn) return;
+  const text=randomListenQueue[index];
+  if(!text){
+    randomListenActive=false;
+    randomListenQueue=[];
+    btn.textContent=t('listenRandom');
+    setListenPanelSubtitle('');
+    return;
+  }
+  setListenPanelSubtitle(text);
+  try{
+    speakWithBrowserTts(text, {
+      lang: pickSpeechLang(text),
+      rate: 0.95,
+      pitch: 1,
+      onend: ()=>speakListenQueue(index+1),
+      onerror: ()=>{ randomListenActive=false; randomListenQueue=[]; btn.textContent=t('listenRandom'); setListenPanelSubtitle(''); showToast(t('ttsFailed')); }
+    });
+  }catch(err){
+    console.error('listen panel tts failed', err);
+    randomListenActive=false;
+    randomListenQueue=[];
+    btn.textContent=t('listenRandom');
+    setListenPanelSubtitle('');
+    showToast(t('ttsFailed'));
+  }
+}
+
 function togglePanelListen(){
   const btn=document.getElementById('listen-panel-btn');
   if(!btn) return;
   if(randomListenActive){
     stopAllTtsPlayback();
     randomListenActive=false;
+    randomListenQueue=[];
     btn.textContent=t('listenRandom');
+    setListenPanelSubtitle('');
     return;
   }
-  const text=buildRandomListenText();
-  if(!text){ showToast(t('ttsFailed')); return; }
+  const items=buildRandomListenItems();
+  if(!items.length){ showToast(t('ttsFailed')); return; }
   stopAllTtsPlayback();
   randomListenActive=true;
+  randomListenQueue=items;
   btn.textContent=t('listenRandomStop');
-  try{
-    speakWithBrowserTts(text, {
-      lang: pickSpeechLang(text),
-      rate: 0.95,
-      pitch: 1,
-      onend: ()=>{ randomListenActive=false; btn.textContent=t('listenRandom'); },
-      onerror: ()=>{ randomListenActive=false; btn.textContent=t('listenRandom'); showToast(t('ttsFailed')); }
-    });
-  }catch(err){
-    console.error('listen panel tts failed', err);
-    randomListenActive=false;
-    btn.textContent=t('listenRandom');
-    showToast(t('ttsFailed'));
-  }
+  speakListenQueue(0);
 }
 window.__ibelieveTogglePanelListen = togglePanelListen;
 
