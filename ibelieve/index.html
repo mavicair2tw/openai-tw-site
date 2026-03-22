@@ -753,6 +753,7 @@ function matchesSearch(post,q){
 }
 
 function renderPost(p){
+  try{
   const rhtml=(p.replies||[]).map(r=>`
     <div class="reply"><div class="reply-header">
       <div class="reply-avatar" style="background:${r.color}22;color:${r.color}">${r.avatar}</div>
@@ -790,9 +791,11 @@ function renderPost(p){
       </div>
     </div>
   </article>`;
+  }catch(err){console.error('renderPost failed', err, p);return ''; }
 }
 
 function renderFeed(){
+  try{
   const feed=document.getElementById('feed');
   if(!feed) return;
   const q=searchQuery.trim().toLowerCase();
@@ -815,6 +818,11 @@ function renderFeed(){
     next.disabled = currentPage >= totalPages;
   }
   bindPostEvents();
+  }catch(err){
+    console.error('renderFeed failed', err);
+    const feed=document.getElementById('feed');
+    if(feed) feed.innerHTML=`<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-text">${t('toastError')}</div></div>`;
+  }
 }
 
 function bindPostEvents(){
@@ -898,10 +906,16 @@ function showToast(msg){const el=document.getElementById('toast');el.textContent
 function createStars(){const sf=document.getElementById('starfield');for(let i=0;i<120;i++){const s=document.createElement('div');s.className='star';const sz=Math.random()*2.5+0.5;s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--dur:${2+Math.random()*4}s;--o1:${0.1+Math.random()*0.3};--o2:${0.5+Math.random()*0.5}`;sf.appendChild(s)}}
 
 async function init(){
-  createStars();
-  const savedLang=localStorage.getItem('ibelieve-lang');
-  if(savedLang&&I18N[savedLang]) currentLang=savedLang;
-  await applyLanguage(currentLang);
+  try{
+    createStars();
+    const savedLang=localStorage.getItem('ibelieve-lang');
+    if(savedLang&&I18N[savedLang]) currentLang=savedLang;
+    await applyLanguage(currentLang);
+  }catch(err){
+    console.error('init failed', err);
+    const feed=document.getElementById('feed');
+    if(feed) feed.innerHTML=`<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-text">${t('toastError')}</div></div>`;
+  }
 }
 init();
 </script>
