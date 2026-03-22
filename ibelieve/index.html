@@ -728,6 +728,38 @@ function buildTtsUrl(text){
   params.set('lang', pickSpeechLang(text));
   return `https://openai-tw-forum.googselect.workers.dev/api/ibelieve/tts?${params.toString()}`;
 }
+function randomPostForTitleListen(){
+  if(!posts.length) return null;
+  const pool=[...posts].sort(()=>Math.random()-0.5);
+  return pool[0] || null;
+}
+function toggleTitleListen(){
+  const btn=document.getElementById('title-listen-btn');
+  const audio=document.getElementById('title-listen-audio');
+  if(!btn || !audio) return;
+  if(titleListenActive){
+    try{ audio.pause(); }catch{}
+    audio.removeAttribute('src');
+    try{ audio.load(); }catch{}
+    titleListenActive=false;
+    btn.textContent=t('titleListen');
+    return;
+  }
+  const picked=randomPostForTitleListen();
+  if(!picked){ showToast(t('ttsFailed')); return; }
+  document.querySelectorAll('audio').forEach(a=>{ try{a.pause();}catch{} });
+  const body=(picked.body||'').split(/\s+/).join(' ').trim().slice(0,140);
+  audio.src=buildTtsUrl(`${picked.name}. ${body}`);
+  try{ audio.load(); }catch{}
+  titleListenActive=true;
+  btn.textContent=t('titleListenStop');
+  audio.onended=()=>{ titleListenActive=false; btn.textContent=t('titleListen'); };
+  audio.onerror=()=>{ titleListenActive=false; btn.textContent=t('titleListen'); showToast(t('ttsFailed')); };
+  const promise=audio.play();
+  if(promise && typeof promise.catch==='function'){ promise.catch(()=>{ titleListenActive=false; btn.textContent=t('titleListen'); showToast(t('ttsFailed')); }); }
+}
+window.__ibelieveTitleListen = toggleTitleListen;
+
 function stopAllTtsPlayback(){
   document.querySelectorAll('audio').forEach(a=>{ try{ a.pause(); }catch{} });
   const panelAudio=document.getElementById('listen-panel-audio');
