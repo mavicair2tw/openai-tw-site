@@ -652,7 +652,7 @@ async function applyLanguage(lang){
   document.getElementById('inp-origin').placeholder=t('placeholderOrigin');
   document.getElementById('inp-body').placeholder=t('placeholderBody');
   document.getElementById('btn-post').textContent=t('btnPost');
-  const titleListenBtn=document.getElementById('title-listen-btn'); if(titleListenBtn) titleListenBtn.textContent=titleListenActive?t('titleListenStop'):t('titleListen');
+  const titleListenBtn=document.querySelector('[data-tts-play="title-listen"]'); if(titleListenBtn) titleListenBtn.textContent='🔊 Listen';
   const listenPanelBtn=document.getElementById('listen-panel-btn'); if(listenPanelBtn) listenPanelBtn.textContent=randomListenActive?t('listenRandomStop'):t('listenRandom');
   const listenPanelDesc=document.getElementById('listen-panel-desc'); if(listenPanelDesc) listenPanelDesc.textContent=t('listenRandomDesc');
   const autoTranslateNote=document.getElementById('auto-translate-note'); if(autoTranslateNote) autoTranslateNote.textContent=t('autoTranslateNote');
@@ -728,10 +728,12 @@ function buildTtsUrl(text){
   params.set('lang', pickSpeechLang(text));
   return `https://openai-tw-forum.googselect.workers.dev/api/ibelieve/tts?${params.toString()}`;
 }
-function randomPostForTitleListen(){
-  if(!posts.length) return null;
-  const pool=[...posts].sort(()=>Math.random()-0.5);
-  return pool[0] || null;
+function randomSingleListenText(){
+  if(!posts.length) return '';
+  const picked=[...posts].sort(()=>Math.random()-0.5)[0];
+  if(!picked) return '';
+  const body=String(picked.body||'').replace(/\s+/g,' ').trim().slice(0,140);
+  return `${picked.name}. ${body}`;
 }
 function toggleTitleListen(){
   const btn=document.getElementById('title-listen-btn');
