@@ -662,6 +662,37 @@ function getNarrationLang(){
   return ({'zh-TW':'zh-TW','ja':'ja-JP','ko':'ko-KR','es':'es-ES','fr':'fr-FR','de':'de-DE','en':'en-US'})[currentLang] || 'en-US';
 }
 
+function pickNarrationVoice(){
+  if(!('speechSynthesis' in window)) return null;
+  const voices=window.speechSynthesis.getVoices?.() || [];
+  if(!voices.length) return null;
+
+  if(currentLang==='en'){
+    const preferredOrder=[
+      'Samantha',
+      'Ava',
+      'Allison',
+      'Susan',
+      'Jenny',
+      'Aria'
+    ];
+    for(const name of preferredOrder){
+      const v=voices.find(v=>v.lang?.toLowerCase().startsWith('en-us') && v.name===name);
+      if(v) return v;
+    }
+    const softFemale=voices.find(v=>{
+      const name=(v.name||'').toLowerCase();
+      const lang=(v.lang||'').toLowerCase();
+      return lang.startsWith('en-us') && /(samantha|ava|allison|susan|jenny|aria|female|woman|girl|zira)/.test(name);
+    });
+    if(softFemale) return softFemale;
+    const anyAmerican=voices.find(v=>(v.lang||'').toLowerCase().startsWith('en-us'));
+    if(anyAmerican) return anyAmerican;
+  }
+
+  return voices.find(v=>(v.lang||'').toLowerCase().startsWith(getNarrationLang().toLowerCase())) || null;
+}
+
 function collectTopicNarrationText(){
   const parts=[];
   document.querySelectorAll('.intro-pillar[data-topic]').forEach(el=>{
@@ -697,11 +728,14 @@ function playTopicNarration(){
   const parts=collectTopicNarrationText();
   if(!parts.length) return;
   window.speechSynthesis.cancel();
+  const selectedVoice=pickNarrationVoice();
   const utterances=parts.map((text, idx)=>{
     const u=new SpeechSynthesisUtterance(text);
     u.lang=getNarrationLang();
-    u.rate=0.95;
-    u.pitch=1;
+    if(selectedVoice) u.voice=selectedVoice;
+    u.rate=currentLang==='en' ? 0.9 : 0.95;
+    u.pitch=currentLang==='en' ? 1.08 : 1;
+    u.volume=1;
     u.onstart=()=>syncTopListenButton();
     if(idx===parts.length-1){
       u.onend=()=>setTimeout(syncTopListenButton, 50);
