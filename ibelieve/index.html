@@ -199,14 +199,14 @@ select.input{cursor:pointer;appearance:none;
 .post-actions{
   display:flex;gap:16px;padding-top:12px;
   border-top:1px solid var(--border);
-  position:relative;z-index:5;pointer-events:auto;flex-wrap:wrap;
+  position:relative;z-index:50;pointer-events:auto;flex-wrap:wrap;isolation:isolate;
 }
 .action-btn{
   display:inline-flex;align-items:center;gap:6px;
   background:none;border:none;color:var(--text-muted);
   font-family:var(--font-body);font-size:0.72rem;cursor:pointer;
-  transition:color 0.2s;padding:4px 0;
-  position:relative;z-index:6;pointer-events:auto;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
+  transition:color 0.2s;padding:8px 10px;
+  position:relative;z-index:60;pointer-events:auto;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;
 }
 .action-btn:hover{color:var(--accent)}
 .action-btn.liked{color:var(--accent3)}
@@ -225,13 +225,13 @@ select.input{cursor:pointer;appearance:none;
 .reply-name{font-size:0.78rem;font-weight:500}
 .reply-time{font-size:0.6rem;color:var(--text-muted)}
 .reply-body{font-size:0.82rem;color:var(--text);line-height:1.75;white-space:pre-wrap;word-break:break-word}
-.reply-actions{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;position:relative;z-index:5;pointer-events:auto}
+.reply-actions{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;position:relative;z-index:50;pointer-events:auto;isolation:isolate}
 .embedded-tts-player{margin-top:10px}
 .embedded-tts-player audio{width:100%;max-width:420px}
-.tts-debug-panel{margin-top:10px;padding:10px 12px;border:1px dashed var(--border);border-radius:12px;background:rgba(255,255,255,0.03);font-size:.72rem;color:var(--text-dim);line-height:1.6;word-break:break-word;position:relative;z-index:1;pointer-events:none}
+.tts-debug-panel{margin-top:10px;padding:10px 12px;border:1px dashed var(--border);border-radius:12px;background:rgba(255,255,255,0.03);font-size:.72rem;color:var(--text-dim);line-height:1.6;word-break:break-word;position:relative;z-index:1;pointer-events:none;opacity:.92}
 .tts-debug-panel strong{color:var(--text)}
 .tts-debug-row{margin-top:4px}
-.reply-tts-btn{display:inline-flex;align-items:center;gap:6px;color:var(--text-muted);font-family:var(--font-body);font-size:0.68rem;cursor:pointer;position:relative;z-index:6;pointer-events:auto;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.reply-tts-btn{display:inline-flex;align-items:center;gap:6px;color:var(--text-muted);font-family:var(--font-body);font-size:0.68rem;cursor:pointer;position:relative;z-index:60;pointer-events:auto;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;padding:6px 8px}
 
 .reply-compose{
   display:flex;gap:8px;margin-top:12px;align-items:flex-end;
@@ -905,8 +905,6 @@ function bindPostEvents(){
     try{const d=await apiFetch('/posts/'+btn.dataset.id+'/like',{method:'POST'});
     const p=posts.find(x=>x.id===btn.dataset.id);if(p&&d.post)p.likes=d.post.like_count;renderFeed()}catch(e){console.error(e)}
   }});
-  document.querySelectorAll('.tts-btn').forEach(btn=>{btn.onclick=null; btn.addEventListener('click',(e)=>{e.preventDefault(); e.stopPropagation(); playTts(btn.dataset.key, btn.dataset.text);},{passive:false});});
-  document.querySelectorAll('.reply-tts-btn').forEach(btn=>{btn.onclick=null; btn.addEventListener('click',(e)=>{e.preventDefault(); e.stopPropagation(); playTts(btn.dataset.key, btn.dataset.text);},{passive:false});});
   document.querySelectorAll('.reply-toggle-btn').forEach(btn=>{btn.onclick=()=>{
     const el=document.getElementById('replies-'+btn.dataset.id);el.style.display=el.style.display==='none'?'block':'none';
   }});
@@ -950,6 +948,16 @@ document.querySelectorAll('.intro-pillar[data-topic]').forEach(el=>{
     await loadPosts();renderFeed();
   });
 });
+
+document.addEventListener('click',(e)=>{
+  const ttsBtn=e.target.closest('.tts-btn, .reply-tts-btn');
+  if(ttsBtn){
+    e.preventDefault();
+    e.stopPropagation();
+    playTts(ttsBtn.dataset.key, ttsBtn.dataset.text);
+    return;
+  }
+}, {passive:false});
 
 const searchInput=document.getElementById('search-posts');
 const searchClear=document.getElementById('search-clear');
