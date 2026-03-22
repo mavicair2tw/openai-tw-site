@@ -678,6 +678,7 @@ function collectTopicNarrationText(){
 }
 
 let topicNarrationAudio=null;
+let topicNarrationObjectUrl='';
 
 function buildTopicNarrationText(){
   return collectTopicNarrationText().join('\n\n');
@@ -696,6 +697,10 @@ function stopTopicNarration(){
     topicNarrationAudio.pause();
     topicNarrationAudio.currentTime=0;
   }
+  if(topicNarrationObjectUrl){
+    URL.revokeObjectURL(topicNarrationObjectUrl);
+    topicNarrationObjectUrl='';
+  }
 }
 
 function isTopicNarrationPlaying(){
@@ -711,19 +716,25 @@ function syncTopListenButton(){
   listenLabel.textContent=isPlaying?t('stopListening'):t('listen');
 }
 
-function playTopicNarration(){
+async function playTopicNarration(){
   const text=buildTopicNarrationText();
   if(!text) return;
   if(!topicNarrationAudio){
     topicNarrationAudio=new Audio();
     ['play','pause','ended','error'].forEach(evt=>topicNarrationAudio.addEventListener(evt, syncTopListenButton));
   }
-  topicNarrationAudio.src=buildTopicNarrationUrl();
-  topicNarrationAudio.play().catch(err=>{
+  try{
+    stopTopicNarration();
+    const res=await fetch(buildTopicNarrationUrl(), { mode:'cors' });
+    if(!res.ok) throw new Error(`TTS ${res.status}`);
+    const blob=await res.blob();
+    topicNarrationObjectUrl=URL.createObjectURL(blob);
+    topicNarrationAudio.src=topicNarrationObjectUrl;
+    await topicNarrationAudio.play();
+  }catch(err){
     console.error('topic narration play failed', err);
     showToast(t('toastError'));
-    syncTopListenButton();
-  });
+  }
   syncTopListenButton();
 }
 
