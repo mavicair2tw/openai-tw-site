@@ -480,7 +480,7 @@ select.input{cursor:pointer;appearance:none;
       </div>
 
       <section class="panel-shell">
-        <iframe id="spotify-embed" data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/episode/1wdtUBKlRCLQRuJEjbIdh3?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+        <iframe id="spotify-embed" data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/episode/1wdtUBKlRCLQRuJEjbIdh3?utm_source=generator" data-src-en="https://open.spotify.com/embed/episode/1wdtUBKlRCLQRuJEjbIdh3?utm_source=generator" data-src-zh="https://open.spotify.com/embed/episode/7dc8HrY0iXOxzolAWfaTgf?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
       </section>
 
       <section class="panel-shell">
@@ -649,6 +649,7 @@ async function applyLanguage(lang){
   document.getElementById('inp-body').placeholder=t('placeholderBody');
   document.getElementById('btn-post').textContent=t('btnPost');
   const autoTranslateNote=document.getElementById('auto-translate-note'); if(autoTranslateNote) autoTranslateNote.textContent=t('autoTranslateNote');
+  syncSpotifyEmbedLanguage();
   ['tagBelief','tagGod','tagMiracle','tagDiscovery'].forEach((k,i)=>{const el=document.querySelectorAll('.tag-btn')[i];if(el)el.textContent=t(k)});
   ['filterAll','tagBelief','tagGod','tagMiracle','tagDiscovery'].forEach((k,i)=>{const el=document.querySelectorAll('.filter-btn')[i];if(el)el.textContent=t(k)});
   const pt=['pillarBeliefTitle','pillarGodTitle','pillarMiracleTitle','pillarDiscoveryTitle','pillarAboutTitle'];
@@ -714,6 +715,15 @@ function pickSpeechLang(text){
   const detected=detectSubmissionLanguage(text, currentLang);
   return ({'zh-TW':'zh-TW','zh-CN':'zh-CN','ja':'ja-JP','ko':'ko-KR','en':'en-US','es':'es-ES','fr':'fr-FR','de':'de-DE'})[detected] || 'en-US';
 }
+function syncSpotifyEmbedLanguage(){
+  const iframe=document.getElementById('spotify-embed');
+  if(!iframe) return;
+  const nextSrc=currentLang==='zh-TW' ? iframe.dataset.srcZh : iframe.dataset.srcEn;
+  if(nextSrc && iframe.src !== nextSrc){
+    iframe.src = nextSrc;
+  }
+}
+
 function stopSpotifyEmbed(){
   const iframe=document.getElementById('spotify-embed');
   if(!iframe || !iframe.contentWindow) return;
