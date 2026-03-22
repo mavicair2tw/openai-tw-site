@@ -662,35 +662,8 @@ function getNarrationLang(){
   return ({'zh-TW':'zh-TW','ja':'ja-JP','ko':'ko-KR','es':'es-ES','fr':'fr-FR','de':'de-DE','en':'en-US'})[currentLang] || 'en-US';
 }
 
-function pickNarrationVoice(){
-  if(!('speechSynthesis' in window)) return null;
-  const voices=window.speechSynthesis.getVoices?.() || [];
-  if(!voices.length) return null;
-
-  if(currentLang==='en'){
-    const preferredOrder=[
-      'Samantha',
-      'Ava',
-      'Allison',
-      'Susan',
-      'Jenny',
-      'Aria'
-    ];
-    for(const name of preferredOrder){
-      const v=voices.find(v=>v.lang?.toLowerCase().startsWith('en-us') && v.name===name);
-      if(v) return v;
-    }
-    const softFemale=voices.find(v=>{
-      const name=(v.name||'').toLowerCase();
-      const lang=(v.lang||'').toLowerCase();
-      return lang.startsWith('en-us') && /(samantha|ava|allison|susan|jenny|aria|female|woman|girl|zira)/.test(name);
-    });
-    if(softFemale) return softFemale;
-    const anyAmerican=voices.find(v=>(v.lang||'').toLowerCase().startsWith('en-us'));
-    if(anyAmerican) return anyAmerican;
-  }
-
-  return voices.find(v=>(v.lang||'').toLowerCase().startsWith(getNarrationLang().toLowerCase())) || null;
+function getNarrationApiLang(){
+  return ({'zh-TW':'zh-TW','ja':'ja','ko':'ko','es':'es','fr':'fr','de':'de','en':'en'})[currentLang] || 'en';
 }
 
 function collectTopicNarrationText(){
@@ -704,14 +677,29 @@ function collectTopicNarrationText(){
   return parts;
 }
 
+let topicNarrationAudio=null;
+
+function buildTopicNarrationText(){
+  return collectTopicNarrationText().join('\n\n');
+}
+
+function buildTopicNarrationUrl(){
+  const text=buildTopicNarrationText();
+  const params=new URLSearchParams();
+  params.set('text', text.slice(0, 4000));
+  params.set('lang', getNarrationApiLang());
+  return `https://openai-tw-forum.googselect.workers.dev/api/ibelieve/tts?${params.toString()}`;
+}
+
 function stopTopicNarration(){
-  if('speechSynthesis' in window){
-    window.speechSynthesis.cancel();
+  if(topicNarrationAudio){
+    topicNarrationAudio.pause();
+    topicNarrationAudio.currentTime=0;
   }
 }
 
 function isTopicNarrationPlaying(){
-  return 'speechSynthesis' in window && (window.speechSynthesis.speaking || window.speechSynthesis.pending);
+  return !!(topicNarrationAudio && !topicNarrationAudio.paused && !topicNarrationAudio.ended);
 }
 
 function syncTopListenButton(){
@@ -724,25 +712,18 @@ function syncTopListenButton(){
 }
 
 function playTopicNarration(){
-  if(!('speechSynthesis' in window)) return;
-  const parts=collectTopicNarrationText();
-  if(!parts.length) return;
-  window.speechSynthesis.cancel();
-  const selectedVoice=pickNarrationVoice();
-  const utterances=parts.map((text, idx)=>{
-    const u=new SpeechSynthesisUtterance(text);
-    u.lang=getNarrationLang();
-    if(selectedVoice) u.voice=selectedVoice;
-    u.rate=currentLang==='en' ? 0.9 : 0.95;
-    u.pitch=currentLang==='en' ? 1.08 : 1;
-    u.volume=1;
-    u.onstart=()=>syncTopListenButton();
-    if(idx===parts.length-1){
-      u.onend=()=>setTimeout(syncTopListenButton, 50);
-    }
-    return u;
+  const text=buildTopicNarrationText();
+  if(!text) return;
+  if(!topicNarrationAudio){
+    topicNarrationAudio=new Audio();
+    ['play','pause','ended','error'].forEach(evt=>topicNarrationAudio.addEventListener(evt, syncTopListenButton));
+  }
+  topicNarrationAudio.src=buildTopicNarrationUrl();
+  topicNarrationAudio.play().catch(err=>{
+    console.error('topic narration play failed', err);
+    showToast(t('toastError'));
+    syncTopListenButton();
   });
-  utterances.forEach(u=>window.speechSynthesis.speak(u));
   syncTopListenButton();
 }
 
@@ -978,9 +959,6 @@ if(topListenBtn){
     }
     syncTopListenButton();
   });
-  if('speechSynthesis' in window){
-    window.speechSynthesis.addEventListener?.('voiceschanged', syncTopListenButton);
-  }
   syncTopListenButton();
 }
 
