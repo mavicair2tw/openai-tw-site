@@ -771,6 +771,13 @@ function stopAllTtsPlayback(){
   if(embedded){ embedded.removeAttribute('src'); try{ embedded.load(); }catch{} }
   randomListenActive = false;
 }
+function randomSingleListenText(){
+  if(!posts.length) return '';
+  const picked=[...posts].sort(()=>Math.random()-0.5)[0];
+  if(!picked) return '';
+  const body=String(picked.body||'').split(/\s+/).join(' ').trim().slice(0,140);
+  return `${picked.name}. ${body}`;
+}
 function buildRandomListenText(){
   const groups={belief:[],god:[],miracle:[],discovery:[]};
   posts.forEach(p=>{ if(groups[p.tag]) groups[p.tag].push(p); });
@@ -836,7 +843,7 @@ function buildRandomListenText(){
 function activateTtsButton(btn){
   if(!btn) return;
   const key=btn.dataset.ttsPlay;
-  if(key==='title-listen'){ btn.dataset.text = buildRandomListenText(); btn.textContent=t('ttsStop'); }
+  if(key==='title-listen'){ btn.dataset.text = randomSingleListenText(); btn.textContent=t('titleListenStop'); }
   const text=btn.dataset.text || '';
   const box=btn.closest('[data-tts-box]');
   const audio=box ? box.querySelector('audio') : null;
@@ -849,9 +856,9 @@ function activateTtsButton(btn){
   try{ audio.load(); }catch{}
   audio.dataset.active='1';
   btn.textContent=t('ttsStop');
-  audio.onended = ()=>{ audio.dataset.active='0'; btn.textContent=t('ttsPlay'); };
-  audio.onerror = ()=>{ audio.dataset.active='0'; btn.textContent=t('ttsPlay'); showToast(t('ttsFailed')); };
-  audio.play().catch(()=>{ audio.dataset.active='0'; btn.textContent=t('ttsPlay'); showToast(t('ttsFailed')); });
+  audio.onended = ()=>{ audio.dataset.active='0'; btn.textContent=key==='title-listen'?t('titleListen'):t('ttsPlay'); };
+  audio.onerror = ()=>{ audio.dataset.active='0'; btn.textContent=key==='title-listen'?t('titleListen'):t('ttsPlay'); showToast(t('ttsFailed')); };
+  audio.play().catch(()=>{ audio.dataset.active='0'; btn.textContent=key==='title-listen'?t('titleListen'):t('ttsPlay'); showToast(t('ttsFailed')); });
 }
 function renderTranslationMeta(item){
   if(!item||!item.originalLanguage) return '';
