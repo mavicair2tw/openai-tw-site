@@ -733,7 +733,7 @@ function randomSingleListenText(){
   const picked=[...posts].sort(()=>Math.random()-0.5)[0];
   if(!picked) return '';
   const body=String(picked.body||'').replace(/\s+/g,' ').trim().slice(0,140);
-  return `${picked.name}. ${body}`;
+  return body;
 }
 function toggleTitleListen(){
   const btn=document.getElementById('title-listen-btn');
@@ -776,7 +776,7 @@ function randomSingleListenText(){
   const picked=[...posts].sort(()=>Math.random()-0.5)[0];
   if(!picked) return '';
   const body=String(picked.body||'').split(/\s+/).join(' ').trim().slice(0,140);
-  return `${picked.name}. ${body}`;
+  return body;
 }
 function buildRandomListenText(){
   const groups={belief:[],god:[],miracle:[],discovery:[]};
