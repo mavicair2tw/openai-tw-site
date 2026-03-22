@@ -90,6 +90,7 @@ body::before{
 .profile-search{display:flex;gap:6px;align-items:center;min-width:220px;flex:1;max-width:320px}
 .profile-search .input{flex:1;background:#fff;border:1px solid var(--border);}
 .profile-search .profile-btn{padding:8px 14px;min-width:unset;font-size:0.75rem}
+.title-listen-btn,#title-listen-btn,.radio-play-btn,#radio-play-btn{display:none !important}
 
 /* ===== STATS BAR ===== */
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:0;margin:0}
@@ -652,7 +653,6 @@ async function applyLanguage(lang){
   document.getElementById('inp-origin').placeholder=t('placeholderOrigin');
   document.getElementById('inp-body').placeholder=t('placeholderBody');
   document.getElementById('btn-post').textContent=t('btnPost');
-  const titleListenBtn=document.getElementById('title-listen-btn'); if(titleListenBtn) titleListenBtn.textContent='🔊 Listen';
   const autoTranslateNote=document.getElementById('auto-translate-note'); if(autoTranslateNote) autoTranslateNote.textContent=t('autoTranslateNote');
   ['tagBelief','tagGod','tagMiracle','tagDiscovery'].forEach((k,i)=>{const el=document.querySelectorAll('.tag-btn')[i];if(el)el.textContent=t(k)});
   ['filterAll','tagBelief','tagGod','tagMiracle','tagDiscovery'].forEach((k,i)=>{const el=document.querySelectorAll('.filter-btn')[i];if(el)el.textContent=t(k)});
@@ -833,19 +833,6 @@ function activateTtsButton(btn){
   audio.onerror = ()=>{ audio.dataset.active='0'; if(key==='title-listen'){ titleListenActive=false; } btn.textContent=key==='title-listen'?t('titleListen'):t('ttsPlay'); showToast(t('ttsFailed')); };
   audio.play().catch(()=>{ audio.dataset.active='0'; if(key==='title-listen'){ titleListenActive=false; } btn.textContent=key==='title-listen'?t('titleListen'):t('ttsPlay'); showToast(t('ttsFailed')); });
 }
-function toggleTitleListenProxy(){
-  const btn=document.getElementById('title-listen-btn');
-  const postBtns=[...document.querySelectorAll('[data-tts-play^="post:"]')];
-  if(!btn || !postBtns.length){ showToast(t('ttsFailed')); return; }
-  const active=postBtns.find(b=>String(b.textContent||'').includes('Stop') || String(b.textContent||'').includes('停止'));
-  if(active){ active.click(); btn.textContent='🔊 Listen'; return; }
-  const picked=postBtns[Math.floor(Math.random()*postBtns.length)];
-  if(!picked){ showToast(t('ttsFailed')); return; }
-  btn.textContent='⏹ Stop';
-  picked.click();
-  setTimeout(()=>{ btn.textContent='🔊 Listen'; }, 1200);
-}
-window.__ibelieveTitleListen = toggleTitleListenProxy;
 
 function renderTranslationMeta(item){
   if(!item||!item.originalLanguage) return '';
