@@ -732,17 +732,6 @@ function buildTopicNarrationUrl(){
 }
 
 async function fetchTopicNarrationBlob(){
-  const text=buildTopicNarrationText();
-  if(isEnglishNarration()){
-    const res=await fetch(getTopicNarrationEndpoint(), {
-      method:'POST',
-      mode:'cors',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ text:text.slice(0, 4000), lang:getNarrationApiLang() })
-    });
-    if(!res.ok) throw new Error(`TTS ${res.status}`);
-    return await res.blob();
-  }
   const res=await fetch(buildTopicNarrationUrl(), { mode:'cors' });
   if(!res.ok) throw new Error(`TTS ${res.status}`);
   return await res.blob();
@@ -751,16 +740,6 @@ async function fetchTopicNarrationBlob(){
 async function fetchPostNarrationBlob(text){
   const clean=cleanNarrationText(text).slice(0, 4000);
   if(!clean) throw new Error('empty post');
-  if(currentLang==='en'){
-    const res=await fetch(getTopicNarrationEndpoint(), {
-      method:'POST',
-      mode:'cors',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ text:clean, lang:'en-US' })
-    });
-    if(!res.ok) throw new Error(`TTS ${res.status}`);
-    return await res.blob();
-  }
   const params=new URLSearchParams();
   params.set('text', clean);
   params.set('lang', getNarrationApiLang());
@@ -771,10 +750,29 @@ async function fetchPostNarrationBlob(text){
 
 async function playPostNarration(post, btn){
   try{
-    const sameButton=activePostPlayButton===btn && postNarrationAudio && !postNarrationAudio.paused && !postNarrationAudio.ended;
+    const sameButton=activePostPlayButton===btn && isTopicNarrationPlaying();
     stopPostNarration();
     if(sameButton) return;
     stopTopicNarration();
+    activePostPlayButton=btn;
+    btn.classList.add('active');
+    const label=btn.querySelector('.post-play-label');
+    if(label) label.textContent=t('stopListening');
+
+    if(currentLang==='en'){
+      if(!('speechSynthesis' in window)) throw new Error('speechSynthesis unavailable');
+      const utter=new SpeechSynthesisUtterance(cleanNarrationText(post.body));
+      utter.lang='en-US';
+      const voice=pickEnglishNarrationVoice();
+      if(voice) utter.voice=voice;
+      utter.rate=0.9;
+      utter.pitch=1.08;
+      utter.onend=()=>setTimeout(resetActivePostPlayButton,50);
+      utter.onerror=()=>{ resetActivePostPlayButton(); showToast(t('toastError')); };
+      window.speechSynthesis.speak(utter);
+      return;
+    }
+
     if(!postNarrationAudio){
       postNarrationAudio=new Audio();
       postNarrationAudio.addEventListener('ended', resetActivePostPlayButton);
@@ -784,10 +782,6 @@ async function playPostNarration(post, btn){
     const blob=await fetchPostNarrationBlob(post.body);
     postNarrationObjectUrl=URL.createObjectURL(blob);
     postNarrationAudio.src=postNarrationObjectUrl;
-    activePostPlayButton=btn;
-    btn.classList.add('active');
-    const label=btn.querySelector('.post-play-label');
-    if(label) label.textContent=t('stopListening');
     await postNarrationAudio.play();
   }catch(err){
     console.error('post narration play failed', err);
@@ -851,14 +845,29 @@ async function playTopicNarration(){
   if(!text) return;
   try{
     stopTopicNarration();
-    if(!topicNarrationAudio){
-      topicNarrationAudio=new Audio();
-      ['play','pause','ended','error'].forEach(evt=>topicNarrationAudio.addEventListener(evt, syncTopListenButton));
+    stopPostNarration();
+    if(isEnglishNarration()){
+      if(!('speechSynthesis' in window)) throw new Error('speechSynthesis unavailable');
+      const utter=new SpeechSynthesisUtterance(text);
+      utter.lang='en-US';
+      const voice=pickEnglishNarrationVoice();
+      if(voice) utter.voice=voice;
+      utter.rate=0.9;
+      utter.pitch=1.08;
+      utter.onstart=()=>syncTopListenButton();
+      utter.onend=()=>setTimeout(syncTopListenButton,50);
+      utter.onerror=()=>{ showToast(t('toastError')); syncTopListenButton(); };
+      window.speechSynthesis.speak(utter);
+    }else{
+      if(!topicNarrationAudio){
+        topicNarrationAudio=new Audio();
+        ['play','pause','ended','error'].forEach(evt=>topicNarrationAudio.addEventListener(evt, syncTopListenButton));
+      }
+      const blob=await fetchTopicNarrationBlob();
+      topicNarrationObjectUrl=URL.createObjectURL(blob);
+      topicNarrationAudio.src=topicNarrationObjectUrl;
+      await topicNarrationAudio.play();
     }
-    const blob=await fetchTopicNarrationBlob();
-    topicNarrationObjectUrl=URL.createObjectURL(blob);
-    topicNarrationAudio.src=topicNarrationObjectUrl;
-    await topicNarrationAudio.play();
   }catch(err){
     console.error('topic narration play failed', err);
     showToast(t('toastError'));
