@@ -678,10 +678,6 @@ function stopSpeech(hidePreview=false){
     if(label) label.textContent='Play';
     activePostButton=null;
   }
-  if(hidePreview){
-    const preview=document.getElementById('narration-preview');
-    if(preview) preview.style.display='none';
-  }
 }
 
 function isSpeechPlaying(){
@@ -697,20 +693,42 @@ function syncTopListenButton(){
   listenLabel.textContent=isPlaying?t('stopListening'):t('listen');
 }
 
-function speakText(text,{mode='topic',button=null}={}){
+function getLangCode(){
+  if(currentLang==='zh-TW') return 'zh-TW';
+  if(currentLang==='zh-CN') return 'zh-CN';
+  if(currentLang==='ja') return 'ja-JP';
+  if(currentLang==='ko') return 'ko-KR';
+  if(currentLang==='es') return 'es-ES';
+  if(currentLang==='fr') return 'fr-FR';
+  if(currentLang==='de') return 'de-DE';
+  return 'en-US';
+}
+
+function getBestVoice(langCode){
+  const voices=window.speechSynthesis.getVoices();
+  if(!voices||!voices.length) return null;
+  // Exact match first
+  let v=voices.find(v=>v.lang===langCode);
+  if(v) return v;
+  // Prefix match (e.g. en-US matches en-GB)
+  const prefix=langCode.split('-')[0];
+  v=voices.find(v=>v.lang.startsWith(prefix));
+  return v||null;
+}
+
+function doSpeak(text, mode, button){
   const clean=String(text||'').trim();
-  if(!clean || !('speechSynthesis' in window)) return false;
-  stopSpeech();
+  if(!clean) return;
   const utter=new SpeechSynthesisUtterance(clean);
-  utter.lang=currentLang==='zh-TW' ? 'zh-TW' : currentLang==='ja' ? 'ja-JP' : 'en-US';
+  const langCode=getLangCode();
+  utter.lang=langCode;
   utter.rate=0.95;
   utter.pitch=1;
+  const voice=getBestVoice(langCode);
+  if(voice) utter.voice=voice;
   utter.onstart=()=>{ activeMode=mode; syncTopListenButton(); };
   utter.onend=()=>{ stopSpeech(); syncTopListenButton(); };
-  utter.onerror=()=>{
-    // Stay quiet on transient playback issues; don't show error toasts.
-    syncTopListenButton();
-  };
+  utter.onerror=()=>{ syncTopListenButton(); };
   activeUtterance=utter;
   if(button){
     activePostButton=button;
@@ -720,34 +738,107 @@ function speakText(text,{mode='topic',button=null}={}){
   }
   window.speechSynthesis.speak(utter);
   syncTopListenButton();
+}
+
+function speakText(text,{mode='topic',button=null}={}){
+  const clean=String(text||'').trim();
+  if(!clean || !('speechSynthesis' in window)) return false;
+  stopSpeech();
+  // Chrome: voices may not be loaded yet, wait for them
+  const voices=window.speechSynthesis.getVoices();
+  if(voices && voices.length>0){
+    doSpeak(clean, mode, button);
+  } else {
+    window.speechSynthesis.onvoiceschanged=()=>{
+      window.speechSynthesis.onvoiceschanged=null;
+      doSpeak(clean, mode, button);
+    };
+    // Fallback: try anyway after 300ms if onvoiceschanged never fires
+    setTimeout(()=>{
+      if(!activeUtterance) doSpeak(clean, mode, button);
+    }, 300);
+  }
   return true;
 }
 
+let narrationInterval=null;
+
+function stopNarrationDisplay(){
+  if(narrationInterval){ clearInterval(narrationInterval); narrationInterval=null; }
+  const preview=document.getElementById('narration-preview');
+  const narrationText=document.getElementById('narration-text');
+  if(preview) preview.style.display='none';
+  if(narrationText) narrationText.innerHTML='';
+}
+
 function playTopicNarration(){
-  const visiblePosts=posts.filter(p=>matchesSearch(p, searchQuery.trim().toLowerCase()));
-  const text=visiblePosts.map(p=>getTranslatedText(p.body)).join('\n\n');
   const preview=document.getElementById('narration-preview');
   const narrationText=document.getElementById('narration-text');
 
-  // Always show text immediately on click
-  if(preview && narrationText){
-    if(isSpeechPlaying() && activeMode==='topic'){
-      // Currently playing — stop and hide
-      stopSpeech();
-      preview.style.display='none';
-      return;
-    }
-    if(!text){
-      narrationText.textContent='（No posts available）';
-    } else {
-      narrationText.textContent=text;
-    }
-    preview.style.display='block';
-    preview.scrollTop=0;
+  // If already playing — stop everything
+  if(narrationInterval || (isSpeechPlaying() && activeMode==='topic')){
+    stopSpeech(false);
+    stopNarrationDisplay();
+    syncTopListenButton();
+    return;
   }
 
-  if(!text) return;
-  speakText(text,{mode:'topic'});
+  const visiblePosts=posts.filter(p=>matchesSearch(p, searchQuery.trim().toLowerCase()));
+  if(!visiblePosts.length){
+    if(preview && narrationText){
+      narrationText.innerHTML='<span style="color:var(--text-muted);font-style:italic">（No posts available）</span>';
+      preview.style.display='block';
+    }
+    return;
+  }
+
+  if(!preview || !narrationText) return;
+
+  // Show container
+  narrationText.innerHTML='';
+  preview.style.display='block';
+  preview.scrollTop=0;
+
+  // Build lines: each post = agent name line + body lines
+  const lines=[];
+  visiblePosts.forEach(p=>{
+    const name=p.name||'';
+    const body=getTranslatedText(p.body)||'';
+    lines.push({ type:'agent', text:'— '+name });
+    body.split('\n').filter(l=>l.trim()).forEach(l=>lines.push({ type:'body', text:l }));
+    lines.push({ type:'spacer', text:'' });
+  });
+
+  let idx=0;
+  const showNextLine=()=>{
+    if(idx>=lines.length){
+      clearInterval(narrationInterval);
+      narrationInterval=null;
+      syncTopListenButton();
+      return;
+    }
+    const line=lines[idx++];
+    const el=document.createElement('div');
+    if(line.type==='agent'){
+      el.style.cssText='font-size:0.68rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--accent);margin-top:12px;margin-bottom:2px;';
+    } else if(line.type==='spacer'){
+      el.style.height='10px';
+    } else {
+      el.style.cssText='font-size:0.82rem;color:var(--text-dim);line-height:1.85;';
+    }
+    el.textContent=line.text;
+    narrationText.appendChild(el);
+    // Auto scroll to bottom
+    preview.scrollTop=preview.scrollHeight;
+  };
+
+  // Show first line immediately, then one line every 1.2s
+  showNextLine();
+  narrationInterval=setInterval(showNextLine, 1200);
+
+  // Also speak the full text
+  const fullText=visiblePosts.map(p=>getTranslatedText(p.body)).join('\n\n');
+  if(fullText) speakText(fullText,{mode:'topic'});
 }
 
 function playPostNarration(post, button){
