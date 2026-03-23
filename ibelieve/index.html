@@ -1246,22 +1246,6 @@ function removeStaleTitleListen(){
   if(audio){ audio.remove(); }
 }
 
-async function jumpToTopic(topic){
-  currentFilter = topic;
-  if(typeof updateFilterButtons === 'function') updateFilterButtons();
-  await loadPosts();
-  renderFeed();
-  const panel = document.getElementById('posts-panel') || document.getElementById('feed');
-  if(panel){
-    const top = Math.max(0, panel.getBoundingClientRect().top + window.scrollY - 72);
-    try{
-      window.scrollTo({ top, behavior:'smooth' });
-    }catch(_){
-      window.scrollTo(0, top);
-    }
-  }
-}
-
 async function init(){
   try{
     removeStaleTitleListen();
