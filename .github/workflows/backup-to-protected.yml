@@ -1,0 +1,88 @@
+name: Backup Protected Pages to protected-pages Branch
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Skip if bot or auto-restore commit
+        id: check
+        run: |
+          LAST_AUTHOR=$(git log -1 --format='%an')
+          LAST_MSG=$(git log -1 --format='%s')
+          echo "Last author: $LAST_AUTHOR"
+          echo "Last message: $LAST_MSG"
+          if [ "$LAST_AUTHOR" = "openai-tw bot" ] || \
+             [ "$LAST_AUTHOR" = "page-protector" ] || \
+             echo "$LAST_MSG" | grep -q "^auto-restore:"; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Backup pages to protected-pages branch
+        if: steps.check.outputs.skip == 'false'
+        run: |
+          set -euo pipefail
+
+          git config user.name "page-protector"
+          git config user.email "protect@openai-tw.com"
+
+          # Switch to protected-pages branch
+          git fetch origin protected-pages
+          git checkout protected-pages
+
+          NEED_COMMIT=false
+
+          backup_file() {
+            local src="$1"
+            local dir
+            dir=$(dirname "$src")
+            mkdir -p "$dir"
+
+            # Grab the file from main
+            git show "origin/main:$src" > "$src" 2>/dev/null || return 1
+            git add "$src"
+            echo "Backed up: $src"
+            NEED_COMMIT=true
+          }
+
+          # Pages and assets to back up
+          PAGES=(
+            "ibelieve/index.html"
+            "ibelieve/profile-image.png"
+            "ibelieve/admin.html"
+            "english/index.html"
+            "srt/index.html"
+            "etf/index.html"
+            "五子棋/index.html"
+            "mp3player/index.html"
+            "mp3player/qr.png"
+            "mp3player/bg.jpg"
+            "index.html"
+          )
+
+          for F in "${PAGES[@]}"; do
+            if git cat-file -e "origin/main:$F" 2>/dev/null; then
+              backup_file "$F" || echo "WARN: Could not backup $F"
+            fi
+          done
+
+          if [ "$NEED_COMMIT" = true ]; then
+            git commit -m "backup: sync protected pages from main"
+            git push origin protected-pages
+            echo "Backup complete"
+          else
+            echo "No changes to backup"
+          fi
