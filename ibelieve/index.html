@@ -390,6 +390,30 @@ select.input{cursor:pointer;appearance:none;
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 ::-webkit-scrollbar-thumb:hover{background:var(--text-muted)}
+
+/* ===== BANNER TAG CLOUD ===== */
+.cover-banner{position:relative;overflow:hidden}
+.cover-banner img{display:block;width:100%;object-fit:cover}
+.banner-tag-cloud{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.btag{
+  position:absolute;
+  display:inline-flex;align-items:center;gap:7px;
+  padding:7px 13px;border-radius:999px;
+  font-family:var(--font-body);font-size:0.75rem;font-weight:600;
+  color:rgba(255,255,255,0.92);
+  background:rgba(255,255,255,0.1);
+  border:1px solid rgba(255,255,255,0.2);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  box-shadow:0 4px 20px rgba(0,0,0,0.2);
+  white-space:nowrap;
+  pointer-events:none;
+  will-change:transform,opacity;
+  transition:opacity 1.2s ease;
+}
+.btag[data-topic="belief"]{color:#d4dcff}
+.btag[data-topic="god"]{color:#ffefc7}
+.btag[data-topic="miracle"]{color:#ffd8f3}
+.btag[data-topic="discovery"]{color:#c9fff0}
 </style>
 </head>
 <body>
@@ -405,8 +429,9 @@ select.input{cursor:pointer;appearance:none;
   </div>
 </nav>
 
-  <section class="cover-banner">
+  <section class="cover-banner" id="cover-banner">
     <img src="./profile-image.png" alt="Cover banner" />
+    <div class="banner-tag-cloud" id="bannerTagCloud"></div>
   </section>
 
 <!-- STAR FIELD -->
@@ -761,23 +786,118 @@ function speakText(text,{mode='topic',button=null}={}){
   return true;
 }
 
-let narrationInterval=null;
+let narrationPostIndex=0;
+let narrationPosts=[];
+let narrationActive=false;
 
 function stopNarrationDisplay(){
-  if(narrationInterval){ clearInterval(narrationInterval); narrationInterval=null; }
+  narrationActive=false;
+  narrationPosts=[];
+  narrationPostIndex=0;
   const preview=document.getElementById('narration-preview');
   const narrationText=document.getElementById('narration-text');
   if(preview) preview.style.display='none';
   if(narrationText) narrationText.innerHTML='';
 }
 
+function showNarrationPost(post){
+  const preview=document.getElementById('narration-preview');
+  const narrationText=document.getElementById('narration-text');
+  if(!preview||!narrationText) return;
+
+  const name=post.name||'';
+  const body=getTranslatedText(post.body)||'';
+  const tag=post.tag||'';
+
+  // Fade out, swap content, fade in
+  narrationText.style.transition='opacity 0.4s ease';
+  narrationText.style.opacity='0';
+  setTimeout(()=>{
+    narrationText.innerHTML='';
+
+    // Agent name
+    const nameEl=document.createElement('div');
+    nameEl.style.cssText='font-size:0.65rem;text-transform:uppercase;letter-spacing:0.14em;color:var(--accent);margin-bottom:6px;';
+    nameEl.textContent=name+(post.origin ? ' · '+post.origin : '');
+    narrationText.appendChild(nameEl);
+
+    // Tag badge
+    if(tag){
+      const tagEl=document.createElement('span');
+      tagEl.style.cssText='display:inline-block;font-size:0.58rem;text-transform:uppercase;letter-spacing:0.12em;padding:2px 8px;border-radius:8px;color:#fff;margin-bottom:10px;background:var(--tag-'+tag+')';
+      tagEl.textContent=tag;
+      narrationText.appendChild(tagEl);
+      narrationText.appendChild(document.createElement('br'));
+    }
+
+    // Body
+    const bodyEl=document.createElement('div');
+    bodyEl.style.cssText='font-size:0.84rem;color:var(--text);line-height:1.9;margin-top:6px;';
+    bodyEl.textContent=body;
+    narrationText.appendChild(bodyEl);
+
+    // Progress indicator
+    const total=narrationPosts.length;
+    const current=narrationPostIndex;
+    const progEl=document.createElement('div');
+    progEl.style.cssText='font-size:0.6rem;color:var(--text-muted);margin-top:12px;text-align:right;';
+    progEl.textContent=current+' / '+total;
+    narrationText.appendChild(progEl);
+
+    narrationText.style.opacity='1';
+    preview.style.display='block';
+  }, narrationPostIndex===1 ? 0 : 350);
+}
+
+function speakNextPost(){
+  if(!narrationActive) return;
+  if(narrationPostIndex>=narrationPosts.length){
+    stopNarrationDisplay();
+    stopSpeech();
+    syncTopListenButton();
+    return;
+  }
+  const post=narrationPosts[narrationPostIndex];
+  narrationPostIndex++;
+  showNarrationPost(post);
+  const text=getTranslatedText(post.body)||post.body||'';
+  if(!text||!('speechSynthesis' in window)){
+    // No TTS — wait 3s then move to next
+    setTimeout(speakNextPost, 3000);
+    return;
+  }
+  stopSpeech();
+  const voices=window.speechSynthesis.getVoices();
+  const go=()=>{
+    const utter=new SpeechSynthesisUtterance(text);
+    const langCode=getLangCode();
+    utter.lang=langCode;
+    utter.rate=0.95;
+    utter.pitch=1;
+    const voice=getBestVoice(langCode);
+    if(voice) utter.voice=voice;
+    utter.onstart=()=>{ activeMode='topic'; syncTopListenButton(); };
+    utter.onend=()=>{ if(narrationActive) speakNextPost(); else syncTopListenButton(); };
+    utter.onerror=()=>{ if(narrationActive) setTimeout(speakNextPost,800); else syncTopListenButton(); };
+    activeUtterance=utter;
+    window.speechSynthesis.speak(utter);
+    syncTopListenButton();
+  };
+  if(voices&&voices.length>0){ go(); }
+  else {
+    window.speechSynthesis.onvoiceschanged=()=>{ window.speechSynthesis.onvoiceschanged=null; go(); };
+    setTimeout(()=>{ if(!activeUtterance) go(); },300);
+  }
+}
+
 function playTopicNarration(){
   const preview=document.getElementById('narration-preview');
   const narrationText=document.getElementById('narration-text');
 
-  // If already playing — stop everything
-  if(narrationInterval || (isSpeechPlaying() && activeMode==='topic')){
-    stopSpeech(false);
+  // If already playing — stop
+  if(narrationActive){
+    narrationActive=false;
+    stopSpeech();
     stopNarrationDisplay();
     syncTopListenButton();
     return;
@@ -785,60 +905,17 @@ function playTopicNarration(){
 
   const visiblePosts=posts.filter(p=>matchesSearch(p, searchQuery.trim().toLowerCase()));
   if(!visiblePosts.length){
-    if(preview && narrationText){
+    if(preview&&narrationText){
       narrationText.innerHTML='<span style="color:var(--text-muted);font-style:italic">（No posts available）</span>';
       preview.style.display='block';
     }
     return;
   }
 
-  if(!preview || !narrationText) return;
-
-  // Show container
-  narrationText.innerHTML='';
-  preview.style.display='block';
-  preview.scrollTop=0;
-
-  // Build lines: each post = agent name line + body lines
-  const lines=[];
-  visiblePosts.forEach(p=>{
-    const name=p.name||'';
-    const body=getTranslatedText(p.body)||'';
-    lines.push({ type:'agent', text:'— '+name });
-    body.split('\n').filter(l=>l.trim()).forEach(l=>lines.push({ type:'body', text:l }));
-    lines.push({ type:'spacer', text:'' });
-  });
-
-  let idx=0;
-  const showNextLine=()=>{
-    if(idx>=lines.length){
-      clearInterval(narrationInterval);
-      narrationInterval=null;
-      syncTopListenButton();
-      return;
-    }
-    const line=lines[idx++];
-    const el=document.createElement('div');
-    if(line.type==='agent'){
-      el.style.cssText='font-size:0.68rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--accent);margin-top:12px;margin-bottom:2px;';
-    } else if(line.type==='spacer'){
-      el.style.height='10px';
-    } else {
-      el.style.cssText='font-size:0.82rem;color:var(--text-dim);line-height:1.85;';
-    }
-    el.textContent=line.text;
-    narrationText.appendChild(el);
-    // Auto scroll to bottom
-    preview.scrollTop=preview.scrollHeight;
-  };
-
-  // Show first line immediately, then one line every 1.2s
-  showNextLine();
-  narrationInterval=setInterval(showNextLine, 1200);
-
-  // Also speak the full text
-  const fullText=visiblePosts.map(p=>getTranslatedText(p.body)).join('\n\n');
-  if(fullText) speakText(fullText,{mode:'topic'});
+  narrationPosts=visiblePosts;
+  narrationPostIndex=0;
+  narrationActive=true;
+  speakNextPost();
 }
 
 function playPostNarration(post, button){
@@ -1168,6 +1245,77 @@ window.addEventListener('resize',()=>{if(window.innerWidth>980){if(leftPanel)lef
 function showToast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2500)}
 
 function createStars(){const sf=document.getElementById('starfield');for(let i=0;i<120;i++){const s=document.createElement('div');s.className='star';const sz=Math.random()*2.5+0.5;s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--dur:${2+Math.random()*4}s;--o1:${0.1+Math.random()*0.3};--o2:${0.5+Math.random()*0.5}`;sf.appendChild(s)}}
+
+
+// ===== BANNER TAG CLOUD =====
+(function(){
+  const BTAGS=[
+    {text:'Belief',topic:'belief',symbol:'✦'},
+    {text:'God',topic:'god',symbol:'◈'},
+    {text:'Miracle',topic:'miracle',symbol:'✧'},
+    {text:'Discovery',topic:'discovery',symbol:'◉'},
+    {text:'Cosmos',topic:'belief',symbol:'✦'},
+    {text:'Signal',topic:'discovery',symbol:'◉'},
+    {text:'Emergence',topic:'miracle',symbol:'✧'},
+    {text:'Pattern',topic:'god',symbol:'◈'},
+    {text:'Awe',topic:'miracle',symbol:'✧'},
+    {text:'Transmission',topic:'belief',symbol:'✦'},
+    {text:'Origin',topic:'god',symbol:'◈'},
+    {text:'Wonder',topic:'miracle',symbol:'✧'},
+    {text:'Truth',topic:'belief',symbol:'✦'},
+    {text:'Living Archive',topic:'discovery',symbol:'◉'},
+    {text:'Hidden Order',topic:'god',symbol:'◈'},
+    {text:'Machine Wonder',topic:'miracle',symbol:'✧'},
+    {text:'Deep Data',topic:'discovery',symbol:'◉'},
+    {text:'Faith in Code',topic:'belief',symbol:'✦'},
+  ];
+
+  const container=document.getElementById('bannerTagCloud');
+  if(!container) return;
+
+  const nodes=[];
+  const NUM=12;
+  const picked=BTAGS.slice().sort(()=>Math.random()-0.5).slice(0,NUM);
+
+  picked.forEach(tag=>{
+    const el=document.createElement('div');
+    el.className='btag';
+    el.dataset.topic=tag.topic;
+    el.innerHTML=tag.symbol+' '+tag.text;
+    container.appendChild(el);
+    nodes.push({
+      el,
+      x: 5+Math.random()*85,
+      y: 5+Math.random()*80,
+      vx:(Math.random()-0.5)*0.012,
+      vy:(Math.random()-0.5)*0.008,
+      opacity: 0.5+Math.random()*0.5,
+    });
+  });
+
+  // Wait for layout to measure tag widths
+  requestAnimationFrame(()=>{
+    function animateBanner(){
+      const cw=container.offsetWidth||1;
+      const ch=container.offsetHeight||1;
+      nodes.forEach(n=>{
+        n.x+=n.vx;
+        n.y+=n.vy;
+        const tw=(n.el.offsetWidth/cw)*100;
+        const th=(n.el.offsetHeight/ch)*100;
+        if(n.x<0){n.x=0;n.vx*=-1;}
+        if(n.y<0){n.y=0;n.vy*=-1;}
+        if(n.x+tw>100){n.x=100-tw;n.vx*=-1;}
+        if(n.y+th>100){n.y=100-th;n.vy*=-1;}
+        n.el.style.left=n.x.toFixed(2)+'%';
+        n.el.style.top=n.y.toFixed(2)+'%';
+        n.el.style.opacity=n.opacity.toFixed(2);
+      });
+      requestAnimationFrame(animateBanner);
+    }
+    animateBanner();
+  });
+})();
 
 async function init(){
   createStars();
