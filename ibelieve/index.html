@@ -1083,6 +1083,22 @@ function renderPost(p){
   }catch(err){console.error('renderPost failed', err, p);return ''; }
 }
 
+function stripInconsistentOriginalLabels(){
+  const walker = document.createTreeWalker(document.getElementById('feed') || document.body, NodeFilter.SHOW_ELEMENT);
+  const kill = [];
+  while(walker.nextNode()){
+    const el = walker.currentNode;
+    const txt = (el.textContent || '').trim();
+    if(!txt) continue;
+    if (/^Original\s*[·•-]\s*/i.test(txt) || /^原文\s*[·•-]\s*/.test(txt)) {
+      kill.push(el);
+    }
+  }
+  kill.forEach(el=>{
+    if(el && el.parentNode) el.remove();
+  });
+}
+
 function renderFeed(){
   try{
   const feed=document.getElementById('feed');
