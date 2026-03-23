@@ -835,6 +835,17 @@ function stopSpotifyEmbed(){
   }catch{}
 }
 
+window.addEventListener('message',(event)=>{
+  if(event.origin!=='https://open.spotify.com') return;
+  const raw=typeof event.data==='string' ? event.data : JSON.stringify(event.data||{});
+  if(/play/i.test(raw)){
+    stopAllTtsPlayback();
+    stopSpeech();
+    const listenPanelBtn=document.getElementById('listen-panel-btn');
+    if(listenPanelBtn) listenPanelBtn.textContent=t('listenRandom');
+  }
+});
+
 function buildTtsUrl(text){
   const params=new URLSearchParams();
   params.set('text', String(text||'').slice(0, 1500));
