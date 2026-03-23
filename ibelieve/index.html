@@ -825,6 +825,16 @@ function syncSpotifyEmbedLanguage(){
 
 
 
+
+function stopSpotifyEmbed(){
+  const iframe=document.getElementById('spotify-embed');
+  if(!iframe || !iframe.contentWindow) return;
+  try{
+    iframe.contentWindow.postMessage({ command:'pause' }, 'https://open.spotify.com');
+    iframe.contentWindow.postMessage(JSON.stringify({ command:'pause' }), 'https://open.spotify.com');
+  }catch{}
+}
+
 function buildTtsUrl(text){
   const params=new URLSearchParams();
   params.set('text', String(text||'').slice(0, 1500));
@@ -891,6 +901,7 @@ function speakListenQueue(index=0){
 function togglePanelListen(){
   const btn=document.getElementById('listen-panel-btn');
   if(!btn) return;
+  stopSpotifyEmbed();
   if(randomListenActive){
     stopAllTtsPlayback();
     randomListenActive=false;
@@ -936,6 +947,7 @@ function buildRandomListenText(){
 }
 function activateTtsButton(btn){
   if(!btn) return;
+  stopSpotifyEmbed();
   const text=btn.dataset.text || '';
   if(!text.trim()){ showToast(t('ttsFailed')); return; }
   const active = btn.dataset.active === '1';
