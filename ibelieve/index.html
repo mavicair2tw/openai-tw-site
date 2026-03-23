@@ -453,6 +453,10 @@ select.input{cursor:pointer;appearance:none;
           <div class="media-listen-wrap">
             <button class="listen-btn" id="top-listen-btn" type="button"><span class="listen-icon">🔊</span><span id="top-listen-label">Listen</span></button>
           </div>
+          <div id="narration-preview" style="display:none;margin-top:14px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;max-height:200px;overflow-y:auto;">
+            <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:8px;">▶ Now narrating</div>
+            <div id="narration-text" style="font-size:0.8rem;color:var(--text-dim);line-height:1.85;white-space:pre-wrap;word-break:break-word;"></div>
+          </div>
         </section>
       </div>
 
@@ -674,6 +678,8 @@ function stopSpeech(){
     if(label) label.textContent='Play';
     activePostButton=null;
   }
+  const preview=document.getElementById('narration-preview');
+  if(preview) preview.style.display='none';
 }
 
 function isSpeechPlaying(){
@@ -717,8 +723,15 @@ function speakText(text,{mode='topic',button=null}={}){
 
 function playTopicNarration(){
   const visiblePosts=posts.filter(p=>matchesSearch(p, searchQuery.trim().toLowerCase()));
-  const text=visiblePosts.map(p=>p.body).join('\n\n');
+  const text=visiblePosts.map(p=>getTranslatedText(p.body)).join('\n\n');
   if(!text) return;
+  const preview=document.getElementById('narration-preview');
+  const narrationText=document.getElementById('narration-text');
+  if(preview && narrationText){
+    narrationText.textContent=text;
+    preview.style.display='block';
+    preview.scrollTop=0;
+  }
   speakText(text,{mode:'topic'});
 }
 
