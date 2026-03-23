@@ -666,7 +666,7 @@ let activeUtterance=null;
 let activePostButton=null;
 let activeMode='';
 
-function stopSpeech(){
+function stopSpeech(hidePreview=false){
   if('speechSynthesis' in window){
     window.speechSynthesis.cancel();
   }
@@ -678,8 +678,10 @@ function stopSpeech(){
     if(label) label.textContent='Play';
     activePostButton=null;
   }
-  const preview=document.getElementById('narration-preview');
-  if(preview) preview.style.display='none';
+  if(hidePreview){
+    const preview=document.getElementById('narration-preview');
+    if(preview) preview.style.display='none';
+  }
 }
 
 function isSpeechPlaying(){
@@ -724,14 +726,27 @@ function speakText(text,{mode='topic',button=null}={}){
 function playTopicNarration(){
   const visiblePosts=posts.filter(p=>matchesSearch(p, searchQuery.trim().toLowerCase()));
   const text=visiblePosts.map(p=>getTranslatedText(p.body)).join('\n\n');
-  if(!text) return;
   const preview=document.getElementById('narration-preview');
   const narrationText=document.getElementById('narration-text');
+
+  // Always show text immediately on click
   if(preview && narrationText){
-    narrationText.textContent=text;
+    if(isSpeechPlaying() && activeMode==='topic'){
+      // Currently playing — stop and hide
+      stopSpeech();
+      preview.style.display='none';
+      return;
+    }
+    if(!text){
+      narrationText.textContent='（No posts available）';
+    } else {
+      narrationText.textContent=text;
+    }
     preview.style.display='block';
     preview.scrollTop=0;
   }
+
+  if(!text) return;
   speakText(text,{mode:'topic'});
 }
 
@@ -1045,12 +1060,8 @@ if(aboutBtn){
 }
 if(topListenBtn){
   topListenBtn.addEventListener('click',()=>{
-    if(isSpeechPlaying() && activeMode==='topic'){
-      stopSpeech();
-      syncTopListenButton();
-    }else{
-      playTopicNarration();
-    }
+    playTopicNarration();
+    syncTopListenButton();
   });
   syncTopListenButton();
 }
