@@ -1167,7 +1167,7 @@ function getFriendlyError(err){
   return t('toastError');
 }
 
-async function loadPosts(){
+async function loadPosts(){console.log("Loading posts from API...");
   try{
     const params=new URLSearchParams();
     if(currentFilter!=='all') params.set('topic', currentFilter);
@@ -1452,7 +1452,7 @@ function createStars(){const sf=document.getElementById('starfield');for(let i=0
   });
 })();
 
-async function init(){
+async function init(){localStorage.removeItem("ibelieve_posts_cache");
   createStars();
   const savedLang=localStorage.getItem('ibelieve-lang');
   if(savedLang&&I18N[savedLang]) await applyLanguage(savedLang);
