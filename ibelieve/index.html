@@ -800,44 +800,71 @@ function stopNarrationDisplay(){
   if(narrationText) narrationText.innerHTML='';
 }
 
-// Split text into word spans for highlight
+// Detect if text is CJK (Chinese/Japanese/Korean)
+function isCJK(text){
+  return /[　-鿿가-힯豈-﫿]/.test(text);
+}
+
+// Build character-level spans for CJK, word-level for Latin
 function buildWordSpans(text){
-  // Split by spaces, keep spaces as text nodes
-  const words=text.split(/(\s+)/);
   const spans=[];
-  words.forEach((w,i)=>{
-    if(/^\s+$/.test(w)){
-      // whitespace — plain text node
-      spans.push(document.createTextNode(w));
-    } else if(w){
-      const sp=document.createElement('span');
-      sp.textContent=w;
-      sp.dataset.wordIdx=String(spans.filter(n=>n.nodeType===1).length);
-      sp.style.cssText='border-radius:3px;padding:0 1px;transition:background 0.1s,color 0.1s;';
-      spans.push(sp);
+  if(isCJK(text)){
+    // CJK: one span per character
+    for(let i=0;i<text.length;i++){
+      const ch=text[i];
+      if(ch==='
+'){
+        spans.push(document.createElement('br'));
+      } else {
+        const sp=document.createElement('span');
+        sp.textContent=ch;
+        sp.dataset.charIdx=String(i);
+        sp.style.cssText='border-radius:2px;transition:background 0.08s,color 0.08s;display:inline-block;';
+        spans.push(sp);
+      }
     }
-  });
+  } else {
+    // Latin/other: split by word boundaries, keep spaces as text nodes
+    const parts=text.split(/([ 	
+]+)/);
+    let idx=0;
+    parts.forEach(part=>{
+      if(/^[ 	]+$/.test(part)){
+        spans.push(document.createTextNode(part));
+        idx+=part.length;
+      } else if(part==='
+'||part==='
+'){
+        spans.push(document.createElement('br'));
+        idx+=part.length;
+      } else if(part){
+        const sp=document.createElement('span');
+        sp.textContent=part;
+        sp.dataset.charIdx=String(idx);
+        sp.style.cssText='border-radius:3px;padding:0 1px;transition:background 0.08s,color 0.08s;';
+        spans.push(sp);
+        idx+=part.length;
+      }
+    });
+  }
   return spans;
 }
 
 function highlightWord(bodyEl, charIndex, charLength){
   if(!bodyEl) return;
-  const spans=bodyEl.querySelectorAll('span[data-word-idx]');
-  // Find which span contains this charIndex
-  let offset=0;
-  const bodyText=bodyEl.textContent||'';
+  const len=charLength||1;
+  const spans=bodyEl.querySelectorAll('span[data-char-idx]');
   spans.forEach(sp=>{
-    const start=bodyText.indexOf(sp.textContent, offset);
-    const end=start+sp.textContent.length;
-    if(charIndex>=start && charIndex<end){
+    const idx=parseInt(sp.dataset.charIdx,10);
+    const spLen=sp.textContent.length;
+    // Highlight if this span overlaps with [charIndex, charIndex+len)
+    if(idx>=charIndex && idx<charIndex+len){
       sp.style.background='#f5c518';
       sp.style.color='#fff';
-      sp.style.borderRadius='3px';
     } else {
       sp.style.background='';
       sp.style.color='';
     }
-    if(start>=0) offset=end;
   });
 }
 
