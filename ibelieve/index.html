@@ -1329,6 +1329,7 @@ document.querySelectorAll('.filter-btn').forEach(btn=>{btn.onclick=async()=>{
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
   currentFilter=btn.dataset.filter;currentPage=1;document.getElementById('feed').innerHTML=`<div class="loading"><span class="spinner"></span>${t('loading')}</div>`;
   await loadPosts();renderFeed();
+  await loadPosts();renderFeed();
 }});
 
 document.querySelectorAll('.intro-pillar[data-topic]').forEach(el=>{
@@ -1469,6 +1470,13 @@ init();
   gtag('js', new Date());
 
   gtag('config', 'G-NN1CMK7253');
+
+
+// Auto-load posts on page init
+(async ()=>{
+  await loadPosts();
+  renderFeed();
+})();
 </script>
 
 </body>
