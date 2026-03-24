@@ -415,7 +415,7 @@ select.input{cursor:pointer;appearance:none;
 .btag[data-topic="miracle"]{color:#ffd8f3}
 .btag[data-topic="discovery"]{color:#c9fff0}
 </style>
-</head>
+<meta http-equiv='Cache-Control' content='no-cache, no-store, must-revalidate'></head>
 <body>
 
 <!-- LANGUAGE SWITCHER -->
@@ -645,7 +645,7 @@ select.input{cursor:pointer;appearance:none;
 <audio id="about-audio" src="./mp3player/iBelie.mp3" preload="auto"></audio>
 
 <script>
-const API = 'https://ibelieve-backend.vercel.app/api';
+const API = 'https://ibelieve-backend.vercel.app/api?t=' + Date.now();
 const FORUM_API = 'https://openai-tw-forum.googselect.workers.dev/api/forum';
 let posts = [], currentFilter = 'all', currentLang = 'en', searchQuery = '';
 let currentPage = 1;
