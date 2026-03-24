@@ -1481,3 +1481,397 @@ init();
 
 </body>
 </html>
+
+<!-- Authentication Layer -->
+<style>
+  .auth-nav { 
+    position: absolute; 
+    top: 2rem; 
+    right: 2rem; 
+    display: flex; 
+    gap: 1rem; 
+    z-index: 100;
+  }
+  .auth-nav button { 
+    padding: 0.6rem 1.2rem; 
+    border: none; 
+    border-radius: 4px; 
+    cursor: pointer; 
+    font-size: 0.9rem;
+    transition: all 0.3s;
+  }
+  .btn-login { background: #667eea; color: white; }
+  .btn-login:hover { background: #5568d3; }
+  .btn-register { background: #764ba2; color: white; }
+  .btn-register:hover { background: #634180; }
+  .btn-admin { background: #f39c12; color: white; display: none; }
+  .btn-admin:hover { background: #e67e22; }
+  .btn-logout { background: #e74c3c; color: white; }
+  .btn-logout:hover { background: #c0392b; }
+  .user-info { color: #fff; display: flex; align-items: center; gap: 1rem; font-size: 0.9rem; }
+  
+  .modal { 
+    display: none; 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(0, 0, 0, 0.7); 
+    z-index: 9999; 
+    justify-content: center; 
+    align-items: center; 
+  }
+  .modal.active { display: flex; }
+  .modal-content { 
+    background: #081228; 
+    border: 1px solid #13223b; 
+    padding: 2rem; 
+    border-radius: 16px; 
+    max-width: 400px; 
+    width: 90%; 
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.85);
+  }
+  .modal h2 { 
+    color: #e1e7ff; 
+    margin-bottom: 1.5rem; 
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+  }
+  .form-group { margin-bottom: 1.2rem; }
+  .form-group label { 
+    display: block; 
+    margin-bottom: 0.5rem; 
+    color: #9fb4d8;
+    font-size: 0.9rem;
+  }
+  .form-group input, .form-group select { 
+    width: 100%; 
+    padding: 0.8rem; 
+    border: 1px solid #13223b; 
+    border-radius: 8px; 
+    background: #0b1532;
+    color: #e1e7ff;
+    font-size: 1rem;
+    font-family: var(--font-body);
+  }
+  .form-group input:focus, .form-group select:focus { 
+    outline: none; 
+    border-color: #6b8df5; 
+    box-shadow: 0 0 10px rgba(107, 141, 245, 0.3);
+  }
+  .modal-buttons { 
+    display: flex; 
+    gap: 1rem; 
+    margin-top: 1.5rem; 
+  }
+  .modal-buttons button { 
+    flex: 1; 
+    padding: 0.8rem; 
+    border: none; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    font-size: 0.95rem;
+    transition: all 0.3s;
+  }
+  .btn-submit { 
+    background: #6b8df5; 
+    color: white; 
+  }
+  .btn-submit:hover { background: #5a7cd9; }
+  .btn-cancel { 
+    background: #13223b; 
+    color: #9fb4d8; 
+    border: 1px solid #2f4a7b;
+  }
+  .btn-cancel:hover { background: #0f1a2e; }
+  .error-message { 
+    color: #ff7bbe; 
+    margin-top: 0.5rem; 
+    font-size: 0.85rem; 
+  }
+  .auth-wall { 
+    display: none; 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(2, 3, 26, 0.95); 
+    z-index: 5000; 
+    justify-content: center; 
+    align-items: center; 
+  }
+  .auth-wall.active { display: flex; }
+  .auth-wall-content { 
+    text-align: center; 
+    background: #081228;
+    border: 1px solid #13223b;
+    padding: 3rem;
+    border-radius: 16px;
+    max-width: 500px;
+  }
+  .auth-wall-content h3 { 
+    color: #e1e7ff; 
+    margin-bottom: 1rem; 
+    font-family: var(--font-display);
+    font-size: 2rem;
+  }
+  .auth-wall-content p {
+    color: #9fb4d8;
+    margin-bottom: 2rem;
+  }
+  .auth-wall-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+  }
+  .auth-wall-buttons button {
+    padding: 0.8rem 2rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+</style>
+
+<!-- Auth Modals -->
+<div id="loginModal" class="modal">
+  <div class="modal-content">
+    <h2>Login</h2>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="loginUsername" placeholder="Enter username">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="loginPassword" placeholder="Enter password">
+    </div>
+    <div id="loginError" class="error-message"></div>
+    <div class="modal-buttons">
+      <button class="btn-submit" onclick="handleLogin()">Login</button>
+      <button class="btn-cancel" onclick="hideLoginModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="registerModal" class="modal">
+  <div class="modal-content">
+    <h2>Register</h2>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="registerUsername" placeholder="Choose username">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="registerPassword" placeholder="Min 6 characters">
+    </div>
+    <div class="form-group">
+      <label>Confirm Password</label>
+      <input type="password" id="registerPasswordConfirm" placeholder="Confirm password">
+    </div>
+    <div id="registerError" class="error-message"></div>
+    <div class="modal-buttons">
+      <button class="btn-submit" onclick="handleRegister()">Register</button>
+      <button class="btn-cancel" onclick="hideRegisterModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="authWall" class="auth-wall">
+  <div class="auth-wall-content">
+    <h3>iBelieve</h3>
+    <p>Please log in to access the forum</p>
+    <div class="auth-wall-buttons">
+      <button class="btn-login" onclick="showLoginModal()">Login</button>
+      <button class="btn-register" onclick="showRegisterModal()">Register</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_URL = 'https://ibelieve-backend.vercel.app/api';
+  let currentUser = null;
+  let currentToken = null;
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const token = localStorage.getItem('ibelieve_token');
+    if (token) {
+      currentToken = token;
+      verifyToken();
+    } else {
+      showAuthWall();
+    }
+    setupAuthNav();
+  });
+
+  function setupAuthNav() {
+    const header = document.querySelector('header') || document.body;
+    const authNav = document.createElement('div');
+    authNav.className = 'auth-nav';
+    authNav.id = 'authNav';
+    authNav.innerHTML = `
+      <div id="authStatus" class="user-info" style="display: none;">
+        <span>@<span id="username"></span></span>
+        <button id="adminBtn" class="btn-admin">Admin</button>
+        <button id="logoutBtn" class="btn-logout">Logout</button>
+      </div>
+      <div id="notAuthStatus">
+        <button class="btn-login" onclick="showLoginModal()">Login</button>
+        <button class="btn-register" onclick="showRegisterModal()">Register</button>
+      </div>
+    `;
+    header.appendChild(authNav);
+
+    document.getElementById('logoutBtn')?.addEventListener('click', () => {
+      localStorage.removeItem('ibelieve_token');
+      currentToken = null;
+      currentUser = null;
+      location.reload();
+    });
+  }
+
+  async function verifyToken() {
+    try {
+      const res = await fetch(`${API_URL}/auth/me`, {
+        headers: { 'Authorization': `Bearer ${currentToken}` }
+      });
+      if (!res.ok) throw new Error('Invalid');
+      const data = await res.json();
+      currentUser = data.user;
+      updateAuthUI();
+      hideAuthWall();
+    } catch (e) {
+      localStorage.removeItem('ibelieve_token');
+      currentToken = null;
+      showAuthWall();
+    }
+  }
+
+  function updateAuthUI() {
+    const authStatus = document.getElementById('authStatus');
+    const notAuthStatus = document.getElementById('notAuthStatus');
+    const adminBtn = document.getElementById('adminBtn');
+
+    if (currentUser) {
+      authStatus.style.display = 'flex';
+      notAuthStatus.style.display = 'none';
+      document.getElementById('username').textContent = currentUser.username;
+      
+      if (currentUser.role === 'admin') {
+        adminBtn.style.display = 'block';
+      }
+    }
+  }
+
+  function showAuthWall() {
+    document.getElementById('authWall').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function hideAuthWall() {
+    document.getElementById('authWall').classList.remove('active');
+    document.body.style.overflow = 'auto';
+  }
+
+  function showLoginModal() { 
+    document.getElementById('loginModal').classList.add('active'); 
+  }
+
+  function hideLoginModal() {
+    document.getElementById('loginModal').classList.remove('active');
+    document.getElementById('loginUsername').value = '';
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('loginError').textContent = '';
+  }
+
+  function showRegisterModal() { 
+    document.getElementById('registerModal').classList.add('active'); 
+  }
+
+  function hideRegisterModal() {
+    document.getElementById('registerModal').classList.remove('active');
+    document.getElementById('registerUsername').value = '';
+    document.getElementById('registerPassword').value = '';
+    document.getElementById('registerPasswordConfirm').value = '';
+    document.getElementById('registerError').textContent = '';
+  }
+
+  async function handleLogin() {
+    const username = document.getElementById('loginUsername').value;
+    const password = document.getElementById('loginPassword').value;
+    const errorDiv = document.getElementById('loginError');
+
+    try {
+      errorDiv.textContent = '';
+      const res = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Login failed');
+      }
+
+      const data = await res.json();
+      currentToken = data.token;
+      currentUser = data.user;
+      localStorage.setItem('ibelieve_token', currentToken);
+      hideLoginModal();
+      updateAuthUI();
+      hideAuthWall();
+    } catch (e) {
+      errorDiv.textContent = e.message;
+    }
+  }
+
+  async function handleRegister() {
+    const username = document.getElementById('registerUsername').value;
+    const password = document.getElementById('registerPassword').value;
+    const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+    const errorDiv = document.getElementById('registerError');
+
+    try {
+      errorDiv.textContent = '';
+
+      if (password !== passwordConfirm) {
+        throw new Error('Passwords do not match');
+      }
+
+      if (password.length < 6) {
+        throw new Error('Password must be at least 6 characters');
+      }
+
+      const res = await fetch(`${API_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Registration failed');
+      }
+
+      const data = await res.json();
+      currentToken = data.token;
+      currentUser = data.user;
+      localStorage.setItem('ibelieve_token', currentToken);
+      hideRegisterModal();
+      updateAuthUI();
+      hideAuthWall();
+    } catch (e) {
+      errorDiv.textContent = e.message;
+    }
+  }
+
+  // Close modals on outside click
+  document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('modal')) {
+      e.target.classList.remove('active');
+    }
+  });
+</script>
+
