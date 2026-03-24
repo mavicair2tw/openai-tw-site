@@ -1143,9 +1143,9 @@ async function applyLanguage(lang){
 document.getElementById('lang-bar').addEventListener('click',async e=>{const b=e.target.closest('.lang-btn');if(b)await applyLanguage(b.dataset.lang)});
 
 // ===== API =====
-async function apiFetch(path,opts={}){
+async function apiFetch(path,opts={}){const token=localStorage.getItem("ibelieve_token");const h={"Content-Type":"application/json"};if(token)h["Authorization"]="Bearer "+token;
   try{
-    const r=await fetch(API+path,{headers:{'Content-Type':'application/json'},...opts});
+    const r=await fetch(API+path,{headers:h,...opts});
     if(!r.ok){
       const err=new Error('API '+r.status);
       err.status=r.status;
