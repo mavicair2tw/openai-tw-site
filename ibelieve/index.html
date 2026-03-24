@@ -922,9 +922,44 @@ function showNarrationPost(post, onReady){
   }, narrationPostIndex===1 ? 0 : 350);
 }
 
+let highlightTimer=null;
+
+function clearHighlightTimer(){
+  if(highlightTimer){ clearInterval(highlightTimer); highlightTimer=null; }
+}
+
+// Estimate ms per character/word depending on language and rate
+function estimateMsPerUnit(text, rate){
+  const isCJKText=isCJK(text);
+  // CJK: ~4-5 chars/sec at normal speed; Latin: ~2-3 words/sec
+  const baseMs=isCJKText ? 220 : 280;
+  return Math.round(baseMs / (rate||0.92));
+}
+
+function startHighlightTimer(bodyEl, text, rate){
+  clearHighlightTimer();
+  if(!bodyEl) return;
+  const spans=Array.from(bodyEl.querySelectorAll('span[data-char-idx]'));
+  if(!spans.length) return;
+  let idx=0;
+  const msPerUnit=estimateMsPerUnit(text, rate);
+  highlightTimer=setInterval(()=>{
+    if(idx>0){
+      const prev=spans[idx-1];
+      if(prev){ prev.style.background=''; prev.style.color=''; }
+    }
+    if(idx>=spans.length){ clearHighlightTimer(); return; }
+    const sp=spans[idx];
+    sp.style.background='#f5c518';
+    sp.style.color='#fff';
+    idx++;
+  }, msPerUnit);
+}
+
 function speakNextPost(){
   if(!narrationActive) return;
   if(narrationPostIndex>=narrationPosts.length){
+    clearHighlightTimer();
     stopNarrationDisplay();
     stopSpeech();
     syncTopListenButton();
@@ -933,6 +968,7 @@ function speakNextPost(){
   const post=narrationPosts[narrationPostIndex];
   narrationPostIndex++;
   const text=getTranslatedText(post.body)||post.body||'';
+  const rate=0.92;
 
   showNarrationPost(post, (bodyEl)=>{
     if(!text||!('speechSynthesis' in window)){
@@ -940,30 +976,46 @@ function speakNextPost(){
       return;
     }
     stopSpeech();
+    clearHighlightTimer();
     const voices=window.speechSynthesis.getVoices();
     const go=()=>{
       const utter=new SpeechSynthesisUtterance(text);
       const langCode=getLangCode();
       utter.lang=langCode;
-      utter.rate=0.92;
+      utter.rate=rate;
       utter.pitch=1;
       const voice=getBestVoice(langCode);
       if(voice) utter.voice=voice;
-      utter.onstart=()=>{ activeMode='topic'; syncTopListenButton(); };
+      let boundaryWorking=false;
+      utter.onstart=()=>{
+        activeMode='topic';
+        syncTopListenButton();
+        // Start timer-based highlight as fallback
+        // Will be cancelled if onboundary fires
+        setTimeout(()=>{
+          if(!boundaryWorking) startHighlightTimer(bodyEl, text, rate);
+        }, 200);
+      };
       utter.onboundary=(e)=>{
         if(e.name==='word' && bodyEl){
+          boundaryWorking=true;
+          clearHighlightTimer();
           highlightWord(bodyEl, e.charIndex, e.charLength||1);
         }
       };
       utter.onend=()=>{
+        clearHighlightTimer();
         if(bodyEl){
-          bodyEl.querySelectorAll('span[data-word-idx]').forEach(sp=>{
+          bodyEl.querySelectorAll('span[data-char-idx]').forEach(sp=>{
             sp.style.background=''; sp.style.color='';
           });
         }
         if(narrationActive) speakNextPost(); else syncTopListenButton();
       };
-      utter.onerror=()=>{ if(narrationActive) setTimeout(speakNextPost,800); else syncTopListenButton(); };
+      utter.onerror=()=>{
+        clearHighlightTimer();
+        if(narrationActive) setTimeout(speakNextPost,800); else syncTopListenButton();
+      };
       activeUtterance=utter;
       window.speechSynthesis.speak(utter);
       syncTopListenButton();
