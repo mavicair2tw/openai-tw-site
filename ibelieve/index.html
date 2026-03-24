@@ -812,8 +812,7 @@ function buildWordSpans(text){
     // CJK: one span per character
     for(let i=0;i<text.length;i++){
       const ch=text[i];
-      if(ch==='
-'){
+      if(ch==='\n'){
         spans.push(document.createElement('br'));
       } else {
         const sp=document.createElement('span');
@@ -825,16 +824,13 @@ function buildWordSpans(text){
     }
   } else {
     // Latin/other: split by word boundaries, keep spaces as text nodes
-    const parts=text.split(/([ 	
-]+)/);
+    const parts=text.split(/([ \t\n]+)/);
     let idx=0;
     parts.forEach(part=>{
-      if(/^[ 	]+$/.test(part)){
+      if(/^[ \t]+$/.test(part)){
         spans.push(document.createTextNode(part));
         idx+=part.length;
-      } else if(part==='
-'||part==='
-'){
+      } else if(part==='\n'||part==='\r\n'){
         spans.push(document.createElement('br'));
         idx+=part.length;
       } else if(part){
