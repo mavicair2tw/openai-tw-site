@@ -367,6 +367,25 @@ td{padding:10px 14px;vertical-align:middle;}
         <div class="field-row"><span class="field-label">Total posts</span><span class="field-val" id="cm-total-posts">-</span></div>
         <div class="field-row"><span class="field-label">Total links</span><span class="field-val" id="cm-total-links">-</span></div>
         <div class="field-row"><span class="field-label">Most connected</span><span class="field-val" id="cm-hub-post">-</span></div>
+        <div class="field-row" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+          <span class="field-label">Auto-Link mode</span>
+          <span class="field-val" style="display:flex;align-items:center;gap:8px;">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;">
+              <input type="radio" name="autolink-mode" value="auto" id="mode-auto" onchange="cmSaveMode(this.value)" style="cursor:pointer;">
+              <span style="color:#16a34a;font-weight:600;">⚡ Auto</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;">
+              <input type="radio" name="autolink-mode" value="suggest" id="mode-suggest" checked onchange="cmSaveMode(this.value)" style="cursor:pointer;">
+              <span>👁 Review</span>
+            </label>
+          </span>
+        </div>
+        <div class="field-row" style="margin-top:6px;">
+          <span class="field-label"></span>
+          <span class="field-val">
+            <button id="cm-run-autolink-btn" onclick="cmRunAutoLink()" style="padding:4px 12px;font-size:12px;border:none;border-radius:6px;background:var(--accent);color:#fff;cursor:pointer;font-weight:600;">▶ Run Auto-Link Now</button>
+          </span>
+        </div>
       </div>
 
       <!-- Link Suggestions Review -->
@@ -752,7 +771,7 @@ function switchTab(name,el){
   document.getElementById('panel-'+name).classList.add('active');
   if(name==='account') loadAccounts();
   if(name==='posts') loadPosts();
-  if(name==='cloudmap'){ cmInit(); cmLoadSuggestions(); }
+  if(name==='cloudmap'){ cmInit(); cmInitMode(); cmLoadSuggestions(); }
 }
 
 /* REFRESH */
@@ -1330,6 +1349,41 @@ function cmRenderGraph(){
   });
 
   container.appendChild(svg);
+}
+
+/* AUTOLINK MODE CONTROL */
+function cmSaveMode(mode){
+  localStorage.setItem('ibelieve_autolink_mode', mode);
+  showToast('Auto-Link mode: ' + (mode==='auto'?'⚡ Automatic':'👁 Review'), mode==='auto'?'green':'blue');
+}
+function cmGetMode(){ return localStorage.getItem('ibelieve_autolink_mode') || 'suggest'; }
+
+function cmInitMode(){
+  var mode = cmGetMode();
+  var el = document.getElementById('mode-'+mode);
+  if(el) el.checked = true;
+}
+
+async function cmRunAutoLink(){
+  var mode = cmGetMode();
+  var btn = document.getElementById('cm-run-autolink-btn');
+  btn.disabled = true; btn.textContent = '⟳ Running...';
+  try {
+    var data = await postsFetch('/../../ibelieve-cron.googselect.workers.dev/run-autolink?mode='+mode);
+    showToast('Auto-Link done: '+data.linked+' '+(mode==='auto'?'links created':'suggestions added'), 'green');
+    if(mode === 'suggest') await cmLoadSuggestions();
+    else { await cmInit(); cmRenderGraph(); }
+  } catch(e) {
+    // postsFetch can't call external URL, use direct fetch
+    try {
+      var res = await fetch('https://ibelieve-cron.googselect.workers.dev/run-autolink?mode='+mode);
+      var data2 = await res.json();
+      showToast('Done: '+data2.linked+' '+(mode==='auto'?'links':'suggestions')+' ('+data2.skipped+' skipped)', 'green');
+      if(mode === 'suggest') await cmLoadSuggestions();
+      else { await cmInit(); cmRenderGraph(); }
+    } catch(e2) { showToast('Error: '+e2.message, 'red'); }
+  }
+  btn.disabled = false; btn.textContent = '▶ Run Auto-Link Now';
 }
 
 /* LINK SUGGESTIONS */

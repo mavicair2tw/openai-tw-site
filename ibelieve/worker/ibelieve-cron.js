@@ -58,7 +58,8 @@ async function callClaude(env, system, user, maxTokens) {
 __name(callClaude, "callClaude");
 
 // ===== AUTO LINK AGENT =====
-async function runAutoLink(env) {
+async function runAutoLink(env, mode) {
+  // mode: 'suggest' (default, writes to D1 for review) | 'auto' (writes directly to KV)
   const results = { linked: 0, skipped: 0, postCount: 0, errors: [] };
 
   // 1. Load all posts directly from FORUM_KV (no HTTP needed)
@@ -136,21 +137,8 @@ Find related posts. Return JSON array only.`;
         const targetPost = freshPosts.find(x => x.id === s.targetId);
         if (!sourcePost || !targetPost) continue;
         try {
-          if (env.DB) {
-            // Write to D1 link_suggestions for admin review
-            await env.DB.prepare(
-              "INSERT OR IGNORE INTO link_suggestions (id, source_id, target_id, type, confidence, status, reason) VALUES (?, ?, ?, ?, ?, 'pending', ?)"
-            ).bind(
-              crypto.randomUUID(),
-              post.id,
-              s.targetId,
-              linkType,
-              s.confidence || 0.8,
-              "AI agent: " + linkType + " (confidence " + (s.confidence||0).toFixed(2) + ")"
-            ).run();
-            results.linked++;
-          } else {
-            // Fallback: write directly to KV if D1 not available
+          if (mode === "auto") {
+            // AUTO MODE: write directly to KV, no human review
             source.links = Array.isArray(source.links) ? source.links : [];
             if (!source.links.some(l => l.targetId === s.targetId && l.type === linkType)) {
               const linkId = crypto.randomUUID();
@@ -162,10 +150,40 @@ Find related posts. Return JSON array only.`;
               }
               await env.FORUM_KV.put("ibelieve_posts_v1", JSON.stringify(freshPosts));
               results.linked++;
+              results.mode = "auto";
+            }
+          } else if (env.DB) {
+            // SUGGEST MODE (default): write to D1 for admin review
+            await env.DB.prepare(
+              "INSERT OR IGNORE INTO link_suggestions (id, source_id, target_id, type, confidence, status, reason) VALUES (?, ?, ?, ?, ?, 'pending', ?)"
+            ).bind(
+              crypto.randomUUID(),
+              post.id,
+              s.targetId,
+              linkType,
+              s.confidence || 0.8,
+              "AI agent: " + linkType + " (confidence " + (s.confidence||0).toFixed(2) + ")"
+            ).run();
+            results.linked++;
+            results.mode = "suggest";
+          } else {
+            // Fallback to auto if DB not available
+            source.links = Array.isArray(source.links) ? source.links : [];
+            if (!source.links.some(l => l.targetId === s.targetId && l.type === linkType)) {
+              const linkId = crypto.randomUUID();
+              source.links.push({ id: linkId, targetId: s.targetId, type: linkType, createdAt: Date.now() });
+              const target2 = freshPosts.find(x => x.id === s.targetId);
+              if (target2) {
+                target2.backlinks = Array.isArray(target2.backlinks) ? target2.backlinks : [];
+                target2.backlinks.push({ id: linkId, sourceId: post.id, type: linkType, createdAt: Date.now() });
+              }
+              await env.FORUM_KV.put("ibelieve_posts_v1", JSON.stringify(freshPosts));
+              results.linked++;
+              results.mode = "auto-fallback";
             }
           }
         } catch (e) {
-          results.errors.push("suggestion write err: " + e.message);
+          results.errors.push("write err: " + e.message);
         }
       }
     } catch (e) {
@@ -354,7 +372,7 @@ var index_default = {
     if (path === "/status") return Response.json(await runStatus(env));
     if (path === "/run-generate") return Response.json(await runGenerate(env));
     if (path === "/run-publish") return Response.json(await runPublish(env));
-    if (path === "/run-autolink") return Response.json(await runAutoLink(env));
+    if (path === "/run-autolink") { const mode = new URL(request.url).searchParams.get("mode") || "suggest"; return Response.json(await runAutoLink(env, mode)); }
     if (path === "/run-snapshot") return Response.json(await runSnapshot(env));
     return Response.json({ routes: ["/status", "/run-generate", "/run-publish", "/run-autolink", "/run-snapshot"] });
   },
