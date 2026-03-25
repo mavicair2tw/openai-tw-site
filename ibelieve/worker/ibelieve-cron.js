@@ -124,25 +124,29 @@ Find related posts. Return JSON array only.`;
       try { suggestions = JSON.parse(clean); } catch (e) { results.skipped++; continue; }
       if (!Array.isArray(suggestions) || !suggestions.length) { results.skipped++; continue; }
 
-      // 5. Create links for high-confidence suggestions
+      // 5. Create links directly in KV (Worker-to-Worker HTTP blocked by Cloudflare)
+      const validTypes = ["related","supports","contradicts","expands","inspires"];
       for (const s of suggestions) {
         if (!s.targetId || !s.type || (s.confidence || 0) < 0.7) continue;
+        const linkType = validTypes.includes(s.type) ? s.type : "related";
         try {
-          const linkRes = await fetch(
-            FORUM_WORKER + "/api/ibelieve/posts/" + post.id + "/links",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json", "Origin": "https://openai-tw.com" },
-              body: JSON.stringify({ targetId: s.targetId, type: s.type })
-            }
-          );
-          if (linkRes.ok) results.linked++;
-          else if (linkRes.status !== 409) {
-            const err = await linkRes.text().catch(() => "");
-            results.errors.push("link " + linkRes.status + " src=" + post.id.slice(0,8) + " tgt=" + s.targetId.slice(0,8) + " | " + err.slice(0, 80));
-          }
+          // Re-read fresh KV to avoid stale data conflicts
+          const freshRaw = await env.FORUM_KV.get("ibelieve_posts_v1");
+          const freshPosts = JSON.parse(freshRaw || "[]");
+          const source = freshPosts.find(x => x.id === post.id);
+          const target = freshPosts.find(x => x.id === s.targetId);
+          if (!source || !target) continue; // target suggested by Claude may not exist
+          source.links = Array.isArray(source.links) ? source.links : [];
+          target.backlinks = Array.isArray(target.backlinks) ? target.backlinks : [];
+          // Skip duplicates
+          if (source.links.some(l => l.targetId === s.targetId && l.type === linkType)) continue;
+          const linkId = crypto.randomUUID();
+          source.links.push({ id: linkId, targetId: s.targetId, type: linkType, createdAt: Date.now() });
+          target.backlinks.push({ id: linkId, sourceId: post.id, type: linkType, createdAt: Date.now() });
+          await env.FORUM_KV.put("ibelieve_posts_v1", JSON.stringify(freshPosts));
+          results.linked++;
         } catch (e) {
-          results.errors.push("link exception: " + e.message);
+          results.errors.push("kv write err: " + e.message);
         }
       }
     } catch (e) {
