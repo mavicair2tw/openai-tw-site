@@ -1595,6 +1595,10 @@ init();
   .btn-register:hover { background: #634180; }
   .btn-admin { background: #f39c12; color: white; display: none; }
   .btn-admin:hover { background: #e67e22; }
+  .btn-refresh { background: #2d6a4f; color: white; font-size: 1.1rem; line-height:1; padding: 0.6rem 0.75rem; }
+  .btn-refresh:hover { background: #1b4332; }
+  .btn-refresh.spinning { animation: spin 0.6s linear; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
   .btn-logout { background: #e74c3c; color: white; }
   .btn-logout:hover { background: #c0392b; }
   .user-info { color: #fff; display: flex; align-items: center; gap: 1rem; font-size: 0.9rem; }
@@ -1799,6 +1803,7 @@ init();
       <div id="authStatus" class="user-info" style="display: none;">
         <span>@<span id="username"></span></span>
         <button id="adminBtn" class="btn-admin">Admin</button>
+        <button id="refreshBtn" class="btn-refresh" title="Refresh feed">⟳</button>
         <button id="logoutBtn" class="btn-logout">Logout</button>
       </div>
       <div id="notAuthStatus">
@@ -1806,6 +1811,13 @@ init();
         <button class="btn-register" onclick="showRegisterModal()">Register</button>
       </div>
     `;
+    document.getElementById('refreshBtn')?.addEventListener('click', async () => {
+      const btn = document.getElementById('refreshBtn');
+      if(btn){ btn.classList.add('spinning'); btn.disabled = true; }
+      await loadPosts();
+      renderFeed();
+      setTimeout(() => { if(btn){ btn.classList.remove('spinning'); btn.disabled = false; } }, 600);
+    });
     document.getElementById('logoutBtn')?.addEventListener('click', () => {
       document.getElementById('search-posts').value = '';
       searchQuery = '';
