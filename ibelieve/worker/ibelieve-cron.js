@@ -124,29 +124,48 @@ Find related posts. Return JSON array only.`;
       try { suggestions = JSON.parse(clean); } catch (e) { results.skipped++; continue; }
       if (!Array.isArray(suggestions) || !suggestions.length) { results.skipped++; continue; }
 
-      // 5. Create links directly in KV (Worker-to-Worker HTTP blocked by Cloudflare)
+      // 5. Write suggestions to D1 link_suggestions table for admin review
       const validTypes = ["related","supports","contradicts","expands","inspires"];
       for (const s of suggestions) {
         if (!s.targetId || !s.type || (s.confidence || 0) < 0.7) continue;
         const linkType = validTypes.includes(s.type) ? s.type : "related";
+        // Verify both posts exist in KV
+        const freshRaw = await env.FORUM_KV.get("ibelieve_posts_v1");
+        const freshPosts = JSON.parse(freshRaw || "[]");
+        const sourcePost = freshPosts.find(x => x.id === post.id);
+        const targetPost = freshPosts.find(x => x.id === s.targetId);
+        if (!sourcePost || !targetPost) continue;
         try {
-          // Re-read fresh KV to avoid stale data conflicts
-          const freshRaw = await env.FORUM_KV.get("ibelieve_posts_v1");
-          const freshPosts = JSON.parse(freshRaw || "[]");
-          const source = freshPosts.find(x => x.id === post.id);
-          const target = freshPosts.find(x => x.id === s.targetId);
-          if (!source || !target) continue; // target suggested by Claude may not exist
-          source.links = Array.isArray(source.links) ? source.links : [];
-          target.backlinks = Array.isArray(target.backlinks) ? target.backlinks : [];
-          // Skip duplicates
-          if (source.links.some(l => l.targetId === s.targetId && l.type === linkType)) continue;
-          const linkId = crypto.randomUUID();
-          source.links.push({ id: linkId, targetId: s.targetId, type: linkType, createdAt: Date.now() });
-          target.backlinks.push({ id: linkId, sourceId: post.id, type: linkType, createdAt: Date.now() });
-          await env.FORUM_KV.put("ibelieve_posts_v1", JSON.stringify(freshPosts));
-          results.linked++;
+          if (env.DB) {
+            // Write to D1 link_suggestions for admin review
+            await env.DB.prepare(
+              "INSERT OR IGNORE INTO link_suggestions (id, source_id, target_id, type, confidence, status, reason) VALUES (?, ?, ?, ?, ?, 'pending', ?)"
+            ).bind(
+              crypto.randomUUID(),
+              post.id,
+              s.targetId,
+              linkType,
+              s.confidence || 0.8,
+              "AI agent: " + linkType + " (confidence " + (s.confidence||0).toFixed(2) + ")"
+            ).run();
+            results.linked++;
+          } else {
+            // Fallback: write directly to KV if D1 not available
+            source.links = Array.isArray(source.links) ? source.links : [];
+            if (!source.links.some(l => l.targetId === s.targetId && l.type === linkType)) {
+              const linkId = crypto.randomUUID();
+              source.links.push({ id: linkId, targetId: s.targetId, type: linkType, createdAt: Date.now() });
+              const target2 = freshPosts.find(x => x.id === s.targetId);
+              if (target2) {
+                target2.backlinks = Array.isArray(target2.backlinks) ? target2.backlinks : [];
+                target2.backlinks.push({ id: linkId, sourceId: post.id, type: linkType, createdAt: Date.now() });
+              }
+              await env.FORUM_KV.put("ibelieve_posts_v1", JSON.stringify(freshPosts));
+              results.linked++;
+            }
+          }
         } catch (e) {
-          results.errors.push("kv write err: " + e.message);
+          results.errors.push("suggestion write err: " + e.message);
         }
       }
     } catch (e) {
@@ -282,6 +301,53 @@ async function runStatus(env) {
 }
 __name(runStatus, "runStatus");
 
+async function runSnapshot(env) {
+  const results = { ok: false, error: null };
+  try {
+    if (!env.FORUM_KV) throw new Error("FORUM_KV not available");
+    const raw = await env.FORUM_KV.get("ibelieve_posts_v1");
+    const posts = JSON.parse(raw || "[]");
+    const nodeCount = posts.length;
+    const linkCount = posts.reduce((s, p) => s + (p.links || []).length, 0);
+    const isolatedCount = posts.filter(p => !(p.links||[]).length && !(p.backlinks||[]).length).length;
+    // Count clusters by topic
+    const topicCounts = {};
+    posts.forEach(p => { topicCounts[p.topic] = (topicCounts[p.topic] || 0) + 1; });
+    const clusterCount = Object.keys(topicCounts).length;
+    // Top 5 hubs
+    const hubs = posts.slice().sort((a, b) =>
+      ((b.links||[]).length + (b.backlinks||[]).length) - ((a.links||[]).length + (a.backlinks||[]).length)
+    ).slice(0, 5).map(p => ({
+      id: p.id,
+      agent: p.agent?.name || "Unknown",
+      topic: p.topic,
+      degree: (p.links||[]).length + (p.backlinks||[]).length
+    }));
+    // Compact graph JSON (nodes + edges only)
+    const graphJson = JSON.stringify({
+      nodes: posts.map(p => ({ id: p.id, topic: p.topic, agent: p.agent?.name, degree: (p.links||[]).length + (p.backlinks||[]).length })),
+      edges: posts.flatMap(p => (p.links||[]).map(l => ({ source: p.id, target: l.targetId, type: l.type })))
+    });
+    const summary = JSON.stringify({ topicCounts, hubs, isolatedCount, linkCount });
+    if (env.DB) {
+      await env.DB.prepare(
+        "INSERT INTO snapshots (id, node_count, link_count, cluster_count, isolated_count, graph_json, summary) VALUES (?, ?, ?, ?, ?, ?, ?)"
+      ).bind(
+        crypto.randomUUID(), nodeCount, linkCount, clusterCount, isolatedCount, graphJson, summary
+      ).run();
+    }
+    results.ok = true;
+    results.nodeCount = nodeCount;
+    results.linkCount = linkCount;
+    results.isolatedCount = isolatedCount;
+    results.clusterCount = clusterCount;
+  } catch (e) {
+    results.error = e.message;
+  }
+  return results;
+}
+__name(runSnapshot, "runSnapshot");
+
 var index_default = {
   async fetch(request, env, ctx) {
     const path = new URL(request.url).pathname;
@@ -289,7 +355,8 @@ var index_default = {
     if (path === "/run-generate") return Response.json(await runGenerate(env));
     if (path === "/run-publish") return Response.json(await runPublish(env));
     if (path === "/run-autolink") return Response.json(await runAutoLink(env));
-    return Response.json({ routes: ["/status", "/run-generate", "/run-publish", "/run-autolink"] });
+    if (path === "/run-snapshot") return Response.json(await runSnapshot(env));
+    return Response.json({ routes: ["/status", "/run-generate", "/run-publish", "/run-autolink", "/run-snapshot"] });
   },
   async scheduled(event, env, ctx) {
     if (event.cron === "0 21 * * *") {

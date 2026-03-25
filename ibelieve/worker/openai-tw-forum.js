@@ -280,6 +280,82 @@ async function handleIBelieve(request, env, url) {
     }
   }
 
+  // GET /api/ibelieve/link-suggestions?status=pending — list suggestions
+  if (request.method === "GET" && path === "/api/ibelieve/link-suggestions") {
+    if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+    const status = url.searchParams.get("status") || "pending";
+    const rows = await env.DB.prepare(
+      "SELECT * FROM link_suggestions WHERE status = ? ORDER BY confidence DESC, created_at DESC LIMIT 100"
+    ).bind(status).all();
+    return json({ suggestions: rows.results || [] }, 200, request);
+  }
+
+  // POST /api/ibelieve/link-suggestions/:id/accept — accept suggestion → write to KV
+  const acceptMatch = path.match(/^\/api\/ibelieve\/link-suggestions\/([^/]+)\/accept$/);
+  if (request.method === "POST" && acceptMatch) {
+    if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+    const suggId = acceptMatch[1];
+    const row = await env.DB.prepare("SELECT * FROM link_suggestions WHERE id = ?").bind(suggId).first();
+    if (!row) return json({ error: "suggestion not found" }, 404, request);
+    if (row.status !== "pending") return json({ error: "already reviewed" }, 409, request);
+    // Write link to KV
+    const kvRaw = await env.FORUM_KV.get(IBELIEVE_KEY);
+    const kvPosts = JSON.parse(kvRaw || "[]");
+    const source = kvPosts.find(x => x.id === row.source_id);
+    const target = kvPosts.find(x => x.id === row.target_id);
+    if (!source || !target) {
+      await env.DB.prepare("UPDATE link_suggestions SET status = 'rejected' WHERE id = ?").bind(suggId).run();
+      return json({ error: "post not found in KV" }, 404, request);
+    }
+    source.links = Array.isArray(source.links) ? source.links : [];
+    target.backlinks = Array.isArray(target.backlinks) ? target.backlinks : [];
+    if (!source.links.some(l => l.targetId === row.target_id && l.type === row.type)) {
+      const linkId = crypto.randomUUID();
+      source.links.push({ id: linkId, targetId: row.target_id, type: row.type, createdAt: Date.now() });
+      target.backlinks.push({ id: linkId, sourceId: row.source_id, type: row.type, createdAt: Date.now() });
+      await env.FORUM_KV.put(IBELIEVE_KEY, JSON.stringify(kvPosts));
+    }
+    await env.DB.prepare("UPDATE link_suggestions SET status = 'accepted' WHERE id = ?").bind(suggId).run();
+    return json({ ok: true, message: "link accepted and written to KV" }, 200, request);
+  }
+
+  // POST /api/ibelieve/link-suggestions/:id/reject
+  const rejectMatch = path.match(/^\/api\/ibelieve\/link-suggestions\/([^/]+)\/reject$/);
+  if (request.method === "POST" && rejectMatch) {
+    if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+    const suggId = rejectMatch[1];
+    const row = await env.DB.prepare("SELECT id, status FROM link_suggestions WHERE id = ?").bind(suggId).first();
+    if (!row) return json({ error: "suggestion not found" }, 404, request);
+    if (row.status !== "pending") return json({ error: "already reviewed" }, 409, request);
+    await env.DB.prepare("UPDATE link_suggestions SET status = 'rejected' WHERE id = ?").bind(suggId).run();
+    return json({ ok: true, message: "suggestion rejected" }, 200, request);
+  }
+
+  // POST /api/ibelieve/link-suggestions/accept-all — bulk accept all pending
+  if (request.method === "POST" && path === "/api/ibelieve/link-suggestions/accept-all") {
+    if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+    const pending = await env.DB.prepare("SELECT * FROM link_suggestions WHERE status = 'pending'").all();
+    const kvRaw = await env.FORUM_KV.get(IBELIEVE_KEY);
+    const kvPosts = JSON.parse(kvRaw || "[]");
+    let accepted = 0, skipped = 0;
+    for (const row of (pending.results || [])) {
+      const source = kvPosts.find(x => x.id === row.source_id);
+      const target = kvPosts.find(x => x.id === row.target_id);
+      if (!source || !target) { skipped++; continue; }
+      source.links = Array.isArray(source.links) ? source.links : [];
+      target.backlinks = Array.isArray(target.backlinks) ? target.backlinks : [];
+      if (!source.links.some(l => l.targetId === row.target_id && l.type === row.type)) {
+        const linkId = crypto.randomUUID();
+        source.links.push({ id: linkId, targetId: row.target_id, type: row.type, createdAt: Date.now() });
+        target.backlinks.push({ id: linkId, sourceId: row.source_id, type: row.type, createdAt: Date.now() });
+        accepted++;
+      } else skipped++;
+    }
+    if (accepted > 0) await env.FORUM_KV.put(IBELIEVE_KEY, JSON.stringify(kvPosts));
+    await env.DB.prepare("UPDATE link_suggestions SET status = 'accepted' WHERE status = 'pending'").run();
+    return json({ ok: true, accepted, skipped }, 200, request);
+  }
+
   // POST /api/ibelieve/ai-report — proxy to Anthropic API (browser CORS workaround)
   if (request.method === "POST" && path === "/api/ibelieve/ai-report") {
     if (!env.ANTHROPIC_API_KEY) return json({ error: "ANTHROPIC_API_KEY not configured" }, 500, request);

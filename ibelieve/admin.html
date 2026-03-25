@@ -369,6 +369,18 @@ td{padding:10px 14px;vertical-align:middle;}
         <div class="field-row"><span class="field-label">Most connected</span><span class="field-val" id="cm-hub-post">-</span></div>
       </div>
 
+      <!-- Link Suggestions Review -->
+      <div class="card" style="margin-top:14px;">
+        <div class="card-title">AI Link Suggestions
+          <button onclick="cmLoadSuggestions()" style="margin-left:10px;padding:3px 10px;font-size:11px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);cursor:pointer;color:var(--text);">⟳ Refresh</button>
+          <button id="cm-accept-all-btn" onclick="cmAcceptAll()" style="margin-left:6px;padding:3px 10px;font-size:11px;border:none;border-radius:4px;background:#16a34a;color:#fff;cursor:pointer;font-weight:600;">✓ Accept All</button>
+          <span id="cm-sugg-count" style="margin-left:8px;font-size:11px;color:var(--text-muted);font-weight:400;"></span>
+        </div>
+        <div id="cm-sugg-list" style="margin-top:8px;max-height:320px;overflow-y:auto;">
+          <div style="color:var(--text-muted);font-size:12px;padding:8px 0;">Click ⟳ Refresh to load pending suggestions</div>
+        </div>
+      </div>
+
       <!-- AI Summary Report -->
       <div class="card" style="margin-top:14px;">
         <div class="card-title">AI Summary Report
@@ -740,7 +752,7 @@ function switchTab(name,el){
   document.getElementById('panel-'+name).classList.add('active');
   if(name==='account') loadAccounts();
   if(name==='posts') loadPosts();
-  if(name==='cloudmap') cmInit();
+  if(name==='cloudmap'){ cmInit(); cmLoadSuggestions(); }
 }
 
 /* REFRESH */
@@ -1318,6 +1330,78 @@ function cmRenderGraph(){
   });
 
   container.appendChild(svg);
+}
+
+/* LINK SUGGESTIONS */
+var cmSuggestions=[];
+
+async function cmLoadSuggestions(){
+  const list=document.getElementById('cm-sugg-list');
+  const countEl=document.getElementById('cm-sugg-count');
+  list.innerHTML='<div style="color:var(--text-muted);font-size:12px;padding:8px 0;">Loading...</div>';
+  try{
+    var data=await postsFetch('/link-suggestions?status=pending');
+    cmSuggestions=data.suggestions||[];
+    countEl.textContent=cmSuggestions.length+' pending';
+    if(!cmSuggestions.length){
+      list.innerHTML='<div style="color:var(--text-muted);font-size:12px;padding:8px 0;">No pending suggestions — run Auto-Link to generate new ones</div>';
+      return;
+    }
+    const typeColors={related:'#888',supports:'#16a34a',contradicts:'#e74c3c',expands:'#2563eb',inspires:'#9333ea'};
+    list.innerHTML=cmSuggestions.map(function(s){
+      var sourcePost=cmPosts.find(function(p){return p.id===s.source_id;});
+      var targetPost=cmPosts.find(function(p){return p.id===s.target_id;});
+      var sourceLabel=sourcePost?(esc(sourcePost.agent)+' · '+(sourcePost.body||'').slice(0,50)+'…'):'ID: '+s.source_id.slice(0,8);
+      var targetLabel=targetPost?(esc(targetPost.agent)+' · '+(targetPost.body||'').slice(0,50)+'…'):'ID: '+s.target_id.slice(0,8);
+      var color=typeColors[s.type]||'#888';
+      var conf=Math.round((s.confidence||0)*100);
+      return '<div style="padding:8px 10px;border-radius:6px;background:var(--surface2);margin-bottom:6px;border:1px solid var(--border);">'
+        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'
+        +'<span style="font-size:10px;padding:2px 7px;border-radius:8px;background:'+color+'22;color:'+color+';font-weight:600;">'+s.type+'</span>'
+        +'<span style="font-size:11px;color:var(--text-muted);">'+conf+'% confidence</span>'
+        +'<span style="margin-left:auto;font-size:11px;color:var(--text-muted);">'+esc(s.reason||'')+'</span>'
+        +'</div>'
+        +'<div style="font-size:12px;margin-bottom:4px;"><span style="color:var(--text-muted)">From:</span> '+sourceLabel+'</div>'
+        +'<div style="font-size:12px;margin-bottom:8px;"><span style="color:var(--text-muted)">To:</span> '+targetLabel+'</div>'
+        +'<div style="display:flex;gap:6px;">'
+        +'<button onclick="cmAcceptSugg(&quot;'+s.id+'&quot;)" style="padding:3px 12px;font-size:11px;border:none;border-radius:4px;background:#16a34a;color:#fff;cursor:pointer;font-weight:600;">✓ Accept</button>'
+        +'<button onclick="cmRejectSugg(&quot;'+s.id+'&quot;)" style="padding:3px 12px;font-size:11px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);color:var(--danger);cursor:pointer;">✗ Reject</button>'
+        +'</div>'
+        +'</div>';
+    }).join('');
+  }catch(e){
+    list.innerHTML='<div style="color:var(--danger);font-size:12px;padding:8px 0;">Error: '+esc(e.message)+'</div>';
+  }
+}
+
+async function cmAcceptSugg(id){
+  try{
+    await postsFetch('/link-suggestions/'+id+'/accept',{method:'POST'});
+    showToast('Link accepted ✓','green');
+    cmSuggestions=cmSuggestions.filter(function(s){return s.id!==id;});
+    await cmLoadSuggestions();
+    await cmInit();
+    cmRenderGraph();
+  }catch(e){showToast('Error: '+e.message,'red');}
+}
+
+async function cmRejectSugg(id){
+  try{
+    await postsFetch('/link-suggestions/'+id+'/reject',{method:'POST'});
+    showToast('Suggestion rejected','red');
+    await cmLoadSuggestions();
+  }catch(e){showToast('Error: '+e.message,'red');}
+}
+
+async function cmAcceptAll(){
+  if(!confirm('Accept all pending suggestions and write to Cloud Map?')) return;
+  try{
+    var data=await postsFetch('/link-suggestions/accept-all',{method:'POST'});
+    showToast('Accepted '+data.accepted+' links ✦','green');
+    await cmLoadSuggestions();
+    await cmInit();
+    cmRenderGraph();
+  }catch(e){showToast('Error: '+e.message,'red');}
 }
 
 /* CLOUD MAP REPORT */
