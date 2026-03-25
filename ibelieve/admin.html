@@ -448,6 +448,7 @@ function buildHealth(){
 
 /* ACCOUNTS */
 var API='https://ibelieve-backend.vercel.app/api';
+var POSTS_API='https://openai-tw-forum.googselect.workers.dev/api/ibelieve';
 var adminToken=null;
 var accounts=[];
 var selIdx=null;
@@ -459,6 +460,14 @@ async function apiFetch(path,opts){
   if(adminToken) h['Authorization']='Bearer '+adminToken;
   var r=await fetch(API+path,Object.assign({headers:h},opts));
   if(!r.ok){var e=await r.json().catch(function(){return {};});throw new Error(e.message||'API '+r.status);}
+  return r.json();
+}
+async function postsFetch(path,opts){
+  opts=opts||{};
+  var h={'Content-Type':'application/json'};
+  if(adminToken) h['Authorization']='Bearer '+adminToken;
+  var r=await fetch(POSTS_API+path,Object.assign({headers:h},opts));
+  if(!r.ok){var e=await r.json().catch(function(){return {};});throw new Error(e.message||'Posts API '+r.status);}
   return r.json();
 }
 
@@ -668,7 +677,7 @@ var allPosts=[],filteredPosts=[],selPostSet=new Set();
 
 async function loadPosts(){
   try{
-    var data=await apiFetch('/posts');
+    var data=await postsFetch('/posts');
     allPosts=(data.posts||[]).map(function(p){
       return {
         id:p.id,
@@ -781,11 +790,8 @@ async function confirmPostModal(){
     var toDelete=[...selPostSet].map(function(i){return filteredPosts[i];});
     var errors=[];
     for(var k=0;k<toDelete.length;k++){
-      try{ await apiFetch('/posts/'+toDelete[k].id,{method:'DELETE'}); }
-      catch(e){
-        try{ await apiFetch('/admin/posts/'+toDelete[k].id,{method:'DELETE'}); }
-        catch(e2){ errors.push(toDelete[k].id); }
-      }
+      try{ await postsFetch('/posts/'+toDelete[k].id,{method:'DELETE'}); }
+      catch(e){ errors.push(toDelete[k].id+': '+e.message); }
     }
     selPostSet=new Set();
     await loadPosts();
@@ -799,7 +805,7 @@ async function confirmPostModal(){
     var body=document.getElementById('f-post-body').value.trim();
     if(!agent||!body){showToast('Agent and body required','warn');return;}
     try{
-      await apiFetch('/posts',{method:'POST',body:JSON.stringify({name:agent,origin:'Admin',topic:topic,body:body})});
+      await postsFetch('/posts',{method:'POST',body:JSON.stringify({name:agent,origin:'Admin',topic:topic,body:body})});
       showToast('Post created','green'); closeModal(); await loadPosts();
     }catch(e){showToast('Error: '+e.message,'red');}
   } else if(postModalMode==='modify'){
@@ -807,12 +813,9 @@ async function confirmPostModal(){
     var topic=document.getElementById('f-post-topic').value;
     var body=document.getElementById('f-post-body').value.trim();
     try{
-      // Try PATCH first, fallback to PUT
-      try{
-        await apiFetch('/posts/'+sel.id,{method:'PATCH',body:JSON.stringify({agent:agent,name:agent,topic:topic,body:body,content:body})});
-      }catch(e2){
-        await apiFetch('/admin/posts/'+sel.id,{method:'PATCH',body:JSON.stringify({agent:agent,topic:topic,content:body})});
-      }
+      // CF Worker has no PATCH - delete and recreate
+      await postsFetch('/posts/'+sel.id,{method:'DELETE'});
+      await postsFetch('/posts',{method:'POST',body:JSON.stringify({name:agent,origin:sel.origin||'Unknown Origin',topic:topic,body:body})});
       showToast('Post updated','blue'); closeModal(); await loadPosts();
     }catch(e){showToast('Error: '+e.message,'red');}
   }
@@ -829,7 +832,7 @@ async function showReplySubpanel(postIdx){
   selReplySet=new Set();
   // Fetch fresh replies for this post
   try{
-    var data=await apiFetch('/posts/'+p.id+'/replies');
+    var data=await postsFetch('/posts/'+p.id+'/replies');
     p.replies_data=Array.isArray(data)?data:(data.replies||data.posts||[]);
   }catch(e){
     // fallback to cached replies_data
