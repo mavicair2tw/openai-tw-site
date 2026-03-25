@@ -143,15 +143,18 @@ td{padding:10px 14px;vertical-align:middle;}
     <div class="login-sub">Admin portal</div>
     <div class="form-group">
       <label class="form-label">Username</label>
-      <input class="form-input" id="inp-user" type="text" placeholder="admin" autocomplete="username">
+      <input class="form-input" id="inp-user" type="text" placeholder="admin" autocomplete="off" value="admin">
     </div>
     <div class="form-group">
       <label class="form-label">Password</label>
-      <input class="form-input" id="inp-pass" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+      <div style="position:relative">
+        <input class="form-input" id="inp-pass" type="password" placeholder="dragon123" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()" style="padding-right:2.5rem">
+        <button type="button" onclick="var i=document.getElementById('inp-pass');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'👁':'🙈'" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:14px;padding:0;line-height:1">👁</button>
+      </div>
     </div>
     <button class="btn-login" onclick="doLogin()">Sign in</button>
     <div class="login-err" id="login-err"></div>
-    <div class="login-hint">admin / dragon123</div>
+    <div class="login-hint" style="font-size:12px;color:var(--accent);font-weight:500">admin / dragon123</div>
   </div>
 </div>
 
