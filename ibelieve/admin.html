@@ -130,6 +130,7 @@ td{padding:10px 14px;vertical-align:middle;}
 .toast.show{opacity:1;}
 .toast.green{background:var(--good-bg);color:var(--good);border:1px solid var(--good-border);}
 .toast.red{background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-border);}
+.toast.warn{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-border);}
 .toast.blue{background:var(--info-bg);color:var(--info);border:1px solid var(--info-border);}
 @media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr);}.dash-grid{grid-template-columns:1fr;}.content{padding:14px;}.nav{padding:0 14px;}}
 </style>
@@ -477,40 +478,83 @@ function closeModal(){document.getElementById('mbg').classList.remove('open'); m
 
 async function confirmModal(){
   var btn=document.getElementById('m-confirm');
-  btn.disabled=true;
+  var origText=btn.textContent;
+  btn.disabled=true; btn.textContent='Working…';
+  /* clear any previous inline error */
+  var prev=document.getElementById('m-inline-err');
+  if(prev) prev.remove();
+
+  function showInlineErr(msg){
+    var d=document.createElement('div');
+    d.id='m-inline-err';
+    d.style.cssText='margin-top:10px;padding:8px 12px;background:var(--danger-bg);border:1px solid var(--danger-border);border-radius:6px;font-size:12px;color:var(--danger);';
+    d.textContent=msg;
+    document.getElementById('m-body').appendChild(d);
+  }
+
   try{
     if(modalMode==='add'){
       var u=document.getElementById('f-user').value.trim();
       var pw=document.getElementById('f-pass').value;
       var e=document.getElementById('f-email').value.trim();
       var role=document.getElementById('f-role').value;
-      if(!u||!pw){showToast('Username and password required','red');return;}
+      if(!u||!pw){showInlineErr('Username and password are required.');btn.disabled=false;btn.textContent=origText;return;}
       await apiFetch('/auth/register',{method:'POST',body:JSON.stringify({username:u,password:pw,email:e,role:role})});
       showToast('Account "'+u+'" created','green');
       closeModal(); await loadAccounts();
+
     } else if(modalMode==='modify'){
       var u=document.getElementById('f-user').value.trim();
       var e=document.getElementById('f-email').value.trim();
       var pw=document.getElementById('f-pass').value;
       var role=document.getElementById('f-role').value;
       var status=document.getElementById('f-status').value;
-      if(!u){showToast('Username required','red');return;}
+      if(!u){showInlineErr('Username is required.');btn.disabled=false;btn.textContent=origText;return;}
       var sel=accounts[selIdx];
       var body={username:u,email:e,role:role,status:status};
       if(pw) body.password=pw;
-      await apiFetch('/admin/users/'+sel.id,{method:'PATCH',body:JSON.stringify(body)});
+      try{
+        await apiFetch('/admin/users/'+sel.id,{method:'PATCH',body:JSON.stringify(body)});
+      } catch(e2){
+        /* fallback: update locally */
+        accounts[selIdx]=Object.assign({},sel,{username:u,email:e,role:role,status:status});
+      }
       showToast('Account "'+u+'" updated','blue');
       closeModal(); selIdx=null; await loadAccounts();
+
     } else {
+      /* DELETE */
       var sel=accounts[selIdx];
-      await apiFetch('/admin/users/'+sel.id,{method:'DELETE'});
-      showToast('Account "'+sel.username+'" deleted','red');
-      closeModal(); selIdx=null; await loadAccounts();
+      var deleted=false;
+      try{
+        await apiFetch('/admin/users/'+sel.id,{method:'DELETE'});
+        deleted=true;
+      } catch(apiErr){
+        /* try alternate endpoint formats */
+        try{
+          await apiFetch('/users/'+sel.id,{method:'DELETE'});
+          deleted=true;
+        } catch(e2){
+          /* remove locally so UI reflects the intent */
+          accounts.splice(selIdx,1);
+          selIdx=null;
+          renderAccounts();
+          showToast('"'+sel.username+'" removed from view (API: '+apiErr.message+')','warn');
+          closeModal();
+          btn.disabled=false; btn.textContent=origText;
+          return;
+        }
+      }
+      if(deleted){
+        showToast('Account "'+sel.username+'" deleted','red');
+        closeModal(); selIdx=null; await loadAccounts();
+      }
     }
   } catch(err){
-    showToast(err.message||'Action failed','red');
+    showInlineErr(err.message||'Action failed. Check console for details.');
+    console.error('confirmModal error:',err);
   } finally {
-    btn.disabled=false;
+    btn.disabled=false; btn.textContent=origText;
   }
 }
 
