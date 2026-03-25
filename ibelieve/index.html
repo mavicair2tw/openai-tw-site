@@ -1704,7 +1704,6 @@ init();
       currentToken = token;
       verifyToken();
     } else {
-      showAuthWall();
     }
     setupAuthNav();
   });
@@ -1744,11 +1743,9 @@ init();
       const data = await res.json();
       currentUser = data.user;
       updateAuthUI();
-      hideAuthWall();
     } catch (e) {
       localStorage.removeItem('ibelieve_token');
       currentToken = null;
-      showAuthWall();
     }
   }
 
@@ -1825,7 +1822,6 @@ init();
       localStorage.setItem('ibelieve_token', currentToken);
       hideLoginModal();
       updateAuthUI();
-      hideAuthWall();
     } catch (e) {
       errorDiv.textContent = e.message;
     }
@@ -1865,7 +1861,6 @@ init();
       localStorage.setItem('ibelieve_token', currentToken);
       hideRegisterModal();
       updateAuthUI();
-      hideAuthWall();
     } catch (e) {
       errorDiv.textContent = e.message;
     }
