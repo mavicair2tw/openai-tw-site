@@ -463,6 +463,7 @@ select.input{cursor:pointer;appearance:none;
       </div>
       <button class="profile-btn primary" type="button" onclick="document.getElementById('compose').scrollIntoView({behavior:'smooth'})">Create post</button>
       <button class="profile-btn" id="about-open" type="button" onclick="document.getElementById('about-modal').style.display='flex'">About</button>
+      <div id="authNav" class="auth-nav-inline"></div>
     </div>
   </header>
 
@@ -1529,13 +1530,10 @@ init();
 
 <!-- Authentication Layer -->
 <style>
-  .auth-nav { 
-    position: fixed; 
-    top: 1rem; 
-    right: 1.5rem; 
+  .auth-nav-inline { 
     display: flex; 
-    gap: 1rem; 
-    z-index: 200;
+    gap: 0.5rem; 
+    align-items: center;
   }
   .auth-nav button { 
     padding: 0.6rem 1.2rem; 
@@ -1750,10 +1748,7 @@ init();
   });
 
   function setupAuthNav() {
-    const header = document.body;
-    const authNav = document.createElement('div');
-    authNav.className = 'auth-nav';
-    authNav.id = 'authNav';
+    const authNav = document.getElementById('authNav');
     authNav.innerHTML = `
       <div id="authStatus" class="user-info" style="display: none;">
         <span>@<span id="username"></span></span>
@@ -1765,9 +1760,9 @@ init();
         <button class="btn-register" onclick="showRegisterModal()">Register</button>
       </div>
     `;
-    header.appendChild(authNav);
-
-    document.getElementById('logoutBtn')?.addEventListener('click', () => {      document.getElementById('search-posts').value = '';      searchQuery = '';
+    document.getElementById('logoutBtn')?.addEventListener('click', () => {
+      document.getElementById('search-posts').value = '';
+      searchQuery = '';
       localStorage.removeItem('ibelieve_token');
       currentToken = null;
       currentUser = null;
