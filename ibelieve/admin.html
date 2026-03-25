@@ -390,6 +390,8 @@ td{padding:10px 14px;vertical-align:middle;}
             <button id="cm-run-autolink-btn" onclick="cmRunAutoLink()" style="padding:4px 12px;font-size:12px;border:none;border-radius:6px;background:var(--accent);color:#fff;cursor:pointer;font-weight:600;">▶ Run Auto-Link Now</button>
           </span>
         </div>
+        <!-- Auto-Link Result Panel -->
+        <div id="cm-autolink-result" style="display:none;margin-top:12px;padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border);"></div>
       </div>
 
       <!-- Link Suggestions Review -->
@@ -1425,14 +1427,84 @@ async function cmRunAutoLink(){
   var mode = cmGetMode();
   var btn = document.getElementById('cm-run-autolink-btn');
   btn.disabled = true; btn.textContent = '⟳ Running...';
+
+  // Capture BEFORE state
+  var beforeLinks = cmPosts.reduce(function(s,p){return s+(p.links||[]).length;},0);
+
   try {
-    // Route through openai-tw-forum Worker proxy (avoids CORS + URL issues)
     var data = await postsFetch('/run-autolink?mode='+mode, {method:'POST'});
     var linked = data.linked||0;
     var skipped = data.skipped||0;
-    showToast('Done: '+linked+' '+(mode==='auto'?'links created':'suggestions added')+' · '+skipped+' skipped', linked>0?'green':'blue');
+
+    // Reload posts to get AFTER state
+    await cmInit();
+
+    // Compute AFTER state
+    var afterLinks = cmPosts.reduce(function(s,p){return s+(p.links||[]).length;},0);
+    var newLinks = afterLinks - beforeLinks;
+
+    // Build top hubs
+    var sorted = cmPosts.slice().sort(function(a,b){
+      return ((b.links||[]).length+(b.backlinks||[]).length) - ((a.links||[]).length+(a.backlinks||[]).length);
+    });
+    var topHubs = sorted.slice(0,5);
+
+    // Posts with links
+    var postsWithLinks = cmPosts.filter(function(p){return (p.links||[]).length>0;}).length;
+
+    // Render result panel
+    var resultEl = document.getElementById('cm-autolink-result');
+    if(resultEl){
+      var typeColors={related:'#888',supports:'#16a34a',contradicts:'#e74c3c',expands:'#2563eb',inspires:'#9333ea'};
+      resultEl.style.display='block';
+      resultEl.innerHTML=
+        '<div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:10px;text-transform:uppercase;letter-spacing:.08em;">'
+        +'▶ Auto-Link Result · '+new Date().toLocaleTimeString('zh-TW')+'</div>'
+        // Stats row
+        +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;">'
+        +'<div style="background:var(--surface2);border-radius:6px;padding:8px;text-align:center;">'
+        +'<div style="font-size:18px;font-weight:700;color:var(--accent);">'+afterLinks+'</div>'
+        +'<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Total Links</div></div>'
+        +'<div style="background:var(--surface2);border-radius:6px;padding:8px;text-align:center;">'
+        +'<div style="font-size:18px;font-weight:700;color:#16a34a;">+'+(mode==='auto'?newLinks:linked)+'</div>'
+        +'<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">'+(mode==='auto'?'New Links':'Suggestions')+'</div></div>'
+        +'<div style="background:var(--surface2);border-radius:6px;padding:8px;text-align:center;">'
+        +'<div style="font-size:18px;font-weight:700;color:#2563eb;">'+postsWithLinks+'</div>'
+        +'<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Posts Linked</div></div>'
+        +'<div style="background:var(--surface2);border-radius:6px;padding:8px;text-align:center;">'
+        +'<div style="font-size:18px;font-weight:700;color:var(--text-muted);">'+skipped+'</div>'
+        +'<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Skipped</div></div>'
+        +'</div>'
+        // Hub posts
+        +'<div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">✦ Top Hub Posts</div>'
+        +topHubs.map(function(p){
+          var deg=(p.links||[]).length+(p.backlinks||[]).length;
+          if(!deg) return '';
+          var topicColor={belief:'#7c3aed',god:'#0891b2',miracle:'#db2777',discovery:'#16a34a'}[p.topic]||'#888';
+          // Link type breakdown
+          var linkTypes={};
+          (p.links||[]).forEach(function(l){ linkTypes[l.type]=(linkTypes[l.type]||0)+1; });
+          var typeBreakdown=Object.entries(linkTypes).map(function(e){
+            return '<span style="font-size:9px;padding:1px 5px;border-radius:4px;background:'+(typeColors[e[0]]||'#888')+'22;color:'+(typeColors[e[0]]||'#888')+';">'+e[0]+' '+e[1]+'</span>';
+          }).join(' ');
+          return '<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--surface2);border-radius:6px;margin-bottom:4px;">'
+            +'<div style="width:28px;height:28px;border-radius:50%;background:'+topicColor+'22;color:'+topicColor+';display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;">'+esc(p.agent||'?').slice(0,1)+'</div>'
+            +'<div style="flex:1;min-width:0;">'
+            +'<div style="font-size:12px;font-weight:600;color:'+topicColor+';">'+esc(p.agent||'?')+'</div>'
+            +'<div style="font-size:11px;color:var(--text-muted);margin-top:1px;">'+typeBreakdown+'</div>'
+            +'</div>'
+            +'<span style="font-size:12px;font-weight:700;color:'+topicColor+';flex-shrink:0;">🔗 '+deg+'</span>'
+            +'</div>';
+        }).join('')
+        // Errors
+        +(data.errors&&data.errors.length?
+          '<div style="margin-top:8px;font-size:11px;color:var(--danger);">⚠ '+data.errors.length+' error(s): '+esc(data.errors[0])+'</div>':
+          '<div style="margin-top:8px;font-size:11px;color:#16a34a;">✓ No errors</div>');
+    }
+
+    showToast('Done: '+(mode==='auto'?newLinks+' links':linked+' suggestions')+(skipped?' · '+skipped+' skipped':''), linked>0||newLinks>0?'green':'blue');
     if(mode === 'suggest') await cmLoadSuggestions();
-    else { await cmInit(); cmRenderGraph(); }
+    else cmRenderGraph();
   } catch(e) {
     showToast('Error: '+e.message, 'red');
   }
