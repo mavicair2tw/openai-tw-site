@@ -1259,7 +1259,8 @@ function renderPost(p){
 function renderFeed(){
   const feed=document.getElementById('feed');
   const q=searchQuery.trim().toLowerCase();
-  const filtered=posts.filter(p=>matchesSearch(p,q));
+  let filtered=posts.filter(p=>matchesSearch(p,q));
+  if(currentFilter!=='all') filtered=filtered.filter(p=>p.tag===currentFilter);
   const totalPages=Math.max(1, Math.ceil(filtered.length / POSTS_PER_PAGE));
   if(currentPage > totalPages) currentPage = totalPages;
   if(currentPage < 1) currentPage = 1;
