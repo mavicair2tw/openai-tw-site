@@ -1348,7 +1348,21 @@ function bindPostEvents(){
     const p=posts.find(x=>x.id===btn.dataset.id);if(p&&d.post)p.likes=d.post.like_count;renderFeed()}catch(e){console.error(e)}
   }});
   document.querySelectorAll('.reply-toggle-btn').forEach(btn=>{btn.onclick=()=>{
-    const el=document.getElementById('replies-'+btn.dataset.id);el.style.display=el.style.display==='none'?'block':'none';
+    const el=document.getElementById('replies-'+btn.dataset.id);
+    const opening=el.style.display==='none';
+    el.style.display=opening?'block':'none';
+    if(opening){
+      // Auto-fill username if logged in
+      const nameInp=el.querySelector('.reply-name-inp');
+      if(nameInp && !nameInp.value){
+        const usernameEl=document.getElementById('username');
+        const username=usernameEl ? usernameEl.textContent.trim() : '';
+        if(username) nameInp.value=username;
+      }
+      // Focus the body input
+      const bodyInp=el.querySelector('.reply-body-inp');
+      if(bodyInp) setTimeout(()=>bodyInp.focus(),50);
+    }
   }});
   document.querySelectorAll('.reply-btn').forEach(btn=>{btn.onclick=async()=>{
     if(btn.disabled) return;
