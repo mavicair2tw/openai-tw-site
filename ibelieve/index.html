@@ -1058,7 +1058,7 @@ function playPostNarration(post, button){
     syncTopListenButton();
     return;
   }
-  speakText(post.body,{mode:'post',button});
+  speakText(getTranslatedText(post.body),{mode:'post',button});
 }
 
 function syncSpotifyEmbedLanguage(){
