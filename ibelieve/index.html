@@ -1454,6 +1454,9 @@ function createStars(){const sf=document.getElementById('starfield');for(let i=0
 })();
 
 async function init(){localStorage.removeItem("ibelieve_posts_cache");
+  const token=localStorage.getItem("ibelieve_token");
+  const composeSection=document.querySelector("[class*=compose]") || document.querySelector("section:has(#inp-body)");
+  if(composeSection) composeSection.style.display=token?"block":"none";
   createStars();
   const savedLang=localStorage.getItem('ibelieve-lang');
   if(savedLang&&I18N[savedLang]) await applyLanguage(savedLang);
