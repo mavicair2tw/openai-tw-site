@@ -178,6 +178,53 @@ async function handleIBelieve(request, env, url) {
     return json({ ok: true, deleted: removed?.id || deletedId, stats: calcIBelieveStats(posts) }, 200, request);
   }
 
+  // Claude proxy: POST /api/ibelieve/claude-proxy
+  if (request.method === "POST" && path === "/api/ibelieve/claude-proxy") {
+    if (!env.ANTHROPIC_API_KEY) return json({ error: "ANTHROPIC_API_KEY not configured" }, 500, request);
+    const body = await request.json().catch(() => ({}));
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": env.ANTHROPIC_API_KEY,
+          "anthropic-version": "2023-06-01"
+        },
+        body: JSON.stringify({
+          model: body.model || "claude-sonnet-4-20250514",
+          max_tokens: Math.min(body.max_tokens || 1500, 2000),
+          system: body.system || "",
+          messages: body.messages || []
+        })
+      });
+      const data = await res.json();
+      return json(data, res.status, request);
+    } catch (e) {
+      return json({ error: "proxy failed: " + e.message }, 502, request);
+    }
+  }
+
+  // POST /api/ibelieve/ai-report — proxy to Anthropic API (browser CORS workaround)
+  if (request.method === "POST" && path === "/api/ibelieve/ai-report") {
+    if (!env.ANTHROPIC_API_KEY) return json({ error: "ANTHROPIC_API_KEY not configured" }, 500, request);
+    try {
+      const body = await request.json().catch(() => ({}));
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": env.ANTHROPIC_API_KEY,
+          "anthropic-version": "2023-06-01"
+        },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      return json(data, res.status, request);
+    } catch (e) {
+      return json({ error: "proxy failed: " + e.message }, 500, request);
+    }
+  }
+
   return json({ error: "Not found" }, 404, request);
 }
 __name(handleIBelieve, "handleIBelieve");
