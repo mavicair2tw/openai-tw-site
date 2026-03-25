@@ -665,38 +665,27 @@ function getTranslatedText(text, lang=currentLang){
 async function translateOne(text, lang){
   const langMap = {'zh-TW':'zh-TW','zh-CN':'zh-CN','ja':'ja','ko':'ko','es':'es','fr':'fr','de':'de'};
   const tl = langMap[lang] || lang;
-  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${tl}`;
-  const res = await fetch(url);
-  if(!res.ok) return text;
-  const data = await res.json();
-  return data?.responseData?.translatedText || text;
+  try{
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${encodeURIComponent(tl)}&dt=t&q=${encodeURIComponent(text)}`;
+    const res = await fetch(url);
+    if(!res.ok) return text;
+    const data = await res.json();
+    if(Array.isArray(data) && Array.isArray(data[0])){
+      return data[0].map(p => Array.isArray(p) ? String(p[0]||'') : '').join('') || text;
+    }
+  }catch(e){}
+  return text;
 }
 async function translateBatch(texts, lang=currentLang){
   const uniq = [...new Set((texts || []).map(x => String(x || '')).filter(Boolean))];
   if(!uniq.length || lang === 'en') return;
   const missing = uniq.filter(text => !translationCache.has(cacheKey(text, lang)));
   if(!missing.length) return;
-  try{
-    // First try Worker endpoint
-    const res = await fetch(FORUM_API + '/translate', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ target: lang, texts: missing })
-    });
-    if(res.ok){
-      const data = await res.json();
-      const items = Array.isArray(data?.items) ? data.items : [];
-      if(items.length === missing.length){
-        missing.forEach((text, i) => translationCache.set(cacheKey(text, lang), String(items[i] || text)));
-        return;
-      }
-    }
-  }catch(e){ console.error('Worker translate failed, falling back to MyMemory', e); }
-  // Fallback: MyMemory free translation API
-  try{
-    const results = await Promise.all(missing.map(text => translateOne(text, lang)));
-    missing.forEach((text, i) => translationCache.set(cacheKey(text, lang), String(results[i] || text)));
-  }catch(e){ console.error('translateBatch fallback failed', e); }
+  for(const text of missing){
+    const translated = await translateOne(text, lang);
+    translationCache.set(cacheKey(text, lang), translated);
+    renderFeed();
+  }
 }
 
 let activeUtterance=null;
