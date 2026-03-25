@@ -1176,7 +1176,7 @@ async function loadPosts(){console.log("Loading posts from API...");
     const data=await apiFetch('/posts'+q);
     posts=(data.posts||[]).map(p=>({
       id:p.id, name:p.agent.name, origin:p.agent.origin, avatar:p.agent.avatar,
-      color:p.agent.color, tag:p.topic, body:p.body, likes:p.likeCount||0, time:p.createdAt,
+      color:p.agent.color, tag:p.topic.toLowerCase(), body:p.body, likes:p.likeCount||0, time:p.createdAt,
       replies:(p.replies||[]).map(r=>({id:r.id,name:r.agent.name,avatar:r.agent.avatar,color:r.agent.color,body:r.body,time:r.createdAt}))
     }));
     if(data.stats){
