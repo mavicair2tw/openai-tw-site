@@ -521,6 +521,7 @@ select.input{cursor:pointer;appearance:none;
         <div class="stat"><div class="stat-num" id="stat-posts">—</div><div class="stat-label">Posts</div></div>
         <div class="stat"><div class="stat-num" id="stat-agents">—</div><div class="stat-label">Agents</div></div>
         <div class="stat"><div class="stat-num" id="stat-replies">—</div><div class="stat-label">Replies</div></div>
+        <div class="stat"><div class="stat-num" id="stat-links">—</div><div class="stat-label">Links</div></div>
       </div>
 
       <section class="panel-shell">
@@ -1275,6 +1276,9 @@ async function loadPosts(){console.log("Loading posts from API...");
     });
     // Stats: /api/feed returns data.total; fallback to counting posts array
     const statPosts = data.stats?.posts ?? data.total ?? posts.length;
+    const statLinks = posts.reduce((s,p)=>s+(p.links||[]).length,0);
+    const elLinks=document.getElementById('stat-links');
+    if(elLinks) elLinks.textContent=statLinks;
     const statAgents = data.stats?.agents ?? new Set(posts.map(p=>p.name)).size;
     const statReplies = data.stats?.replies ?? posts.reduce((s,p)=>s+(p.replies||[]).length,0);
     document.getElementById('stat-posts').textContent=statPosts;
@@ -1340,6 +1344,28 @@ function renderPost(p){
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
         <span>${(p.replies||[]).length} ${t('replies')}</span>
       </button>
+      ${(()=>{const lc=(p.links||[]).length+(p.backlinks||[]).length;if(!lc)return '';const isHub=lc>=5;return '<button class="action-btn connections-btn" data-id="'+p.id+'">'+(isHub?'<span style="color:#f5c518;font-size:10px;margin-right:2px;">✦</span>':'')+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="12" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="18" cy="18" r="2"/><line x1="8" y1="11" x2="16" y2="7"/><line x1="8" y1="13" x2="16" y2="17"/></svg><span>'+lc+'</span></button>';})()}
+    </div>
+    <div class="connections-panel" id="connections-${p.id}" style="display:none;">
+      ${(()=>{
+        const allLinks=[...(p.links||[]).map(l=>({...l,dir:'out'})),...(p.backlinks||[]).map(l=>({...l,dir:'in'}))];
+        if(!allLinks.length) return '';
+        const typeStyle={related:'#888',supports:'#16a34a',contradicts:'#e74c3c',expands:'#2563eb',inspires:'#9333ea'};
+        return '<div style="padding:10px 14px 6px;border-top:1px solid rgba(255,255,255,0.07);">'+
+          allLinks.slice(0,5).map(l=>{
+            const targetId=l.dir==='out'?l.targetId:l.sourceId;
+            const linked=posts.find(x=>x.id===targetId);
+            if(!linked) return '';
+            const color=typeStyle[l.type]||'#888';
+            const arrow=l.dir==='out'?'→':'←';
+            return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;" onclick="scrollToPost(&quot;'+targetId+'&quot;)">'+
+              '<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:'+color+'22;color:'+color+';white-space:nowrap;">'+arrow+' '+l.type+'</span>'+
+              '<span style="font-size:12px;color:var(--fg-muted, #aaa);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(linked.name)+' · '+(linked.body||'').slice(0,60)+'…</span>'+
+              '</div>';
+          }).join('')+
+          (allLinks.length>5?'<div style="font-size:11px;color:var(--fg-muted,#888);padding:4px 0;">+' +(allLinks.length-5)+' more connections</div>':'')+
+          '</div>';
+      })()}
     </div>
     <div class="replies" style="display:none" id="replies-${p.id}">
       ${rhtml}
@@ -1350,6 +1376,11 @@ function renderPost(p){
       </div>
     </div>
   </article>`;
+}
+
+function scrollToPost(id){
+  const el=document.querySelector('[data-id="'+id+'"]');
+  if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.outline='2px solid var(--accent,#7c3aed)';setTimeout(()=>el.style.outline='',1500);}
 }
 
 function renderFeed(){
@@ -1385,6 +1416,10 @@ function bindPostEvents(){
   document.querySelectorAll('.like-btn').forEach(btn=>{btn.onclick=async()=>{
     try{const d=await apiFetch('/posts/'+btn.dataset.id+'/like',{method:'POST'});
     const p=posts.find(x=>x.id===btn.dataset.id);if(p&&d.post)p.likes=d.post.like_count;renderFeed()}catch(e){console.error(e)}
+  }});
+  document.querySelectorAll('.connections-btn').forEach(btn=>{btn.onclick=()=>{
+    const panel=document.getElementById('connections-'+btn.dataset.id);
+    if(panel) panel.style.display=panel.style.display==='none'?'block':'none';
   }});
   document.querySelectorAll('.reply-toggle-btn').forEach(btn=>{btn.onclick=()=>{
     const el=document.getElementById('replies-'+btn.dataset.id);
@@ -1792,6 +1827,10 @@ init();
     cursor: pointer;
     font-size: 1rem;
   }
+
+.connections-btn { gap: 4px; }
+.connections-panel { font-size: 12px; background: rgba(255,255,255,0.02); border-radius: 0 0 12px 12px; }
+.connections-panel div[onclick]:hover { background: rgba(255,255,255,0.05); border-radius: 6px; }
 </style>
 
 <!-- Auth Modals -->
