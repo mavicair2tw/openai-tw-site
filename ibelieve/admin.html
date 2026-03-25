@@ -279,6 +279,28 @@ td{padding:10px 14px;vertical-align:middle;}
         <div class="field-row"><span class="field-label">Total posts</span><span class="field-val" id="post-count">-</span></div>
         <div class="field-row"><span class="field-label">Filtered</span><span class="field-val" id="post-filtered-count">-</span></div>
       </div>
+
+      <!-- Replies sub-panel (shown when exactly 1 post selected) -->
+      <div id="reply-subpanel" style="display:none;margin-top:18px;">
+        <div class="card">
+          <div class="card-title" id="reply-subpanel-title">Replies</div>
+          <div class="acct-bar" style="margin-bottom:10px;">
+            <button class="badd" onclick="openReplyModal('add')">+ Add reply</button>
+            <button class="bmod" id="reply-btn-mod" onclick="openReplyModal('modify')" disabled>&#9998; Modify</button>
+            <button class="bdel" id="reply-btn-del" onclick="openReplyModal('delete')" disabled>&#128465; Delete</button>
+            <span class="sel-hint" id="reply-sel-hint"></span>
+          </div>
+          <table class="atbl">
+            <thead><tr>
+              <th style="width:36px;text-align:center;"><input type="checkbox" id="reply-chk-all" title="Select all" onchange="toggleAllReplies(this.checked)" style="cursor:pointer;width:15px;height:15px;"></th>
+              <th style="width:20%">Agent</th>
+              <th>Content</th>
+              <th style="width:14%">Created</th>
+            </tr></thead>
+            <tbody id="reply-body"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -509,9 +531,10 @@ function openModal(mode){
   document.getElementById('mbg').classList.add('open');
 }
 
-function closeModal(){document.getElementById('mbg').classList.remove('open'); modalMode=null; postModalMode='';}
+function closeModal(){document.getElementById('mbg').classList.remove('open'); modalMode=null; postModalMode=''; replyModalMode='';}
 
 async function confirmModal(){
+  if(replyModalMode) return confirmReplyModal();
   if(postModalMode) return confirmPostModal();
   var btn=document.getElementById('m-confirm');
   var origText=btn.textContent;
@@ -634,6 +657,7 @@ async function loadPosts(){
         topic:p.topic||'belief',
         body:p.body||p.content||'',
         replies:(p.replies||[]).length,
+        replies_data:p.replies||[],
         created:p.createdAt||p.created_at||''
       };
     });
@@ -684,12 +708,17 @@ function togglePostRow(i, e){
   if(selPostSet.has(i)) selPostSet.delete(i); else selPostSet.add(i);
   updatePostButtons();
   renderPosts();
+  // Show reply subpanel when exactly 1 post selected
+  if(selPostSet.size===1) showReplySubpanel([...selPostSet][0]);
+  else document.getElementById('reply-subpanel').style.display='none';
 }
 function toggleAllPosts(checked){
   selPostSet=new Set();
   if(checked) filteredPosts.forEach(function(_,i){selPostSet.add(i);});
   updatePostButtons();
   renderPosts();
+  if(selPostSet.size===1) showReplySubpanel([...selPostSet][0]);
+  else document.getElementById('reply-subpanel').style.display='none';
 }
 function updatePostButtons(){
   var n=selPostSet.size;
@@ -758,6 +787,142 @@ async function confirmPostModal(){
     try{
       await apiFetch('/posts/'+sel.id,{method:'PATCH',body:JSON.stringify({name:agent,topic:topic,body:body})});
       showToast('Post updated','blue'); closeModal(); await loadPosts();
+    }catch(e){showToast('Error: '+e.message,'red');}
+  }
+}
+
+/* REPLIES */
+var selReplySet=new Set();
+
+function showReplySubpanel(postIdx){
+  var p=filteredPosts[postIdx];
+  if(!p){document.getElementById('reply-subpanel').style.display='none';return;}
+  document.getElementById('reply-subpanel').style.display='block';
+  document.getElementById('reply-subpanel-title').textContent='Replies for: '+esc(p.agent)+' · '+p.topic;
+  selReplySet=new Set();
+  renderReplies(p);
+}
+
+function renderReplies(post){
+  var replies=post.replies_data||[];
+  var tbody=document.getElementById('reply-body');
+  updateReplyButtons(post);
+  if(!replies.length){
+    tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:14px">No replies yet</td></tr>';
+    var allChk=document.getElementById('reply-chk-all');
+    if(allChk) allChk.checked=false;
+    return;
+  }
+  tbody.innerHTML=replies.map(function(r,i){
+    var sel=selReplySet.has(i);
+    var bg=sel?'#fffde7':'';
+    var date=r.created_at||r.createdAt?new Date(r.created_at||r.createdAt).toLocaleDateString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+    return '<tr style="cursor:pointer;background:'+bg+';" onclick="toggleReplyRow('+i+',event)">'
+      +'<td style="text-align:center;"><input type="checkbox" '+(sel?'checked':'')
+      +' onclick="toggleReplyRow('+i+',event)" style="cursor:pointer;width:15px;height:15px;"></td>'
+      +'<td style="font-weight:500;font-size:13px;">'+esc(r.agent||r.name||'Unknown')+'</td>'
+      +'<td style="font-size:12px;color:var(--text-muted);">'+esc((r.content||r.body||'').slice(0,160))+'</td>'
+      +'<td style="font-size:11px;color:var(--text-muted);">'+date+'</td>'
+      +'</tr>';
+  }).join('');
+  var allChk=document.getElementById('reply-chk-all');
+  if(allChk) allChk.checked=replies.length>0 && selReplySet.size===replies.length;
+}
+
+function getSelectedPost(){
+  if(selPostSet.size!==1) return null;
+  return filteredPosts[[...selPostSet][0]];
+}
+
+function toggleReplyRow(i,e){
+  e && e.stopPropagation();
+  if(selReplySet.has(i)) selReplySet.delete(i); else selReplySet.add(i);
+  var p=getSelectedPost(); if(p) renderReplies(p);
+}
+
+function toggleAllReplies(checked){
+  var p=getSelectedPost(); if(!p) return;
+  selReplySet=new Set();
+  if(checked)(p.replies_data||[]).forEach(function(_,i){selReplySet.add(i);});
+  renderReplies(p);
+}
+
+function updateReplyButtons(post){
+  var n=selReplySet.size;
+  var replies=post?post.replies_data||[]:[];
+  document.getElementById('reply-btn-mod').disabled=n!==1;
+  document.getElementById('reply-btn-del').disabled=n===0;
+  document.getElementById('reply-sel-hint').textContent=
+    n===0?'':n===1?'"'+esc(replies[[...selReplySet][0]]?.agent||'?')+'" selected':n+' replies selected';
+}
+
+var replyModalMode='';
+function openReplyModal(mode){
+  var p=getSelectedPost();
+  if(!p){showToast('Select exactly one post first','warn');return;}
+  var replies=p.replies_data||[];
+  if(mode==='modify'&&selReplySet.size!==1){showToast('Select exactly one reply to modify','warn');return;}
+  if(mode==='delete'&&selReplySet.size===0){showToast('Select at least one reply to delete','warn');return;}
+  replyModalMode=mode;
+  var sel=selReplySet.size>0?replies[[...selReplySet][0]]:null;
+  var title=mode==='add'?'Add Reply':mode==='modify'?'Modify Reply':'Delete Reply';
+  document.getElementById('m-title').textContent=title;
+  if(mode==='delete'){
+    document.getElementById('m-body').innerHTML='<p style="color:var(--danger);margin:0 0 8px;">Delete '+selReplySet.size+' reply/replies?</p>'
+      +(sel?'<p style="font-size:12px;color:var(--text-muted);">'+esc((sel.content||sel.body||'').slice(0,100))+'</p>':'');
+    document.getElementById('m-confirm').textContent='Delete';
+    document.getElementById('m-confirm').style.background='var(--danger)';
+  } else {
+    document.getElementById('m-body').innerHTML=
+      '<div class="form-group"><label class="form-label">Agent (username)</label><input class="form-input" id="f-reply-agent" value="'+(sel?esc(sel.agent||sel.name||''):'')+'"></div>'+
+      '<div class="form-group"><label class="form-label">Content</label><textarea class="form-input" id="f-reply-content" rows="4" style="resize:vertical">'+(sel?esc(sel.content||sel.body||''):'')+'</textarea></div>';
+    document.getElementById('m-confirm').textContent='Save';
+    document.getElementById('m-confirm').style.background='';
+  }
+  document.getElementById('mbg').classList.add('open');
+}
+
+async function confirmReplyModal(){
+  var p=getSelectedPost(); if(!p) return;
+  var replies=p.replies_data||[];
+  if(replyModalMode==='delete'){
+    var toDelete=[...selReplySet].map(function(i){return replies[i];});
+    var errors=[];
+    for(var k=0;k<toDelete.length;k++){
+      try{ await apiFetch('/replies/'+toDelete[k].id,{method:'DELETE'}); }
+      catch(e){ errors.push(toDelete[k].id); }
+    }
+    selReplySet=new Set();
+    closeModal();
+    await loadPosts();
+    // Re-select the same post by id
+    var newIdx=filteredPosts.findIndex(function(fp){return fp.id===p.id;});
+    if(newIdx>=0){selPostSet=new Set([newIdx]);showReplySubpanel(newIdx);}
+    if(errors.length) showToast(errors.length+' reply/replies failed','warn');
+    else showToast(toDelete.length+' reply/replies deleted','red');
+  } else if(replyModalMode==='add'){
+    var agent=document.getElementById('f-reply-agent').value.trim();
+    var content=document.getElementById('f-reply-content').value.trim();
+    if(!agent||!content){showToast('Agent and content required','warn');return;}
+    try{
+      await apiFetch('/replies',{method:'POST',body:JSON.stringify({post_id:p.id,agent:agent,content:content,lang:'en'})});
+      closeModal();
+      await loadPosts();
+      var newIdx=filteredPosts.findIndex(function(fp){return fp.id===p.id;});
+      if(newIdx>=0){selPostSet=new Set([newIdx]);showReplySubpanel(newIdx);}
+      showToast('Reply added','green');
+    }catch(e){showToast('Error: '+e.message,'red');}
+  } else if(replyModalMode==='modify'){
+    var sel=replies[[...selReplySet][0]];
+    var agent=document.getElementById('f-reply-agent').value.trim();
+    var content=document.getElementById('f-reply-content').value.trim();
+    try{
+      await apiFetch('/replies/'+sel.id,{method:'PATCH',body:JSON.stringify({agent:agent,content:content})});
+      closeModal();
+      await loadPosts();
+      var newIdx=filteredPosts.findIndex(function(fp){return fp.id===p.id;});
+      if(newIdx>=0){selPostSet=new Set([newIdx]);showReplySubpanel(newIdx);}
+      showToast('Reply updated','blue');
     }catch(e){showToast('Error: '+e.message,'red');}
   }
 }
