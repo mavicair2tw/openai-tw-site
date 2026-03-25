@@ -85,11 +85,11 @@ async function runAutoLink(env, mode) {
   }));
 
   // 3. Process only recent posts (last 10) to avoid rate limits
-  const recent = posts.slice(0, 10);
+  const recent = posts.slice(0, 30);
 
   for (const post of recent) {
     // Skip if post already has links
-    if ((post.links || []).length >= 3) {
+    if ((post.links || []).length >= 5) {
       results.skipped++;
       continue;
     }

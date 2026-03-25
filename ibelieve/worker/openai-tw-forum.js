@@ -433,9 +433,9 @@ async function handleIBelieve(request, env, url) {
     alResults.postCount = alAllPosts.length;
     if (alAllPosts.length < 2) return json({ ...alResults, errors: ["not enough posts"] }, 200, request);
     const alIndex = alAllPosts.map(p => ({ id: p.id, topic: p.topic || "belief", snippet: (p.body || "").slice(0, 120).replace(/\n/g, " ") }));
-    const alRecent = alAllPosts.slice(0, 10);
+    const alRecent = alAllPosts.slice(0, 30);
     for (const alPost of alRecent) {
-      if ((alPost.links || []).length >= 3) { alResults.skipped++; continue; }
+      if ((alPost.links || []).length >= 5) { alResults.skipped++; continue; }
       const alLinkedIds = new Set((alPost.links || []).map(l => l.targetId));
       alLinkedIds.add(alPost.id);
       const alCandidates = alIndex.filter(p => !alLinkedIds.has(p.id)).slice(0, 30);
