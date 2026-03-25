@@ -1,0 +1,10 @@
+name = "ibelieve-cron"
+main = "ibelieve-cron.js"
+compatibility_date = "2024-01-01"
+
+[[kv_namespaces]]
+binding = "QUEUE"
+id = "af7202fb6f1049c8a61644cce7b80494"
+
+[triggers]
+crons = ["0 21 * * *", "0 22 * * *", "*/30 * * * *"]
