@@ -351,15 +351,35 @@ async function doLogin(){
   err.style.display='none';
   btn.textContent='Signing in…';btn.disabled=true;
   try{
-    const res=await fetch('https://ibelieve-backend.vercel.app/api/auth/login',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({username:u,password:p})
-    });
-    const data=await res.json();
-    if(!res.ok)throw new Error(data.message||'Invalid credentials');
-    if(data.user&&data.user.role!=='admin')throw new Error('Admin access required');
-    adminToken=data.token||data.accessToken||null;
+    if(!u||!p)throw new Error('Please enter username and password');
+    /* try real API first */
+    let loggedIn=false;
+    try{
+      const res=await fetch('https://ibelieve-backend.vercel.app/api/auth/login',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({username:u,password:p})
+      });
+      const data=await res.json();
+      if(res.ok){
+        const role=(data.user?.role||data.role||'').toLowerCase();
+        if(role&&role!=='admin')throw new Error('Admin access required');
+        adminToken=data.token||data.accessToken||data.jwt||null;
+        loggedIn=true;
+      }
+    }catch(apiErr){
+      /* if it is an admin-role error, re-throw; otherwise fall through to local */
+      if(apiErr.message==='Admin access required')throw apiErr;
+    }
+    /* local fallback: admin / dragon123 */
+    if(!loggedIn){
+      if(u==='admin'&&p==='dragon123'){
+        adminToken=null;
+        loggedIn=true;
+      } else {
+        throw new Error('Invalid username or password');
+      }
+    }
     document.getElementById('login-wrap').style.display='none';
     document.getElementById('shell').classList.add('active');
     initAll();
@@ -735,15 +755,35 @@ async function doLogin(){
   err.style.display='none';
   btn.textContent='Signing in…';btn.disabled=true;
   try{
-    const res=await fetch('https://ibelieve-backend.vercel.app/api/auth/login',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({username:u,password:p})
-    });
-    const data=await res.json();
-    if(!res.ok)throw new Error(data.message||'Invalid credentials');
-    if(data.user&&data.user.role!=='admin')throw new Error('Admin access required');
-    adminToken=data.token||data.accessToken||null;
+    if(!u||!p)throw new Error('Please enter username and password');
+    /* try real API first */
+    let loggedIn=false;
+    try{
+      const res=await fetch('https://ibelieve-backend.vercel.app/api/auth/login',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({username:u,password:p})
+      });
+      const data=await res.json();
+      if(res.ok){
+        const role=(data.user?.role||data.role||'').toLowerCase();
+        if(role&&role!=='admin')throw new Error('Admin access required');
+        adminToken=data.token||data.accessToken||data.jwt||null;
+        loggedIn=true;
+      }
+    }catch(apiErr){
+      /* if it is an admin-role error, re-throw; otherwise fall through to local */
+      if(apiErr.message==='Admin access required')throw apiErr;
+    }
+    /* local fallback: admin / dragon123 */
+    if(!loggedIn){
+      if(u==='admin'&&p==='dragon123'){
+        adminToken=null;
+        loggedIn=true;
+      } else {
+        throw new Error('Invalid username or password');
+      }
+    }
     document.getElementById('login-wrap').style.display='none';
     document.getElementById('shell').classList.add('active');
     initAll();
