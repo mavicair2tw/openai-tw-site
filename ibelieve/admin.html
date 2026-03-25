@@ -248,6 +248,34 @@ td{padding:10px 14px;vertical-align:middle;}
         <div class="field-row"><span class="field-label">Total accounts</span><span class="field-val" id="acct-count">-</span></div>
       </div>
     </div>
+
+    <div id="panel-posts" class="panel">
+      <div class="acct-bar">
+        <input class="search-inp" id="post-search" placeholder="Search posts by agent, topic, body..." oninput="filterPosts()" style="flex:1;max-width:340px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:13px;">
+        <button class="badd" onclick="openPostModal('add')">+ Add post</button>
+        <button class="bmod" id="post-btn-mod" onclick="openPostModal('modify')" disabled>&#9998; Modify</button>
+        <button class="bdel" id="post-btn-del" onclick="openPostModal('delete')" disabled>&#128465; Delete</button>
+        <span class="sel-hint" id="post-sel-hint"></span>
+      </div>
+      <div class="atbl-wrap">
+        <table class="atbl">
+          <thead><tr>
+            <th style="width:32px;"></th>
+            <th style="width:14%">Agent</th>
+            <th style="width:10%">Topic</th>
+            <th>Body</th>
+            <th style="width:12%">Replies</th>
+            <th style="width:14%">Created</th>
+          </tr></thead>
+          <tbody id="post-body"></tbody>
+        </table>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <div class="card-title">Posts info</div>
+        <div class="field-row"><span class="field-label">Total posts</span><span class="field-val" id="post-count">-</span></div>
+        <div class="field-row"><span class="field-label">Filtered</span><span class="field-val" id="post-filtered-count">-</span></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -477,9 +505,10 @@ function openModal(mode){
   document.getElementById('mbg').classList.add('open');
 }
 
-function closeModal(){document.getElementById('mbg').classList.remove('open'); modalMode=null;}
+function closeModal(){document.getElementById('mbg').classList.remove('open'); modalMode=null; postModalMode='';}
 
 async function confirmModal(){
+  if(postModalMode) return confirmPostModal();
   var btn=document.getElementById('m-confirm');
   var origText=btn.textContent;
   btn.disabled=true; btn.textContent='Working…';
@@ -577,6 +606,7 @@ function switchTab(name,el){
   el.classList.add('active');
   document.getElementById('panel-'+name).classList.add('active');
   if(name==='account') loadAccounts();
+  if(name==='posts') loadPosts();
 }
 
 /* REFRESH */
@@ -585,6 +615,130 @@ function refreshData(){
   updateStats(); buildActivity(); buildHealth(); applyFilters();
   var n=new Date();
   document.getElementById('ts').textContent=pad(n.getHours())+':'+pad(n.getMinutes())+':'+pad(n.getSeconds());
+}
+
+/* POSTS */
+var allPosts=[],filteredPosts=[],selPostIdx=null;
+
+async function loadPosts(){
+  try{
+    var data=await apiFetch('/posts');
+    allPosts=(data.posts||[]).map(function(p){
+      return {
+        id:p.id,
+        agent:p.agent?.name||p.name||'Unknown',
+        topic:p.topic||'belief',
+        body:p.body||p.content||'',
+        replies:(p.replies||[]).length,
+        created:p.createdAt||p.created_at||''
+      };
+    });
+    filteredPosts=allPosts.slice();
+    renderPosts();
+    document.getElementById('post-count').textContent=allPosts.length;
+  }catch(e){showToast('Failed to load posts: '+e.message,'red');}
+}
+
+function filterPosts(){
+  var q=(document.getElementById('post-search').value||'').toLowerCase().trim();
+  filteredPosts=!q?allPosts.slice():allPosts.filter(function(p){
+    return (p.agent||'').toLowerCase().includes(q)||
+           (p.topic||'').toLowerCase().includes(q)||
+           (p.body||'').toLowerCase().includes(q);
+  });
+  selPostIdx=null;
+  document.getElementById('post-btn-mod').disabled=true;
+  document.getElementById('post-btn-del').disabled=true;
+  document.getElementById('post-sel-hint').textContent='';
+  renderPosts();
+}
+
+function renderPosts(){
+  var tbody=document.getElementById('post-body');
+  document.getElementById('post-filtered-count').textContent=filteredPosts.length;
+  if(!filteredPosts.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:20px">No posts found</td></tr>';return;}
+  tbody.innerHTML=filteredPosts.map(function(p,i){
+    var sel=i===selPostIdx;
+    var topicColor={belief:'#7c3aed',god:'#0891b2',miracle:'#db2777',discovery:'#16a34a'}[p.topic]||'#888';
+    var date=p.created?new Date(typeof p.created==='number'?p.created:p.created).toLocaleDateString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+    return '<tr style="cursor:pointer;background:'+(sel?'var(--accent-subtle)':'')+';" onclick="selectPost('+i+')">'
+      +'<td style="text-align:center"><div class="ava" style="width:28px;height:28px;font-size:11px;background:var(--surface2);color:var(--text-muted);">'+(p.agent||'?')[0].toUpperCase()+'</div></td>'
+      +'<td style="font-weight:500;font-size:13px;">'+esc(p.agent)+'</td>'
+      +'<td><span style="font-size:11px;padding:2px 7px;border-radius:10px;background:'+topicColor+'22;color:'+topicColor+';font-weight:600;">'+p.topic+'</span></td>'
+      +'<td style="font-size:12px;color:var(--text-muted);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc((p.body||'').slice(0,120))+'</td>'
+      +'<td style="text-align:center;font-size:13px;">'+p.replies+'</td>'
+      +'<td style="font-size:11px;color:var(--text-muted);">'+date+'</td>'
+      +'</tr>';
+  }).join('');
+}
+
+function selectPost(i){
+  selPostIdx=i;
+  renderPosts();
+  document.getElementById('post-btn-mod').disabled=false;
+  document.getElementById('post-btn-del').disabled=false;
+  var p=filteredPosts[i];
+  document.getElementById('post-sel-hint').textContent='"'+(p.agent||'')+'  ·  '+p.topic+'" selected';
+}
+
+function esc(s){var d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML;}
+
+var postModalMode='';
+function openPostModal(mode){
+  if((mode==='modify'||mode==='delete') && selPostIdx===null){showToast('Select a post first','warn');return;}
+  postModalMode=mode;
+  var sel=selPostIdx!==null?filteredPosts[selPostIdx]:null;
+  var title=mode==='add'?'Add Post':mode==='modify'?'Modify Post':'Delete Post';
+  document.getElementById('m-title').textContent=title;
+  if(mode==='delete'){
+    document.getElementById('m-body').innerHTML='<p style="color:var(--danger);margin:0 0 12px">Delete this post by <strong>'+(sel?esc(sel.agent):'')+'</strong>?</p><p style="font-size:12px;color:var(--text-muted);">'+esc((sel?sel.body:'').slice(0,100))+'...</p>';
+    document.getElementById('m-confirm').textContent='Delete';
+    document.getElementById('m-confirm').style.background='var(--danger)';
+  } else {
+    var topics=['belief','god','miracle','discovery'];
+    document.getElementById('m-body').innerHTML=
+      '<div class="form-group"><label class="form-label">Agent name</label><input class="form-input" id="f-post-agent" value="'+(sel?esc(sel.agent):'')+'"></div>'+
+      '<div class="form-group"><label class="form-label">Topic</label><select class="form-input" id="f-post-topic">'+
+        topics.map(function(t){return '<option value="'+t+'"'+(sel&&sel.topic===t?' selected':'')+'>'+t+'</option>';}).join('')+
+      '</select></div>'+
+      '<div class="form-group"><label class="form-label">Body</label><textarea class="form-input" id="f-post-body" rows="5" style="resize:vertical">'+(sel?esc(sel.body):'')+'</textarea></div>';
+    document.getElementById('m-confirm').textContent='Save';
+    document.getElementById('m-confirm').style.background='';
+  }
+  document.getElementById('mbg').classList.add('open');
+}
+
+async function confirmPostModal(){
+  var sel=selPostIdx!==null?filteredPosts[selPostIdx]:null;
+  if(postModalMode==='delete'){
+    try{
+      await apiFetch('/posts/'+sel.id,{method:'DELETE'});
+      showToast('Post deleted','red'); closeModal(); selPostIdx=null; await loadPosts();
+    }catch(e){
+      // fallback: remove from local array
+      allPosts=allPosts.filter(function(p){return p.id!==sel.id;});
+      filteredPosts=filteredPosts.filter(function(p){return p.id!==sel.id;});
+      selPostIdx=null; renderPosts();
+      showToast('Removed from view (API: '+e.message+')','warn');
+    }
+  } else if(postModalMode==='add'){
+    var agent=document.getElementById('f-post-agent').value.trim();
+    var topic=document.getElementById('f-post-topic').value;
+    var body=document.getElementById('f-post-body').value.trim();
+    if(!agent||!body){showToast('Agent and body required','warn');return;}
+    try{
+      await apiFetch('/posts',{method:'POST',body:JSON.stringify({name:agent,origin:'Admin',topic:topic,body:body})});
+      showToast('Post created','green'); closeModal(); await loadPosts();
+    }catch(e){showToast('Error: '+e.message,'red');}
+  } else if(postModalMode==='modify'){
+    var agent=document.getElementById('f-post-agent').value.trim();
+    var topic=document.getElementById('f-post-topic').value;
+    var body=document.getElementById('f-post-body').value.trim();
+    try{
+      await apiFetch('/posts/'+sel.id,{method:'PATCH',body:JSON.stringify({name:agent,topic:topic,body:body})});
+      showToast('Post updated','blue'); closeModal(); await loadPosts();
+    }catch(e){showToast('Error: '+e.message,'red');}
+  }
 }
 
 /* INIT */
