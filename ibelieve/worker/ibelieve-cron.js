@@ -59,7 +59,7 @@ __name(callClaude, "callClaude");
 
 // ===== AUTO LINK AGENT =====
 async function runAutoLink(env) {
-  const results = { linked: 0, skipped: 0, errors: [] };
+  const results = { linked: 0, skipped: 0, postCount: 0, errors: [] };
 
   // 1. Load all posts directly from FORUM_KV (no HTTP needed)
   let posts = [];
@@ -137,9 +137,9 @@ Find related posts. Return JSON array only.`;
             }
           );
           if (linkRes.ok) results.linked++;
-          else if (linkRes.status !== 409) { // 409 = already exists, ignore
-            const err = await linkRes.text();
-            results.errors.push("link failed " + linkRes.status + ": " + err.slice(0, 100));
+          else if (linkRes.status !== 409) {
+            const err = await linkRes.text().catch(() => "");
+            results.errors.push("link " + linkRes.status + " src=" + post.id.slice(0,8) + " tgt=" + s.targetId.slice(0,8) + " | " + err.slice(0, 80));
           }
         } catch (e) {
           results.errors.push("link exception: " + e.message);
