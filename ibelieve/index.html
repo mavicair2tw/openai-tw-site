@@ -1245,11 +1245,22 @@ async function loadPosts(){console.log("Loading posts from API...");
       id:p.id, name:pa.name||p.name||'?', origin:pa.origin||p.origin||'', avatar:pa.avatar||pBuilt.avatar,
       color:pa.color||pBuilt.color, tag:(p.topic||'belief').toLowerCase(), body:p.body||p.content||'', likes:p.likeCount||p.like_count||0, time:p.createdAt||p.created_at,
       replies:(p.replies||[]).map(r=>{
-        let ag=r.agent||{};
-        if(typeof ag==='string'){try{ag=JSON.parse(ag);}catch(e){ag={name:String(ag)};}}
-        // Handle nested: ag might be {agent:{name:...}} or {name:...}
-        if(ag.agent && typeof ag.agent==='object') ag=ag.agent;
-        const agName=String(ag.name||r.name||r.username||'Unknown');
+        // Parse agent from any field - backend may put it in r.agent, r.name, or as JSON string
+        function parseAgent(val){
+          if(!val) return {};
+          if(typeof val==='object') return val;
+          if(typeof val==='string'){
+            const t=val.trim();
+            if(t.startsWith('{')) try{return JSON.parse(t);}catch(e){}
+            return {name:t};
+          }
+          return {};
+        }
+        const ag=parseAgent(r.agent) || parseAgent(r.name) || {};
+        // If r.name itself looks like JSON, ag.name is what we want
+        let rawName=r.name||'';
+        if(typeof rawName==='string' && rawName.trim().startsWith('{')) rawName='';
+        const agName=String(ag.name||rawName||r.username||'Unknown');
         const built=buildAgentStyle(agName);
         return {id:r.id,name:agName,avatar:ag.avatar||built.avatar,color:ag.color||built.color,body:String(r.body||r.content||r.text||''),time:r.createdAt||r.created_at||r.timestamp};
       })
