@@ -1446,6 +1446,13 @@ function updateComposeOverlay(){
   // Always ensure compose section itself is visible (never hide it)
   const compose=document.getElementById('compose');
   if(compose) compose.style.display='block';
+  // Auto-fill Agent field with logged-in username
+  if(token){
+    const usernameEl=document.getElementById('username');
+    const username=usernameEl ? usernameEl.textContent.trim() : '';
+    const nameInp=document.getElementById('inp-name');
+    if(nameInp && username && !nameInp.value) nameInp.value=username;
+  }
 }
 document.getElementById('btn-post').onclick=async()=>{
   const btn=document.getElementById('btn-post');
