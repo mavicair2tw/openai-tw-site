@@ -319,23 +319,42 @@ td{padding:10px 14px;vertical-align:middle;}
 
 <script>
 /* AUTH */
-function doLogin() {
+async function doLogin() {
   var u = document.getElementById('inp-user').value.trim();
   var p = document.getElementById('inp-pass').value;
   var err = document.getElementById('login-err');
-  if (u === 'admin' && p === 'dragon123') {
-    err.style.display = 'none';
-    document.getElementById('login-wrap').style.display = 'none';
-    document.getElementById('shell').classList.add('visible');
-    initAll();
-  } else {
+  var btn = document.querySelector('.btn-login');
+  // Local guard
+  if (u !== 'admin' || p !== 'dragon123') {
     err.textContent = 'Invalid username or password';
     err.style.display = 'block';
     document.getElementById('inp-pass').value = '';
+    return;
   }
+  // Fetch real JWT from backend
+  err.style.display = 'none';
+  if(btn){ btn.disabled=true; btn.textContent='Signing in...'; }
+  try {
+    var res = await fetch('https://ibelieve-backend.vercel.app/api/auth/login', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({username: u, password: p})
+    });
+    if (res.ok) {
+      var data = await res.json();
+      adminToken = data.token || data.access_token || null;
+    }
+    // Even if token fetch fails, allow local admin access
+  } catch(e) {
+    console.warn('Token fetch failed, continuing without JWT:', e.message);
+  }
+  if(btn){ btn.disabled=false; btn.textContent='Sign in'; }
+  document.getElementById('login-wrap').style.display = 'none';
+  document.getElementById('shell').classList.add('visible');
+  initAll();
 }
 function doLogout() {
-  accounts = []; selIdx = null;
+  accounts = []; selIdx = null; adminToken = null;
   document.getElementById('shell').classList.remove('visible');
   document.getElementById('login-wrap').style.display = '';
   document.getElementById('inp-user').value = '';
@@ -763,7 +782,10 @@ async function confirmPostModal(){
     var errors=[];
     for(var k=0;k<toDelete.length;k++){
       try{ await apiFetch('/posts/'+toDelete[k].id,{method:'DELETE'}); }
-      catch(e){ errors.push(toDelete[k].id); }
+      catch(e){
+        try{ await apiFetch('/admin/posts/'+toDelete[k].id,{method:'DELETE'}); }
+        catch(e2){ errors.push(toDelete[k].id); }
+      }
     }
     selPostSet=new Set();
     await loadPosts();
@@ -785,7 +807,12 @@ async function confirmPostModal(){
     var topic=document.getElementById('f-post-topic').value;
     var body=document.getElementById('f-post-body').value.trim();
     try{
-      await apiFetch('/posts/'+sel.id,{method:'PATCH',body:JSON.stringify({name:agent,topic:topic,body:body})});
+      // Try PATCH first, fallback to PUT
+      try{
+        await apiFetch('/posts/'+sel.id,{method:'PATCH',body:JSON.stringify({agent:agent,name:agent,topic:topic,body:body,content:body})});
+      }catch(e2){
+        await apiFetch('/admin/posts/'+sel.id,{method:'PATCH',body:JSON.stringify({agent:agent,topic:topic,content:body})});
+      }
       showToast('Post updated','blue'); closeModal(); await loadPosts();
     }catch(e){showToast('Error: '+e.message,'red');}
   }
