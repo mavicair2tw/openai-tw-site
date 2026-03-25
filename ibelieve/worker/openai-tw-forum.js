@@ -374,6 +374,54 @@ async function handleIBelieve(request, env, url) {
     return json({ ok:true, nodeCount:row.node_count, linkCount:row.link_count, clusterCount:row.cluster_count, isolatedCount:row.isolated_count, hubs:summary.hubs||[], topicCounts:summary.topicCounts||{}, snapshotTime:row.created_at }, 200, request);
   }
 
+  // GET /api/ibelieve/release-notes — search release notes from D1
+  if (request.method === "GET" && path === "/api/ibelieve/release-notes") {
+    if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+    const q = (url.searchParams.get("q") || "").trim();
+    const date = (url.searchParams.get("date") || "").trim();
+    const limit = Math.min(parseInt(url.searchParams.get("limit") || "20"), 50);
+    let sql, bindings;
+    if (q && date) {
+      sql = "SELECT id,version,title,content,tags,author,release_date,created_at FROM release_notes WHERE (title LIKE ? OR content LIKE ? OR tags LIKE ?) AND release_date LIKE ? ORDER BY release_date DESC LIMIT ?";
+      const like = "%" + q + "%"; const dateLike = date + "%";
+      bindings = [like, like, like, dateLike, limit];
+    } else if (q) {
+      sql = "SELECT id,version,title,content,tags,author,release_date,created_at FROM release_notes WHERE title LIKE ? OR content LIKE ? OR tags LIKE ? ORDER BY release_date DESC LIMIT ?";
+      const like = "%" + q + "%";
+      bindings = [like, like, like, limit];
+    } else if (date) {
+      sql = "SELECT id,version,title,content,tags,author,release_date,created_at FROM release_notes WHERE release_date LIKE ? ORDER BY release_date DESC LIMIT ?";
+      bindings = [date + "%", limit];
+    } else {
+      sql = "SELECT id,version,title,content,tags,author,release_date,created_at FROM release_notes ORDER BY release_date DESC LIMIT ?";
+      bindings = [limit];
+    }
+    const stmt = env.DB.prepare(sql);
+    const rows = await stmt.bind(...bindings).all();
+    return json({ notes: rows.results || [], total: (rows.results || []).length }, 200, request);
+  }
+
+  // POST /api/ibelieve/release-notes — create new release note
+  if (request.method === "POST" && path === "/api/ibelieve/release-notes") {
+    if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+    const body = await request.json().catch(() => ({}));
+    const { version, title, content, tags, author, release_date } = body;
+    if (!version || !title || !content || !release_date) return json({ error: "version, title, content, release_date required" }, 400, request);
+    const id = "rn-" + crypto.randomUUID().slice(0, 8);
+    await env.DB.prepare(
+      "INSERT INTO release_notes (id, version, title, content, tags, author, release_date) VALUES (?, ?, ?, ?, ?, ?, ?)"
+    ).bind(id, version, title, content, JSON.stringify(tags || []), author || "system", release_date).run();
+    return json({ ok: true, id }, 200, request);
+  }
+
+  // DELETE /api/ibelieve/release-notes/:id
+  const rnDeleteMatch = path.match(/^\/api\/ibelieve\/release-notes\/([^/]+)$/);
+  if (request.method === "DELETE" && rnDeleteMatch) {
+    if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+    await env.DB.prepare("DELETE FROM release_notes WHERE id = ?").bind(rnDeleteMatch[1]).run();
+    return json({ ok: true }, 200, request);
+  }
+
   // POST /api/ibelieve/ai-report — proxy to Anthropic API (browser CORS workaround)
   if (request.method === "POST" && path === "/api/ibelieve/ai-report") {
     if (!env.ANTHROPIC_API_KEY) return json({ error: "ANTHROPIC_API_KEY not configured" }, 500, request);

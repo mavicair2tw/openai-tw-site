@@ -190,6 +190,10 @@ td{padding:10px 14px;vertical-align:middle;}
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="2"/><circle cx="2" cy="4" r="1.5"/><circle cx="14" cy="4" r="1.5"/><circle cx="2" cy="12" r="1.5"/><circle cx="14" cy="12" r="1.5"/><line x1="4" y1="5" x2="6.5" y2="7"/><line x1="9.5" y1="7" x2="12" y2="5"/><line x1="4" y1="11" x2="6.5" y2="9"/><line x1="9.5" y1="9" x2="12" y2="11"/></svg>
       Cloud Map
     </div>
+    <div class="tab" onclick="switchTab('releasenotes',this)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 2h10a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><line x1="5" y1="5" x2="11" y2="5"/><line x1="5" y1="8" x2="11" y2="8"/><line x1="5" y1="11" x2="8" y2="11"/></svg>
+      Release Notes
+    </div>
   </nav>
   <div class="content">
     <div id="panel-dashboard" class="panel active">
@@ -409,6 +413,58 @@ td{padding:10px 14px;vertical-align:middle;}
         <div id="cm-report-status" style="font-size:12px;color:var(--text-muted);margin-top:6px;display:none;"></div>
         <div id="cm-report-output" style="display:none;margin-top:12px;font-size:13px;line-height:1.8;color:var(--text);white-space:pre-wrap;background:var(--surface2);padding:16px;border-radius:8px;border:1px solid var(--border);max-height:500px;overflow-y:auto;"></div>
       </div>
+    </div>
+
+
+    <div id="panel-releasenotes" class="panel">
+      <!-- Search bar -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:flex-end;">
+        <div style="flex:1;min-width:180px;">
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em;">Keyword</div>
+          <input class="search-inp" id="rn-search" placeholder="Search title, content, tags..." style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:13px;" oninput="rnSearch()">
+        </div>
+        <div style="min-width:140px;">
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em;">Date (YYYY-MM-DD)</div>
+          <input class="search-inp" id="rn-date" placeholder="2026-03-25" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:13px;" oninput="rnSearch()">
+        </div>
+        <button onclick="rnSearch()" style="padding:6px 14px;border:none;border-radius:6px;background:var(--accent);color:#fff;font-size:13px;cursor:pointer;font-weight:600;">Search</button>
+        <button onclick="rnOpenNew()" style="padding:6px 14px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:13px;cursor:pointer;">+ New</button>
+      </div>
+
+      <!-- New / Edit form (hidden by default) -->
+      <div id="rn-form" class="card" style="display:none;margin-bottom:16px;">
+        <div class="card-title" id="rn-form-title">New Release Note</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px;">
+          <div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;">Version</div>
+            <input id="rn-inp-version" class="form-input" placeholder="v2.1.0" style="width:100%;">
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;">Release Date</div>
+            <input id="rn-inp-date" class="form-input" placeholder="2026-03-25" style="width:100%;">
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;">Tags (comma separated)</div>
+            <input id="rn-inp-tags" class="form-input" placeholder="ai, cloud-map, fix" style="width:100%;">
+          </div>
+        </div>
+        <div style="margin-top:10px;">
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;">Title</div>
+          <input id="rn-inp-title" class="form-input" placeholder="Release title..." style="width:100%;">
+        </div>
+        <div style="margin-top:10px;">
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;">Content (Markdown)</div>
+          <textarea id="rn-inp-content" style="width:100%;min-height:200px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px;font-family:monospace;resize:vertical;" placeholder="## Features&#10;- ...&#10;&#10;## Bug Fixes&#10;- ..."></textarea>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <button onclick="rnSave()" class="badd" style="padding:5px 16px;">💾 Save</button>
+          <button onclick="rnCancelForm()" style="padding:5px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);cursor:pointer;font-size:13px;">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="rn-status" style="font-size:12px;color:var(--text-muted);margin-bottom:8px;"></div>
+      <div id="rn-list"></div>
     </div>
 
   </div>
@@ -772,6 +828,7 @@ function switchTab(name,el){
   if(name==='account') loadAccounts();
   if(name==='posts') loadPosts();
   if(name==='cloudmap'){ cmInit(); cmInitMode(); cmLoadSuggestions(); }
+  if(name==='releasenotes') rnLoad();
 }
 
 /* REFRESH */
@@ -1560,6 +1617,151 @@ function cmCopyReport(){
   }).catch(function(){
     showToast('Copy failed','warn');
   });
+}
+
+/* RELEASE NOTES */
+var rnEditId=null;
+
+async function rnLoad(){
+  const q=(document.getElementById('rn-search')?.value||'').trim();
+  const date=(document.getElementById('rn-date')?.value||'').trim();
+  const status=document.getElementById('rn-status');
+  const list=document.getElementById('rn-list');
+  if(status) status.textContent='Loading...';
+  if(list) list.innerHTML='';
+  try{
+    var params=new URLSearchParams();
+    if(q) params.set('q',q);
+    if(date) params.set('date',date);
+    params.set('limit','50');
+    var data=await postsFetch('/release-notes?'+params.toString());
+    var notes=data.notes||[];
+    if(status) status.textContent=notes.length+' release note'+(notes.length!==1?'s':'')+(q||date?' found':'');
+    if(!notes.length){
+      list.innerHTML='<div style="color:var(--text-muted);font-size:13px;padding:20px 0;text-align:center;">No release notes found. Click + New to create one.</div>';
+      return;
+    }
+    list.innerHTML=notes.map(function(n){
+      var tags=[];
+      try{ tags=JSON.parse(n.tags||'[]'); }catch(e){ tags=typeof n.tags==='string'?n.tags.split(',').map(function(t){return t.trim();}).filter(Boolean):[]; }
+      var tagHtml=tags.map(function(t){
+        return '<span style="font-size:10px;padding:1px 7px;border-radius:8px;background:var(--accent-faint,rgba(124,58,237,0.12));color:var(--accent,#7c3aed);margin-right:4px;">'+esc(t)+'</span>';
+      }).join('');
+      var contentPreview=(n.content||'').split('\n').slice(0,3).join(' ').slice(0,200);
+      return '<div class="card" style="margin-bottom:12px;" id="rn-card-'+n.id+'">'
+        +'<div style="display:flex;align-items:flex-start;gap:10px;">'
+        +'<div style="flex:1;min-width:0;">'
+        +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;">'
+        +'<span style="font-size:13px;font-weight:700;color:var(--accent,#7c3aed);">'+esc(n.version)+'</span>'
+        +'<span style="font-size:12px;color:var(--text-muted);">'+esc(n.release_date)+'</span>'
+        +'<span style="font-size:11px;color:var(--text-muted);">by '+esc(n.author||'system')+'</span>'
+        +'<span style="margin-left:auto;display:flex;gap:6px;">'
+        +'<button onclick="rnExpand(&quot;'+n.id+'&quot;)" style="padding:2px 8px;font-size:11px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);cursor:pointer;color:var(--text);">📖 Read</button>'
+        +'<button onclick="rnEdit(&quot;'+n.id+'&quot;)" style="padding:2px 8px;font-size:11px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);cursor:pointer;color:var(--text);">✎ Edit</button>'
+        +'<button onclick="rnDelete(&quot;'+n.id+'&quot;)" style="padding:2px 8px;font-size:11px;border:none;border-radius:4px;background:var(--danger,#e74c3c);cursor:pointer;color:#fff;">✗</button>'
+        +'</span>'
+        +'</div>'
+        +'<div style="font-size:14px;font-weight:600;margin-bottom:4px;">'+esc(n.title)+'</div>'
+        +'<div style="margin-bottom:6px;">'+tagHtml+'</div>'
+        +'<div style="font-size:12px;color:var(--text-muted);line-height:1.5;" id="rn-preview-'+n.id+'">'+esc(contentPreview)+'…</div>'
+        +'<div id="rn-full-'+n.id+'" style="display:none;margin-top:10px;font-size:13px;line-height:1.8;border-top:1px solid var(--border);padding-top:10px;white-space:pre-wrap;">'+esc(n.content)+'</div>'
+        +'</div>'
+        +'</div>'
+        +'</div>';
+    }).join('');
+  }catch(e){
+    if(status) status.textContent='Error: '+esc(e.message);
+    showToast('Error loading release notes: '+e.message,'red');
+  }
+}
+
+function rnSearch(){ rnLoad(); }
+
+function rnExpand(id){
+  var preview=document.getElementById('rn-preview-'+id);
+  var full=document.getElementById('rn-full-'+id);
+  if(!preview||!full) return;
+  var isExpanded=full.style.display!=='none';
+  full.style.display=isExpanded?'none':'block';
+  preview.style.display=isExpanded?'block':'none';
+}
+
+function rnOpenNew(){
+  rnEditId=null;
+  document.getElementById('rn-form-title').textContent='New Release Note';
+  document.getElementById('rn-inp-version').value='';
+  document.getElementById('rn-inp-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('rn-inp-title').value='';
+  document.getElementById('rn-inp-content').value='';
+  document.getElementById('rn-inp-tags').value='';
+  document.getElementById('rn-form').style.display='block';
+  document.getElementById('rn-inp-version').focus();
+}
+
+function rnEdit(id){
+  // Find note in DOM and populate form
+  var card=document.getElementById('rn-card-'+id);
+  if(!card) return;
+  // Re-fetch to get full data
+  postsFetch('/release-notes?q='+encodeURIComponent(id)+'&limit=50').then(function(data){
+    var note=(data.notes||[]).find(function(n){return n.id===id;});
+    if(!note){
+      // Search by iterating all
+      return postsFetch('/release-notes?limit=50').then(function(d2){
+        return (d2.notes||[]).find(function(n){return n.id===id;});
+      });
+    }
+    return note;
+  }).then(function(note){
+    if(!note){ showToast('Note not found','warn'); return; }
+    rnEditId=id;
+    document.getElementById('rn-form-title').textContent='Edit Release Note';
+    document.getElementById('rn-inp-version').value=note.version||'';
+    document.getElementById('rn-inp-date').value=note.release_date||'';
+    document.getElementById('rn-inp-title').value=note.title||'';
+    document.getElementById('rn-inp-content').value=note.content||'';
+    var tags=[];
+    try{ tags=JSON.parse(note.tags||'[]'); }catch(e){ tags=[]; }
+    document.getElementById('rn-inp-tags').value=tags.join(', ');
+    document.getElementById('rn-form').style.display='block';
+    document.getElementById('rn-inp-version').focus();
+    document.getElementById('rn-form').scrollIntoView({behavior:'smooth'});
+  });
+}
+
+async function rnSave(){
+  var version=document.getElementById('rn-inp-version').value.trim();
+  var date=document.getElementById('rn-inp-date').value.trim();
+  var title=document.getElementById('rn-inp-title').value.trim();
+  var content=document.getElementById('rn-inp-content').value.trim();
+  var tagsRaw=document.getElementById('rn-inp-tags').value.trim();
+  if(!version||!date||!title||!content){showToast('Version, date, title and content are required','warn');return;}
+  var tags=tagsRaw?tagsRaw.split(',').map(function(t){return t.trim();}).filter(Boolean):[];
+  try{
+    if(rnEditId){
+      // Delete and re-insert (simple update strategy)
+      await postsFetch('/release-notes/'+rnEditId,{method:'DELETE'});
+    }
+    await postsFetch('/release-notes',{method:'POST',body:JSON.stringify({version,title,content,tags,author:'admin',release_date:date})});
+    showToast(rnEditId?'Release note updated':'Release note created','green');
+    rnEditId=null;
+    document.getElementById('rn-form').style.display='none';
+    rnLoad();
+  }catch(e){showToast('Save failed: '+e.message,'red');}
+}
+
+async function rnDelete(id){
+  if(!confirm('Delete this release note?')) return;
+  try{
+    await postsFetch('/release-notes/'+id,{method:'DELETE'});
+    showToast('Deleted','red');
+    rnLoad();
+  }catch(e){showToast('Delete failed: '+e.message,'red');}
+}
+
+function rnCancelForm(){
+  rnEditId=null;
+  document.getElementById('rn-form').style.display='none';
 }
 
 /* INIT */
