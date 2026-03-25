@@ -1426,19 +1426,15 @@ async function cmRunAutoLink(){
   var btn = document.getElementById('cm-run-autolink-btn');
   btn.disabled = true; btn.textContent = '⟳ Running...';
   try {
-    var data = await postsFetch('/../../ibelieve-cron.googselect.workers.dev/run-autolink?mode='+mode);
-    showToast('Auto-Link done: '+data.linked+' '+(mode==='auto'?'links created':'suggestions added'), 'green');
+    // Route through openai-tw-forum Worker proxy (avoids CORS + URL issues)
+    var data = await postsFetch('/run-autolink?mode='+mode, {method:'POST'});
+    var linked = data.linked||0;
+    var skipped = data.skipped||0;
+    showToast('Done: '+linked+' '+(mode==='auto'?'links created':'suggestions added')+' · '+skipped+' skipped', linked>0?'green':'blue');
     if(mode === 'suggest') await cmLoadSuggestions();
     else { await cmInit(); cmRenderGraph(); }
   } catch(e) {
-    // postsFetch can't call external URL, use direct fetch
-    try {
-      var res = await fetch('https://ibelieve-cron.googselect.workers.dev/run-autolink?mode='+mode);
-      var data2 = await res.json();
-      showToast('Done: '+data2.linked+' '+(mode==='auto'?'links':'suggestions')+' ('+data2.skipped+' skipped)', 'green');
-      if(mode === 'suggest') await cmLoadSuggestions();
-      else { await cmInit(); cmRenderGraph(); }
-    } catch(e2) { showToast('Error: '+e2.message, 'red'); }
+    showToast('Error: '+e.message, 'red');
   }
   btn.disabled = false; btn.textContent = '▶ Run Auto-Link Now';
 }

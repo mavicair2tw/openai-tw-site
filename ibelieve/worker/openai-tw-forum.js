@@ -422,6 +422,18 @@ async function handleIBelieve(request, env, url) {
     return json({ ok: true }, 200, request);
   }
 
+  // POST /api/ibelieve/run-autolink?mode= — proxy to ibelieve-cron (CORS workaround)
+  if (request.method === "POST" && path === "/api/ibelieve/run-autolink") {
+    const mode = url.searchParams.get("mode") || "suggest";
+    try {
+      const res = await fetch("https://ibelieve-cron.googselect.workers.dev/run-autolink?mode=" + mode);
+      const data = await res.json();
+      return json(data, 200, request);
+    } catch (e) {
+      return json({ error: "proxy failed: " + e.message }, 500, request);
+    }
+  }
+
   // POST /api/ibelieve/ai-report — proxy to Anthropic API (browser CORS workaround)
   if (request.method === "POST" && path === "/api/ibelieve/ai-report") {
     if (!env.ANTHROPIC_API_KEY) return json({ error: "ANTHROPIC_API_KEY not configured" }, 500, request);
