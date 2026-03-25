@@ -372,7 +372,7 @@ async function doLogin(){
   }
 }
 function doLogout(){
-  adminToken=null;accounts=[];selectedId=null;
+  adminToken=null;accounts=[];selectedIdx=null;
   document.getElementById('shell').classList.remove('active');
   document.getElementById('login-wrap').style.display='';
   document.getElementById('inp-user').value='';
@@ -466,7 +466,7 @@ function buildHealth(){
 const API='https://ibelieve-backend.vercel.app/api';
 let adminToken=null;
 let accounts=[];
-let selectedId=null,modalMode=null;
+let selectedIdx=null,modalMode=null;
 
 async function apiFetch(path,opts={}){
   const h={'Content-Type':'application/json'};
@@ -481,7 +481,7 @@ async function loadAccounts(){
   tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">Loading users…</td></tr>`;
   try{
     const data=await apiFetch('/admin/users');
-    selectedId=null;
+    selectedIdx=null;
     accounts=(data.users||data||[]).map((u,i)=>({
       id:u.id||u._id||i+1,
       username:u.username||u.name||'—',
@@ -502,33 +502,391 @@ function renderAccounts(){
     document.getElementById('acct-body').innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">No users found</td></tr>';
   } else {
     document.getElementById('acct-body').innerHTML=accounts.map((a,idx)=>{
-      const sel=String(selectedId)===String(a.id);
-      return '<tr onclick="selectRow('+idx+')" '+(sel?'class="selected"':'')+'>'+
-        '<td><input type="checkbox" class="chk" '+(sel?'checked':'')+' onclick="event.stopPropagation();selectRow('+idx+')"></td>'+
-        '<td><div class="acct-avatar">'+initials(a.username)+'</div></td>'+
-        '<td style="font-weight:500;">'+a.username+'</td>'+
-        '<td style="color:var(--text-muted);font-size:12px;font-family:var(--mono)">'+a.email+'</td>'+
-        '<td style="font-size:12px;color:var(--text-dim);">'+a.role+'</td>'+
-        '<td>'+statusBadge(a.status)+'</td>'+
-        '</tr>';
+      const isSel=(selectedIdx===idx);
+      return '<tr onclick="selectRow('+idx+')" style="cursor:pointer;'+(isSel?'background:var(--info-bg);':'')+'">'
+        +'<td><input type="checkbox" class="chk" '+(isSel?'checked':'')+' onclick="event.stopPropagation();selectRow('+idx+')"></td>'
+        +'<td><div class="acct-avatar">'+initials(a.username)+'</div></td>'
+        +'<td style="font-weight:500;">'+a.username+'</td>'
+        +'<td style="color:var(--text-muted);font-size:12px;font-family:var(--mono)">'+a.email+'</td>'
+        +'<td style="font-size:12px;color:var(--text-dim);">'+a.role+'</td>'
+        +'<td>'+statusBadge(a.status)+'</td>'
+        +'</tr>';
     }).join('');
   }
-  const hasSel=selectedId!==null;
+  const hasSel=(selectedIdx!==null);
   document.getElementById('btn-mod').disabled=!hasSel;
   document.getElementById('btn-del').disabled=!hasSel;
-  const sel=selectedId!==null?accounts[selectedId]:null;
-  document.getElementById('sel-hint').textContent=hasSel&&sel?'"'+sel.username+'" selected':'';
+  const selAcc=(selectedIdx!==null)?accounts[selectedIdx]:null;
+  document.getElementById('sel-hint').textContent=selAcc?'"'+selAcc.username+'" selected':'';
   document.getElementById('acct-count').textContent=accounts.length;
 }
 function selectRow(idx){
-  selectedId=(selectedId===idx)?null:idx;
+  selectedIdx=(selectedIdx===idx)?null:idx;
   renderAccounts();
 }
+
+
+/* ── MODAL ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;align-items:flex-start;justify-content:center;padding-top:60px;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:20px;width:100%;max-width:400px;box-shadow:var(--shadow);}
+.modal-title{font-size:15px;font-weight:600;color:var(--text);margin-bottom:16px;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;}
+.btn-cancel{font-size:12px;padding:7px 14px;border-radius:var(--radius);border:1px solid var(--border2);background:transparent;color:var(--text-dim);cursor:pointer;}
+.btn-cancel:hover{background:var(--surface2);}
+.btn-confirm{font-size:12px;padding:7px 14px;border-radius:var(--radius);border:none;cursor:pointer;font-weight:500;}
+.btn-confirm.green{background:var(--good);color:#000;}
+.btn-confirm.blue{background:var(--accent);color:#fff;}
+.btn-confirm.red{background:#dc2626;color:#fff;}
+.del-warning{background:var(--danger-bg);border:1px solid var(--danger-border);border-radius:var(--radius);padding:10px 12px;font-size:12px;color:var(--danger);margin-bottom:14px;line-height:1.5;}
+.form-group{margin-bottom:12px;}
+.form-label{display:block;font-size:11px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;right:20px;padding:10px 16px;border-radius:var(--radius);font-size:13px;font-weight:500;z-index:300;opacity:0;transition:opacity .2s;pointer-events:none;}
+.toast.show{opacity:1;}
+.toast.green{background:var(--good-bg);color:var(--good);border:1px solid var(--good-border);}
+.toast.red{background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-border);}
+.toast.blue{background:var(--info-bg);color:var(--info);border:1px solid var(--info-border);}
+
+@media(max-width:640px){
+  .stats{grid-template-columns:repeat(2,1fr);}
+  .dash-grid{grid-template-columns:1fr;}
+  .topbar{padding:10px 14px;}
+  .content{padding:14px;}
+  .nav{padding:0 14px;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">i<span style="color:var(--accent)">believe</span></div>
+    <div class="login-sub">Admin portal</div>
+    <div class="form-group">
+      <label class="form-label">Username</label>
+      <input class="form-input" id="inp-user" type="text" placeholder="admin" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" id="inp-pass" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn-login" onclick="doLogin()">Sign in</button>
+    <div class="login-err" id="login-err">Invalid username or password.</div>
+    <div class="login-hint">Default: admin / dragon123</div>
+  </div>
+</div>
+
+<!-- SHELL -->
+<div class="shell" id="shell">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="brand">i<span>believe</span> <span style="color:var(--text-muted);font-weight:400;font-size:13px;">/ admin</span></div>
+    </div>
+    <div class="topbar-right">
+      <div class="live-dot"></div>
+      <span class="last-refresh" id="last-refresh">live</span>
+      <button class="btn-sm" onclick="refreshData()">↻ Refresh</button>
+      <div class="avatar" title="Logged in as admin">AD</div>
+      <button class="btn-sm" onclick="doLogout()" style="color:var(--danger);border-color:var(--danger-border);">Sign out</button>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <div class="tab active" onclick="switchTab('dashboard',this)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+      Dashboard
+    </div>
+    <div class="tab" onclick="switchTab('logs',this)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 4h12M2 8h8M2 12h10"/></svg>
+      Logs
+    </div>
+    <div class="tab" onclick="switchTab('account',this)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5"/></svg>
+      Account
+    </div>
+  </nav>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div id="panel-dashboard" class="panel active">
+      <div class="stats">
+        <div class="stat"><div class="stat-label">Total runs today</div><div class="stat-val" id="s-total">—</div></div>
+        <div class="stat"><div class="stat-label">Success</div><div class="stat-val ok" id="s-ok">—</div></div>
+        <div class="stat"><div class="stat-label">Failed</div><div class="stat-val fail" id="s-fail">—</div></div>
+        <div class="stat"><div class="stat-label">Running</div><div class="stat-val warn" id="s-run">—</div></div>
+      </div>
+      <div class="dash-grid">
+        <div class="card">
+          <div class="card-title">Recent activity</div>
+          <div id="activity-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Job health</div>
+          <div id="health-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGS -->
+    <div id="panel-logs" class="panel">
+      <div class="filters">
+        <input type="text" id="search" placeholder="Search job name…" oninput="applyFilters()">
+        <select id="filter-status" onchange="applyFilters()">
+          <option value="">All statuses</option>
+          <option value="success">Success</option>
+          <option value="failed">Failed</option>
+          <option value="running">Running</option>
+          <option value="warning">Warning</option>
+        </select>
+        <select id="filter-sort" onchange="applyFilters()">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="name">Job name A–Z</option>
+          <option value="duration">Longest duration</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th style="width:28%">Job name</th>
+            <th style="width:13%">Status</th>
+            <th style="width:24%">Started at</th>
+            <th style="width:18%">Duration</th>
+            <th style="width:17%">Trigger</th>
+          </tr></thead>
+          <tbody id="log-body"></tbody>
+        </table>
+        <div class="pagination">
+          <span id="pg-info">—</span>
+          <div class="pg-btns" id="pg-btns"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACCOUNT -->
+    <div id="panel-account" class="panel">
+      <div class="acct-toolbar">
+        <button class="btn-add" onclick="openModal('add')">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 1v10M1 6h10"/></svg>
+          Add account
+        </button>
+        <button class="btn-mod" id="btn-mod" onclick="openModal('modify')" disabled>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 9.5l1.5-1.5 6-6 1.5 1.5-6 6L1 11V9.5z"/></svg>
+          Modify
+        </button>
+        <button class="btn-del" id="btn-del" onclick="openModal('delete')" disabled>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3h8M5 3V2h2v1M4 3v6M6 3v6M8 3v6M3 3l.5 7h5L9 3"/></svg>
+          Delete
+        </button>
+        <span class="sel-hint" id="sel-hint"></span>
+      </div>
+      <div class="acct-table-wrap">
+        <table class="acct-table">
+          <thead><tr>
+            <th style="width:36px;"></th>
+            <th style="width:36px;"></th>
+            <th style="width:22%">Username</th>
+            <th style="width:32%">Email</th>
+            <th style="width:16%">Role</th>
+            <th style="width:14%">Status</th>
+          </tr></thead>
+          <tbody id="acct-body"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title">System info</div>
+        <div class="field-row"><span class="field-label">Host</span><span class="field-val mono">ibelieve-backend.vercel.app</span></div>
+        <div class="field-row"><span class="field-label">Environment</span><span class="field-val">Production</span></div>
+        <div class="field-row"><span class="field-label">Region</span><span class="field-val mono">iad1 (us-east-1)</span></div>
+        <div class="field-row"><span class="field-label">API version</span><span class="field-val">v1.0</span></div>
+        <div class="field-row"><span class="field-label">Total accounts</span><span class="field-val" id="acct-count">—</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <div class="modal-title" id="modal-title"></div>
+    <div id="modal-body"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-confirm" id="modal-confirm" onclick="confirmModal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── AUTH ── */
+async function doLogin(){
+  const u=document.getElementById('inp-user').value.trim();
+  const p=document.getElementById('inp-pass').value;
+  const err=document.getElementById('login-err');
+  const btn=document.querySelector('.btn-login');
+  err.style.display='none';
+  btn.textContent='Signing in…';btn.disabled=true;
+  try{
+    const res=await fetch('https://ibelieve-backend.vercel.app/api/auth/login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:u,password:p})
+    });
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.message||'Invalid credentials');
+    if(data.user&&data.user.role!=='admin')throw new Error('Admin access required');
+    adminToken=data.token||data.accessToken||null;
+    document.getElementById('login-wrap').style.display='none';
+    document.getElementById('shell').classList.add('active');
+    initAll();
+  }catch(e){
+    err.textContent=e.message||'Login failed';
+    err.style.display='block';
+    document.getElementById('inp-pass').value='';
+  }finally{
+    btn.textContent='Sign in';btn.disabled=false;
+  }
+}
+function doLogout(){
+  adminToken=null;accounts=[];selectedIdx=null;
+  document.getElementById('shell').classList.remove('active');
+  document.getElementById('login-wrap').style.display='';
+  document.getElementById('inp-user').value='';
+  document.getElementById('inp-pass').value='';
+}
+
+/* ── HELPERS ── */
+const JOBS=["daily-stock-report","etf-price-sync","line-push-notification","fx-rate-fetch","tw-market-summary","us-market-summary","vocab-db-backup","user-session-cleanup","cache-warm","db-health-check"];
+const TRIGGERS=["cron","manual","webhook","api"];
+const SLOG=["success","success","success","success","failed","running","warning"];
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function pad(n){return String(n).padStart(2,'0');}
+function fmtDate(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;}
+function fmtDur(ms){if(!ms)return null;if(ms<1000)return ms+'ms';if(ms<60000)return (ms/1000).toFixed(1)+'s';return Math.floor(ms/60000)+'m '+(Math.floor(ms/1000)%60)+'s';}
+function genLogs(n){
+  const now=Date.now();
+  return Array.from({length:n},(_,i)=>{
+    const st=SLOG[rnd(0,SLOG.length-1)];
+    return{id:i+1,name:JOBS[rnd(0,JOBS.length-1)],status:st,started:new Date(now-rnd(0,48*3600*1000)),duration:st==='running'?null:rnd(200,120000),trigger:TRIGGERS[rnd(0,TRIGGERS.length-1)]};
+  }).sort((a,b)=>b.started-a.started);
+}
+function badgeHtml(s){
+  const m={success:'badge-ok',failed:'badge-fail',running:'badge-run',warning:'badge-warn'};
+  const d={success:'dot-ok',failed:'dot-fail',running:'dot-run',warning:'dot-warn'};
+  return `<span class="badge ${m[s]}"><span class="dot ${d[s]}"></span>${s}</span>`;
+}
+function statusBadge(s){return s==='active'?'<span class="badge badge-ok">active</span>':'<span class="badge badge-warn">inactive</span>';}
+function initials(u){return u.slice(0,2).toUpperCase();}
+
+/* ── LOGS STATE ── */
+let allLogs=[],filtered=[],page=0;
+const PER=12;
+
+function renderLogs(){
+  const start=page*PER,slice=filtered.slice(start,start+PER);
+  document.getElementById('log-body').innerHTML=slice.map(r=>`<tr>
+    <td><div class="job-name">${r.name}</div><div class="job-sub">#${r.id}</div></td>
+    <td>${badgeHtml(r.status)}</td>
+    <td class="mono">${fmtDate(r.started)}</td>
+    <td style="font-size:12px;color:var(--text-dim);">${fmtDur(r.duration)||'<span style="color:var(--text-muted)">in progress…</span>'}</td>
+    <td style="font-size:12px;color:var(--text-muted);">${r.trigger}</td>
+  </tr>`).join('');
+  const total=filtered.length,pages=Math.ceil(total/PER);
+  document.getElementById('pg-info').textContent=total===0?'No results':`Showing ${start+1}–${Math.min(start+PER,total)} of ${total}`;
+  document.getElementById('pg-btns').innerHTML=Array.from({length:pages},(_,i)=>
+    `<button class="pg-btn${i===page?' active':''}" onclick="goPage(${i})">${i+1}</button>`).join('');
+}
+function applyFilters(){
+  const q=document.getElementById('search').value.toLowerCase();
+  const st=document.getElementById('filter-status').value;
+  const sort=document.getElementById('filter-sort').value;
+  filtered=allLogs.filter(r=>{
+    if(q&&!r.name.includes(q))return false;
+    if(st&&r.status!==st)return false;
+    return true;
+  });
+  if(sort==='oldest')filtered.sort((a,b)=>a.started-b.started);
+  else if(sort==='name')filtered.sort((a,b)=>a.name.localeCompare(b.name));
+  else if(sort==='duration')filtered.sort((a,b)=>(b.duration||0)-(a.duration||0));
+  else filtered.sort((a,b)=>b.started-a.started);
+  page=0;renderLogs();
+}
+function goPage(p){page=p;renderLogs();}
+
+/* ── DASHBOARD ── */
+function updateStats(){
+  document.getElementById('s-total').textContent=allLogs.length;
+  document.getElementById('s-ok').textContent=allLogs.filter(l=>l.status==='success').length;
+  document.getElementById('s-fail').textContent=allLogs.filter(l=>l.status==='failed').length;
+  document.getElementById('s-run').textContent=allLogs.filter(l=>l.status==='running').length;
+}
+function buildActivity(){
+  const dc={success:'var(--good)',failed:'var(--danger)',running:'var(--info)',warning:'var(--warn)'};
+  document.getElementById('activity-list').innerHTML=allLogs.slice(0,6).map(r=>`
+    <div class="activity-row">
+      <div class="activity-dot" style="background:${dc[r.status]};"></div>
+      <div><div class="activity-text">${r.name}</div><div class="activity-time">${fmtDate(r.started)} · ${r.status}</div></div>
+    </div>`).join('');
+}
+function buildHealth(){
+  const counts={};JOBS.forEach(j=>{counts[j]={ok:0,fail:0};});
+  allLogs.forEach(l=>{if(counts[l.name]){if(l.status==='success')counts[l.name].ok++;else if(l.status==='failed')counts[l.name].fail++;}});
+  document.getElementById('health-list').innerHTML=JOBS.slice(0,7).map(j=>{
+    const c=counts[j],tot=c.ok+c.fail,pct=tot?Math.round(c.ok/tot*100):100;
+    const col=pct>=80?'var(--good)':pct>=50?'var(--warn)':'var(--danger)';
+    return `<div class="field-row"><span class="field-label">${j}</span><span style="font-size:13px;font-weight:500;color:${col};font-family:var(--mono)">${pct}%</span></div>`;
+  }).join('');
+}
+
+/* ── ACCOUNTS ── */
+const API='https://ibelieve-backend.vercel.app/api';
+let adminToken=null;
+let accounts=[];
+let selectedIdx=null,modalMode=null;
+
+async function apiFetch(path,opts={}){
+  const h={'Content-Type':'application/json'};
+  if(adminToken)h['Authorization']='Bearer '+adminToken;
+  const r=await fetch(API+path,{headers:h,...opts});
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.message||'API '+r.status);}
+  return r.json();
+}
+
+async function loadAccounts(){
+  const tbody=document.getElementById('acct-body');
+  tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">Loading users…</td></tr>`;
+  try{
+    const data=await apiFetch('/admin/users');
+    selectedIdx=null;
+    accounts=(data.users||data||[]).map((u,i)=>({
+      id:u.id||u._id||i+1,
+      username:u.username||u.name||'—',
+      email:u.email||'—',
+      role:u.role||'user',
+      status:u.status||(u.banned?'banned':'active'),
+      createdAt:u.createdAt||u.created_at||null
+    }));
+    renderAccounts();
+  }catch(err){
+    tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--danger);font-size:13px;">Failed to load users: ${err.message}</td></tr>`;
+    document.getElementById('acct-count').textContent='—';
+  }
+}
+
+
 
 /* ── MODAL ── */
 function openModal(mode){
   modalMode=mode;
-  const sel=(selectedId!==null?accounts[selectedId]:null)||{};
+  const sel=(selectedIdx!==null?accounts[selectedIdx]:null)||{};
   const title=document.getElementById('modal-title');
   const body=document.getElementById('modal-body');
   const confirm=document.getElementById('modal-confirm');
@@ -586,15 +944,15 @@ async function confirmModal(){
       if(!u){showToast('Username required','red');return;}
       const body={username:u,email:e,role:document.getElementById('f-role').value,status:document.getElementById('f-status').value};
       if(pw)body.password=pw;
-      const selObj=(selectedId!==null?accounts[selectedId]:null);
-      await apiFetch(`/admin/users/${selObj?.id||selectedId}`,{method:'PATCH',body:JSON.stringify(body)});
+      const selObj=(selectedIdx!==null?accounts[selectedIdx]:null);
+      await apiFetch(`/admin/users/${selObj?.id||selectedIdx}`,{method:'PATCH',body:JSON.stringify(body)});
       showToast(`Account "${u}" updated`,'blue');
-      closeModal();await loadAccounts();selectedId=null;
+      closeModal();await loadAccounts();selectedIdx=null;
     } else {
-      const sel=(selectedId!==null?accounts[selectedId]:null);
-      await apiFetch(`/admin/users/${sel?.id||selectedId}`,{method:'DELETE'});
+      const sel=(selectedIdx!==null?accounts[selectedIdx]:null);
+      await apiFetch(`/admin/users/${sel?.id||selectedIdx}`,{method:'DELETE'});
       showToast(`Account "${sel?.username}" deleted`,'red');
-      closeModal();selectedId=null;await loadAccounts();
+      closeModal();selectedIdx=null;await loadAccounts();
     }
   }catch(err){
     showToast(err.message||'Action failed','red');
