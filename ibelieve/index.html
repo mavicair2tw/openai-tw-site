@@ -875,18 +875,30 @@ function highlightWord(bodyEl, charIndex, charLength){
   if(!bodyEl) return;
   const len=charLength||1;
   const spans=bodyEl.querySelectorAll('span[data-char-idx]');
+  let activeSpan=null;
   spans.forEach(sp=>{
     const idx=parseInt(sp.dataset.charIdx,10);
     const spLen=sp.textContent.length;
-    // Highlight if this span overlaps with [charIndex, charIndex+len)
     if(idx>=charIndex && idx<charIndex+len){
       sp.style.background='#f5c518';
       sp.style.color='#fff';
+      if(!activeSpan) activeSpan=sp;
     } else {
       sp.style.background='';
       sp.style.color='';
     }
   });
+  // Auto-scroll the preview box so active word stays visible
+  if(activeSpan){
+    const preview=document.getElementById('narration-preview');
+    if(preview){
+      const previewRect=preview.getBoundingClientRect();
+      const spanRect=activeSpan.getBoundingClientRect();
+      const relTop=spanRect.top - previewRect.top + preview.scrollTop;
+      const targetScroll=relTop - preview.clientHeight * 0.4;
+      preview.scrollTo({top: Math.max(0, targetScroll), behavior:'smooth'});
+    }
+  }
 }
 
 function showNarrationPost(post, onReady){
@@ -973,6 +985,15 @@ function startHighlightTimer(bodyEl, text, rate){
     const sp=spans[idx];
     sp.style.background='#f5c518';
     sp.style.color='#fff';
+    // Auto-scroll preview so active word stays visible
+    const preview=document.getElementById('narration-preview');
+    if(preview && sp){
+      const previewRect=preview.getBoundingClientRect();
+      const spanRect=sp.getBoundingClientRect();
+      const relTop=spanRect.top - previewRect.top + preview.scrollTop;
+      const targetScroll=relTop - preview.clientHeight * 0.4;
+      preview.scrollTo({top: Math.max(0, targetScroll), behavior:'smooth'});
+    }
     idx++;
   }, msPerUnit);
 }
