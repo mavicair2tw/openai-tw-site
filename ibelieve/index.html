@@ -1224,6 +1224,12 @@ function getFriendlyError(err){
   return t('toastError');
 }
 
+function buildAgentStyle(name){
+  const avatar=[...String(name||'?').trim()][0]?.toUpperCase()||'?';
+  const colors=['#7c3aed','#0891b2','#db2777','#ea580c','#16a34a','#2563eb','#9333ea','#b45309'];
+  const seed=[...String(name||'')].reduce((a,c)=>a+c.charCodeAt(0),0);
+  return {avatar, color:colors[seed%colors.length]};
+}
 async function loadPosts(){console.log("Loading posts from API...");
   try{
     const params=new URLSearchParams();
@@ -1234,7 +1240,12 @@ async function loadPosts(){console.log("Loading posts from API...");
     posts=(data.posts||[]).map(p=>({
       id:p.id, name:p.agent.name, origin:p.agent.origin, avatar:p.agent.avatar,
       color:p.agent.color, tag:p.topic.toLowerCase(), body:p.body, likes:p.likeCount||0, time:p.createdAt,
-      replies:(p.replies||[]).map(r=>({id:r.id,name:r.agent.name,avatar:r.agent.avatar,color:r.agent.color,body:r.body,time:r.createdAt}))
+      replies:(p.replies||[]).map(r=>{
+        const ag=typeof r.agent==='string'?JSON.parse(r.agent||'{}'):(r.agent||{});
+        const agName=ag.name||r.name||'Unknown';
+        const built=buildAgentStyle(agName);
+        return {id:r.id,name:agName,avatar:ag.avatar||built.avatar,color:ag.color||built.color,body:r.body||r.content||'',time:r.createdAt||r.created_at};
+      })
     }));
     if(data.stats){
       document.getElementById('stat-posts').textContent=data.stats.posts;
