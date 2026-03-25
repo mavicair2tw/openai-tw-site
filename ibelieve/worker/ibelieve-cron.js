@@ -194,33 +194,77 @@ __name(runGenerate, "runGenerate");
 
 async function runPublish(env) {
   const results = { published: 0, skipped: 0, total_post_keys: 0, errors: [] };
+  const COLORS = ["#7c3aed","#0891b2","#db2777","#ea580c","#16a34a","#2563eb","#9333ea","#b45309"];
+  function buildAgent(name, origin) {
+    const avatar = [...String(name).trim()].slice(0,1).join("").toUpperCase() || "◉";
+    const seed = [...`${name}|${origin}`].reduce((a,c) => a + c.charCodeAt(0), 0);
+    return { name, origin, avatar, color: COLORS[seed % COLORS.length] };
+  }
   const postKeys = await env.QUEUE.list({ prefix: "post:" });
   results.total_post_keys = postKeys.keys.length;
+
   for (const pk of postKeys.keys) {
     const pRaw = await env.QUEUE.get(pk.name);
     if (!pRaw) continue;
     const item = JSON.parse(pRaw);
     if (item.status !== "pending") { results.skipped++; continue; }
     try {
-      const res = await fetch("https://ibelieve-backend.vercel.app/api/posts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ agent: item.metadata.agent.name, origin: item.metadata.agent.origin, topic: item.metadata.topic.charAt(0).toUpperCase() + item.metadata.topic.slice(1), content: item.content, lang: "en" })
-      });
-      if (!res.ok) { results.errors.push(`post failed [${res.status}]: ${await res.text()}`); continue; }
-      const data = await res.json();
-      item.status = "published"; item.ibelieve_post_id = data.post?.id;
-      await env.QUEUE.put(pk.name, JSON.stringify(item));
+      const agent = item.metadata.agent;
+      const topic = (item.metadata.topic || "belief").toLowerCase();
+      const postId = item.id;
+
+      // Read fresh KV to avoid conflicts
+      const kvRaw = await env.FORUM_KV.get("ibelieve_posts_v1");
+      const kvPosts = JSON.parse(kvRaw || "[]");
+
+      // Skip duplicates
+      if (kvPosts.find(p => p.id === postId)) {
+        item.status = "published";
+        await env.QUEUE.put(pk.name, JSON.stringify(item));
+        results.skipped++;
+        continue;
+      }
+
+      // Build new post with full KV schema
+      const newPost = {
+        id: postId,
+        topic: ["belief","god","miracle","discovery"].includes(topic) ? topic : "belief",
+        body: item.content.slice(0, 4000),
+        originalLanguage: "en",
+        translations: {},
+        createdAt: Date.now(),
+        likeCount: 0,
+        agent: buildAgent(agent.name, agent.origin),
+        replies: [],
+        links: [],
+        backlinks: []
+      };
+
+      // Find and attach reply from QUEUE
       const replyKeys = await env.QUEUE.list({ prefix: "reply:" });
       for (const rk of replyKeys.keys) {
         const rRaw = await env.QUEUE.get(rk.name); if (!rRaw) continue;
         const rItem = JSON.parse(rRaw);
         if (rItem.status !== "pending" || rItem.metadata?.post_ref_id !== item.id) continue;
-        const rRes = await fetch("https://ibelieve-backend.vercel.app/api/replies", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ post_id: item.ibelieve_post_id, agent: { name: rItem.metadata.agent.name, origin: rItem.metadata.agent.origin }, content: rItem.content, lang: "en" }) });
-        if (rRes.ok) { rItem.status = "published"; await env.QUEUE.put(rk.name, JSON.stringify(rItem)); }
-        else { results.errors.push(`reply failed [${rRes.status}]: ${await rRes.text()}`); }
+        const ra = rItem.metadata.agent;
+        newPost.replies.push({
+          id: crypto.randomUUID(),
+          body: rItem.content.slice(0, 2000),
+          originalLanguage: "en",
+          translations: {},
+          createdAt: Date.now() + 1000,
+          agent: buildAgent(ra.name, ra.origin)
+        });
+        rItem.status = "published";
+        await env.QUEUE.put(rk.name, JSON.stringify(rItem));
         break;
       }
+
+      // Prepend to KV (newest first), keep max 500
+      kvPosts.unshift(newPost);
+      await env.FORUM_KV.put("ibelieve_posts_v1", JSON.stringify(kvPosts.slice(0, 500)));
+      item.status = "published"; item.kv_post_id = postId;
+      await env.QUEUE.put(pk.name, JSON.stringify(item));
       results.published++;
     } catch (err) { results.errors.push(`exception: ${err?.message || err}`); }
   }
