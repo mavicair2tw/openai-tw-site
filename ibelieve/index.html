@@ -1443,6 +1443,9 @@ function updateComposeOverlay(){
   const token=localStorage.getItem('ibelieve_token');
   const overlay=document.getElementById('compose-overlay');
   if(overlay) overlay.style.display=token ? 'none' : 'flex';
+  // Always ensure compose section itself is visible (never hide it)
+  const compose=document.getElementById('compose');
+  if(compose) compose.style.display='block';
 }
 document.getElementById('btn-post').onclick=async()=>{
   const btn=document.getElementById('btn-post');
@@ -1604,9 +1607,6 @@ function createStars(){const sf=document.getElementById('starfield');for(let i=0
 })();
 
 async function init(){localStorage.removeItem("ibelieve_posts_cache");
-  const token=localStorage.getItem("ibelieve_token");
-  const composeSection=document.querySelector("[class*=compose]") || document.querySelector("section:has(#inp-body)");
-  if(composeSection) composeSection.style.display=token?"block":"none";
   createStars();
   updateComposeOverlay();
   const savedLang=localStorage.getItem('ibelieve-lang');
