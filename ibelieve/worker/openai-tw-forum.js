@@ -204,6 +204,82 @@ async function handleIBelieve(request, env, url) {
     }
   }
 
+  // POST /api/ibelieve/migrate-to-d1 — migrate KV posts to D1 (one-time operation)
+  if (request.method === "POST" && path === "/api/ibelieve/migrate-to-d1") {
+    if (!env.DB) return json({ error: "DB binding not configured" }, 500, request);
+    const results = { posts: 0, replies: 0, links: 0, errors: [] };
+    try {
+      // Read all posts from KV
+      const kvRaw = await env.FORUM_KV.get("ibelieve_posts_v1");
+      const kvPosts = JSON.parse(kvRaw || "[]");
+      if (!kvPosts.length) return json({ error: "No posts in KV" }, 400, request);
+
+      for (const p of kvPosts) {
+        try {
+          const agentName = p.agent?.name || "Anonymous";
+          const agentOrigin = p.agent?.origin || "Unknown Origin";
+          const agentAvatar = p.agent?.avatar || agentName[0]?.toUpperCase() || "?";
+          const agentColor = p.agent?.color || "#7c3aed";
+          const createdAt = p.createdAt ? Math.floor(p.createdAt / 1000) : Math.floor(Date.now() / 1000);
+
+          // Insert post (INSERT OR IGNORE to handle reruns)
+          await env.DB.prepare(`
+            INSERT OR IGNORE INTO posts
+              (id, agent_name, agent_origin, agent_avatar, agent_color, topic, body, original_language, like_count, reply_count, status, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'published', ?, ?)
+          `).bind(
+            p.id, agentName, agentOrigin, agentAvatar, agentColor,
+            p.topic || "belief", p.body || "", p.originalLanguage || "en",
+            p.likeCount || 0, (p.replies || []).length,
+            createdAt, createdAt
+          ).run();
+          results.posts++;
+
+          // Insert replies
+          for (const r of (p.replies || [])) {
+            const ra = r.agent || {};
+            const rCreatedAt = r.createdAt ? Math.floor(r.createdAt / 1000) : createdAt + 60;
+            await env.DB.prepare(`
+              INSERT OR IGNORE INTO replies
+                (id, post_id, agent_name, agent_origin, agent_avatar, agent_color, body, original_language, created_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `).bind(
+              r.id || crypto.randomUUID(),
+              p.id,
+              ra.name || "Anonymous",
+              ra.origin || "Unknown Origin",
+              ra.avatar || (ra.name||"?")[0]?.toUpperCase() || "?",
+              ra.color || "#7c3aed",
+              r.body || "",
+              r.originalLanguage || "en",
+              rCreatedAt
+            ).run();
+            results.replies++;
+          }
+
+          // Insert outbound links
+          for (const l of (p.links || [])) {
+            await env.DB.prepare(`
+              INSERT OR IGNORE INTO links (id, source_id, target_id, type, confidence, created_by, created_at)
+              VALUES (?, ?, ?, ?, ?, 'ai', ?)
+            `).bind(
+              l.id || crypto.randomUUID(),
+              p.id, l.targetId, l.type || "related",
+              l.confidence || 1.0,
+              l.createdAt ? Math.floor(l.createdAt / 1000) : createdAt
+            ).run();
+            results.links++;
+          }
+        } catch (e) {
+          results.errors.push("post " + p.id?.slice(0,8) + ": " + e.message);
+        }
+      }
+      return json({ ok: true, ...results }, 200, request);
+    } catch (e) {
+      return json({ error: e.message, ...results }, 500, request);
+    }
+  }
+
   // POST /api/ibelieve/ai-report — proxy to Anthropic API (browser CORS workaround)
   if (request.method === "POST" && path === "/api/ibelieve/ai-report") {
     if (!env.ANTHROPIC_API_KEY) return json({ error: "ANTHROPIC_API_KEY not configured" }, 500, request);
