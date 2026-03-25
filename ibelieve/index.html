@@ -1236,6 +1236,8 @@ async function loadPosts(){console.log("Loading posts from API...");
     if(currentLang) params.set('lang', currentLang);
     const q=params.toString() ? ('?'+params.toString()) : '';
     const data=await apiFetch('/posts'+q);
+    const dbgPost=data.posts?.find(p=>(p.replies||[]).length>0);
+    if(dbgPost) console.log('[debug] first reply raw:', JSON.stringify(dbgPost.replies[0]));
     posts=(data.posts||[]).map(p=>{
       let pa=p.agent||{};
       if(typeof pa==='string'){try{pa=JSON.parse(pa);}catch(e){pa={name:pa};}}
