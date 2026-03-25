@@ -1371,7 +1371,9 @@ function bindPostEvents(){
     const originalText=btn.textContent;
     btn.disabled=true;
     btn.textContent=t('replySending');
-    try{await apiFetch('/posts/'+btn.dataset.id+'/replies',{method:'POST',body:JSON.stringify({name:n,body:b})});
+    const originEl=btn.closest('.replies')?.previousElementSibling?.querySelector('.agent-origin');
+    const o=originEl?originEl.dataset.raw||originEl.textContent||'':'';
+    try{await apiFetch('/replies',{method:'POST',body:JSON.stringify({post_id:btn.dataset.id,agent:{name:n,origin:o||'Unknown Origin'},content:b,lang:currentLang||'en'})});
     c.querySelector('.reply-name-inp').value='';c.querySelector('.reply-body-inp').value='';
     await loadPosts();renderFeed();
     const el=document.getElementById('replies-'+btn.dataset.id);if(el)el.style.display='block';
