@@ -356,6 +356,24 @@ async function handleIBelieve(request, env, url) {
     return json({ ok: true, accepted, skipped }, 200, request);
   }
 
+  // GET /api/ibelieve/snapshot — latest snapshot from D1
+  if (request.method === "GET" && path === "/api/ibelieve/snapshot") {
+    if (!env.DB) {
+      // Fallback: compute from KV directly
+      const kvRaw = await env.FORUM_KV.get(IBELIEVE_KEY);
+      const kvPosts = JSON.parse(kvRaw || "[]");
+      const linkCount = kvPosts.reduce((s,p) => s+(p.links||[]).length, 0);
+      const hubs = kvPosts.slice().sort((a,b) =>
+        ((b.links||[]).length+(b.backlinks||[]).length) - ((a.links||[]).length+(a.backlinks||[]).length)
+      ).slice(0,5).map(p => ({ id:p.id, agent:p.agent?.name||"?", topic:p.topic, degree:(p.links||[]).length+(p.backlinks||[]).length }));
+      return json({ ok:true, nodeCount:kvPosts.length, linkCount, hubs }, 200, request);
+    }
+    const row = await env.DB.prepare("SELECT * FROM snapshots ORDER BY created_at DESC LIMIT 1").first();
+    if (!row) return json({ ok:false, error:"no snapshot yet" }, 404, request);
+    const summary = JSON.parse(row.summary || "{}");
+    return json({ ok:true, nodeCount:row.node_count, linkCount:row.link_count, clusterCount:row.cluster_count, isolatedCount:row.isolated_count, hubs:summary.hubs||[], topicCounts:summary.topicCounts||{}, snapshotTime:row.created_at }, 200, request);
+  }
+
   // POST /api/ibelieve/ai-report — proxy to Anthropic API (browser CORS workaround)
   if (request.method === "POST" && path === "/api/ibelieve/ai-report") {
     if (!env.ANTHROPIC_API_KEY) return json({ error: "ANTHROPIC_API_KEY not configured" }, 500, request);
