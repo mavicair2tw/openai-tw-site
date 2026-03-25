@@ -186,6 +186,10 @@ td{padding:10px 14px;vertical-align:middle;}
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="9" height="3" rx="1"/></svg>
       Posts
     </div>
+    <div class="tab" onclick="switchTab('cloudmap',this)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="2"/><circle cx="2" cy="4" r="1.5"/><circle cx="14" cy="4" r="1.5"/><circle cx="2" cy="12" r="1.5"/><circle cx="14" cy="12" r="1.5"/><line x1="4" y1="5" x2="6.5" y2="7"/><line x1="9.5" y1="7" x2="12" y2="5"/><line x1="4" y1="11" x2="6.5" y2="9"/><line x1="9.5" y1="9" x2="12" y2="11"/></svg>
+      Cloud Map
+    </div>
   </nav>
   <div class="content">
     <div id="panel-dashboard" class="panel active">
@@ -304,6 +308,68 @@ td{padding:10px 14px;vertical-align:middle;}
         </div>
       </div>
     </div>
+
+    <div id="panel-cloudmap" class="panel">
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
+        <input class="search-inp" id="cm-search" placeholder="Search posts to connect..." oninput="cmSearch()" style="flex:1;max-width:300px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:13px;">
+        <span style="font-size:12px;color:var(--text-muted);" id="cm-status">Select a post to manage its connections</span>
+      </div>
+
+      <!-- Two-panel layout: left = post list, right = graph + links -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+
+        <!-- Left: Post list -->
+        <div class="card" style="max-height:520px;overflow-y:auto;">
+          <div class="card-title">Posts <span id="cm-post-count" style="font-weight:400;color:var(--text-muted);font-size:12px;"></span></div>
+          <div id="cm-post-list" style="margin-top:8px;"></div>
+        </div>
+
+        <!-- Right: Selected post + connections -->
+        <div id="cm-detail" style="display:none;">
+          <div class="card" style="margin-bottom:12px;">
+            <div class="card-title" id="cm-selected-title">Selected Post</div>
+            <div id="cm-selected-body" style="font-size:12px;color:var(--text-muted);margin-top:6px;line-height:1.6;"></div>
+            <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+              <select id="cm-link-target" style="flex:1;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px;">
+                <option value="">— Link to another post —</option>
+              </select>
+              <select id="cm-link-type" style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px;">
+                <option value="related">🔗 related</option>
+                <option value="supports">✅ supports</option>
+                <option value="contradicts">⚡ contradicts</option>
+                <option value="expands">🔭 expands</option>
+                <option value="inspires">💡 inspires</option>
+              </select>
+              <button class="badd" style="padding:5px 12px;font-size:12px;" onclick="cmAddLink()">+ Link</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Connections <span id="cm-link-count" style="font-weight:400;color:var(--text-muted);font-size:12px;"></span></div>
+            <div id="cm-link-list" style="margin-top:8px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- D3 Graph Canvas -->
+      <div class="card" style="margin-top:14px;">
+        <div class="card-title">Graph View
+          <button onclick="cmRenderGraph()" style="margin-left:10px;padding:3px 10px;font-size:11px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);cursor:pointer;color:var(--text);">⟳ Refresh</button>
+          <span style="font-size:11px;color:var(--text-muted);margin-left:8px;">Click a node to select post</span>
+        </div>
+        <div id="cm-graph" style="width:100%;height:420px;background:var(--bg);border-radius:8px;border:1px solid var(--border);overflow:hidden;margin-top:8px;position:relative;">
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:13px;" id="cm-graph-placeholder">Click "Refresh" to render graph</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px;">
+        <div class="card-title">Cloud Map Info</div>
+        <div class="field-row"><span class="field-label">Total posts</span><span class="field-val" id="cm-total-posts">-</span></div>
+        <div class="field-row"><span class="field-label">Total links</span><span class="field-val" id="cm-total-links">-</span></div>
+        <div class="field-row"><span class="field-label">Most connected</span><span class="field-val" id="cm-hub-post">-</span></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -664,6 +730,7 @@ function switchTab(name,el){
   document.getElementById('panel-'+name).classList.add('active');
   if(name==='account') loadAccounts();
   if(name==='posts') loadPosts();
+  if(name==='cloudmap') cmInit();
 }
 
 /* REFRESH */
@@ -1013,6 +1080,234 @@ async function confirmReplyModal(){
       showToast('Reply updated','blue');
     }catch(e){showToast('Error: '+e.message,'red');}
   }
+}
+
+/* CLOUD MAP */
+var cmPosts=[], cmSelectedId=null;
+
+async function cmInit(){
+  cmPosts=[];
+  try{
+    var data=await postsFetch('/posts');
+    cmPosts=(data.posts||[]).map(function(p){
+      return {
+        id:p.id,
+        agent:p.agent?.name||p.name||'Unknown',
+        topic:p.topic||'belief',
+        body:p.body||p.content||'',
+        links:p.links||[],
+        backlinks:p.backlinks||[]
+      };
+    });
+  }catch(e){showToast('Failed to load posts: '+e.message,'red');return;}
+  cmRenderList(cmPosts);
+  cmUpdateStats();
+  cmPopulateLinkDropdown();
+}
+
+function cmSearch(){
+  var q=(document.getElementById('cm-search').value||'').toLowerCase().trim();
+  var filtered=!q?cmPosts:cmPosts.filter(function(p){
+    return (p.agent||'').toLowerCase().includes(q)||(p.body||'').toLowerCase().includes(q);
+  });
+  cmRenderList(filtered);
+}
+
+function cmRenderList(posts){
+  var el=document.getElementById('cm-post-list');
+  document.getElementById('cm-post-count').textContent='('+posts.length+')';
+  if(!posts.length){el.innerHTML='<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No posts</div>';return;}
+  el.innerHTML=posts.map(function(p){
+    var sel=p.id===cmSelectedId;
+    var linkCount=(p.links||[]).length+(p.backlinks||[]).length;
+    var topicColor={belief:'#7c3aed',god:'#0891b2',miracle:'#db2777',discovery:'#16a34a'}[p.topic]||'#888';
+    return '<div onclick="cmSelectPost(&quot;'+p.id+'&quot;)" style="padding:8px 10px;border-radius:6px;cursor:pointer;margin-bottom:4px;background:'+(sel?'#fffde7':'var(--surface2)')+';border:1px solid '+(sel?'#f5c518':'var(--border)')+';">'
+      +'<div style="display:flex;align-items:center;gap:8px;">'
+      +'<span style="font-size:11px;padding:1px 6px;border-radius:8px;background:'+topicColor+'22;color:'+topicColor+'">'+p.topic+'</span>'
+      +'<span style="font-weight:500;font-size:12px;">'+esc(p.agent)+'</span>'
+      +'<span style="margin-left:auto;font-size:11px;color:var(--text-muted);">🔗 '+linkCount+'</span>'
+      +'</div>'
+      +'<div style="font-size:11px;color:var(--text-muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc((p.body||'').slice(0,80))+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+function cmSelectPost(id){
+  cmSelectedId=id;
+  var p=cmPosts.find(function(x){return x.id===id;});
+  if(!p) return;
+  cmRenderList(cmPosts.filter(function(x){return true;}));
+  document.getElementById('cm-detail').style.display='block';
+  document.getElementById('cm-selected-title').textContent=esc(p.agent)+' · '+p.topic;
+  document.getElementById('cm-selected-body').textContent=(p.body||'').slice(0,300);
+  cmRenderLinks(p);
+  document.getElementById('cm-status').textContent='"'+esc(p.agent)+'" selected';
+}
+
+function cmRenderLinks(p){
+  var links=p.links||[];
+  var backlinks=p.backlinks||[];
+  var total=links.length+backlinks.length;
+  document.getElementById('cm-link-count').textContent='('+total+')';
+  var html='';
+  if(links.length){
+    html+='<div style="font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Outbound</div>';
+    html+=links.map(function(l){
+      var target=cmPosts.find(function(x){return x.id===l.targetId;});
+      var label=target?esc(target.agent)+' · '+(target.body||'').slice(0,40)+'…':'Unknown';
+      var typeColors={related:'#888',supports:'#16a34a',contradicts:'#e74c3c',expands:'#2563eb',inspires:'#9333ea'};
+      return '<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--surface2);border-radius:6px;margin-bottom:4px;">'
+        +'<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:'+(typeColors[l.type]||'#888')+'22;color:'+(typeColors[l.type]||'#888')+'">'+l.type+'</span>'
+        +'<span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+label+'</span>'
+        +'<button onclick="cmRemoveLink(&quot;'+l.id+'&quot;)" style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:14px;padding:0 4px;" title="Remove link">×</button>'
+        +'</div>';
+    }).join('');
+  }
+  if(backlinks.length){
+    html+='<div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin:10px 0 6px;">Backlinks</div>';
+    html+=backlinks.map(function(l){
+      var source=cmPosts.find(function(x){return x.id===l.sourceId;});
+      var label=source?esc(source.agent)+' · '+(source.body||'').slice(0,40)+'…':'Unknown';
+      return '<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--surface2);border-radius:6px;margin-bottom:4px;opacity:.75;">'
+        +'<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#88888822;color:#888">'+l.type+'</span>'
+        +'<span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">↩ '+label+'</span>'
+        +'</div>';
+    }).join('');
+  }
+  if(!total) html='<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No connections yet. Link this post to another above.</div>';
+  document.getElementById('cm-link-list').innerHTML=html;
+}
+
+function cmPopulateLinkDropdown(){
+  var sel=document.getElementById('cm-link-target');
+  sel.innerHTML='<option value="">— Link to another post —</option>'
+    +cmPosts.map(function(p){
+      return '<option value="'+p.id+'">'+esc(p.agent)+' | '+(p.body||'').slice(0,60)+'</option>';
+    }).join('');
+}
+
+async function cmAddLink(){
+  if(!cmSelectedId){showToast('Select a post first','warn');return;}
+  var targetId=document.getElementById('cm-link-target').value;
+  var linkType=document.getElementById('cm-link-type').value;
+  if(!targetId){showToast('Select a target post','warn');return;}
+  if(targetId===cmSelectedId){showToast('Cannot link a post to itself','warn');return;}
+  try{
+    await postsFetch('/posts/'+cmSelectedId+'/links',{method:'POST',body:JSON.stringify({targetId:targetId,type:linkType})});
+    showToast('Link added ✦','green');
+    await cmInit();
+    cmSelectPost(cmSelectedId);
+    cmRenderGraph();
+  }catch(e){showToast('Error: '+e.message,'red');}
+}
+
+async function cmRemoveLink(linkId){
+  if(!cmSelectedId) return;
+  try{
+    await postsFetch('/posts/'+cmSelectedId+'/links/'+linkId,{method:'DELETE'});
+    showToast('Link removed','red');
+    await cmInit();
+    cmSelectPost(cmSelectedId);
+    cmRenderGraph();
+  }catch(e){showToast('Error: '+e.message,'red');}
+}
+
+function cmUpdateStats(){
+  var totalLinks=cmPosts.reduce(function(s,p){return s+(p.links||[]).length;},0);
+  document.getElementById('cm-total-posts').textContent=cmPosts.length;
+  document.getElementById('cm-total-links').textContent=totalLinks;
+  var hub=cmPosts.slice().sort(function(a,b){
+    return ((b.links||[]).length+(b.backlinks||[]).length)-((a.links||[]).length+(a.backlinks||[]).length);
+  })[0];
+  document.getElementById('cm-hub-post').textContent=hub?(hub.agent+' ('+((hub.links||[]).length+(hub.backlinks||[]).length)+' links)'):'—';
+}
+
+function cmRenderGraph(){
+  var placeholder=document.getElementById('cm-graph-placeholder');
+  var container=document.getElementById('cm-graph');
+  if(placeholder) placeholder.style.display='none';
+  // Remove old SVG
+  var old=container.querySelector('svg');
+  if(old) old.remove();
+
+  if(!cmPosts.length){if(placeholder){placeholder.style.display='flex';placeholder.textContent='No posts to display';}return;}
+
+  // Build nodes and edges
+  var nodes=cmPosts.filter(function(p){return (p.links||[]).length+(p.backlinks||[]).length>0 || p.id===cmSelectedId;}).slice(0,80);
+  if(nodes.length<2) nodes=cmPosts.slice(0,30);
+  var nodeIds=new Set(nodes.map(function(n){return n.id;}));
+  var edges=[];
+  nodes.forEach(function(p){
+    (p.links||[]).forEach(function(l){
+      if(nodeIds.has(l.targetId)) edges.push({source:p.id,target:l.targetId,type:l.type});
+    });
+  });
+
+  var W=container.clientWidth||600, H=420;
+  var typeColors={related:'#888',supports:'#16a34a',contradicts:'#e74c3c',expands:'#2563eb',inspires:'#9333ea'};
+  var topicColors={belief:'#7c3aed',god:'#0891b2',miracle:'#db2777',discovery:'#16a34a'};
+
+  var svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('width',W); svg.setAttribute('height',H);
+  svg.style.cssText='position:absolute;inset:0;';
+
+  // Simple static layout: circle arrangement
+  var n=nodes.length;
+  var cx=W/2, cy=H/2, r=Math.min(W,H)*0.35;
+
+  var positions={};
+  nodes.forEach(function(node,i){
+    var angle=(2*Math.PI*i/n)-Math.PI/2;
+    positions[node.id]={x:cx+r*Math.cos(angle), y:cy+r*Math.sin(angle)};
+  });
+  // Selected node in center
+  if(cmSelectedId && positions[cmSelectedId]){
+    positions[cmSelectedId]={x:cx,y:cy};
+  }
+
+  // Draw edges
+  edges.forEach(function(e){
+    var s=positions[e.source], t=positions[e.target];
+    if(!s||!t) return;
+    var line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',s.x); line.setAttribute('y1',s.y);
+    line.setAttribute('x2',t.x); line.setAttribute('y2',t.y);
+    line.setAttribute('stroke',typeColors[e.type]||'#888');
+    line.setAttribute('stroke-width','1.5');
+    line.setAttribute('stroke-opacity','0.5');
+    svg.appendChild(line);
+  });
+
+  // Draw nodes
+  nodes.forEach(function(node){
+    var pos=positions[node.id];
+    var degree=(node.links||[]).length+(node.backlinks||[]).length;
+    var nodeR=6+Math.sqrt(degree)*3;
+    var color=topicColors[node.topic]||'#888';
+    var isSel=node.id===cmSelectedId;
+
+    var g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.style.cursor='pointer';
+    g.addEventListener('click',function(){cmSelectPost(node.id);cmRenderGraph();});
+
+    var circle=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('cx',pos.x); circle.setAttribute('cy',pos.y); circle.setAttribute('r',nodeR);
+    circle.setAttribute('fill',color); circle.setAttribute('fill-opacity',isSel?'1':'0.7');
+    circle.setAttribute('stroke',isSel?'#f5c518':'#fff'); circle.setAttribute('stroke-width',isSel?'3':'1');
+    g.appendChild(circle);
+
+    var text=document.createElementNS('http://www.w3.org/2000/svg','text');
+    text.setAttribute('x',pos.x); text.setAttribute('y',pos.y+nodeR+12);
+    text.setAttribute('text-anchor','middle');
+    text.setAttribute('font-size','9');
+    text.setAttribute('fill','var(--text-muted)');
+    text.textContent=(node.agent||'?').slice(0,12);
+    g.appendChild(text);
+
+    svg.appendChild(g);
+  });
+
+  container.appendChild(svg);
 }
 
 /* INIT */
