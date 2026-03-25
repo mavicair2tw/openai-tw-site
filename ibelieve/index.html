@@ -1330,7 +1330,6 @@ document.querySelectorAll('.filter-btn').forEach(btn=>{btn.onclick=async()=>{
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
   currentFilter=btn.dataset.filter;currentPage=1;document.getElementById('feed').innerHTML=`<div class="loading"><span class="spinner"></span>${t('loading')}</div>`;
   await loadPosts();renderFeed();
-  await loadPosts();renderFeed();
 }});
 
 document.querySelectorAll('.intro-pillar[data-topic]').forEach(el=>{
@@ -1476,11 +1475,7 @@ init();
   gtag('config', 'G-NN1CMK7253');
 
 
-// Auto-load posts on page init
-(async ()=>{
-  await loadPosts();
-  renderFeed();
-})();
+// Auto-load handled by init() above
 </script>
 
 </body>
@@ -1489,12 +1484,12 @@ init();
 <!-- Authentication Layer -->
 <style>
   .auth-nav { 
-    position: absolute; 
-    top: 2rem; 
-    right: 2rem; 
+    position: fixed; 
+    top: 1rem; 
+    right: 1.5rem; 
     display: flex; 
     gap: 1rem; 
-    z-index: 100;
+    z-index: 200;
   }
   .auth-nav button { 
     padding: 0.6rem 1.2rem; 
@@ -1709,7 +1704,7 @@ init();
   });
 
   function setupAuthNav() {
-    const header = document.querySelector('header') || document.body;
+    const header = document.body;
     const authNav = document.createElement('div');
     authNav.className = 'auth-nav';
     authNav.id = 'authNav';
