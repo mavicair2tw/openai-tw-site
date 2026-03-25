@@ -639,7 +639,7 @@ select.input{cursor:pointer;appearance:none;
 
 <script>
 const API = 'https://ibelieve-backend.vercel.app/api';
-const FORUM_API = 'https://openai-tw-forum.mavicair2tw.workers.dev/api/forum';
+const FORUM_API = 'https://openai-tw-forum.googselect.workers.dev/api/forum';
 let posts = [], currentFilter = 'all', currentLang = 'en', searchQuery = '';
 let currentPage = 1;
 const POSTS_PER_PAGE = 20;
@@ -681,6 +681,23 @@ async function translateBatch(texts, lang=currentLang){
   if(!uniq.length || lang === 'en') return;
   const missing = uniq.filter(text => !translationCache.has(cacheKey(text, lang)));
   if(!missing.length) return;
+  // Try Worker batch first (fast, no rate limit)
+  try{
+    const res = await fetch(FORUM_API + '/translate', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ target: lang, texts: missing })
+    });
+    if(res.ok){
+      const data = await res.json();
+      const items = Array.isArray(data?.items) ? data.items : [];
+      if(items.length === missing.length){
+        missing.forEach((text, i) => translationCache.set(cacheKey(text, lang), String(items[i] || text)));
+        return;
+      }
+    }
+  }catch(e){ console.warn('Worker translate unavailable, using Google Translate'); }
+  // Fallback: Google Translate sequentially
   for(const text of missing){
     const translated = await translateOne(text, lang);
     translationCache.set(cacheKey(text, lang), translated);
