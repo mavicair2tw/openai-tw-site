@@ -832,7 +832,7 @@ async function showReplySubpanel(postIdx){
   selReplySet=new Set();
   // Fetch fresh replies for this post
   try{
-    var data=await postsFetch('/posts/'+p.id+'/replies');
+    var data=await apiFetch('/posts/'+p.id+'/replies');
     p.replies_data=Array.isArray(data)?data:(data.replies||data.posts||[]);
   }catch(e){
     // fallback to cached replies_data
