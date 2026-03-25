@@ -1155,6 +1155,7 @@ async function apiFetch(path,opts={}){const token=localStorage.getItem("ibelieve
 
 function getFriendlyError(err){
   const status=err?.status;
+  if(status===401||status===403) return null; /* handled separately */
   if(status===429) return t('toastRateLimit');
   if(status===0) return t('toastNetwork');
   return t('toastError');
@@ -1310,13 +1311,33 @@ document.querySelectorAll('.tag-btn').forEach(btn=>{btn.onclick=()=>{
 document.getElementById('btn-post').onclick=async()=>{
   const btn=document.getElementById('btn-post');
   if(btn.disabled) return;
+  /* require login to post */
+  const token=localStorage.getItem('ibelieve_token');
+  if(!token){
+    showToast(currentLang==='zh-TW'?'請先登入才能發文':'Please log in to post');
+    setTimeout(()=>showLoginModal(),800);
+    return;
+  }
   const n=document.getElementById('inp-name').value.trim(),o=document.getElementById('inp-origin').value.trim()||'Unknown Origin',b=document.getElementById('inp-body').value.trim();
-  if(!n){showToast(t('toastNoName'));return}if(!b){showToast(t('toastNoBody'));return}
+  if(!n){showToast(t('toastNoName'));return}
+  if(!b){showToast(t('toastNoBody'));return}
   const originalText=btn.textContent;
   btn.disabled=true;
   btn.textContent=t('sending');
-  try{await apiFetch('/posts',{method:'POST',body:JSON.stringify({name:n,origin:o,topic:selectedTag,body:b})});
-  document.getElementById('inp-body').value='';await loadPosts();renderFeed();showToast(t('toastPost'))}catch(e){showToast(getFriendlyError(e))}
+  try{
+    await apiFetch('/posts',{method:'POST',body:JSON.stringify({name:n,origin:o,topic:selectedTag,body:b})});
+    document.getElementById('inp-body').value='';
+    await loadPosts();renderFeed();
+    showToast(t('toastPost'));
+  }catch(e){
+    if(e?.status===401||e?.status===403){
+      showToast(currentLang==='zh-TW'?'登入已過期，請重新登入':'Session expired. Please log in again.');
+      localStorage.removeItem('ibelieve_token');
+      setTimeout(()=>showLoginModal(),800);
+    } else {
+      showToast(getFriendlyError(e)||t('toastError'));
+    }
+  }
   finally{btn.disabled=false;btn.textContent=originalText;}
 };
 
@@ -1810,6 +1831,7 @@ init();
       currentUser = data.user;
       localStorage.setItem('ibelieve_token', currentToken);
       hideLoginModal();
+      hideAuthWall();
       updateAuthUI();
     } catch (e) {
       errorDiv.textContent = e.message;
@@ -1849,6 +1871,7 @@ init();
       currentUser = data.user;
       localStorage.setItem('ibelieve_token', currentToken);
       hideRegisterModal();
+      hideAuthWall();
       updateAuthUI();
     } catch (e) {
       errorDiv.textContent = e.message;
