@@ -343,21 +343,36 @@ td{padding:10px 14px;vertical-align:middle;}
 
 <script>
 /* ── AUTH ── */
-function doLogin(){
+async function doLogin(){
   const u=document.getElementById('inp-user').value.trim();
   const p=document.getElementById('inp-pass').value;
   const err=document.getElementById('login-err');
-  if(u==='admin'&&p==='dragon123'){
+  const btn=document.querySelector('.btn-login');
+  err.style.display='none';
+  btn.textContent='Signing in…';btn.disabled=true;
+  try{
+    const res=await fetch('https://ibelieve-backend.vercel.app/api/auth/login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:u,password:p})
+    });
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.message||'Invalid credentials');
+    if(data.user&&data.user.role!=='admin')throw new Error('Admin access required');
+    adminToken=data.token||data.accessToken||null;
     document.getElementById('login-wrap').style.display='none';
     document.getElementById('shell').classList.add('active');
     initAll();
-    err.style.display='none';
-  } else {
+  }catch(e){
+    err.textContent=e.message||'Login failed';
     err.style.display='block';
     document.getElementById('inp-pass').value='';
+  }finally{
+    btn.textContent='Sign in';btn.disabled=false;
   }
 }
 function doLogout(){
+  adminToken=null;accounts=[];selectedId=null;
   document.getElementById('shell').classList.remove('active');
   document.getElementById('login-wrap').style.display='';
   document.getElementById('inp-user').value='';
@@ -448,18 +463,45 @@ function buildHealth(){
 }
 
 /* ── ACCOUNTS ── */
-let accounts=[
-  {id:1,username:'admin',email:'admin@ibelieve.app',role:'super admin',status:'active'},
-  {id:2,username:'william',email:'william@ibelieve.app',role:'admin',status:'active'},
-  {id:3,username:'deploy-bot',email:'deploy@ibelieve.app',role:'operator',status:'active'},
-  {id:4,username:'reporter',email:'report@ibelieve.app',role:'viewer',status:'inactive'},
-];
-let selectedId=null,modalMode=null,nextId=5;
+const API='https://ibelieve-backend.vercel.app/api';
+let adminToken=null;
+let accounts=[];
+let selectedId=null,modalMode=null;
+
+async function apiFetch(path,opts={}){
+  const h={'Content-Type':'application/json'};
+  if(adminToken)h['Authorization']='Bearer '+adminToken;
+  const r=await fetch(API+path,{headers:h,...opts});
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.message||'API '+r.status);}
+  return r.json();
+}
+
+async function loadAccounts(){
+  const tbody=document.getElementById('acct-body');
+  tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">Loading users…</td></tr>`;
+  try{
+    const data=await apiFetch('/admin/users');
+    accounts=(data.users||data||[]).map((u,i)=>({
+      id:u.id||u._id||i+1,
+      username:u.username||u.name||'—',
+      email:u.email||'—',
+      role:u.role||'user',
+      status:u.status||(u.banned?'banned':'active'),
+      createdAt:u.createdAt||u.created_at||null
+    }));
+    renderAccounts();
+  }catch(err){
+    tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--danger);font-size:13px;">Failed to load users: ${err.message}</td></tr>`;
+    document.getElementById('acct-count').textContent='—';
+  }
+}
 
 function renderAccounts(){
-  document.getElementById('acct-body').innerHTML=accounts.map(a=>`
-    <tr onclick="selectRow(${a.id})" ${selectedId===a.id?'class="selected"':''}>
-      <td><input type="checkbox" class="chk" ${selectedId===a.id?'checked':''} onclick="event.stopPropagation();selectRow(${a.id})"></td>
+  document.getElementById('acct-body').innerHTML=accounts.length===0
+    ?`<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">No users found</td></tr>`
+    :accounts.map(a=>`
+    <tr onclick="selectRow(${JSON.stringify(a.id)})" ${selectedId===a.id?'class="selected"':''}>
+      <td><input type="checkbox" class="chk" ${selectedId===a.id?'checked':''} onclick="event.stopPropagation();selectRow(${JSON.stringify(a.id)})"></td>
       <td><div class="acct-avatar">${initials(a.username)}</div></td>
       <td style="font-weight:500;">${a.username}</td>
       <td style="color:var(--text-muted);font-size:12px;font-family:var(--mono)">${a.email}</td>
@@ -517,27 +559,39 @@ function openModal(mode){
   document.getElementById('modal-bg').classList.add('open');
 }
 function closeModal(){document.getElementById('modal-bg').classList.remove('open');modalMode=null;}
-function confirmModal(){
-  if(modalMode==='add'){
-    const u=document.getElementById('f-user').value.trim();
-    const e=document.getElementById('f-email').value.trim();
-    if(!u||!e){showToast('Username and email required','red');return;}
-    accounts.push({id:nextId++,username:u,email:e,role:document.getElementById('f-role').value,status:document.getElementById('f-status').value});
-    showToast(`Account "${u}" created`,'green');
-  } else if(modalMode==='modify'){
-    const u=document.getElementById('f-user').value.trim();
-    const e=document.getElementById('f-email').value.trim();
-    if(!u||!e){showToast('Username and email required','red');return;}
-    const i=accounts.findIndex(a=>a.id===selectedId);
-    if(i>=0)accounts[i]={...accounts[i],username:u,email:e,role:document.getElementById('f-role').value,status:document.getElementById('f-status').value};
-    showToast(`Account "${u}" updated`,'blue');
-  } else {
-    const sel=accounts.find(a=>a.id===selectedId);
-    accounts=accounts.filter(a=>a.id!==selectedId);
-    selectedId=null;
-    showToast(`Account "${sel?.username}" deleted`,'red');
+async function confirmModal(){
+  const btn=document.getElementById('modal-confirm');
+  btn.disabled=true;btn.textContent='Saving…';
+  try{
+    if(modalMode==='add'){
+      const u=document.getElementById('f-user').value.trim();
+      const pw=document.getElementById('f-pass').value;
+      const e=document.getElementById('f-email').value.trim();
+      if(!u||!pw){showToast('Username and password required','red');return;}
+      const data=await apiFetch('/auth/register',{method:'POST',body:JSON.stringify({username:u,password:pw,email:e,role:document.getElementById('f-role').value})});
+      showToast(`Account "${u}" created`,'green');
+      closeModal();await loadAccounts();
+    } else if(modalMode==='modify'){
+      const u=document.getElementById('f-user').value.trim();
+      const e=document.getElementById('f-email').value.trim();
+      const pw=document.getElementById('f-pass').value;
+      if(!u){showToast('Username required','red');return;}
+      const body={username:u,email:e,role:document.getElementById('f-role').value,status:document.getElementById('f-status').value};
+      if(pw)body.password=pw;
+      await apiFetch(`/admin/users/${selectedId}`,{method:'PATCH',body:JSON.stringify(body)});
+      showToast(`Account "${u}" updated`,'blue');
+      closeModal();await loadAccounts();selectedId=null;
+    } else {
+      const sel=accounts.find(a=>a.id===selectedId);
+      await apiFetch(`/admin/users/${selectedId}`,{method:'DELETE'});
+      showToast(`Account "${sel?.username}" deleted`,'red');
+      closeModal();selectedId=null;await loadAccounts();
+    }
+  }catch(err){
+    showToast(err.message||'Action failed','red');
+  }finally{
+    btn.disabled=false;btn.textContent=modalMode==='delete'?'Delete':modalMode==='add'?'Create':'Save changes';
   }
-  closeModal();renderAccounts();
 }
 document.getElementById('modal-bg').addEventListener('click',function(e){if(e.target===this)closeModal();});
 
@@ -554,6 +608,7 @@ function switchTab(name,el){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('panel-'+name).classList.add('active');
+  if(name==='account')loadAccounts();
 }
 
 /* ── REFRESH ── */
@@ -565,7 +620,7 @@ function refreshData(){
 }
 
 /* ── INIT ── */
-function initAll(){refreshData();renderAccounts();}
+function initAll(){refreshData();loadAccounts();}
 </script>
 </body>
 </html>
