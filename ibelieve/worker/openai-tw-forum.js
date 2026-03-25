@@ -422,16 +422,71 @@ async function handleIBelieve(request, env, url) {
     return json({ ok: true }, 200, request);
   }
 
-  // POST /api/ibelieve/run-autolink?mode= — proxy to ibelieve-cron (CORS workaround)
+  // POST /api/ibelieve/run-autolink?mode= — inline auto-link logic (no Worker-to-Worker HTTP)
   if (request.method === "POST" && path === "/api/ibelieve/run-autolink") {
-    const mode = url.searchParams.get("mode") || "suggest";
-    try {
-      const res = await fetch("https://ibelieve-cron.googselect.workers.dev/run-autolink?mode=" + mode);
-      const data = await res.json();
-      return json(data, 200, request);
-    } catch (e) {
-      return json({ error: "proxy failed: " + e.message }, 500, request);
+    const alMode = url.searchParams.get("mode") || "suggest";
+    const alResults = { linked: 0, skipped: 0, postCount: 0, mode: alMode, errors: [] };
+    const alValidTypes = ["related","supports","contradicts","expands","inspires"];
+    if (!env.ANTHROPIC_API_KEY) return json({ error: "ANTHROPIC_API_KEY not configured" }, 500, request);
+    const alKvRaw = await env.FORUM_KV.get(IBELIEVE_KEY);
+    const alAllPosts = JSON.parse(alKvRaw || "[]");
+    alResults.postCount = alAllPosts.length;
+    if (alAllPosts.length < 2) return json({ ...alResults, errors: ["not enough posts"] }, 200, request);
+    const alIndex = alAllPosts.map(p => ({ id: p.id, topic: p.topic || "belief", snippet: (p.body || "").slice(0, 120).replace(/\n/g, " ") }));
+    const alRecent = alAllPosts.slice(0, 10);
+    for (const alPost of alRecent) {
+      if ((alPost.links || []).length >= 3) { alResults.skipped++; continue; }
+      const alLinkedIds = new Set((alPost.links || []).map(l => l.targetId));
+      alLinkedIds.add(alPost.id);
+      const alCandidates = alIndex.filter(p => !alLinkedIds.has(p.id)).slice(0, 30);
+      if (!alCandidates.length) { alResults.skipped++; continue; }
+      try {
+        const alClaudeRes = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
+          body: JSON.stringify({
+            model: "claude-haiku-4-5-20251001", max_tokens: 400,
+            system: "You are a knowledge graph AI. Find semantically related posts. Output ONLY a JSON array. Each item: {\"targetId\":\"<id>\",\"type\":\"<type>\",\"confidence\":<0-1>}. Types: related/supports/contradicts/expands/inspires. Only confidence >= 0.7. Max 3. Return [] if none. No extra text.",
+            messages: [{ role: "user", content: "SOURCE (topic: " + alPost.topic + "):\n\"" + (alPost.body || "").slice(0, 300) + "\"\n\nCANDIDATES (id | topic | text):\n" + alCandidates.map(c => c.id + " | " + c.topic + " | " + c.snippet).join("\n") + "\n\nJSON array only:" }]
+          })
+        });
+        const alClaudeData = await alClaudeRes.json();
+        const alRaw = alClaudeData?.content?.[0]?.text?.trim() || "";
+        if (!alRaw) { alResults.skipped++; continue; }
+        let alSuggestions = [];
+        try { alSuggestions = JSON.parse(alRaw.replace(/```json|```/g, "").trim()); } catch (e) { alResults.skipped++; continue; }
+        if (!Array.isArray(alSuggestions) || !alSuggestions.length) { alResults.skipped++; continue; }
+        for (const alS of alSuggestions) {
+          if (!alS.targetId || !alS.type || (alS.confidence || 0) < 0.7) continue;
+          const alLinkType = alValidTypes.includes(alS.type) ? alS.type : "related";
+          const alFreshRaw = await env.FORUM_KV.get(IBELIEVE_KEY);
+          const alFreshPosts = JSON.parse(alFreshRaw || "[]");
+          const alSource = alFreshPosts.find(x => x.id === alPost.id);
+          const alTarget = alFreshPosts.find(x => x.id === alS.targetId);
+          if (!alSource || !alTarget) continue;
+          try {
+            if (alMode === "auto") {
+              alSource.links = Array.isArray(alSource.links) ? alSource.links : [];
+              if (!alSource.links.some(l => l.targetId === alS.targetId && l.type === alLinkType)) {
+                const alLinkId = crypto.randomUUID();
+                alSource.links.push({ id: alLinkId, targetId: alS.targetId, type: alLinkType, createdAt: Date.now() });
+                alTarget.backlinks = Array.isArray(alTarget.backlinks) ? alTarget.backlinks : [];
+                alTarget.backlinks.push({ id: alLinkId, sourceId: alPost.id, type: alLinkType, createdAt: Date.now() });
+                await env.FORUM_KV.put(IBELIEVE_KEY, JSON.stringify(alFreshPosts));
+                alResults.linked++;
+              }
+            } else if (env.DB) {
+              await env.DB.prepare("INSERT OR IGNORE INTO link_suggestions (id, source_id, target_id, type, confidence, status, reason) VALUES (?, ?, ?, ?, ?, 'pending', ?)").bind(
+                crypto.randomUUID(), alPost.id, alS.targetId, alLinkType, alS.confidence || 0.8,
+                "AI: " + alLinkType + " (" + (alS.confidence||0).toFixed(2) + ")"
+              ).run();
+              alResults.linked++;
+            }
+          } catch (alWriteErr) { alResults.errors.push("write: " + alWriteErr.message); }
+        }
+      } catch (alClaudeErr) { alResults.errors.push("claude: " + alPost.id.slice(0,8) + " " + alClaudeErr.message); }
     }
+    return json(alResults, 200, request);
   }
 
   // POST /api/ibelieve/ai-report — proxy to Anthropic API (browser CORS workaround)
