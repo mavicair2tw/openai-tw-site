@@ -481,6 +481,7 @@ async function loadAccounts(){
   tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">Loading users…</td></tr>`;
   try{
     const data=await apiFetch('/admin/users');
+    selectedId=null;
     accounts=(data.users||data||[]).map((u,i)=>({
       id:u.id||u._id||i+1,
       username:u.username||u.name||'—',
@@ -497,30 +498,37 @@ async function loadAccounts(){
 }
 
 function renderAccounts(){
-  document.getElementById('acct-body').innerHTML=accounts.length===0
-    ?`<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">No users found</td></tr>`
-    :accounts.map(a=>`
-    <tr onclick="selectRow(${JSON.stringify(a.id)})" ${selectedId===a.id?'class="selected"':''}>
-      <td><input type="checkbox" class="chk" ${selectedId===a.id?'checked':''} onclick="event.stopPropagation();selectRow(${JSON.stringify(a.id)})"></td>
-      <td><div class="acct-avatar">${initials(a.username)}</div></td>
-      <td style="font-weight:500;">${a.username}</td>
-      <td style="color:var(--text-muted);font-size:12px;font-family:var(--mono)">${a.email}</td>
-      <td style="font-size:12px;color:var(--text-dim);">${a.role}</td>
-      <td>${statusBadge(a.status)}</td>
-    </tr>`).join('');
+  if(accounts.length===0){
+    document.getElementById('acct-body').innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">No users found</td></tr>';
+  } else {
+    document.getElementById('acct-body').innerHTML=accounts.map((a,idx)=>{
+      const sel=String(selectedId)===String(a.id);
+      return '<tr onclick="selectRow('+idx+')" '+(sel?'class="selected"':'')+'>'+
+        '<td><input type="checkbox" class="chk" '+(sel?'checked':'')+' onclick="event.stopPropagation();selectRow('+idx+')"></td>'+
+        '<td><div class="acct-avatar">'+initials(a.username)+'</div></td>'+
+        '<td style="font-weight:500;">'+a.username+'</td>'+
+        '<td style="color:var(--text-muted);font-size:12px;font-family:var(--mono)">'+a.email+'</td>'+
+        '<td style="font-size:12px;color:var(--text-dim);">'+a.role+'</td>'+
+        '<td>'+statusBadge(a.status)+'</td>'+
+        '</tr>';
+    }).join('');
+  }
   const hasSel=selectedId!==null;
   document.getElementById('btn-mod').disabled=!hasSel;
   document.getElementById('btn-del').disabled=!hasSel;
-  const sel=accounts.find(a=>a.id===selectedId);
-  document.getElementById('sel-hint').textContent=hasSel&&sel?`"${sel.username}" selected`:'';
+  const sel=selectedId!==null?accounts[selectedId]:null;
+  document.getElementById('sel-hint').textContent=hasSel&&sel?'"'+sel.username+'" selected':'';
   document.getElementById('acct-count').textContent=accounts.length;
 }
-function selectRow(id){selectedId=(selectedId===id)?null:id;renderAccounts();}
+function selectRow(idx){
+  selectedId=(selectedId===idx)?null:idx;
+  renderAccounts();
+}
 
 /* ── MODAL ── */
 function openModal(mode){
   modalMode=mode;
-  const sel=accounts.find(a=>a.id===selectedId)||{};
+  const sel=(selectedId!==null?accounts[selectedId]:null)||{};
   const title=document.getElementById('modal-title');
   const body=document.getElementById('modal-body');
   const confirm=document.getElementById('modal-confirm');
@@ -578,12 +586,13 @@ async function confirmModal(){
       if(!u){showToast('Username required','red');return;}
       const body={username:u,email:e,role:document.getElementById('f-role').value,status:document.getElementById('f-status').value};
       if(pw)body.password=pw;
-      await apiFetch(`/admin/users/${selectedId}`,{method:'PATCH',body:JSON.stringify(body)});
+      const selObj=(selectedId!==null?accounts[selectedId]:null);
+      await apiFetch(`/admin/users/${selObj?.id||selectedId}`,{method:'PATCH',body:JSON.stringify(body)});
       showToast(`Account "${u}" updated`,'blue');
       closeModal();await loadAccounts();selectedId=null;
     } else {
-      const sel=accounts.find(a=>a.id===selectedId);
-      await apiFetch(`/admin/users/${selectedId}`,{method:'DELETE'});
+      const sel=(selectedId!==null?accounts[selectedId]:null);
+      await apiFetch(`/admin/users/${sel?.id||selectedId}`,{method:'DELETE'});
       showToast(`Account "${sel?.username}" deleted`,'red');
       closeModal();selectedId=null;await loadAccounts();
     }
