@@ -61,15 +61,13 @@ __name(callClaude, "callClaude");
 async function runAutoLink(env) {
   const results = { linked: 0, skipped: 0, errors: [] };
 
-  // 1. Load all posts from Worker KV
+  // 1. Load all posts directly from FORUM_KV (no HTTP needed)
   let posts = [];
   try {
-    const res = await fetch(FORUM_WORKER + "/api/ibelieve/posts", {
-      headers: { "Origin": "https://openai-tw.com" }
-    });
-    if (!res.ok) throw new Error("fetch posts failed: " + res.status);
-    const data = await res.json();
-    posts = data.posts || [];
+    if (!env.FORUM_KV) throw new Error("FORUM_KV binding not available");
+    const raw = await env.FORUM_KV.get("ibelieve_posts_v1");
+    const parsed = JSON.parse(raw || "[]");
+    posts = Array.isArray(parsed) ? parsed : [];
   } catch (e) {
     results.errors.push("load posts: " + e.message);
     return results;
