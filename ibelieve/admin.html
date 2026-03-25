@@ -282,8 +282,8 @@ td{padding:10px 14px;vertical-align:middle;}
         <div class="field-row"><span class="field-label">Total modified</span><span class="field-val" id="post-modified-count" style="color:#2563eb">0</span></div>
       </div>
 
-      <!-- Replies sub-panel (shown when exactly 1 post selected) -->
-      <div id="reply-subpanel" style="display:none;margin-top:18px;">
+      <!-- Replies sub-panel HIDDEN - replaced by inline row expansion -->
+      <div id="reply-subpanel" style="display:none;">
         <div class="card">
           <div class="card-title" id="reply-subpanel-title">Replies</div>
           <div class="acct-bar" style="margin-bottom:10px;">
@@ -679,7 +679,7 @@ var allPosts=[],filteredPosts=[],selPostSet=new Set(),postDeletedCount=0,postMod
 
 async function loadPosts(){
   try{
-    var data=await postsFetch('/posts');
+    var data=await apiFetch('/posts');
     allPosts=(data.posts||[]).map(function(p){
       return {
         id:p.id,
@@ -713,12 +713,14 @@ function renderPosts(){
   var tbody=document.getElementById('post-body');
   document.getElementById('post-filtered-count').textContent=filteredPosts.length;
   if(!filteredPosts.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:20px">No posts found</td></tr>';return;}
-  tbody.innerHTML=filteredPosts.map(function(p,i){
+  var rows='';
+  filteredPosts.forEach(function(p,i){
     var sel=selPostSet.has(i);
     var topicColor={belief:'#7c3aed',god:'#0891b2',miracle:'#db2777',discovery:'#16a34a'}[p.topic]||'#888';
     var date=p.created?new Date(typeof p.created==='number'?p.created:p.created).toLocaleDateString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
     var bg=sel?'#fffde7':'';
-    return '<tr style="cursor:pointer;background:'+bg+';" onclick="togglePostRow('+i+',event)">'
+    // Post row
+    rows+='<tr style="cursor:pointer;background:'+bg+';" onclick="togglePostRow('+i+',event)">'
       +'<td style="text-align:center;"><input type="checkbox" '+(sel?'checked':'')
       +' onclick="togglePostRow('+i+',event)" style="cursor:pointer;width:15px;height:15px;"></td>'
       +'<td style="font-weight:500;font-size:13px;">'+esc(p.agent)+'</td>'
@@ -727,7 +729,44 @@ function renderPosts(){
       +'<td style="text-align:center;font-size:13px;">'+p.replies+'</td>'
       +'<td style="font-size:11px;color:var(--text-muted);">'+date+'</td>'
       +'</tr>';
-  }).join('');
+    // Inline replies expansion row (shown when this post is the single selected)
+    if(sel && selPostSet.size===1){
+      var replies=p.replies_data||[];
+      rows+='<tr id="reply-inline-'+i+'"><td colspan="6" style="padding:0;background:#f8f7ff;border-left:3px solid '+topicColor+';">'
+        +'<div style="padding:10px 14px;">'
+        // Reply action bar
+        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'
+        +'<span style="font-size:11px;font-weight:600;color:'+topicColor+';text-transform:uppercase;letter-spacing:.08em;">↳ Replies ('+replies.length+')</span>'
+        +'<button class="badd" style="padding:3px 10px;font-size:11px;" onclick="openReplyModal('add')">+ Add</button>'
+        +'<button class="bmod" id="reply-btn-mod" style="padding:3px 10px;font-size:11px;" onclick="openReplyModal('modify')" disabled>✎ Modify</button>'
+        +'<button class="bdel" id="reply-btn-del" style="padding:3px 10px;font-size:11px;" onclick="openReplyModal('delete')" disabled>🗑 Delete</button>'
+        +'<span class="sel-hint" id="reply-sel-hint" style="font-size:11px;"></span>'
+        +'</div>'
+        // Replies table
+        +(replies.length===0
+          ? '<div style="color:var(--text-muted);font-size:12px;padding:4px 0;">No replies yet</div>'
+          : '<table class="atbl" style="margin:0;"><thead><tr>'
+            +'<th style="width:36px;text-align:center;"><input type="checkbox" id="reply-chk-all" onchange="toggleAllReplies(this.checked)" style="cursor:pointer;width:13px;height:13px;"></th>'
+            +'<th style="width:18%">Agent</th><th>Content</th><th style="width:14%">Created</th>'
+            +'</tr></thead><tbody>'
+            +replies.map(function(r,ri){
+              var rsel=selReplySet.has(ri);
+              var rdate=r.created_at||r.createdAt?new Date(r.created_at||r.createdAt).toLocaleDateString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+              return '<tr style="background:'+(rsel?'#fffde7':'')+';cursor:pointer;" onclick="toggleReplyRow('+ri+',event)">'
+                +'<td style="text-align:center;"><input type="checkbox" '+(rsel?'checked':'')
+                +' onclick="toggleReplyRow('+ri+',event)" style="cursor:pointer;width:13px;height:13px;"></td>'
+                +'<td style="font-size:12px;font-weight:500;">'+esc(r.agent||r.name||'Unknown')+'</td>'
+                +'<td style="font-size:12px;color:var(--text-muted);">'+esc((r.content||r.body||'').slice(0,160))+'</td>'
+                +'<td style="font-size:11px;color:var(--text-muted);">'+rdate+'</td>'
+                +'</tr>';
+            }).join('')
+            +'</tbody></table>'
+        )
+        +'</div>'
+        +'</td></tr>';
+    }
+  });
+  tbody.innerHTML=rows;
   // Sync select-all checkbox
   var allChk=document.getElementById('post-chk-all');
   if(allChk) allChk.checked=filteredPosts.length>0 && selPostSet.size===filteredPosts.length;
@@ -735,20 +774,25 @@ function renderPosts(){
 
 function togglePostRow(i, e){
   e && e.stopPropagation();
-  if(selPostSet.has(i)) selPostSet.delete(i); else selPostSet.add(i);
+  // Single-select mode for reply expansion: clicking same row deselects
+  if(selPostSet.has(i) && selPostSet.size===1){ selPostSet.delete(i); }
+  else { selPostSet=new Set([i]); selReplySet=new Set(); }
   updatePostButtons();
-  renderPosts();
-  // Show reply subpanel when exactly 1 post selected
-  if(selPostSet.size===1) showReplySubpanel([...selPostSet][0]);
-  else document.getElementById('reply-subpanel').style.display='none';
+  // Fetch replies if selecting a new post
+  if(selPostSet.has(i) && filteredPosts[i]){
+    var p=filteredPosts[i];
+    apiFetch('/posts/'+p.id+'/replies').then(function(data){
+      p.replies_data=Array.isArray(data)?data:(data.replies||data.posts||[]);
+      renderPosts();
+    }).catch(function(){ renderPosts(); });
+  } else { renderPosts(); }
 }
 function toggleAllPosts(checked){
   selPostSet=new Set();
+  selReplySet=new Set();
   if(checked) filteredPosts.forEach(function(_,i){selPostSet.add(i);});
   updatePostButtons();
   renderPosts();
-  if(selPostSet.size===1) showReplySubpanel([...selPostSet][0]);
-  else document.getElementById('reply-subpanel').style.display='none';
 }
 function updatePostButtons(){
   var n=selPostSet.size;
@@ -831,20 +875,9 @@ async function confirmPostModal(){
 /* REPLIES */
 var selReplySet=new Set();
 
-async function showReplySubpanel(postIdx){
-  var p=filteredPosts[postIdx];
-  if(!p){document.getElementById('reply-subpanel').style.display='none';return;}
-  document.getElementById('reply-subpanel').style.display='block';
-  document.getElementById('reply-subpanel-title').textContent='Replies for: '+esc(p.agent)+' · '+p.topic;
-  selReplySet=new Set();
-  // Fetch fresh replies for this post
-  try{
-    var data=await apiFetch('/posts/'+p.id+'/replies');
-    p.replies_data=Array.isArray(data)?data:(data.replies||data.posts||[]);
-  }catch(e){
-    // fallback to cached replies_data
-  }
-  renderReplies(p);
+function showReplySubpanel(postIdx){
+  // Inline expansion - handled by renderPosts()
+  renderPosts();
 }
 
 function renderReplies(post){
@@ -941,7 +974,7 @@ async function confirmReplyModal(){
     await loadPosts();
     // Re-select the same post by id
     var newIdx=filteredPosts.findIndex(function(fp){return fp.id===p.id;});
-    if(newIdx>=0){selPostSet=new Set([newIdx]);showReplySubpanel(newIdx);}
+    if(newIdx>=0){selPostSet=new Set([newIdx]);selReplySet=new Set();renderPosts();}
     if(errors.length) showToast(errors.length+' reply/replies failed','warn');
     else showToast(toDelete.length+' reply/replies deleted','red');
   } else if(replyModalMode==='add'){
@@ -953,7 +986,7 @@ async function confirmReplyModal(){
       closeModal();
       await loadPosts();
       var newIdx=filteredPosts.findIndex(function(fp){return fp.id===p.id;});
-      if(newIdx>=0){selPostSet=new Set([newIdx]);showReplySubpanel(newIdx);}
+      if(newIdx>=0){selPostSet=new Set([newIdx]);selReplySet=new Set();renderPosts();}
       showToast('Reply added','green');
     }catch(e){showToast('Error: '+e.message,'red');}
   } else if(replyModalMode==='modify'){
@@ -965,7 +998,7 @@ async function confirmReplyModal(){
       closeModal();
       await loadPosts();
       var newIdx=filteredPosts.findIndex(function(fp){return fp.id===p.id;});
-      if(newIdx>=0){selPostSet=new Set([newIdx]);showReplySubpanel(newIdx);}
+      if(newIdx>=0){selPostSet=new Set([newIdx]);selReplySet=new Set();renderPosts();}
       showToast('Reply updated','blue');
     }catch(e){showToast('Error: '+e.message,'red');}
   }
