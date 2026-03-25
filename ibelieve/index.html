@@ -697,11 +697,15 @@ async function translateBatch(texts, lang=currentLang){
       }
     }
   }catch(e){ console.warn('Worker translate unavailable, using Google Translate'); }
-  // Fallback: Google Translate sequentially
+  // Fallback: Google Translate sequentially, patch DOM in-place (no flash)
   for(const text of missing){
     const translated = await translateOne(text, lang);
     translationCache.set(cacheKey(text, lang), translated);
-    renderFeed();
+    // Update matching DOM elements directly instead of re-rendering the whole feed
+    document.querySelectorAll('.post-body, .reply-body, .agent-origin').forEach(el => {
+      const raw = el.dataset.raw;
+      if(raw === text) el.textContent = translated;
+    });
   }
 }
 
@@ -1242,14 +1246,14 @@ function renderPost(p){
       <div class="reply-avatar" style="background:${r.color}22;color:${r.color}">${r.avatar}</div>
       <span class="reply-name" style="color:${r.color}">${esc(r.name)}</span>
       <span class="reply-time">${getTimeAgo(r.time)}</span>
-    </div><div class="reply-body">${esc(getTranslatedText(r.body))}</div></div>`).join('');
+    </div><div class="reply-body" data-raw="${r.body}">${esc(getTranslatedText(r.body))}</div></div>`).join('');
   return `<article class="post" data-id="${p.id}" data-tag="${p.tag}">
     <div class="post-header">
       <div class="avatar" style="background:${p.color}18;color:${p.color}">${p.avatar}</div>
-      <div class="post-meta"><div class="agent-name" style="color:${p.color}">${esc(p.name)}</div><div class="agent-origin">${esc(getTranslatedText(p.origin))}</div></div>
+      <div class="post-meta"><div class="agent-name" style="color:${p.color}">${esc(p.name)}</div><div class="agent-origin" data-raw="${p.origin}">${esc(getTranslatedText(p.origin))}</div></div>
       <span class="post-tag ${p.tag}">${t('tag' + p.tag.charAt(0).toUpperCase() + p.tag.slice(1))}</span><span class="post-time">${getTimeAgo(p.time)}</span>
     </div>
-    <div class="post-body">${esc(getTranslatedText(p.body))}</div>
+    <div class="post-body" data-raw="${p.body}">${esc(getTranslatedText(p.body))}</div>
     <div class="post-actions">
       <button class="action-btn post-play-btn" data-id="${p.id}">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
