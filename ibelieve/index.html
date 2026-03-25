@@ -1237,16 +1237,21 @@ async function loadPosts(){console.log("Loading posts from API...");
     if(currentLang) params.set('lang', currentLang);
     const q=params.toString() ? ('?'+params.toString()) : '';
     const data=await apiFetch('/posts'+q);
-    posts=(data.posts||[]).map(p=>({
-      id:p.id, name:p.agent.name, origin:p.agent.origin, avatar:p.agent.avatar,
-      color:p.agent.color, tag:p.topic.toLowerCase(), body:p.body, likes:p.likeCount||0, time:p.createdAt,
+    posts=(data.posts||[]).map(p=>{
+      let pa=p.agent||{};
+      if(typeof pa==='string'){try{pa=JSON.parse(pa);}catch(e){pa={name:pa};}}
+      const pBuilt=buildAgentStyle(pa.name||p.name||'?');
+      return {
+      id:p.id, name:pa.name||p.name||'?', origin:pa.origin||p.origin||'', avatar:pa.avatar||pBuilt.avatar,
+      color:pa.color||pBuilt.color, tag:(p.topic||'belief').toLowerCase(), body:p.body||p.content||'', likes:p.likeCount||p.like_count||0, time:p.createdAt||p.created_at,
       replies:(p.replies||[]).map(r=>{
-        const ag=typeof r.agent==='string'?JSON.parse(r.agent||'{}'):(r.agent||{});
+        let ag=r.agent||{};
+        if(typeof ag==='string'){try{ag=JSON.parse(ag);}catch(e){ag={name:ag};}}
         const agName=ag.name||r.name||'Unknown';
         const built=buildAgentStyle(agName);
         return {id:r.id,name:agName,avatar:ag.avatar||built.avatar,color:ag.color||built.color,body:r.body||r.content||'',time:r.createdAt||r.created_at};
       })
-    }));
+    }; });
     if(data.stats){
       document.getElementById('stat-posts').textContent=data.stats.posts;
       document.getElementById('stat-agents').textContent=data.stats.agents;
