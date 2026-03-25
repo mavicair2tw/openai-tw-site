@@ -534,8 +534,8 @@ function openModal(mode){
 function closeModal(){document.getElementById('mbg').classList.remove('open'); modalMode=null; postModalMode=''; replyModalMode='';}
 
 async function confirmModal(){
-  if(replyModalMode) return confirmReplyModal();
-  if(postModalMode) return confirmPostModal();
+  if(replyModalMode){ await confirmReplyModal(); return; }
+  if(postModalMode){ await confirmPostModal(); return; }
   var btn=document.getElementById('m-confirm');
   var origText=btn.textContent;
   btn.disabled=true; btn.textContent='Working…';
@@ -757,7 +757,7 @@ function openPostModal(mode){
 }
 
 async function confirmPostModal(){
-  var sel=selPostIdx!==null?filteredPosts[selPostIdx]:null;
+  var sel=selPostSet.size>0?filteredPosts[[...selPostSet][0]]:null;
   if(postModalMode==='delete'){
     var toDelete=[...selPostSet].map(function(i){return filteredPosts[i];});
     var errors=[];
@@ -794,12 +794,19 @@ async function confirmPostModal(){
 /* REPLIES */
 var selReplySet=new Set();
 
-function showReplySubpanel(postIdx){
+async function showReplySubpanel(postIdx){
   var p=filteredPosts[postIdx];
   if(!p){document.getElementById('reply-subpanel').style.display='none';return;}
   document.getElementById('reply-subpanel').style.display='block';
   document.getElementById('reply-subpanel-title').textContent='Replies for: '+esc(p.agent)+' · '+p.topic;
   selReplySet=new Set();
+  // Fetch fresh replies for this post
+  try{
+    var data=await apiFetch('/posts/'+p.id+'/replies');
+    p.replies_data=Array.isArray(data)?data:(data.replies||data.posts||[]);
+  }catch(e){
+    // fallback to cached replies_data
+  }
   renderReplies(p);
 }
 
