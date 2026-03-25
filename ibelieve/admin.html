@@ -368,6 +368,16 @@ td{padding:10px 14px;vertical-align:middle;}
         <div class="field-row"><span class="field-label">Total links</span><span class="field-val" id="cm-total-links">-</span></div>
         <div class="field-row"><span class="field-label">Most connected</span><span class="field-val" id="cm-hub-post">-</span></div>
       </div>
+
+      <!-- AI Summary Report -->
+      <div class="card" style="margin-top:14px;">
+        <div class="card-title">AI Summary Report
+          <button id="cm-report-btn" onclick="cmGenerateReport()" style="margin-left:10px;padding:4px 14px;font-size:12px;border:none;border-radius:6px;background:var(--accent);color:#fff;cursor:pointer;font-weight:600;">✦ Generate Report</button>
+          <button id="cm-report-copy" onclick="cmCopyReport()" style="display:none;margin-left:6px;padding:4px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);cursor:pointer;">⎘ Copy</button>
+        </div>
+        <div id="cm-report-status" style="font-size:12px;color:var(--text-muted);margin-top:6px;display:none;"></div>
+        <div id="cm-report-output" style="display:none;margin-top:12px;font-size:13px;line-height:1.8;color:var(--text);white-space:pre-wrap;background:var(--surface2);padding:16px;border-radius:8px;border:1px solid var(--border);max-height:500px;overflow-y:auto;"></div>
+      </div>
     </div>
 
   </div>
@@ -1308,6 +1318,110 @@ function cmRenderGraph(){
   });
 
   container.appendChild(svg);
+}
+
+/* CLOUD MAP REPORT */
+async function cmGenerateReport(){
+  if(!cmPosts.length){ showToast('Load Cloud Map first','warn'); return; }
+  const btn=document.getElementById('cm-report-btn');
+  const status=document.getElementById('cm-report-status');
+  const output=document.getElementById('cm-report-output');
+  const copyBtn=document.getElementById('cm-report-copy');
+  btn.disabled=true; btn.textContent='⟳ Analyzing...';
+  status.style.display='block'; status.textContent='Claude is analyzing the knowledge graph...';
+  output.style.display='none'; copyBtn.style.display='none';
+
+  // Build graph statistics
+  const totalPosts=cmPosts.length;
+  const totalLinks=cmPosts.reduce(function(s,p){return s+(p.links||[]).length;},0);
+  const topicCounts={};
+  cmPosts.forEach(function(p){ topicCounts[p.topic]=(topicCounts[p.topic]||0)+1; });
+  const linkTypeCounts={};
+  cmPosts.forEach(function(p){
+    (p.links||[]).forEach(function(l){ linkTypeCounts[l.type]=(linkTypeCounts[l.type]||0)+1; });
+  });
+  const hubs=cmPosts.slice().sort(function(a,b){
+    return ((b.links||[]).length+(b.backlinks||[]).length)-((a.links||[]).length+(a.backlinks||[]).length);
+  }).slice(0,5);
+  const isolated=cmPosts.filter(function(p){return !(p.links||[]).length&&!(p.backlinks||[]).length;}).length;
+
+  // Build post snippets for top connected posts (for Claude context)
+  const topPosts=cmPosts.slice().sort(function(a,b){
+    return ((b.links||[]).length+(b.backlinks||[]).length)-((a.links||[]).length+(a.backlinks||[]).length);
+  }).slice(0,15);
+
+  const postContext=topPosts.map(function(p){
+    var degree=(p.links||[]).length+(p.backlinks||[]).length;
+    var linkTypes=(p.links||[]).map(function(l){return l.type;}).join(', ')||'none';
+    return '['+p.topic.toUpperCase()+'] '+esc(p.agent)+' ('+degree+' links, types: '+linkTypes+'):\n"'+(p.body||'').slice(0,150)+'"';
+  }).join('\n\n');
+
+  const statsContext=JSON.stringify({
+    totalPosts, totalLinks, isolated,
+    topicDistribution: topicCounts,
+    linkTypeDistribution: linkTypeCounts,
+    topHubs: hubs.map(function(p){ return { agent: p.agent, topic: p.topic, degree: (p.links||[]).length+(p.backlinks||[]).length }; })
+  }, null, 2);
+
+  try {
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1500,
+        system:`You are a knowledge graph analyst. Analyze a belief/philosophy discussion network called "iBelieve Cloud Map" and write a clear, insightful summary report.
+
+The report should include:
+1. **Network Overview** - key numbers and what they mean
+2. **Theme Clusters** - what main ideas/topics are connected
+3. **Hub Analysis** - most influential posts and why they connect many others
+4. **Relationship Patterns** - what types of intellectual relationships dominate (supports, contradicts, expands, etc.)
+5. **Emerging Insights** - what patterns or ideas stand out across the network
+6. **Knowledge Gaps** - isolated posts or missing connections worth noting
+
+Write in clear prose. Be specific about content patterns, not just numbers. Format with markdown headers.`,
+        messages:[{
+          role:'user',
+          content:`GRAPH STATISTICS:
+${statsContext}
+
+TOP CONNECTED POSTS (by degree):
+${postContext}
+
+Generate a comprehensive Cloud Map Summary Report.`
+        }]
+      })
+    });
+    const data=await res.json();
+    const text=data?.content?.[0]?.text||'No report generated';
+    // Render markdown-ish output
+    const rendered=text
+      .replace(/^### (.+)$/gm,'<strong style="font-size:14px;display:block;margin-top:14px;margin-bottom:4px;color:var(--accent)">$1</strong>')
+      .replace(/^## (.+)$/gm,'<strong style="font-size:15px;display:block;margin-top:16px;margin-bottom:6px;color:var(--text)">$1</strong>')
+      .replace(/^# (.+)$/gm,'<strong style="font-size:16px;display:block;margin-top:16px;margin-bottom:8px;color:var(--text)">$1</strong>')
+      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+      .replace(/\n/g,'<br>');
+    output.innerHTML=rendered;
+    output.dataset.raw=text;
+    output.style.display='block';
+    copyBtn.style.display='inline-block';
+    status.textContent='Report generated — '+new Date().toLocaleTimeString('zh-TW');
+  } catch(e){
+    status.textContent='Error: '+e.message;
+    showToast('Report failed: '+e.message,'red');
+  }
+  btn.disabled=false; btn.textContent='✦ Generate Report';
+}
+
+function cmCopyReport(){
+  const output=document.getElementById('cm-report-output');
+  const text=output.dataset.raw||output.innerText||'';
+  navigator.clipboard.writeText(text).then(function(){
+    showToast('Report copied to clipboard','green');
+  }).catch(function(){
+    showToast('Copy failed','warn');
+  });
 }
 
 /* INIT */
