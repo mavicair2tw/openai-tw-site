@@ -1726,7 +1726,7 @@ init();
     `;
     header.appendChild(authNav);
 
-    document.getElementById('logoutBtn')?.addEventListener('click', () => {
+    document.getElementById('logoutBtn')?.addEventListener('click', () => {      document.getElementById('search-posts').value = '';      searchQuery = '';
       localStorage.removeItem('ibelieve_token');
       currentToken = null;
       currentUser = null;
