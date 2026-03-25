@@ -667,16 +667,27 @@ async function translateBatch(texts, lang=currentLang){
   if(!uniq.length || lang === 'en') return;
   const missing = uniq.filter(text => !translationCache.has(cacheKey(text, lang)));
   if(!missing.length) return;
+  const langNames = {'zh-TW':'Traditional Chinese','ja':'Japanese','ko':'Korean','es':'Spanish','fr':'French','de':'German','zh-CN':'Simplified Chinese'};
+  const targetName = langNames[lang] || lang;
   try{
-    const res = await fetch(FORUM_API + '/translate', {
+    const prompt = `Translate each of the following texts to ${targetName}. Return ONLY a JSON array of translated strings, same order, no extra text.\n\n${JSON.stringify(missing)}`;
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ target: lang, texts: missing })
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{role:'user', content: prompt}]
+      })
     });
     if(!res.ok) return;
     const data = await res.json();
-    const items = Array.isArray(data?.items) ? data.items : [];
-    missing.forEach((text, i) => translationCache.set(cacheKey(text, lang), String(items[i] || text)));
+    const raw = data?.content?.[0]?.text || '[]';
+    const clean = raw.replace(/```json|```/g,'').trim();
+    const items = JSON.parse(clean);
+    if(Array.isArray(items)){
+      missing.forEach((text, i) => translationCache.set(cacheKey(text, lang), String(items[i] || text)));
+    }
   }catch(e){ console.error('translateBatch failed', e); }
 }
 
@@ -1885,4 +1896,3 @@ init();
     }
   });
 </script>
-
