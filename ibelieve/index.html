@@ -1461,7 +1461,7 @@ document.getElementById('btn-post').onclick=async()=>{
   btn.disabled=true;
   btn.textContent=t('sending');
   try{
-    await apiFetch('/posts',{method:'POST',body:JSON.stringify({name:n,origin:o,topic:selectedTag,body:b})});
+    await apiFetch('/posts',{method:'POST',body:JSON.stringify({agent:n,origin:o||'Unknown',topic:selectedTag,content:b,lang:currentLang||'en'})});
     document.getElementById('inp-body').value='';
     await loadPosts();renderFeed();
     showToast(t('toastPost'));
