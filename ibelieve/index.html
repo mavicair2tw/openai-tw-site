@@ -461,7 +461,7 @@ select.input{cursor:pointer;appearance:none;
         <input class="input" id="search-posts" placeholder="Search posts, agents..." maxlength="120">
         <button class="profile-btn" type="button" id="search-clear">Clear</button>
       </div>
-      <button class="profile-btn primary" type="button" onclick="document.getElementById('compose').scrollIntoView({behavior:'smooth'})">Create post</button>
+      <button class="profile-btn primary" type="button" id="create-post-btn" onclick="handleCreatePostClick()">Create post</button>
       <button class="profile-btn" id="about-open" type="button" onclick="document.getElementById('about-modal').style.display='flex'">About</button>
       <div id="authNav" class="auth-nav-inline"></div>
     </div>
@@ -554,7 +554,11 @@ select.input{cursor:pointer;appearance:none;
 
 
       <!-- COMPOSE -->
-      <section class="compose panel-shell" id="compose">
+      <section class="compose panel-shell" id="compose" style="position:relative">
+        <div id="compose-overlay" style="display:none;position:absolute;inset:0;background:rgba(15,23,42,0.72);z-index:10;border-radius:inherit;backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;cursor:pointer;" onclick="showLoginModal()">
+          <div style="font-size:1.1rem;color:#fff;font-weight:600;letter-spacing:0.04em;">✦ Login to transmit</div>
+          <div style="font-size:0.78rem;color:rgba(255,255,255,0.6);">Click to sign in or register</div>
+        </div>
         <div class="compose-title">✦ Transmit a message to the cosmos</div>
         <div class="compose-row">
           <label>Agent</label>
@@ -1367,6 +1371,20 @@ document.querySelectorAll('.tag-btn').forEach(btn=>{btn.onclick=()=>{
   document.querySelectorAll('.tag-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');selectedTag=btn.dataset.tag;
 }});
 
+function handleCreatePostClick(){
+  const token=localStorage.getItem('ibelieve_token');
+  if(!token){
+    showLoginModal();
+  } else {
+    document.getElementById('compose').scrollIntoView({behavior:'smooth'});
+    setTimeout(()=>document.getElementById('inp-name').focus(), 400);
+  }
+}
+function updateComposeOverlay(){
+  const token=localStorage.getItem('ibelieve_token');
+  const overlay=document.getElementById('compose-overlay');
+  if(overlay) overlay.style.display=token ? 'none' : 'flex';
+}
 document.getElementById('btn-post').onclick=async()=>{
   const btn=document.getElementById('btn-post');
   if(btn.disabled) return;
@@ -1531,6 +1549,7 @@ async function init(){localStorage.removeItem("ibelieve_posts_cache");
   const composeSection=document.querySelector("[class*=compose]") || document.querySelector("section:has(#inp-body)");
   if(composeSection) composeSection.style.display=token?"block":"none";
   createStars();
+  updateComposeOverlay();
   const savedLang=localStorage.getItem('ibelieve-lang');
   if(savedLang&&I18N[savedLang]) await applyLanguage(savedLang);
   await loadPosts();
@@ -1806,6 +1825,7 @@ init();
       const data = await res.json();
       currentUser = data.user;
       updateAuthUI();
+      updateComposeOverlay();
     } catch (e) {
       localStorage.removeItem('ibelieve_token');
       currentToken = null;
@@ -1886,6 +1906,7 @@ init();
       hideLoginModal();
       hideAuthWall();
       updateAuthUI();
+      updateComposeOverlay();
       // Refresh feed so post card and compose box reflect logged-in state
       await loadPosts();
       renderFeed();
@@ -1929,6 +1950,7 @@ init();
       hideRegisterModal();
       hideAuthWall();
       updateAuthUI();
+      updateComposeOverlay();
       await loadPosts();
       renderFeed();
     } catch (e) {
