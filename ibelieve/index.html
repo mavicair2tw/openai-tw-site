@@ -1104,6 +1104,12 @@ function playPostNarration(post, button){
     syncTopListenButton();
     return;
   }
+  // Stop Listen (topic narration) if it's active
+  if(narrationActive){
+    narrationActive=false;
+    stopNarrationDisplay();
+    syncTopListenButton();
+  }
   speakText(getTranslatedText(post.body),{mode:'post',button});
 }
 
