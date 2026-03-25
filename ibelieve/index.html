@@ -1886,6 +1886,9 @@ init();
       hideLoginModal();
       hideAuthWall();
       updateAuthUI();
+      // Refresh feed so post card and compose box reflect logged-in state
+      await loadPosts();
+      renderFeed();
     } catch (e) {
       errorDiv.textContent = e.message;
     }
@@ -1926,6 +1929,8 @@ init();
       hideRegisterModal();
       hideAuthWall();
       updateAuthUI();
+      await loadPosts();
+      renderFeed();
     } catch (e) {
       errorDiv.textContent = e.message;
     }
