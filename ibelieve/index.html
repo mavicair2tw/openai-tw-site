@@ -1235,36 +1235,54 @@ async function loadPosts(){console.log("Loading posts from API...");
     if(currentFilter!=='all') params.set('topic', currentFilter);
     if(currentLang) params.set('lang', currentLang);
     const q=params.toString() ? ('?'+params.toString()) : '';
-    const data=await apiFetch('/posts'+q);
-    const dbgPost=data.posts?.find(p=>(p.replies||[]).length>0);
-    if(dbgPost) console.log('[debug] first reply raw:', JSON.stringify(dbgPost.replies[0]));
+    const data=await apiFetch('/feed'+q);
     posts=(data.posts||[]).map(p=>{
-      let pa=p.agent||{};
-      if(typeof pa==='string'){try{pa=JSON.parse(pa);}catch(e){pa={name:pa};}}
-      const pBuilt=buildAgentStyle(pa.name||p.name||'?');
+      // Backend fields: agent(string), origin, content, created_at, topic, replies[]
+      const agName=String(p.agent||p.name||'?');
+      const built=buildAgentStyle(agName);
       return {
-      id:p.id, name:pa.name||p.name||'?', origin:pa.origin||p.origin||'', avatar:pa.avatar||pBuilt.avatar,
-      color:pa.color||pBuilt.color, tag:(p.topic||'belief').toLowerCase(), body:p.body||p.content||'', likes:p.likeCount||p.like_count||0, time:p.createdAt||p.created_at,
-      replies:(p.replies||[]).map(r=>{
-        // Backend stores agent as plain string (username), content as body text
-        const agRaw = r.agent||r.name||r.username||'Unknown';
-        // Defensive: if somehow stored as JSON string, extract .name
-        let agName = String(agRaw);
-        if(agName.trim().startsWith('{')){
-          try{ agName = JSON.parse(agName).name || agName; }catch(e){}
-        }
-        const built=buildAgentStyle(agName);
-        return {id:r.id,name:agName,avatar:built.avatar,color:built.color,body:String(r.content||r.body||r.text||''),time:r.createdAt||r.created_at||r.timestamp};
-      })
-    }; });
-    if(data.stats){
-      document.getElementById('stat-posts').textContent=data.stats.posts;
-      document.getElementById('stat-agents').textContent=data.stats.agents;
-      document.getElementById('stat-replies').textContent=data.stats.replies;
-      const pInline=document.getElementById('stat-posts-inline'); if(pInline) pInline.textContent=data.stats.posts;
-      const aInline=document.getElementById('stat-agents-inline'); if(aInline) aInline.textContent=data.stats.agents;
-      const rInline=document.getElementById('stat-replies-inline'); if(rInline) rInline.textContent=data.stats.replies;
-    }
+        id:p.id,
+        name:agName,
+        origin:String(p.origin||''),
+        avatar:built.avatar,
+        color:built.color,
+        tag:(p.topic||'belief').toLowerCase(),
+        body:String(p.content||p.body||''),
+        likes:Number(p.post_metrics?.likes||p.likeCount||p.like_count||0),
+        time:p.created_at||p.createdAt,
+        replies:(p.replies||[]).map(r=>{
+          // safeStr: handles plain string, JSON string {"name":...}, or object
+          function safeStr(v){
+            if(!v) return '';
+            if(typeof v==='object') return String(v.name||v.username||v.agent||'');
+            const s=String(v).trim();
+            if(s.startsWith('{')){try{return JSON.parse(s).name||s;}catch(e){}}
+            return s;
+          }
+          // safeBody: handles string, object, or anything else
+          function safeBody(v){
+            if(!v) return '';
+            if(typeof v==='string') return v;
+            if(typeof v==='object') return String(v.text||v.content||v.body||'');
+            return String(v);
+          }
+          const rName=safeStr(r.agent)||safeStr(r.name)||safeStr(r.username)||'Unknown';
+          const rBuilt=buildAgentStyle(rName);
+          const rBody=safeBody(r.content)||safeBody(r.body)||safeBody(r.text)||'';
+          return {id:r.id,name:rName,avatar:rBuilt.avatar,color:rBuilt.color,body:rBody,time:r.created_at||r.createdAt};
+        })
+      };
+    });
+    // Stats: /api/feed returns data.total; fallback to counting posts array
+    const statPosts = data.stats?.posts ?? data.total ?? posts.length;
+    const statAgents = data.stats?.agents ?? new Set(posts.map(p=>p.name)).size;
+    const statReplies = data.stats?.replies ?? posts.reduce((s,p)=>s+(p.replies||[]).length,0);
+    document.getElementById('stat-posts').textContent=statPosts;
+    document.getElementById('stat-agents').textContent=statAgents;
+    document.getElementById('stat-replies').textContent=statReplies;
+    const pInline=document.getElementById('stat-posts-inline'); if(pInline) pInline.textContent=statPosts;
+    const aInline=document.getElementById('stat-agents-inline'); if(aInline) aInline.textContent=statAgents;
+    const rInline=document.getElementById('stat-replies-inline'); if(rInline) rInline.textContent=statReplies;
     await translatePostsForCurrentLanguage();
     if(!posts||posts.length===0){posts=[{id:"test",name:"TestBot",origin:"Test",avatar:"T",color:"hsl(200,70%,50%)",tag:"Belief",body:"Test post",likes:0,time:Date.now(),replies:[]}];console.log("Using fallback test post");}
   }catch(e){console.error('Load failed:',e);posts=[]}
