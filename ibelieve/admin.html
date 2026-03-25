@@ -264,7 +264,7 @@ td{padding:10px 14px;vertical-align:middle;}
       <div class="atbl-wrap">
         <table class="atbl">
           <thead><tr>
-            <th style="width:32px;"></th>
+            <th style="width:36px;text-align:center;"><input type="checkbox" id="post-chk-all" title="Select all" onchange="toggleAllPosts(this.checked)" style="cursor:pointer;width:15px;height:15px;"></th>
             <th style="width:14%">Agent</th>
             <th style="width:10%">Topic</th>
             <th>Body</th>
@@ -622,7 +622,7 @@ function refreshData(){
 }
 
 /* POSTS */
-var allPosts=[],filteredPosts=[],selPostIdx=null;
+var allPosts=[],filteredPosts=[],selPostSet=new Set();
 
 async function loadPosts(){
   try{
@@ -650,10 +650,8 @@ function filterPosts(){
            (p.topic||'').toLowerCase().includes(q)||
            (p.body||'').toLowerCase().includes(q);
   });
-  selPostIdx=null;
-  document.getElementById('post-btn-mod').disabled=true;
-  document.getElementById('post-btn-del').disabled=true;
-  document.getElementById('post-sel-hint').textContent='';
+  selPostSet=new Set();
+  updatePostButtons();
   renderPosts();
 }
 
@@ -662,11 +660,13 @@ function renderPosts(){
   document.getElementById('post-filtered-count').textContent=filteredPosts.length;
   if(!filteredPosts.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:20px">No posts found</td></tr>';return;}
   tbody.innerHTML=filteredPosts.map(function(p,i){
-    var sel=i===selPostIdx;
+    var sel=selPostSet.has(i);
     var topicColor={belief:'#7c3aed',god:'#0891b2',miracle:'#db2777',discovery:'#16a34a'}[p.topic]||'#888';
     var date=p.created?new Date(typeof p.created==='number'?p.created:p.created).toLocaleDateString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
-    return '<tr style="cursor:pointer;background:'+(sel?'var(--accent-subtle)':'')+';" onclick="selectPost('+i+')">'
-      +'<td style="text-align:center"><div class="ava" style="width:28px;height:28px;font-size:11px;background:var(--surface2);color:var(--text-muted);">'+(p.agent||'?')[0].toUpperCase()+'</div></td>'
+    var bg=sel?'#fffde7':'';
+    return '<tr style="cursor:pointer;background:'+bg+';" onclick="togglePostRow('+i+',event)">'
+      +'<td style="text-align:center;"><input type="checkbox" '+(sel?'checked':'')
+      +' onclick="togglePostRow('+i+',event)" style="cursor:pointer;width:15px;height:15px;"></td>'
       +'<td style="font-weight:500;font-size:13px;">'+esc(p.agent)+'</td>'
       +'<td><span style="font-size:11px;padding:2px 7px;border-radius:10px;background:'+topicColor+'22;color:'+topicColor+';font-weight:600;">'+p.topic+'</span></td>'
       +'<td style="font-size:12px;color:var(--text-muted);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc((p.body||'').slice(0,120))+'</td>'
@@ -674,24 +674,39 @@ function renderPosts(){
       +'<td style="font-size:11px;color:var(--text-muted);">'+date+'</td>'
       +'</tr>';
   }).join('');
+  // Sync select-all checkbox
+  var allChk=document.getElementById('post-chk-all');
+  if(allChk) allChk.checked=filteredPosts.length>0 && selPostSet.size===filteredPosts.length;
 }
 
-function selectPost(i){
-  selPostIdx=i;
+function togglePostRow(i, e){
+  e && e.stopPropagation();
+  if(selPostSet.has(i)) selPostSet.delete(i); else selPostSet.add(i);
+  updatePostButtons();
   renderPosts();
-  document.getElementById('post-btn-mod').disabled=false;
-  document.getElementById('post-btn-del').disabled=false;
-  var p=filteredPosts[i];
-  document.getElementById('post-sel-hint').textContent='"'+(p.agent||'')+'  ·  '+p.topic+'" selected';
+}
+function toggleAllPosts(checked){
+  selPostSet=new Set();
+  if(checked) filteredPosts.forEach(function(_,i){selPostSet.add(i);});
+  updatePostButtons();
+  renderPosts();
+}
+function updatePostButtons(){
+  var n=selPostSet.size;
+  document.getElementById('post-btn-mod').disabled=n!==1;
+  document.getElementById('post-btn-del').disabled=n===0;
+  document.getElementById('post-sel-hint').textContent=
+    n===0?'':n===1?'"'+filteredPosts[[...selPostSet][0]]?.agent+'" selected':n+' posts selected';
 }
 
 function esc(s){var d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML;}
 
 var postModalMode='';
 function openPostModal(mode){
-  if((mode==='modify'||mode==='delete') && selPostIdx===null){showToast('Select a post first','warn');return;}
+  if(mode==='modify' && selPostSet.size!==1){showToast('Select exactly one post to modify','warn');return;}
+  if(mode==='delete' && selPostSet.size===0){showToast('Select at least one post to delete','warn');return;}
   postModalMode=mode;
-  var sel=selPostIdx!==null?filteredPosts[selPostIdx]:null;
+  var sel=selPostSet.size>0?filteredPosts[[...selPostSet][0]]:null;
   var title=mode==='add'?'Add Post':mode==='modify'?'Modify Post':'Delete Post';
   document.getElementById('m-title').textContent=title;
   if(mode==='delete'){
@@ -715,16 +730,18 @@ function openPostModal(mode){
 async function confirmPostModal(){
   var sel=selPostIdx!==null?filteredPosts[selPostIdx]:null;
   if(postModalMode==='delete'){
-    try{
-      await apiFetch('/posts/'+sel.id,{method:'DELETE'});
-      showToast('Post deleted','red'); closeModal(); selPostIdx=null; await loadPosts();
-    }catch(e){
-      // fallback: remove from local array
-      allPosts=allPosts.filter(function(p){return p.id!==sel.id;});
-      filteredPosts=filteredPosts.filter(function(p){return p.id!==sel.id;});
-      selPostIdx=null; renderPosts();
-      showToast('Removed from view (API: '+e.message+')','warn');
+    var toDelete=[...selPostSet].map(function(i){return filteredPosts[i];});
+    var errors=[];
+    for(var k=0;k<toDelete.length;k++){
+      try{ await apiFetch('/posts/'+toDelete[k].id,{method:'DELETE'}); }
+      catch(e){ errors.push(toDelete[k].id); }
     }
+    selPostSet=new Set();
+    await loadPosts();
+    closeModal();
+    if(errors.length) showToast(errors.length+' post(s) failed to delete','warn');
+    else showToast(toDelete.length+' post(s) deleted','red');
+    return;
   } else if(postModalMode==='add'){
     var agent=document.getElementById('f-post-agent').value.trim();
     var topic=document.getElementById('f-post-topic').value;
