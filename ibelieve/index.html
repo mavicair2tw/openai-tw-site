@@ -192,6 +192,9 @@ select.input{cursor:pointer;appearance:none;
 .post-tag.discovery{background:var(--tag-discovery)}
 .post-tag.god{background:var(--tag-god)}
 
+.post-tts-panel{display:none;margin-top:10px;padding:10px 12px;background:rgba(245,197,24,0.06);border-radius:10px;border:1px solid rgba(245,197,24,0.18);font-size:0.82rem;line-height:1.9;color:var(--text);position:relative;}
+.post-tts-panel.active{display:block;}
+.post-tts-progress{position:absolute;bottom:0;left:0;height:2px;background:#f5c518;border-radius:0 0 10px 10px;transition:width 0.15s linear;width:0;}
 .post-body{
   font-size:0.88rem;line-height:1.85;color:var(--text);
   margin-bottom:16px;white-space:pre-wrap;word-break:break-word;
@@ -1184,18 +1187,95 @@ function playTopicNarration(){
 }
 
 function playPostNarration(post, button){
+  const ttsPanel=document.getElementById('tts-panel-'+post.id);
+  const ttsBody=document.getElementById('tts-body-'+post.id);
+  const ttsProgress=document.getElementById('tts-progress-'+post.id);
+
+  // Toggle off if already playing this post
   if(activePostButton===button && isSpeechPlaying()){
     stopSpeech();
+    if(ttsPanel){ ttsPanel.classList.remove('active'); }
     syncTopListenButton();
     return;
   }
-  // Stop Listen (topic narration) if it's active
-  if(narrationActive){
-    narrationActive=false;
-    stopNarrationDisplay();
-    syncTopListenButton();
+  // Stop any other narration
+  if(narrationActive){ narrationActive=false; stopNarrationDisplay(); }
+  stopSpeech();
+  clearHighlightTimer();
+
+  // Clear all other open TTS panels
+  document.querySelectorAll('.post-tts-panel.active').forEach(el=>el.classList.remove('active'));
+
+  const text=getTranslatedText(post.body)||post.body||'';
+  if(!text||!('speechSynthesis' in window)){
+    if(button){ const lbl=button.querySelector('.post-play-label'); if(lbl) lbl.textContent='Play'; }
+    return;
   }
-  speakText(getTranslatedText(post.body),{mode:'post',button});
+
+  // Build word spans in TTS panel
+  if(ttsBody){
+    ttsBody.innerHTML='';
+    const spans=buildWordSpans(text);
+    spans.forEach(s=>ttsBody.appendChild(s));
+  }
+  if(ttsPanel) ttsPanel.classList.add('active');
+  if(ttsProgress) ttsProgress.style.width='0%';
+
+  // Track total chars for progress bar
+  const totalChars=text.length;
+
+  const go=()=>{
+    const utter=new SpeechSynthesisUtterance(text);
+    const langCode=getLangCode();
+    utter.lang=langCode;
+    utter.rate=0.92;
+    utter.pitch=1;
+    const voice=getBestVoice(langCode);
+    if(voice) utter.voice=voice;
+
+    let boundaryWorking=false;
+    utter.onstart=()=>{
+      activeMode='post';
+      activePostButton=button;
+      if(button){ button.classList.add('active'); const lbl=button.querySelector('.post-play-label'); if(lbl) lbl.textContent='Stop'; }
+      syncTopListenButton();
+      setTimeout(()=>{ if(!boundaryWorking && ttsBody) startHighlightTimer(ttsBody, text, 0.92); }, 200);
+    };
+    utter.onboundary=(e)=>{
+      if(e.name==='word' && ttsBody){
+        boundaryWorking=true;
+        clearHighlightTimer();
+        highlightWord(ttsBody, e.charIndex, e.charLength||1);
+        // Update progress bar
+        if(ttsProgress) ttsProgress.style.width=Math.round((e.charIndex/totalChars)*100)+'%';
+      }
+    };
+    utter.onend=()=>{
+      clearHighlightTimer();
+      if(ttsBody) ttsBody.querySelectorAll('span[data-char-idx]').forEach(sp=>{ sp.style.background=''; sp.style.color=''; });
+      if(ttsProgress) ttsProgress.style.width='100%';
+      setTimeout(()=>{ if(ttsPanel) ttsPanel.classList.remove('active'); if(ttsProgress) ttsProgress.style.width='0%'; }, 600);
+      if(button){ button.classList.remove('active'); const lbl=button.querySelector('.post-play-label'); if(lbl) lbl.textContent='Play'; }
+      activePostButton=null;
+      syncTopListenButton();
+    };
+    utter.onerror=()=>{
+      clearHighlightTimer();
+      if(ttsPanel) ttsPanel.classList.remove('active');
+      if(button){ button.classList.remove('active'); const lbl=button.querySelector('.post-play-label'); if(lbl) lbl.textContent='Play'; }
+      activePostButton=null;
+      syncTopListenButton();
+    };
+    activeUtterance=utter;
+    window.speechSynthesis.speak(utter);
+  };
+
+  const voices=window.speechSynthesis.getVoices();
+  if(voices&&voices.length>0){ go(); }
+  else {
+    window.speechSynthesis.onvoiceschanged=()=>{ window.speechSynthesis.onvoiceschanged=null; go(); };
+    setTimeout(()=>{ if(!activeUtterance) go(); },300);
+  }
 }
 
 function syncSpotifyEmbedLanguage(){
@@ -1414,6 +1494,7 @@ function renderPost(p){
       <span class="post-tag ${p.tag}">${t('tag' + p.tag.charAt(0).toUpperCase() + p.tag.slice(1))}</span><span class="post-time">${getTimeAgo(p.time)}</span>
     </div>
     <div class="post-body" data-raw="${encodeURIComponent(p.body)}">${esc(getTranslatedText(p.body))}</div>
+    <div class="post-tts-panel" id="tts-panel-${p.id}"><div class="post-tts-progress" id="tts-progress-${p.id}"></div><div class="post-tts-body" id="tts-body-${p.id}"></div></div>
     <div class="post-actions">
       <button class="action-btn post-play-btn" data-id="${p.id}">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
