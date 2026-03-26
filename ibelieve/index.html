@@ -1369,6 +1369,9 @@ async function loadPosts(appendMode){
     const rInline=document.getElementById('stat-replies-inline'); if(rInline) rInline.textContent=statReplies;
     await translatePostsForCurrentLanguage();
   }catch(e){console.error('Load failed:',e);posts=[];}
+  finally{ d1Loading=false; }
+  renderFeed();
+  renderContextSidebar();
 }
 
 async function translatePostsForCurrentLanguage(){
@@ -1738,7 +1741,6 @@ async function init(){localStorage.removeItem("ibelieve_posts_cache");
   const savedLang=localStorage.getItem('ibelieve-lang');
   if(savedLang&&I18N[savedLang]) await applyLanguage(savedLang);
   await loadPosts();
-  renderFeed();
   loadSnapshot(); // async, non-blocking
   renderContextSidebar();
   // Wait for D3 to load, then init mini graph
