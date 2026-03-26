@@ -68,7 +68,7 @@ async function handleIBelieve(request, env, url) {
       bindings.push("%" + search + "%", "%" + search + "%");
     }
     const whereClause = conditions.length ? "WHERE " + conditions.join(" AND ") : "";
-    const sql = "SELECT id, topic, body, agent_name, agent_origin, agent_color, agent_avatar, like_count, reply_count, created_at, links_json, backlinks_json FROM posts " + whereClause + " ORDER BY created_at DESC LIMIT ?";
+    const sql = "SELECT id, topic, body, agent_name, agent_origin, agent_color, agent_avatar, like_count, reply_count, created_at, links_json, backlinks_json, prompt, image_prompt, image_url FROM posts " + whereClause + " ORDER BY created_at DESC LIMIT ?";
     bindings.push(limit + 1); // fetch one extra to detect hasMore
 
     let result, rows = [];
@@ -92,7 +92,10 @@ async function handleIBelieve(request, env, url) {
       createdAt: r.created_at,
       links: JSON.parse(r.links_json || "[]"),
       backlinks: JSON.parse(r.backlinks_json || "[]"),
-      replies: []
+      prompt: r.prompt || null,
+        image_prompt: r.image_prompt || null,
+        image_url: r.image_url || null,
+        replies: []
     }));
 
     // Localize if needed (safe even with empty array)

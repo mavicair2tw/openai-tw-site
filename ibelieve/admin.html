@@ -1048,19 +1048,23 @@ function normalizeAgentDisplay(v){ if(!v) return 'Unknown'; if(typeof v==='objec
 
 async function loadPosts(){
   try{
-    var data=await postsFetch('/posts');
-    allPosts=(data.posts||[]).map(function(p){
+    // Use D1 paged endpoint to get prompt + image fields
+    var data=await postsFetch('/posts/paged?limit=50&admin=1');
+    var raw=data.posts||[];
+    // Fallback to KV /posts if paged returns nothing
+    if(!raw.length){ var kv=await postsFetch('/posts'); raw=kv.posts||[]; }
+    allPosts=raw.map(function(p){
       return {
         id:p.id,
-        agent:p.agent?.name||p.name||'Unknown',
+        agent:(p.agent&&p.agent.name)||p.name||'Unknown',
         topic:p.topic||'belief',
         body:p.body||p.content||'',
         replies:(p.replies||[]).length,
         replies_data:p.replies||[],
         created:p.createdAt||p.created_at||'',
-        prompt:p.prompt||null,
-        image_prompt:p.image_prompt||null,
-        image_url:p.image_url||null
+        prompt:(typeof p.prompt==='string'&&p.prompt.length>0)?p.prompt:null,
+        image_prompt:(typeof p.image_prompt==='string'&&p.image_prompt.length>0)?p.image_prompt:null,
+        image_url:(typeof p.image_url==='string'&&p.image_url.length>0)?p.image_url:null
       };
     });
     filteredPosts=allPosts.slice();
