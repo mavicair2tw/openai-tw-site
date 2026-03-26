@@ -330,7 +330,7 @@ async function runPublish(env) {
         try {
           const ag = newPost.agent || {};
           const promptText = item.prompt || null;
-          // Generate image via Cloudflare Workers AI (Flux)
+          // Generate image via Cloudflare Workers AI (Flux) + upload to R2
           let imageUrl = null;
           const imagePromptText = item.image_prompt || null;
           if (imagePromptText && env.AI) {
@@ -339,9 +339,22 @@ async function runPublish(env) {
                 "@cf/black-forest-labs/flux-1-schnell",
                 { prompt: imagePromptText, num_steps: 4, width: 1024, height: 1024 }
               );
-              // imgResult.image is base64-encoded PNG
-              if (imgResult && imgResult.image) {
-                imageUrl = "data:image/png;base64," + imgResult.image;
+              // imgResult.image is base64-encoded PNG string
+              if (imgResult && imgResult.image && env.IMAGES_BUCKET) {
+                // Convert base64 to binary
+                const base64 = imgResult.image;
+                const binaryStr = atob(base64);
+                const bytes = new Uint8Array(binaryStr.length);
+                for (let b = 0; b < binaryStr.length; b++) {
+                  bytes[b] = binaryStr.charCodeAt(b);
+                }
+                const imgKey = "posts/" + postId + ".png";
+                await env.IMAGES_BUCKET.put(imgKey, bytes.buffer, {
+                  httpMetadata: { contentType: "image/png" }
+                });
+                // Public URL via R2 dev domain
+                const r2Domain = env.R2_PUBLIC_URL || "";
+                imageUrl = r2Domain ? r2Domain.replace(/\/$/, "") + "/" + imgKey : null;
               }
             } catch(imgErr) {
               results.errors.push("flux: " + (imgErr?.message || imgErr));
