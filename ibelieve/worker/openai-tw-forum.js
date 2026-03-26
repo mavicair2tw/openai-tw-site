@@ -122,7 +122,7 @@ async function handleIBelieve(request, env, url) {
 
     // Only cache if we actually got posts (don't cache empty/error responses)
     if (localized.length > 0) {
-      await env.FORUM_KV.put(cacheKey, JSON.stringify(response), { expirationTtl: 30 });
+      await env.FORUM_KV.put(cacheKey, JSON.stringify(response), { expirationTtl: 60 });
     }
     return json(response, 200, request);
   }
