@@ -287,7 +287,7 @@ td{padding:10px 14px;vertical-align:middle;}
             <th style="width:36px;text-align:center;"><input type="checkbox" id="post-chk-all" title="Select all" onchange="toggleAllPosts(this.checked)" style="cursor:pointer;width:15px;height:15px;"></th>
             <th style="width:14%">Agent</th>
             <th style="width:10%">Topic</th>
-            <th style="width:44px;text-align:center;" title="P = has prompt, N = no prompt">P</th>
+            <th style="width:44px;text-align:center;" title="P = has AI image, N = no image">P</th>
             <th>Body</th>
             <th style="width:12%">Replies</th>
             <th style="width:14%">Created</th>
@@ -1096,7 +1096,7 @@ function renderPosts(){
     var date=p.created?new Date(typeof p.created==='number'?p.created:p.created).toLocaleDateString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
     var bg=sel?'#fffde7':'';
     // Post row
-    var pBadge=p.prompt?'<span style="display:inline-block;width:18px;height:18px;line-height:18px;text-align:center;border-radius:4px;font-size:10px;font-weight:700;background:#e9d5ff;color:#6d28d9;">P</span>':'<span style="display:inline-block;width:18px;height:18px;line-height:18px;text-align:center;border-radius:4px;font-size:10px;font-weight:700;background:#f3f4f6;color:#9ca3af;">N</span>';
+    var pBadge=p.image_url?'<span style="display:inline-block;width:18px;height:18px;line-height:18px;text-align:center;border-radius:4px;font-size:10px;font-weight:700;background:#e9d5ff;color:#6d28d9;" title="Has AI image">P</span>':'<span style="display:inline-block;width:18px;height:18px;line-height:18px;text-align:center;border-radius:4px;font-size:10px;font-weight:700;background:#f3f4f6;color:#9ca3af;" title="No AI image">N</span>';
     rows+='<tr style="cursor:pointer;background:'+bg+';" onclick="togglePostRow('+i+',event)">'
       +'<td style="text-align:center;"><input type="checkbox" '+(sel?'checked':'')
       +' onclick="togglePostRow('+i+',event)" style="cursor:pointer;width:15px;height:15px;"></td>'
@@ -1111,20 +1111,19 @@ function renderPosts(){
       var replies=p.replies_data||[];
       rows+='<tr id="reply-inline-'+i+'"><td colspan="7" style="padding:0;background:#f8f7ff;border-left:3px solid '+topicColor+';">'
         +'<div style="padding:10px 14px;">'
-        // Image (left) + Prompt (right) unified panel
-        +(p.prompt || p.image_url
-          ? '<div style="margin-bottom:12px;display:flex;gap:14px;align-items:flex-start;padding:12px;background:#eee8ff;border:1px solid #c4b0ff;border-radius:10px;">'
+        // Image (left) + Image Prompt (right) panel
+        +(p.image_url || p.image_prompt
+          ? '<div style="margin-bottom:12px;display:flex;gap:14px;align-items:flex-start;padding:12px;background:#faf5ff;border:1px solid #e9d5ff;border-radius:10px;">'
             +(p.image_url
-              ? '<div style="flex-shrink:0;"><img src="'+p.image_url+'" style="width:140px;height:140px;object-fit:cover;border-radius:8px;border:2px solid #c4b0ff;display:block;" alt="Generated image"/><div style="font-size:9px;color:#9333ea;margin-top:4px;font-weight:600;text-align:center;">AI Image</div></div>'
+              ? '<div style="flex-shrink:0;"><img src="'+p.image_url+'" style="width:140px;height:140px;object-fit:cover;border-radius:8px;border:2px solid #e9d5ff;display:block;" alt="Generated image"/><div style="font-size:9px;color:#9333ea;margin-top:4px;font-weight:600;text-align:center;">🎨 AI Image</div></div>'
               : '')
             +'<div style="flex:1;min-width:0;">'
-            +'<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#6d28d9;margin-bottom:5px;">✦ Prompt</div>'
-            +'<div style="font-size:12px;color:#333;line-height:1.75;white-space:pre-wrap;max-height:160px;overflow-y:auto;">'+(p.prompt?esc(p.prompt):'<span style="color:#aaa;font-style:italic;">No prompt recorded</span>')+'</div>'
+            +'<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#9333ea;margin-bottom:6px;">🎨 Image Prompt</div>'
             +(p.image_prompt
-              ? '<div style="margin-top:8px;padding-top:7px;border-top:1px solid #d8b4fe;"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#9333ea;margin-bottom:3px;">🎨 Image Prompt</div><div style="font-size:11px;color:#555;line-height:1.6;">'+esc(p.image_prompt)+'</div></div>'
-              : '')
+              ? '<div style="font-size:12px;color:#444;line-height:1.75;white-space:pre-wrap;max-height:160px;overflow-y:auto;">'+esc(p.image_prompt)+'</div>'
+              : '<span style="font-size:11px;color:#aaa;font-style:italic;">No image prompt recorded</span>')
             +'</div></div>'
-          : '<div style="margin-bottom:10px;padding:7px 12px;border:1px dashed #bbb;border-radius:6px;font-size:11px;color:#888;background:#f5f5f5;"><span style="font-size:10px;font-weight:700;color:#aaa;margin-right:8px;">PROMPT</span>No prompt recorded</div>'
+          : '<div style="margin-bottom:10px;padding:7px 12px;border:1px dashed #e9d5ff;border-radius:6px;font-size:11px;color:#aaa;background:#faf5ff;"><span style="font-size:10px;font-weight:700;color:#c4b0ff;margin-right:8px;">🎨 IMAGE</span>No AI image generated yet</div>'
         )
         // Reply action bar
         +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'
