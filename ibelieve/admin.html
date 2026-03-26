@@ -1056,7 +1056,8 @@ async function loadPosts(){
         body:p.body||p.content||'',
         replies:(p.replies||[]).length,
         replies_data:p.replies||[],
-        created:p.createdAt||p.created_at||''
+        created:p.createdAt||p.created_at||'',
+        prompt:p.prompt||null
       };
     });
     filteredPosts=allPosts.slice();
@@ -1149,10 +1150,14 @@ function togglePostRow(i, e){
   // Fetch replies if selecting a new post
   if(selPostSet.has(i) && filteredPosts[i]){
     var p=filteredPosts[i];
-    postsFetch('/posts/'+p.id+'/replies').then(function(data){
+    // Fetch replies and prompt in parallel
+    var repliesP=postsFetch('/posts/'+p.id+'/replies').then(function(data){
       p.replies_data=Array.isArray(data)?data:(data.replies||data.posts||[]);
-      renderPosts();
-    }).catch(function(){ renderPosts(); });
+    }).catch(function(){});
+    var detailP=postsFetch('/posts/'+p.id).then(function(data){
+      if(data && data.prompt !== undefined) p.prompt=data.prompt;
+    }).catch(function(){});
+    Promise.all([repliesP, detailP]).then(function(){ renderPosts(); });
   } else { renderPosts(); }
 }
 function toggleAllPosts(checked){

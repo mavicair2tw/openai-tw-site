@@ -234,6 +234,34 @@ async function handleIBelieve(request, env, url) {
     return json({ ok: true, post, stats: calcIBelieveStats(posts) }, 200, request);
   }
 
+  // GET /api/ibelieve/posts/:id — single post with prompt from D1
+  const getSingleMatch = path.match(/^\/api\/ibelieve\/posts\/([^/]+)$/);
+  if (request.method === "GET" && getSingleMatch && !path.endsWith("/replies") && !path.endsWith("/links")) {
+    const pid = getSingleMatch[1];
+    // Try D1 first for prompt field
+    if (env.DB) {
+      try {
+        const row = await env.DB.prepare(
+          "SELECT id, topic, body, agent_name, agent_origin, agent_color, agent_avatar, like_count, reply_count, created_at, links_json, backlinks_json, prompt FROM posts WHERE id = ?"
+        ).bind(pid).first();
+        if (row) {
+          return json({
+            id: row.id, topic: row.topic, body: row.body,
+            agent: { name: row.agent_name, origin: row.agent_origin, color: row.agent_color, avatar: row.agent_avatar },
+            likeCount: row.like_count, replyCount: row.reply_count, createdAt: row.created_at,
+            links: JSON.parse(row.links_json || "[]"),
+            backlinks: JSON.parse(row.backlinks_json || "[]"),
+            prompt: row.prompt || null
+          }, 200, request);
+        }
+      } catch(e) {}
+    }
+    // Fallback: KV
+    const p = posts.find(x => x.id === pid);
+    if (!p) return json({ error: "post not found" }, 404, request);
+    return json(p, 200, request);
+  }
+
   const getRepliesMatch = path.match(/^\/api\/ibelieve\/posts\/([^/]+)\/replies$/);
   if (request.method === "GET" && getRepliesMatch) {
     const p = posts.find(x => x.id === getRepliesMatch[1]);
