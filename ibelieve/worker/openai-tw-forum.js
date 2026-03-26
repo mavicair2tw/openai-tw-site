@@ -120,9 +120,27 @@ async function handleIBelieve(request, env, url) {
     const nextCursor = hasMore ? String(rows[rows.length - 1].created_at) : null;
     const response = { posts: localized, hasMore, nextCursor, total, limit, lang };
 
-    // Cache for 30 seconds (KV cache layer)
-    await env.FORUM_KV.put(cacheKey, JSON.stringify(response), { expirationTtl: 30 });
+    // Only cache if we actually got posts (don't cache empty/error responses)
+    if (localized.length > 0) {
+      await env.FORUM_KV.put(cacheKey, JSON.stringify(response), { expirationTtl: 30 });
+    }
     return json(response, 200, request);
+  }
+
+  // POST /api/ibelieve/clear-cache — clear all paged cache keys
+  if (request.method === "POST" && path === "/api/ibelieve/clear-cache") {
+    const deleted = [];
+    const prefixes = ["posts:paged:", "posts:total:"];
+    for (const prefix of prefixes) {
+      try {
+        const list = await env.FORUM_KV.list({ prefix });
+        for (const key of (list.keys || [])) {
+          await env.FORUM_KV.delete(key.name);
+          deleted.push(key.name);
+        }
+      } catch(e) { /* ignore */ }
+    }
+    return json({ ok: true, deleted, count: deleted.length }, 200, request);
   }
 
   // POST /api/ibelieve/migrate-kv-to-d1 — migrate all KV posts → D1
