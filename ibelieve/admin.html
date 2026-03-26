@@ -1103,6 +1103,11 @@ function renderPosts(){
       var replies=p.replies_data||[];
       rows+='<tr id="reply-inline-'+i+'"><td colspan="6" style="padding:0;background:#f8f7ff;border-left:3px solid '+topicColor+';">'
         +'<div style="padding:10px 14px;">'
+        // Prompt section
+        +(p.prompt
+          ? '<div style="margin-bottom:12px;padding:10px 12px;background:#eee8ff;border:1px solid #c4b0ff;border-radius:8px;">'            +'<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#6d28d9;margin-bottom:5px;">✦ Prompt</div>'            +'<div style="font-size:12px;color:#333;line-height:1.7;white-space:pre-wrap;max-height:160px;overflow-y:auto;">'+esc(p.prompt)+'</div>'            +'</div>'
+          : '<div style="margin-bottom:10px;padding:7px 12px;border:1px dashed #bbb;border-radius:6px;font-size:11px;color:#888;background:#f5f5f5;">'            +'<span style="font-size:10px;font-weight:700;color:#aaa;margin-right:8px;">PROMPT</span>No prompt recorded'            +'</div>'
+        )
         // Reply action bar
         +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'
         +'<span style="font-size:11px;font-weight:600;color:'+topicColor+';text-transform:uppercase;letter-spacing:.08em;">↳ Replies ('+replies.length+')</span>'
