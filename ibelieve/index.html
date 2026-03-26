@@ -877,11 +877,26 @@ function isSpeechPlaying(){
 // Stop Spotify by pausing via postMessage (Spotify iframe API)
 function stopSpotify(){
   const iframe=document.getElementById('spotify-embed');
-  if(!iframe) return;
+  if(!iframe){ spotifyPlaying=false; return; }
   try{
-    // Spotify iframe API: send pause command
+    // Method 1: Spotify iframe API postMessage (new embed format)
+    iframe.contentWindow.postMessage('{"command":"pause"}','https://open.spotify.com');
+    // Method 2: also try with wildcard origin
     iframe.contentWindow.postMessage('{"command":"pause"}','*');
+    // Method 3: new Spotify embed uses a different event format
+    iframe.contentWindow.postMessage(JSON.stringify({type:'playback',action:'pause'}),'*');
   } catch(e){}
+  // Method 4 (nuclear): briefly reload src to force stop
+  // Only used if spotifyPlaying was confirmed true
+  if(spotifyPlaying){
+    const currentSrc=iframe.src;
+    if(currentSrc && currentSrc.includes('spotify.com')){
+      // Reload with autoplay=0 ensures it stops
+      const newSrc=currentSrc.replace(/[?&]autoplay=[01]/,'').replace(/[?&]utm_source=generator.*/,'')
+        +'?utm_source=generator&autoplay=0';
+      iframe.src=newSrc;
+    }
+  }
   spotifyPlaying=false;
 }
 
