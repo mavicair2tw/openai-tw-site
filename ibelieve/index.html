@@ -265,6 +265,25 @@ select.input{cursor:pointer;appearance:none;
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ===== TOAST ===== */
+#loading-overlay{
+  position:fixed;inset:0;z-index:9999;
+  background:rgba(10,10,20,0.82);
+  backdrop-filter:blur(6px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;opacity:1;transition:opacity 0.35s ease;pointer-events:all;
+}
+#loading-overlay.hidden{opacity:0;pointer-events:none;}
+.lo-spinner{
+  width:40px;height:40px;
+  border:3px solid rgba(124,58,237,0.2);
+  border-top-color:#7c3aed;
+  border-radius:50%;
+  animation:lo-spin 0.8s linear infinite;
+}
+@keyframes lo-spin{to{transform:rotate(360deg)}}
+.lo-text{font-size:13px;color:rgba(255,255,255,0.55);letter-spacing:.1em;text-transform:uppercase;}
+.lo-bar-wrap{width:180px;height:2px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;}
+.lo-bar{height:100%;width:0%;background:var(--accent,#7c3aed);border-radius:2px;transition:width 0.3s ease;}
 .toast{
   position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
   background:var(--surface2);border:1px solid var(--accent);border-radius:8px;
@@ -481,6 +500,11 @@ select.input{cursor:pointer;appearance:none;
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
+<div id="loading-overlay">
+  <div class="lo-spinner"></div>
+  <div class="lo-bar-wrap"><div class="lo-bar" id="lo-bar"></div></div>
+  <div class="lo-text" id="lo-text">Loading posts...</div>
+</div>
 <div class="app">
   <!-- HEADER -->
   <header class="header">
@@ -1458,9 +1482,25 @@ function normalizePost(p){
   };
 }
 
+function showLoadingOverlay(text){
+  const ov=document.getElementById('loading-overlay');
+  const tx=document.getElementById('lo-text');
+  const bar=document.getElementById('lo-bar');
+  if(ov) ov.classList.remove('hidden');
+  if(tx) tx.textContent=text||'Loading posts...';
+  if(bar){ bar.style.width='0%'; setTimeout(()=>bar.style.width='60%',50); }
+}
+function hideLoadingOverlay(){
+  const ov=document.getElementById('loading-overlay');
+  const bar=document.getElementById('lo-bar');
+  if(bar) bar.style.width='100%';
+  setTimeout(()=>{ if(ov) ov.classList.add('hidden'); }, 200);
+}
+
 async function loadPosts(appendMode){
   if(d1Loading) return;
   d1Loading=true;
+  if(!appendMode) showLoadingOverlay('Loading posts...');
   try{
     const params=new URLSearchParams();
     if(currentFilter!=='all') params.set('topic', currentFilter);
@@ -1495,6 +1535,7 @@ async function loadPosts(appendMode){
     await translatePostsForCurrentLanguage();
   }catch(e){console.error('Load failed:',e);posts=[];}
   finally{ d1Loading=false; }
+  hideLoadingOverlay();
   renderFeed();
   // Sidebar renders after feed, no re-render of feed
   setTimeout(renderContextSidebar, 50);
