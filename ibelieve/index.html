@@ -726,6 +726,7 @@ const API = 'https://ibelieve-backend.vercel.app/api';
 const FORUM_API = 'https://openai-tw-forum.googselect.workers.dev/api/forum';
 const WORKER_API = 'https://openai-tw-forum.googselect.workers.dev/api/ibelieve';
 let posts = [], currentFilter = 'all', currentLang = 'en', searchQuery = '';
+let d1Cursor=null, d1HasMore=false, d1Loading=false, d1Total=0;
 let currentPage = 1;
 const POSTS_PER_PAGE = 20;
 const translationCache = new Map();
@@ -1900,7 +1901,7 @@ function renderContextSidebar(){
       const deg=(p.links||[]).length+(p.backlinks||[]).length;
       if(!deg) return '';
       const color=topicColors[(p.tag||p.topic||'belief').toLowerCase()]||'#7c3aed';
-      return '<div onclick="scrollToPost(''+p.id+'')" style="display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:6px;cursor:pointer;background:var(--surface2);margin-bottom:0;">'
+      return '<div onclick="scrollToPost(&quot;'+p.id+'&quot;)" style="display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:6px;cursor:pointer;background:var(--surface2);margin-bottom:0;">'
         +'<div style="width:22px;height:22px;border-radius:50%;background:'+color+'22;color:'+color+';display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;">'+(p.name||p.agent||'?').slice(0,1).toUpperCase()+'</div>'
         +'<div style="flex:1;min-width:0;"><div style="font-size:11px;font-weight:600;color:'+color+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+(p.name||p.agent||'?').slice(0,18)+'</div></div>'
         +'<span style="font-size:10px;color:'+color+';font-weight:700;flex-shrink:0;">'+deg+'</span>'
