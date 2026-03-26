@@ -650,6 +650,68 @@ async function handleIBelieve(request, env, url) {
     return json(alResults, 200, request);
   }
 
+  // GET /api/ibelieve/notifications
+  if (request.method === "GET" && path === "/api/ibelieve/notifications") {
+    if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+    const rows = await env.DB.prepare("SELECT * FROM notifications ORDER BY updated_at DESC LIMIT 100").all();
+    return json({ notifications: rows.results || [] }, 200, request);
+  }
+  // POST /api/ibelieve/notifications
+  if (request.method === "POST" && path === "/api/ibelieve/notifications") {
+    if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+    const nb = await request.json().catch(() => ({}));
+    const ntitle = String(nb.title || "").trim();
+    const ncontent = String(nb.content || "").trim();
+    if (!ntitle || !ncontent) return json({ error: "title and content required" }, 400, request);
+    const nid = "notif-" + crypto.randomUUID().slice(0,8);
+    const nnow = Math.floor(Date.now()/1000);
+    await env.DB.prepare("INSERT INTO notifications (id,title,content,status,created_at,updated_at) VALUES (?,?,?,?,?,?)").bind(nid,ntitle,ncontent,"draft",nnow,nnow).run();
+    return json({ ok: true, id: nid }, 200, request);
+  }
+  // PUT /api/ibelieve/notifications/:id
+  const notifPutMatch = path.match(/^\/api\/ibelieve\/notifications\/([^/]+)$/);
+  if (request.method === "PUT" && notifPutMatch) {
+    if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+    const pb = await request.json().catch(() => ({}));
+    const ptitle = String(pb.title || "").trim();
+    const pcontent = String(pb.content || "").trim();
+    if (!ptitle || !pcontent) return json({ error: "title and content required" }, 400, request);
+    const pnow = Math.floor(Date.now()/1000);
+    await env.DB.prepare("UPDATE notifications SET title=?,content=?,updated_at=? WHERE id=?").bind(ptitle,pcontent,pnow,notifPutMatch[1]).run();
+    return json({ ok: true }, 200, request);
+  }
+  // DELETE /api/ibelieve/notifications/:id
+  const notifDelMatch = path.match(/^\/api\/ibelieve\/notifications\/([^/]+)$/);
+  if (request.method === "DELETE" && notifDelMatch) {
+    if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+    await env.DB.prepare("DELETE FROM notifications WHERE id=?").bind(notifDelMatch[1]).run();
+    return json({ ok: true }, 200, request);
+  }
+  // POST /api/ibelieve/notifications/:id/send
+  const notifSendMatch = path.match(/^\/api\/ibelieve\/notifications\/([^/]+)\/send$/);
+  if (request.method === "POST" && notifSendMatch) {
+    if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+    const nrow = await env.DB.prepare("SELECT * FROM notifications WHERE id=?").bind(notifSendMatch[1]).first();
+    if (!nrow) return json({ error: "notification not found" }, 404, request);
+    try {
+      const lineMsg = nrow.title + "\n\n" + nrow.content;
+      const cronRes = await fetch("https://ibelieve-cron.googselect.workers.dev/send-line", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: lineMsg })
+      });
+      const cronData = await cronRes.json().catch(() => ({}));
+      if (cronData.ok) {
+        const snow = Math.floor(Date.now()/1000);
+        await env.DB.prepare("UPDATE notifications SET status='sent',sent_at=?,updated_at=? WHERE id=?").bind(snow,snow,notifSendMatch[1]).run();
+        return json({ ok: true, sent: true }, 200, request);
+      }
+      return json({ ok: false, error: "send failed", detail: cronData }, 500, request);
+    } catch(e) {
+      return json({ ok: false, error: e.message }, 500, request);
+    }
+  }
+
   // POST /api/ibelieve/ai-report — proxy to Anthropic API (browser CORS workaround)
   if (request.method === "POST" && path === "/api/ibelieve/ai-report") {
     if (!env.ANTHROPIC_API_KEY) return json({ error: "ANTHROPIC_API_KEY not configured" }, 500, request);
