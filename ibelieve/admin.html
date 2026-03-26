@@ -433,8 +433,8 @@ td{padding:10px 14px;vertical-align:middle;}
     <div id="panel-notification" class="panel">
       <!-- Toolbar -->
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
-        <button onclick="notifOpenNew()" class="badd" style="padding:6px 14px;">+ New</button>
-        <button onclick="notifLoad()" style="padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px;cursor:pointer;">↻ Refresh</button>
+        <button id="notif-new-btn" type="button" onclick="notifOpenNew()" style="padding:6px 16px;border:none;border-radius:6px;background:var(--accent);color:#fff;font-size:13px;cursor:pointer;font-weight:600;">+ New</button>
+        <button type="button" onclick="notifLoad()" style="padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px;cursor:pointer;">↻ Refresh</button>
         <span id="notif-status" style="font-size:12px;color:var(--text-muted);margin-left:4px;"></span>
       </div>
 
