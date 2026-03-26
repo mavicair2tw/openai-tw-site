@@ -854,6 +854,7 @@ async function translateBatch(texts, lang=currentLang){
 let activeUtterance=null;
 let activePostButton=null;
 let activeMode='';
+let spotifyPlaying=false;  // tracks if Spotify is likely playing
 
 function stopSpeech(hidePreview=false){
   if('speechSynthesis' in window){
@@ -872,6 +873,39 @@ function stopSpeech(hidePreview=false){
 function isSpeechPlaying(){
   return ('speechSynthesis' in window) && (window.speechSynthesis.speaking || window.speechSynthesis.pending);
 }
+
+// Stop Spotify by pausing via postMessage (Spotify iframe API)
+function stopSpotify(){
+  const iframe=document.getElementById('spotify-embed');
+  if(!iframe) return;
+  try{
+    // Spotify iframe API: send pause command
+    iframe.contentWindow.postMessage('{"command":"pause"}','*');
+  } catch(e){}
+  spotifyPlaying=false;
+}
+
+// Listen for Spotify playback events via postMessage
+window.addEventListener('message', function(e){
+  if(!e.data) return;
+  try{
+    const d=typeof e.data==='string'?JSON.parse(e.data):e.data;
+    // Spotify sends playback_update with isPaused field
+    if(d.type==='playback_update'){
+      const wasPlaying=spotifyPlaying;
+      spotifyPlaying=!d.payload?.isPaused;
+      // If Spotify just started playing, stop TTS
+      if(spotifyPlaying && !wasPlaying){
+        if(isSpeechPlaying()||narrationActive){
+          narrationActive=false;
+          stopNarrationDisplay();
+          stopSpeech();
+          syncTopListenButton();
+        }
+      }
+    }
+  }catch(ignore){}
+});
 
 function syncTopListenButton(){
   const listenBtn=document.getElementById('top-listen-btn');
@@ -908,6 +942,8 @@ function getBestVoice(langCode){
 function doSpeak(text, mode, button){
   const clean=String(text||'').trim();
   if(!clean) return;
+  // Stop Spotify before TTS
+  if(spotifyPlaying) stopSpotify();
   const utter=new SpeechSynthesisUtterance(clean);
   const langCode=getLangCode();
   utter.lang=langCode;
@@ -1242,6 +1278,7 @@ function playTopicNarration(){
 
   narrationPosts=visiblePosts;
   narrationPostIndex=0;
+  if(spotifyPlaying) stopSpotify();
   narrationActive=true;
   speakNextPost();
 }
@@ -1262,6 +1299,7 @@ function playPostNarration(post, button){
   if(narrationActive){ narrationActive=false; stopNarrationDisplay(); }
   stopSpeech();
   clearHighlightTimer();
+  if(spotifyPlaying) stopSpotify();
 
   // Clear all other open TTS panels
   document.querySelectorAll('.post-tts-panel.active').forEach(el=>el.classList.remove('active'));
