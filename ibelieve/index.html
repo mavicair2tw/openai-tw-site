@@ -1353,8 +1353,7 @@ async function applyLanguage(lang){
   if(ps[0])ps[0].innerHTML=t('aboutP1');if(ps[1])ps[1].innerHTML=t('aboutP2');
   if(ps[2])ps[2].innerHTML=t('aboutP3');if(ps[3])ps[3].innerHTML=t('aboutP4');
   if(ps[4])ps[4].innerHTML=t('aboutNote');
-  await loadPosts();
-  renderFeed();
+  await loadPosts(); // renderFeed called inside loadPosts
 }
 
 document.getElementById('lang-bar').addEventListener('click',async e=>{const b=e.target.closest('.lang-btn');if(b)await applyLanguage(b.dataset.lang)});
@@ -1452,7 +1451,8 @@ async function loadPosts(appendMode){
   }catch(e){console.error('Load failed:',e);posts=[];}
   finally{ d1Loading=false; }
   renderFeed();
-  renderContextSidebar();
+  // Sidebar renders after feed, no re-render of feed
+  setTimeout(renderContextSidebar, 50);
 }
 
 async function translatePostsForCurrentLanguage(){
@@ -1821,8 +1821,11 @@ async function init(){localStorage.removeItem("ibelieve_posts_cache");
   createStars();
   updateComposeOverlay();
   const savedLang=localStorage.getItem('ibelieve-lang');
-  if(savedLang&&I18N[savedLang]) await applyLanguage(savedLang);
-  await loadPosts();
+  if(savedLang&&I18N[savedLang]){
+    await applyLanguage(savedLang); // applyLanguage already calls loadPosts
+  } else {
+    await loadPosts(); // only call if applyLanguage was NOT called
+  }
   loadSnapshot(); // async, non-blocking
   renderContextSidebar();
   // Wait for D3 to load, then init mini graph
@@ -2009,13 +2012,15 @@ function ctxFilterLink(btn,type){
 }
 
 function filterAndRender(){
+  // If no link filter active, use main renderFeed (handles pagination + search)
+  if(ctxLinkFilter==='all'){ renderFeed(); return; }
   const q=typeof searchQuery!=='undefined'?searchQuery:'';
   const topicF=typeof currentFilter!=='undefined'?currentFilter:'all';
   let filtered=posts;
   if(q) filtered=filtered.filter(p=>matchesSearch(p,q));
   if(topicF!=='all') filtered=filtered.filter(p=>(p.tag||p.topic||'belief')===topicF);
   if(ctxLinkFilter==='isolated') filtered=filtered.filter(p=>!(p.links||[]).length&&!(p.backlinks||[]).length);
-  else if(ctxLinkFilter!=='all') filtered=filtered.filter(p=>(p.links||[]).some(l=>l.type===ctxLinkFilter));
+  else filtered=filtered.filter(p=>(p.links||[]).some(l=>l.type===ctxLinkFilter));
   const feed=document.getElementById('feed');
   if(feed){
     const paged=filtered.slice(0,20);
