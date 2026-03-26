@@ -691,22 +691,24 @@ async function handleIBelieve(request, env, url) {
   const notifSendMatch = path.match(/^\/api\/ibelieve\/notifications\/([^/]+)\/send$/);
   if (request.method === "POST" && notifSendMatch) {
     if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+    if (!env.LINE_TOKEN) return json({ error: "LINE_TOKEN not configured. Run: wrangler secret put LINE_TOKEN --name openai-tw-forum" }, 500, request);
     const nrow = await env.DB.prepare("SELECT * FROM notifications WHERE id=?").bind(notifSendMatch[1]).first();
     if (!nrow) return json({ error: "notification not found" }, 404, request);
     try {
       const lineMsg = nrow.title + "\n\n" + nrow.content;
-      const cronRes = await fetch("https://ibelieve-cron.googselect.workers.dev/send-line", {
+      const lineUserId = env.LINE_USER_ID || "Uad1a752bb0186d090cd36d0cc861a8d8";
+      const lineRes = await fetch("https://api.line.me/v2/bot/message/push", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: lineMsg })
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + env.LINE_TOKEN },
+        body: JSON.stringify({ to: lineUserId, messages: [{ type: "text", text: lineMsg }] })
       });
-      const cronData = await cronRes.json().catch(() => ({}));
-      if (cronData.ok) {
-        const snow = Math.floor(Date.now()/1000);
-        await env.DB.prepare("UPDATE notifications SET status='sent',sent_at=?,updated_at=? WHERE id=?").bind(snow,snow,notifSendMatch[1]).run();
-        return json({ ok: true, sent: true }, 200, request);
+      if (!lineRes.ok) {
+        const errTxt = await lineRes.text();
+        return json({ ok: false, error: "LINE API " + lineRes.status + ": " + errTxt }, 500, request);
       }
-      return json({ ok: false, error: "send failed", detail: cronData }, 500, request);
+      const snow = Math.floor(Date.now()/1000);
+      await env.DB.prepare("UPDATE notifications SET status='sent',sent_at=?,updated_at=? WHERE id=?").bind(snow,snow,notifSendMatch[1]).run();
+      return json({ ok: true, sent: true }, 200, request);
     } catch(e) {
       return json({ ok: false, error: e.message }, 500, request);
     }
