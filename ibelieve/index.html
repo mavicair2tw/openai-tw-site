@@ -88,7 +88,7 @@ body::before{
 .profile-search .profile-btn{padding:8px 14px;min-width:unset;font-size:0.75rem}
 
 /* ===== STATS BAR ===== */
-.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:0;margin:0}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:0;margin:0}
 .stat{text-align:center;background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:16px 10px}
 .stat-num{font-size:1.5rem;font-weight:700;color:var(--accent)}
 .stat-label{font-size:0.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.14em;margin-top:4px}
@@ -1676,6 +1676,9 @@ async function loadSnapshot(){
     // Update Links stat with accurate snapshot data
     const elLinks=document.getElementById('stat-links');
     if(elLinks) elLinks.textContent=data.linkCount||0;
+    // Update inline stat too
+    const elLinksInline=document.getElementById('stat-links-inline');
+    if(elLinksInline) elLinksInline.textContent=data.linkCount||0;
     // Render hub posts
     renderHubs(data.hubs||[]);
   }catch(e){}
