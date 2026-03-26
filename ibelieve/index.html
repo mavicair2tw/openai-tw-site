@@ -971,7 +971,7 @@ function highlightWord(bodyEl, charIndex, charLength){
     const spLen=sp.textContent.length;
     if(idx>=charIndex && idx<charIndex+len){
       sp.style.background='#f5c518';
-      sp.style.color='#fff';
+      sp.style.color='#1a1a2e';
       if(!activeSpan) activeSpan=sp;
     } else {
       sp.style.background='';
@@ -980,6 +980,7 @@ function highlightWord(bodyEl, charIndex, charLength){
   });
   // Auto-scroll the preview box so active word stays visible
   if(activeSpan){
+    // Listen card: scroll narration-preview box
     const preview=document.getElementById('narration-preview');
     if(preview){
       const previewRect=preview.getBoundingClientRect();
@@ -987,6 +988,16 @@ function highlightWord(bodyEl, charIndex, charLength){
       const relTop=spanRect.top - previewRect.top + preview.scrollTop;
       const targetScroll=relTop - preview.clientHeight * 0.4;
       preview.scrollTo({top: Math.max(0, targetScroll), behavior:'smooth'});
+    }
+    // Post card TTS panel: scroll the page viewport so highlighted word stays visible
+    if(bodyEl && bodyEl.closest && bodyEl.closest('.post-tts-panel')){
+      const rect=activeSpan.getBoundingClientRect();
+      const viewH=window.innerHeight;
+      // Only scroll if word is in bottom 40% or top 20% of viewport
+      if(rect.top > viewH * 0.6 || rect.top < viewH * 0.2){
+        const targetY=window.scrollY + rect.top - viewH * 0.4;
+        window.scrollTo({top: Math.max(0, targetY), behavior:'smooth'});
+      }
     }
   }
 }
