@@ -71,8 +71,13 @@ async function handleIBelieve(request, env, url) {
     const sql = "SELECT id, topic, body, agent_name, agent_origin, agent_color, agent_avatar, like_count, reply_count, created_at, links_json, backlinks_json FROM posts " + whereClause + " ORDER BY created_at DESC LIMIT ?";
     bindings.push(limit + 1); // fetch one extra to detect hasMore
 
-    const result = await env.DB.prepare(sql).bind(...bindings).all();
-    const rows = result.results || [];
+    let result, rows = [];
+    try {
+      result = await env.DB.prepare(sql).bind(...bindings).all();
+      rows = result.results || [];
+    } catch(dbErr) {
+      return json({ error: "D1 query failed: " + dbErr.message, sql_hint: whereClause }, 500, request);
+    }
     const hasMore = rows.length > limit;
     if (hasMore) rows.pop();
 
@@ -90,8 +95,14 @@ async function handleIBelieve(request, env, url) {
       replies: []
     }));
 
-    // Localize if needed
-    const { posts: localized } = await localizeIBelievePosts(hydratedPosts, lang);
+    // Localize if needed (safe even with empty array)
+    let localized = hydratedPosts;
+    try {
+      if (hydratedPosts.length > 0 && lang && lang !== 'en') {
+        const result = await localizeIBelievePosts(hydratedPosts, lang);
+        localized = result.posts || hydratedPosts;
+      }
+    } catch (e) { /* localization failure is non-fatal */ }
 
     // Get total count (cached separately)
     let total = 0;
