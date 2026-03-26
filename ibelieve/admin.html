@@ -2050,9 +2050,9 @@ async function notifLoad() {
         + '<div style="font-size:12px;color:var(--text-muted);line-height:1.6;white-space:pre-wrap;">'+esc(n.content.slice(0,200))+(n.content.length>200?'…':'')+'</div>'
         + '</div>'
         + '<div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">'
-        + '<button onclick="notifSend(''+n.id+'')" style="padding:4px 12px;font-size:11px;border:none;border-radius:5px;background:var(--accent);color:#fff;cursor:pointer;font-weight:600;">📤 Send</button>'
-        + '<button onclick="notifEdit(''+n.id+'')" style="padding:4px 10px;font-size:11px;border:1px solid var(--border);border-radius:5px;background:var(--surface2);color:var(--text);cursor:pointer;">✎ Edit</button>'
-        + '<button onclick="notifDelete(''+n.id+'')" style="padding:4px 10px;font-size:11px;border:none;border-radius:5px;background:var(--danger,#e74c3c);color:#fff;cursor:pointer;">✗</button>'
+        + '<button onclick="notifSend(&quot;'+n.id+'&quot;)" style="padding:4px 12px;font-size:11px;border:none;border-radius:5px;background:var(--accent);color:#fff;cursor:pointer;font-weight:600;">📤 Send</button>'
+        + '<button onclick="notifEdit(&quot;'+n.id+'&quot;)" style="padding:4px 10px;font-size:11px;border:1px solid var(--border);border-radius:5px;background:var(--surface2);color:var(--text);cursor:pointer;">✎ Edit</button>'
+        + '<button onclick="notifDelete(&quot;'+n.id+'&quot;)" style="padding:4px 10px;font-size:11px;border:none;border-radius:5px;background:var(--danger,#e74c3c);color:#fff;cursor:pointer;">✗</button>'
         + '</div></div></div>';
     }).join('');
   } catch(e) {
