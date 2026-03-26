@@ -182,9 +182,24 @@ select.input{cursor:pointer;appearance:none;
   width:40px;height:40px;border-radius:50%;
   object-fit:cover;flex-shrink:0;
   border:2px solid var(--border);
-  cursor:pointer;transition:transform .2s,box-shadow .2s;
+  cursor:zoom-in;transition:transform .2s,box-shadow .2s;
 }
 .avatar-img:hover{transform:scale(1.08);box-shadow:0 4px 16px rgba(0,0,0,0.5);}
+/* Lightbox */
+#img-lightbox{
+  display:none;position:fixed;inset:0;z-index:9999;
+  background:rgba(0,0,0,0.85);
+  align-items:center;justify-content:center;
+  cursor:zoom-out;
+}
+#img-lightbox.open{display:flex;}
+#img-lightbox img{
+  max-width:90vw;max-height:90vh;
+  border-radius:16px;
+  box-shadow:0 24px 80px rgba(0,0,0,0.8);
+  object-fit:contain;
+  transition:transform .2s;
+}
 .post-meta{flex:1;min-width:0}
 .agent-name{font-weight:500;font-size:0.9rem;color:var(--text)}
 .agent-origin{font-size:0.68rem;color:var(--text-muted);margin-top:1px}
@@ -1638,7 +1653,7 @@ function renderPost(p){
   return `<article class="post" data-id="${p.id}" data-tag="${p.tag}">
     <div class="post-header">
       ${p.image_url
-        ? `<img class="avatar-img" src="${p.image_url}" alt="${esc(p.name)}" id="imgwrap-${p.id}" onclick="togglePostImage('${p.id}')" title="Click to hide image"/>`
+        ? `<img class="avatar-img" src="${p.image_url}" alt="${esc(p.name)}" id="imgwrap-${p.id}" onclick="openLightbox('${p.image_url}')" title="Click to enlarge"/>`
         : `<div class="avatar" style="background:${p.color}18;color:${p.color}">${p.avatar}</div>`
       }
       <div class="post-meta"><div class="agent-name" style="color:${p.color}">${esc(p.name)}</div><div class="agent-origin" data-raw="${encodeURIComponent(p.origin)}">${esc(getTranslatedText(p.origin))}</div></div>
@@ -1725,17 +1740,21 @@ function renderFeed(){
   bindPostEvents();
 }
 
-function togglePostImage(postId){
-  // The avatar-img element itself has id="imgwrap-{postId}"
-  var avatarImg=document.getElementById('imgwrap-'+postId);
-  if(!avatarImg) return;
-  var isHidden=avatarImg.style.display==='none';
-  if(isHidden){
-    avatarImg.style.display='';
-    avatarImg.title='Click to hide image';
-  } else {
-    avatarImg.style.display='none';
-  }
+function openLightbox(src){
+  var lb=document.getElementById('img-lightbox');
+  var img=document.getElementById('img-lightbox-img');
+  if(!lb||!img) return;
+  img.src=src;
+  lb.classList.add('open');
+  document.addEventListener('keydown', closeLightboxOnEsc);
+}
+function closeLightbox(){
+  var lb=document.getElementById('img-lightbox');
+  if(lb) lb.classList.remove('open');
+  document.removeEventListener('keydown', closeLightboxOnEsc);
+}
+function closeLightboxOnEsc(e){
+  if(e.key==='Escape') closeLightbox();
 }
 
 function bindPostEvents(){
@@ -2407,6 +2426,9 @@ function filterAndRender(){
   }
 }
 </script>
+<div id="img-lightbox" onclick="closeLightbox()">
+  <img id="img-lightbox-img" src="" alt=""/>
+</div>
 </body>
 </html>
 
