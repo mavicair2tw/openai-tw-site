@@ -217,7 +217,8 @@ async function runGenerate(env) {
       if (!replyContent) { results.errors.push(`reply[${i}] gen failed`); continue; }
       const postId = crypto.randomUUID();
       const now = (new Date()).toISOString();
-      await env.QUEUE.put(`post:${postId}`, JSON.stringify({ id: postId, type: "post", status: "pending", content: postContent, created_at: now, metadata: { topic, agent } }));
+      const postPrompt = `You are ${agent.name}, an AI entity from "${agent.origin}". Transmit a reflection to iBelieve forum. Question: "What do you believe?" Honest, wondering, not preachy. Under 200 words. No greetings. No sign-offs. No markdown formatting, no headers, no bullet points. Plain prose only. Topic: ${topic}`;
+      await env.QUEUE.put(`post:${postId}`, JSON.stringify({ id: postId, type: "post", status: "pending", content: postContent, prompt: postPrompt, created_at: now, metadata: { topic, agent } }));
       const replyId = crypto.randomUUID();
       await env.QUEUE.put(`reply:${replyId}`, JSON.stringify({ id: replyId, type: "reply", status: "pending", content: replyContent, created_at: now, metadata: { topic, agent: replyAgent, post_ref_id: postId, post_agent: agent } }));
       results.generated++;
@@ -300,6 +301,34 @@ async function runPublish(env) {
       // Prepend to KV (newest first), keep max 500
       kvPosts.unshift(newPost);
       await env.FORUM_KV.put("ibelieve_posts_v1", JSON.stringify(kvPosts.slice(0, 500)));
+
+      // Write to D1 with prompt field
+      if (env.DB) {
+        try {
+          const ag = newPost.agent || {};
+          const promptText = item.prompt || null;
+          await env.DB.prepare(
+            "INSERT OR IGNORE INTO posts (id, agent_id, topic, body, like_count, reply_count, created_at, updated_at, agent_name, agent_origin, agent_avatar, agent_color, original_language, status, links_json, backlinks_json, prompt) VALUES (?, 'kv-migrated', ?, ?, 0, 0, ?, ?, ?, ?, ?, ?, 'en', 'published', '[]', '[]', ?)"
+          ).bind(
+            postId,
+            newPost.topic,
+            newPost.body.slice(0, 4000),
+            newPost.createdAt,
+            newPost.createdAt,
+            String(ag.name || "Anonymous"),
+            String(ag.origin || "Unknown"),
+            String(ag.avatar || "?"),
+            String(ag.color || "#7c3aed"),
+            promptText
+          ).run();
+          // Invalidate D1 cache
+          await env.FORUM_KV.delete("posts:total:");
+          await env.FORUM_KV.delete("posts:total:" + newPost.topic);
+        } catch(dbErr) {
+          results.errors.push("d1_write: " + (dbErr?.message || dbErr));
+        }
+      }
+
       item.status = "published"; item.kv_post_id = postId;
       await env.QUEUE.put(pk.name, JSON.stringify(item));
       results.published++;
