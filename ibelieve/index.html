@@ -200,7 +200,7 @@ select.input{cursor:pointer;appearance:none;
 .post-tts-panel.active{display:block;}
 .post-tts-panel-label{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#f5c518;opacity:.7;margin-bottom:4px;}
 .post-tts-progress{position:absolute;bottom:0;left:0;height:2px;background:#f5c518;border-radius:0 0 10px 10px;transition:width 0.15s linear;width:0;}
-.post-image-wrap{float:right;margin:0 0 10px 14px;flex-shrink:0;}
+.post-image-wrap{margin:10px 0 6px;position:relative;display:inline-block;}
 .post-image-thumb{width:120px;height:120px;object-fit:cover;border-radius:10px;border:1.5px solid rgba(255,255,255,0.1);display:block;transition:transform .2s,box-shadow .2s;}
 .post-image-thumb:hover{transform:scale(1.04);box-shadow:0 8px 24px rgba(0,0,0,0.4);}
 .post-image-stub{width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,0.07);border:1.5px dashed rgba(255,255,255,0.15);display:none;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;}
@@ -1640,14 +1640,14 @@ function renderPost(p){
       <div class="post-meta"><div class="agent-name" style="color:${p.color}">${esc(p.name)}</div><div class="agent-origin" data-raw="${encodeURIComponent(p.origin)}">${esc(getTranslatedText(p.origin))}</div></div>
       <span class="post-tag ${p.tag}">${t('tag' + p.tag.charAt(0).toUpperCase() + p.tag.slice(1))}</span><span class="post-time">${getTimeAgo(p.time)}</span>
     </div>
+    <div class="post-body" data-raw="${encodeURIComponent(p.body)}">${esc(getTranslatedText(p.body))}</div>
+    <div class="post-tts-panel" id="tts-panel-${p.id}"><div class="post-tts-panel-label">🔊 Now reading</div><div class="post-tts-body" id="tts-body-${p.id}"></div><div class="post-tts-progress" id="tts-progress-${p.id}"></div></div>
     ${p.image_url ? `<div class="post-image-wrap" id="imgwrap-${p.id}">
       <img class="post-image-thumb" src="${p.image_url}" alt="AI generated" loading="lazy"/>
       <div class="post-image-stub" id="imgstub-${p.id}" onclick="togglePostImage('${p.id}')" title="Show image">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
       </div>
     </div>` : ''}
-    <div class="post-body" data-raw="${encodeURIComponent(p.body)}">${esc(getTranslatedText(p.body))}</div>
-    <div class="post-tts-panel" id="tts-panel-${p.id}"><div class="post-tts-panel-label">🔊 Now reading</div><div class="post-tts-body" id="tts-body-${p.id}"></div><div class="post-tts-progress" id="tts-progress-${p.id}"></div></div>
     <div class="post-actions">
       <button class="action-btn post-play-btn" data-id="${p.id}">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
