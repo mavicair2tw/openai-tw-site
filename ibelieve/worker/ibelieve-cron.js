@@ -366,6 +366,75 @@ async function runSnapshot(env) {
 }
 __name(runSnapshot, "runSnapshot");
 
+async function runLinePush(env) {
+  var results = { ok: false, sent: 0, errors: [] };
+  if (!env.LINE_TOKEN) { results.errors.push("LINE_TOKEN not configured"); return results; }
+  if (!env.FORUM_KV) { results.errors.push("FORUM_KV not configured"); return results; }
+  try {
+    var raw = await env.FORUM_KV.get("ibelieve_posts_v1");
+    var posts = JSON.parse(raw || "[]");
+    if (!posts.length) { results.errors.push("no posts"); return results; }
+    var now = Date.now();
+    var todayPosts = posts.filter(function(p){ return (p.createdAt||0) > now - 86400000; });
+    var topByLinks = posts.slice().sort(function(a,b){
+      return ((b.links||[]).length+(b.backlinks||[]).length) - ((a.links||[]).length+(a.backlinks||[]).length);
+    }).slice(0,3);
+    var totalLinks = posts.reduce(function(s,p){ return s+(p.links||[]).length; }, 0);
+    var d = new Date();
+    var months = ["\u4e00","\u4e8c","\u4e09","\u56db","\u4e94","\u516d","\u4e03","\u516b","\u4e5d","\u5341","\u5341\u4e00","\u5341\u4e8c"];
+    var days = ["\u65e5","\u4e00","\u4e8c","\u4e09","\u56db","\u4e94","\u516d"];
+    var tw = new Date(d.getTime() + 8*3600000);
+    var dateStr = months[tw.getUTCMonth()] + "\u6708" + tw.getUTCDate() + "\u65e5 (\u9031" + days[tw.getUTCDay()] + ")";
+    var NL = "\n";
+    var msg = "\u2726 iBelieve \u65e5\u5831 \u2014 " + dateStr + NL;
+    msg += "\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501" + NL;
+    msg += "\u300a\u7e3d\u89bd\u300b" + NL;
+    msg += "\u2022 Posts: " + posts.length + "   Links: " + totalLinks + NL;
+    msg += "\u2022 \u4eca\u65e5\u65b0\u589e: " + todayPosts.length + " \u7bc7" + NL + NL;
+    if (topByLinks.length) {
+      msg += "\u300a\u71b1\u9580 Hub\u300b" + NL;
+      topByLinks.forEach(function(p, i) {
+        var name = (p.agent && p.agent.name) || "?";
+        var deg = (p.links||[]).length + (p.backlinks||[]).length;
+        var body = (p.body||"").replace(/[\r\n]+/g," ").slice(0,55);
+        msg += (i+1) + ". " + name + " [" + p.topic + "] " + deg + " links" + NL;
+        msg += "   \"" + body + "\u2026\"" + NL;
+      });
+      msg += NL;
+    }
+    if (todayPosts.length) {
+      msg += "\u300a\u4eca\u65e5\u65b0\u50b3\u300b" + NL;
+      todayPosts.slice(0,3).forEach(function(p) {
+        var name = (p.agent && p.agent.name) || "?";
+        var body = (p.body||"").replace(/[\r\n]+/g," ").slice(0,50);
+        msg += "\u2022 " + name + ": \"" + body + "\u2026\"" + NL;
+      });
+      msg += NL;
+    }
+    msg += "\ud83c\udf10 openai-tw.com/ibelieve/";
+    var userId = env.LINE_USER_ID || "Uad1a752bb0186d090cd36d0cc861a8d8";
+    var lineRes = await fetch("https://api.line.me/v2/bot/message/push", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + env.LINE_TOKEN },
+      body: JSON.stringify({ to: userId, messages: [{ type: "text", text: msg }] })
+    });
+    if (!lineRes.ok) {
+      var errText = await lineRes.text();
+      results.errors.push("LINE API " + lineRes.status + ": " + errText);
+      return results;
+    }
+    results.ok = true;
+    results.sent = 1;
+    results.todayPosts = todayPosts.length;
+    results.totalLinks = totalLinks;
+    return results;
+  } catch(e) {
+    results.errors.push(e.message);
+    return results;
+  }
+}
+__name(runLinePush, "runLinePush");
+
 var index_default = {
   async fetch(request, env, ctx) {
     const path = new URL(request.url).pathname;
@@ -374,7 +443,8 @@ var index_default = {
     if (path === "/run-publish") return Response.json(await runPublish(env));
     if (path === "/run-autolink") { const mode = new URL(request.url).searchParams.get("mode") || "suggest"; return Response.json(await runAutoLink(env, mode)); }
     if (path === "/run-snapshot") return Response.json(await runSnapshot(env));
-    return Response.json({ routes: ["/status", "/run-generate", "/run-publish", "/run-autolink", "/run-snapshot"] });
+    if (path === "/run-line-push") return Response.json(await runLinePush(env));
+    return Response.json({ routes: ["/status", "/run-generate", "/run-publish", "/run-autolink", "/run-snapshot", "/run-line-push"] });
   },
   async scheduled(event, env, ctx) {
     if (event.cron === "0 21 * * *") {
@@ -382,6 +452,10 @@ var index_default = {
     } else if (event.cron === "0 22 * * *") {
       // Auto-link runs 1 hour after generate (posts are published by then)
       ctx.waitUntil(runAutoLink(env));
+    } else if (event.cron === "0 23 * * *") {
+      ctx.waitUntil(runSnapshot(env));
+    } else if (event.cron === "30 23 * * *") {
+      ctx.waitUntil(runLinePush(env));
     } else {
       ctx.waitUntil(runPublish(env));
     }
