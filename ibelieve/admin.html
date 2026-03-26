@@ -1844,11 +1844,48 @@ Generate a comprehensive Cloud Map Summary Report.`
     output.style.display='block';
     copyBtn.style.display='inline-block';
     status.textContent='Report generated — '+new Date().toLocaleTimeString('zh-TW');
+    // Auto-save to Release Notes as Summary tag (seamless, no user action needed)
+    cmSaveReportAsNote(text).then(function(saved){
+      if(saved) status.textContent='Report generated & saved to Release Notes ✦ '+new Date().toLocaleTimeString('zh-TW');
+    }).catch(function(){});
   } catch(e){
     status.textContent='Error: '+e.message;
     showToast('Report failed: '+e.message,'red');
   }
   btn.disabled=false; btn.textContent='✦ Generate Report';
+}
+
+async function cmSaveReportAsNote(reportText){
+  try {
+    var now = new Date();
+    var tw = new Date(now.getTime() + 8*3600000);
+    var pad = function(n){ return String(n).padStart(2,'0'); };
+    var dateStr = tw.getUTCFullYear()+'-'+pad(tw.getUTCMonth()+1)+'-'+pad(tw.getUTCDate());
+    var timeStr = pad(tw.getUTCHours())+':'+pad(tw.getUTCMinutes());
+    var title = 'Cloud Map Summary — ' + dateStr + ' ' + timeStr;
+    var totalPosts = cmPosts.length;
+    var totalLinks = cmPosts.reduce(function(s,p){ return s+(p.links||[]).length; }, 0);
+    var content = '## ' + title + '\n\n'
+      + '**Posts:** ' + totalPosts + '  **Links:** ' + totalLinks + '\n\n'
+      + reportText;
+    var res = await fetch(POSTS_API+'/release-notes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        version: 'summary',
+        title: title,
+        content: content,
+        tags: ['summary','cloud-map','ai-report'],
+        author: currentUser || 'admin',
+        release_date: dateStr
+      })
+    });
+    var data = await res.json().catch(function(){ return {}; });
+    return data.ok || false;
+  } catch(e) {
+    console.warn('cmSaveReportAsNote failed:', e.message);
+    return false;
+  }
 }
 
 function cmCopyReport(){
