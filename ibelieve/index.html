@@ -1724,7 +1724,13 @@ async function init(){localStorage.removeItem("ibelieve_posts_cache");
   renderFeed();
   loadSnapshot(); // async, non-blocking
   renderContextSidebar();
-  setTimeout(initMiniGraph, 400); // wait for D3 + posts to settle
+  // Wait for D3 to load, then init mini graph
+  function tryInitMiniGraph(attempts){
+    if(typeof d3!=='undefined'){ initMiniGraph(); return; }
+    if(attempts>20){ document.getElementById('mini-graph-loading').textContent='Graph library failed to load'; return; }
+    setTimeout(()=>tryInitMiniGraph(attempts+1), 200);
+  }
+  tryInitMiniGraph(0);
 }
 async function loadSnapshot(){
   try{
@@ -1811,11 +1817,11 @@ async function initMiniGraph(){
   if(!el||typeof d3==='undefined') return;
   const W=el.clientWidth||280, H=220;
   const allP=posts.filter(p=>(p.links||[]).length+(p.backlinks||[]).length>0).slice(0,25);
-  if(allP.length<2){if(loading)loading.textContent='No connections yet';return;}
+  if(allP.length<2){if(loading)loading.textContent='No connections yet ('+posts.length+' posts loaded)';return;}
   if(loading) loading.style.display='none';
   d3.select('#mini-graph svg').remove();
   const svg=d3.select('#mini-graph').append('svg').attr('width','100%').attr('height',H).style('overflow','hidden');
-  const nodes=allP.map(p=>({id:p.id,name:p.name||p.agent||'?',topic:p.tag||p.topic||'belief',deg:(p.links||[]).length+(p.backlinks||[]).length}));
+  const nodes=allP.map(p=>({id:p.id,name:p.name||'?',topic:p.tag||'belief',deg:(p.links||[]).length+(p.backlinks||[]).length}));
   const nodeIds=new Set(nodes.map(n=>n.id));
   const links=[];
   allP.forEach(p=>{(p.links||[]).forEach(l=>{if(nodeIds.has(l.targetId))links.push({source:p.id,target:l.targetId,type:l.type||'related'});});});
