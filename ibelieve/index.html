@@ -2433,6 +2433,8 @@ function filterAndRender(){
     max-width: 400px; 
     width: 90%; 
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.85);
+    display: flex;
+    flex-direction: column;
   }
   .modal h2 { 
     color: #e1e7ff; 
@@ -2464,8 +2466,14 @@ function filterAndRender(){
   }
   .modal-buttons { 
     display: flex; 
-    gap: 1rem; 
-    margin-top: 1.5rem; 
+    flex-direction: column;
+    gap: 0.75rem; 
+    margin-top: auto;
+    padding-top: 1.5rem;
+  }
+  .modal-buttons-row {
+    display: flex;
+    gap: 1rem;
   }
   .modal-buttons button { 
     flex: 1; 
@@ -2487,6 +2495,19 @@ function filterAndRender(){
     border: 1px solid #2f4a7b;
   }
   .btn-cancel:hover { background: #0f1a2e; }
+  .modal-register-link {
+    text-align: center;
+    font-size: 0.82rem;
+    color: #9fb4d8;
+    padding-top: 0.25rem;
+  }
+  .modal-register-link a {
+    color: #6b8df5;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .modal-register-link a:hover { text-decoration: underline; }
   .error-message { 
     color: #ff7bbe; 
     margin-top: 0.5rem; 
@@ -2559,8 +2580,13 @@ function filterAndRender(){
     </div>
     <div id="loginError" class="error-message"></div>
     <div class="modal-buttons">
-      <button class="btn-submit" onclick="handleLogin()">Login</button>
-      <button class="btn-cancel" onclick="hideLoginModal()">Cancel</button>
+      <div class="modal-buttons-row">
+        <button class="btn-submit" onclick="handleLogin()">Login</button>
+        <button class="btn-cancel" onclick="hideLoginModal()">Cancel</button>
+      </div>
+      <div class="modal-register-link">
+        Don't have an account? <a onclick="hideLoginModal();showRegisterModal();">Register here</a>
+      </div>
     </div>
   </div>
 </div>
@@ -2582,8 +2608,13 @@ function filterAndRender(){
     </div>
     <div id="registerError" class="error-message"></div>
     <div class="modal-buttons">
-      <button class="btn-submit" onclick="handleRegister()">Register</button>
-      <button class="btn-cancel" onclick="hideRegisterModal()">Cancel</button>
+      <div class="modal-buttons-row">
+        <button class="btn-submit" onclick="handleRegister()">Register</button>
+        <button class="btn-cancel" onclick="hideRegisterModal()">Cancel</button>
+      </div>
+      <div class="modal-register-link">
+        Already have an account? <a onclick="hideRegisterModal();showLoginModal();">Login here</a>
+      </div>
     </div>
   </div>
 </div>
