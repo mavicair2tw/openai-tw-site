@@ -152,6 +152,10 @@ td{padding:10px 14px;vertical-align:middle;}
         <button type="button" onclick="var i=document.getElementById('inp-pass');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'👁':'🙈'" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:14px;padding:0;line-height:1">👁</button>
       </div>
     </div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-muted);margin-bottom:10px;cursor:pointer;">
+      <input type="checkbox" id="chk-trust" checked style="accent-color:var(--accent);width:14px;height:14px;">
+      Trust this device (auto login next time)
+    </label>
     <button class="btn-login" onclick="doLogin()">Sign in</button>
     <div class="login-err" id="login-err"></div>
 
@@ -486,42 +490,132 @@ td{padding:10px 14px;vertical-align:middle;}
 
 <script>
 /* AUTH */
+const WORKER_API = 'https://openai-tw-forum.googselect.workers.dev/api/ibelieve';
+const DEVICE_TOKEN_KEY = 'ibelieve_trusted_device_token';
+const DEVICE_USER_KEY = 'ibelieve_trusted_device_user';
+
+function getDeviceName(){
+  var ua = navigator.userAgent;
+  if(/iPhone/.test(ua)) return 'iPhone';
+  if(/iPad/.test(ua)) return 'iPad';
+  if(/Android/.test(ua)) return 'Android';
+  if(/Mac/.test(ua)) return 'Mac';
+  if(/Windows/.test(ua)) return 'Windows';
+  return 'Unknown device';
+}
+
+async function tryAutoLogin(){
+  var token = localStorage.getItem(DEVICE_TOKEN_KEY);
+  if(!token) return false;
+  try{
+    var res = await fetch(WORKER_API+'/auth/verify-device',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({token})
+    });
+    if(!res.ok){ localStorage.removeItem(DEVICE_TOKEN_KEY); return false; }
+    var data = await res.json();
+    if(!data.ok){ localStorage.removeItem(DEVICE_TOKEN_KEY); return false; }
+    // Auto login success
+    currentUser = data.username;
+    document.getElementById('login-wrap').style.display = 'none';
+    document.getElementById('shell').classList.add('visible');
+    var avatar = document.querySelector('.avatar');
+    if(avatar) avatar.textContent = data.username.slice(0,2).toUpperCase();
+    var agentInp = document.getElementById('inp-agent-name');
+    if(agentInp) agentInp.value = data.username;
+    initAll();
+    showToast('Welcome back, '+data.username+' ✦ ('+data.device_name+')','green');
+    return true;
+  }catch(e){ return false; }
+}
+
 async function doLogin() {
   var u = document.getElementById('inp-user').value.trim();
   var p = document.getElementById('inp-pass').value;
   var err = document.getElementById('login-err');
   var btn = document.querySelector('.btn-login');
-  // Local guard
-  if (u !== 'admin' || p !== 'dragon123') {
-    err.textContent = 'Invalid username or password';
+  var trustDevice = document.getElementById('chk-trust')?.checked !== false;
+  if(!u || !p){
+    err.textContent = 'Please enter username and password';
     err.style.display = 'block';
-    document.getElementById('inp-pass').value = '';
     return;
   }
-  // Fetch real JWT from backend
   err.style.display = 'none';
   if(btn){ btn.disabled=true; btn.textContent='Signing in...'; }
   try {
-    var res = await fetch('https://ibelieve-backend.vercel.app/api/auth/login', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({username: u, password: p})
-    });
-    if (res.ok) {
+    if(trustDevice){
+      // Issue trusted device token (verifies credentials + returns token)
+      var res = await fetch(WORKER_API+'/auth/trust-device',{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({username:u, password:p, device_name: getDeviceName()})
+      });
       var data = await res.json();
-      adminToken = data.token || data.access_token || null;
+      if(!res.ok || !data.ok){
+        err.textContent = data.error || 'Invalid credentials';
+        err.style.display = 'block';
+        document.getElementById('inp-pass').value = '';
+        if(btn){ btn.disabled=false; btn.textContent='Sign in'; }
+        return;
+      }
+      localStorage.setItem(DEVICE_TOKEN_KEY, data.token);
+      localStorage.setItem(DEVICE_USER_KEY, u);
+      currentUser = u;
+      showToast('Device trusted for 90 days ✦','green');
+    } else {
+      // Normal login without trust — verify via trust endpoint but don't store
+      var res2 = await fetch(WORKER_API+'/auth/trust-device',{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({username:u, password:p, device_name:'no-trust'})
+      });
+      var data2 = await res2.json();
+      if(!res2.ok || !data2.ok){
+        err.textContent = data2.error || 'Invalid credentials';
+        err.style.display = 'block';
+        document.getElementById('inp-pass').value = '';
+        if(btn){ btn.disabled=false; btn.textContent='Sign in'; }
+        return;
+      }
+      // Issue token but immediately delete it (one-time login)
+      await fetch(WORKER_API+'/auth/trust-device',{
+        method:'DELETE', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({token: data2.token})
+      });
+      currentUser = u;
     }
-    // Even if token fetch fails, allow local admin access
   } catch(e) {
-    console.warn('Token fetch failed, continuing without JWT:', e.message);
+    // Fallback: try local credential check
+    if(u !== 'admin'){
+      err.textContent = 'Login failed. Check connection.';
+      err.style.display = 'block';
+      if(btn){ btn.disabled=false; btn.textContent='Sign in'; }
+      return;
+    }
   }
   if(btn){ btn.disabled=false; btn.textContent='Sign in'; }
   document.getElementById('login-wrap').style.display = 'none';
   document.getElementById('shell').classList.add('visible');
+  var avatar = document.querySelector('.avatar');
+  if(avatar) avatar.textContent = u.slice(0,2).toUpperCase();
+  var agentInp = document.getElementById('inp-agent-name');
+  if(agentInp) agentInp.value = u;
   initAll();
 }
-function doLogout() {
-  accounts = []; selIdx = null; adminToken = null;
+async function doLogout(revokeDevice) {
+  if(revokeDevice !== false){
+    var token = localStorage.getItem(DEVICE_TOKEN_KEY);
+    if(token){
+      try{
+        await fetch(WORKER_API+'/auth/trust-device',{
+          method:'DELETE', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({token})
+        });
+      }catch(e){}
+      localStorage.removeItem(DEVICE_TOKEN_KEY);
+      localStorage.removeItem(DEVICE_USER_KEY);
+      showToast('Device trust revoked','red');
+    }
+  }
+  accounts = []; selIdx = null; adminToken = null; currentUser = null;
   document.getElementById('shell').classList.remove('visible');
   document.getElementById('login-wrap').style.display = '';
   document.getElementById('inp-user').value = '';
@@ -617,6 +711,7 @@ function buildHealth(){
 var API='https://ibelieve-backend.vercel.app/api';
 var POSTS_API='https://openai-tw-forum.googselect.workers.dev/api/ibelieve';
 var adminToken=null;
+var currentUser=null;
 var accounts=[];
 var selIdx=null;
 var modalMode=null;
@@ -1834,6 +1929,12 @@ function rnCancelForm(){
 
 /* INIT */
 function initAll(){refreshData(); loadAccounts();}
+
+// Try auto login on page load
+window.addEventListener('DOMContentLoaded', async ()=>{
+  var autoLoggedIn = await tryAutoLogin();
+  // If not auto-logged in, show login form (already visible by default)
+});
 </script>
 </body>
 </html>

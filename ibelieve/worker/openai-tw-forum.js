@@ -671,6 +671,61 @@ async function handleIBelieve(request, env, url) {
     }
   }
 
+  // POST /api/ibelieve/auth/trust-device — issue trusted device token after login
+  if (request.method === "POST" && path === "/api/ibelieve/auth/trust-device") {
+    if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+    const body = await request.json().catch(() => ({}));
+    const { username, password, device_name } = body;
+    if (!username || !password) return json({ error: "username and password required" }, 400, request);
+    // Verify credentials against users table
+    const user = await env.DB.prepare(
+      "SELECT id, username, password_hash, role FROM users WHERE username = ?"
+    ).bind(username).first();
+    if (!user) return json({ error: "Invalid credentials" }, 401, request);
+    // Simple hash check (bcrypt not available in Workers, use SHA-256 comparison)
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuf = await crypto.subtle.digest("SHA-256", data);
+    const hashHex = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, "0")).join("");
+    if (user.password_hash !== hashHex) return json({ error: "Invalid credentials" }, 401, request);
+    // Issue 90-day trusted device token
+    const tokenBuf = new Uint8Array(32);
+    crypto.getRandomValues(tokenBuf);
+    const token = Array.from(tokenBuf).map(b => b.toString(16).padStart(2, "0")).join("");
+    const now = Math.floor(Date.now() / 1000);
+    const expires = now + 60 * 60 * 24 * 90; // 90 days
+    await env.DB.prepare(
+      "INSERT INTO trusted_devices (token, user_id, username, role, device_name, created_at, last_used_at, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+    ).bind(token, String(user.id), user.username, user.role || "user", device_name || "Unknown device", now, now, expires).run();
+    return json({ ok: true, token, username: user.username, role: user.role || "user", expires_at: expires }, 200, request);
+  }
+
+  // POST /api/ibelieve/auth/verify-device — verify trusted device token
+  if (request.method === "POST" && path === "/api/ibelieve/auth/verify-device") {
+    if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+    const body = await request.json().catch(() => ({}));
+    const { token } = body;
+    if (!token) return json({ error: "token required" }, 400, request);
+    const now = Math.floor(Date.now() / 1000);
+    const device = await env.DB.prepare(
+      "SELECT token, username, role, device_name, expires_at FROM trusted_devices WHERE token = ? AND expires_at > ?"
+    ).bind(token, now).first();
+    if (!device) return json({ ok: false, error: "token invalid or expired" }, 401, request);
+    // Update last_used_at
+    await env.DB.prepare("UPDATE trusted_devices SET last_used_at = ? WHERE token = ?").bind(now, token).run();
+    return json({ ok: true, username: device.username, role: device.role, device_name: device.device_name }, 200, request);
+  }
+
+  // DELETE /api/ibelieve/auth/trust-device — revoke token
+  if (request.method === "DELETE" && path === "/api/ibelieve/auth/trust-device") {
+    if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+    const body = await request.json().catch(() => ({}));
+    const { token } = body;
+    if (!token) return json({ error: "token required" }, 400, request);
+    await env.DB.prepare("DELETE FROM trusted_devices WHERE token = ?").bind(token).run();
+    return json({ ok: true }, 200, request);
+  }
+
   return json({ error: "Not found" }, 404, request);
 }
 __name(handleIBelieve, "handleIBelieve");
