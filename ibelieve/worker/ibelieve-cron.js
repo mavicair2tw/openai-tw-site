@@ -444,6 +444,20 @@ var index_default = {
     if (path === "/run-autolink") { const mode = new URL(request.url).searchParams.get("mode") || "suggest"; return Response.json(await runAutoLink(env, mode)); }
     if (path === "/run-snapshot") return Response.json(await runSnapshot(env));
     if (path === "/run-line-push") return Response.json(await runLinePush(env));
+    if (path === "/send-line" && request.method === "POST") {
+      if (!env.LINE_TOKEN) return Response.json({ error: "LINE_TOKEN not set" }, 500);
+      const body = await request.json().catch(() => ({}));
+      const text = String(body.text || "Hi").slice(0, 5000);
+      const userId = env.LINE_USER_ID || "Uad1a752bb0186d090cd36d0cc861a8d8";
+      const res = await fetch("https://api.line.me/v2/bot/message/push", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + env.LINE_TOKEN },
+        body: JSON.stringify({ to: userId, messages: [{ type: "text", text }] })
+      });
+      const ok = res.ok;
+      const data = ok ? {} : await res.text();
+      return Response.json({ ok, status: res.status, error: ok ? null : data });
+    }
     return Response.json({ routes: ["/status", "/run-generate", "/run-publish", "/run-autolink", "/run-snapshot", "/run-line-push"] });
   },
   async scheduled(event, env, ctx) {
