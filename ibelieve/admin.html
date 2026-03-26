@@ -1003,7 +1003,7 @@ function switchTab(name,el){
   if(name==='posts') loadPosts();
   if(name==='cloudmap'){ cmInit(); cmInitMode(); cmLoadSuggestions(); }
   if(name==='releasenotes') rnLoad();
-  if(name==='notification') notifLoad();
+  if(name==='notification'){ notifLoad().catch(function(e){ console.warn('notifLoad error:',e); }); }
   if(name==='decisiontree') dtInit();
 }
 
@@ -2062,12 +2062,18 @@ async function notifLoad() {
 }
 
 function notifOpenNew() {
-  notifEditId = null;
-  document.getElementById('notif-form-title').textContent = 'New Notification';
-  document.getElementById('notif-inp-title').value = '';
-  document.getElementById('notif-inp-content').value = '';
-  document.getElementById('notif-form').style.display = 'block';
-  document.getElementById('notif-inp-title').focus();
+  try {
+    notifEditId = null;
+    var ft = document.getElementById('notif-form-title');
+    var ti = document.getElementById('notif-inp-title');
+    var ci = document.getElementById('notif-inp-content');
+    var fm = document.getElementById('notif-form');
+    if(ft) ft.textContent = 'New Notification';
+    if(ti) ti.value = '';
+    if(ci) ci.value = '';
+    if(fm) fm.style.display = 'block';
+    if(ti) ti.focus();
+  } catch(e) { console.error('notifOpenNew error:', e); }
 }
 
 function notifEdit(id) {
