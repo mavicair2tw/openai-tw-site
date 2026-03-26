@@ -99,8 +99,8 @@ async function handleIBelieve(request, env, url) {
     let localized = hydratedPosts;
     try {
       if (hydratedPosts.length > 0 && lang && lang !== 'en') {
-        const result = await localizeIBelievePosts(hydratedPosts, lang);
-        localized = result.posts || hydratedPosts;
+        const localizeResult = await localizeIBelievePosts(hydratedPosts, lang);
+        localized = localizeResult.posts || hydratedPosts;
       }
     } catch (e) { /* localization failure is non-fatal */ }
 
