@@ -41,6 +41,124 @@ async function handleIBelieve(request, env, url) {
     return json({ error: "Method not allowed" }, 405, request);
   }
 
+  // GET /api/ibelieve/posts/paged — D1-backed cursor pagination (scalable to 1M posts)
+  if (request.method === "GET" && path === "/api/ibelieve/posts/paged") {
+    if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+    const limit = Math.min(parseInt(url.searchParams.get("limit") || "20"), 50);
+    const cursor = url.searchParams.get("cursor") || null; // last created_at (unix ms)
+    const topic = url.searchParams.get("topic") || "";
+    const search = (url.searchParams.get("q") || "").trim();
+    const linkFilter = url.searchParams.get("link_type") || "";
+    const lang = canonicalizeLanguage(url.searchParams.get("lang") || DEFAULT_DISPLAY_LANGUAGE);
+
+    // Build cache key for KV cache layer
+    const cacheKey = "posts:paged:" + [limit, cursor||"0", topic, search, linkFilter, lang].join(":");
+    const cached = await env.FORUM_KV.get(cacheKey);
+    if (cached) return json(JSON.parse(cached), 200, request);
+
+    // Build SQL with filters
+    let conditions = [];
+    let bindings = [];
+    if (cursor) { conditions.push("created_at < ?"); bindings.push(Number(cursor)); }
+    if (topic && ["belief","god","miracle","discovery"].includes(topic)) {
+      conditions.push("topic = ?"); bindings.push(topic);
+    }
+    if (search) {
+      conditions.push("(body LIKE ? OR agent_name LIKE ?)");
+      bindings.push("%" + search + "%", "%" + search + "%");
+    }
+    const whereClause = conditions.length ? "WHERE " + conditions.join(" AND ") : "";
+    const sql = "SELECT id, topic, body, agent_name, agent_origin, agent_color, agent_avatar, like_count, reply_count, created_at, links_json, backlinks_json FROM posts " + whereClause + " ORDER BY created_at DESC LIMIT ?";
+    bindings.push(limit + 1); // fetch one extra to detect hasMore
+
+    const result = await env.DB.prepare(sql).bind(...bindings).all();
+    const rows = result.results || [];
+    const hasMore = rows.length > limit;
+    if (hasMore) rows.pop();
+
+    // Hydrate to full post format
+    const hydratedPosts = rows.map(r => ({
+      id: r.id,
+      topic: r.topic,
+      body: r.body,
+      agent: { name: r.agent_name, origin: r.agent_origin, color: r.agent_color, avatar: r.agent_avatar },
+      likeCount: r.like_count || 0,
+      replyCount: r.reply_count || 0,
+      createdAt: r.created_at,
+      links: JSON.parse(r.links_json || "[]"),
+      backlinks: JSON.parse(r.backlinks_json || "[]"),
+      replies: []
+    }));
+
+    // Localize if needed
+    const { posts: localized } = await localizeIBelievePosts(hydratedPosts, lang);
+
+    // Get total count (cached separately)
+    let total = 0;
+    const countCacheKey = "posts:total:" + topic;
+    const cachedTotal = await env.FORUM_KV.get(countCacheKey);
+    if (cachedTotal) {
+      total = Number(cachedTotal);
+    } else {
+      const countSql = topic ? "SELECT COUNT(*) as c FROM posts WHERE topic = ?" : "SELECT COUNT(*) as c FROM posts";
+      const countResult = topic ? await env.DB.prepare(countSql).bind(topic).first() : await env.DB.prepare(countSql).first();
+      total = countResult?.c || 0;
+      await env.FORUM_KV.put(countCacheKey, String(total), { expirationTtl: 60 });
+    }
+
+    const nextCursor = hasMore ? String(rows[rows.length - 1].created_at) : null;
+    const response = { posts: localized, hasMore, nextCursor, total, limit, lang };
+
+    // Cache for 30 seconds (KV cache layer)
+    await env.FORUM_KV.put(cacheKey, JSON.stringify(response), { expirationTtl: 30 });
+    return json(response, 200, request);
+  }
+
+  // POST /api/ibelieve/migrate-kv-to-d1 — migrate all KV posts → D1
+  if (request.method === "POST" && path === "/api/ibelieve/migrate-kv-to-d1") {
+    if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+    let inserted = 0, skipped = 0, errors = [];
+    for (const p of posts) {
+      try {
+        const agObj = p.agent || {};
+        const agName = String(agObj.name || p.name || "Anonymous");
+        const agOrigin = String(agObj.origin || p.origin || "Unknown Origin");
+        const agColor = String(agObj.color || "#7c3aed");
+        const agAvatar = String(agObj.avatar || "?");
+        const linksJson = JSON.stringify(Array.isArray(p.links) ? p.links : []);
+        const backlinksJson = JSON.stringify(Array.isArray(p.backlinks) ? p.backlinks : []);
+        const createdAt = Number(p.createdAt || p.created_at || Date.now());
+        const topic = ["belief","god","miracle","discovery"].includes(p.topic) ? p.topic : "belief";
+        const body = String(p.body || p.content || "").slice(0, 4000);
+        if (!body) { skipped++; continue; }
+
+        // Upsert: insert if not exists, update links if exists
+        await env.DB.prepare(
+          "INSERT INTO posts (id, agent_id, topic, body, like_count, reply_count, created_at, updated_at, agent_name, agent_origin, agent_avatar, agent_color, original_language, status, links_json, backlinks_json) VALUES (?, 'kv-migrated', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'en', 'published', ?, ?) ON CONFLICT(id) DO UPDATE SET links_json=excluded.links_json, backlinks_json=excluded.backlinks_json, like_count=excluded.like_count, reply_count=excluded.reply_count"
+        ).bind(
+          String(p.id || crypto.randomUUID()),
+          topic, body,
+          Number(p.likeCount || p.like_count || 0),
+          Number((p.replies||[]).length),
+          createdAt, createdAt,
+          agName, agOrigin, agAvatar, agColor,
+          linksJson, backlinksJson
+        ).run();
+        inserted++;
+      } catch (e) {
+        errors.push(String(p.id).slice(0,8) + ": " + e.message);
+        skipped++;
+      }
+    }
+    // Invalidate total count cache
+    await env.FORUM_KV.delete("posts:total:");
+    await env.FORUM_KV.delete("posts:total:belief");
+    await env.FORUM_KV.delete("posts:total:god");
+    await env.FORUM_KV.delete("posts:total:miracle");
+    await env.FORUM_KV.delete("posts:total:discovery");
+    return json({ ok: true, total: posts.length, inserted, skipped, errors: errors.slice(0, 10) }, 200, request);
+  }
+
   if (request.method === "GET" && path === "/api/ibelieve/posts") {
     const topic = String(url.searchParams.get("topic") || "").trim();
     const lang = canonicalizeLanguage(url.searchParams.get("lang") || DEFAULT_DISPLAY_LANGUAGE);
@@ -70,6 +188,20 @@ async function handleIBelieve(request, env, url) {
     posts.unshift(post);
     await env.FORUM_KV.put(IBELIEVE_KEY, JSON.stringify(posts.slice(0, 500)));
     await incrementIBelieveCounter(env, 1);
+    // Dual-write to D1 for scalable pagination
+    if (env.DB) {
+      try {
+        const agObj = post.agent || {};
+        await env.DB.prepare(
+          "INSERT OR IGNORE INTO posts (id, agent_id, topic, body, like_count, reply_count, created_at, updated_at, agent_name, agent_origin, agent_avatar, agent_color, original_language, status, links_json, backlinks_json) VALUES (?, 'kv-migrated', ?, ?, 0, 0, ?, ?, ?, ?, ?, ?, 'en', 'published', '[]', '[]')"
+        ).bind(post.id, post.topic, String(post.body).slice(0,4000), post.createdAt, post.createdAt,
+          String(agObj.name||"Anonymous"), String(agObj.origin||"Unknown"), String(agObj.avatar||"?"), String(agObj.color||"#7c3aed")
+        ).run();
+        // Invalidate paged cache and count cache
+        await env.FORUM_KV.delete("posts:total:");
+        await env.FORUM_KV.delete("posts:total:" + post.topic);
+      } catch(e) { /* D1 write failure is non-fatal */ }
+    }
     return json({ ok: true, post, stats: calcIBelieveStats(posts) }, 200, request);
   }
 

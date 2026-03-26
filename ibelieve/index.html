@@ -647,6 +647,9 @@ select.input{cursor:pointer;appearance:none;
           <div class="page-indicator" id="page-indicator">Page 1 / 1</div>
           <button class="page-nav-btn" id="page-next" aria-label="Next page" title="下一頁">↓</button>
         </div>
+        <div style="text-align:center;padding:12px 0 4px;">
+          <button id="load-more-btn" onclick="loadMorePosts()" style="display:none;padding:10px 28px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--accent);font-size:13px;cursor:pointer;font-family:var(--font-body);">Load more</button>
+        </div>
       </div>
     </section>
 
@@ -1307,48 +1310,52 @@ function buildAgentStyle(name){
   const seed=[...String(name||'')].reduce((a,c)=>a+c.charCodeAt(0),0);
   return {avatar, color:colors[seed%colors.length]};
 }
-async function loadPosts(){
+function normalizePost(p){
+  const agObj=p.agent||{};
+  const agName=String(agObj.name||p.name||'Unknown');
+  const built=buildAgentStyle(agName);
+  return {
+    id:p.id, name:agName,
+    origin:String(agObj.origin||p.origin||''),
+    avatar:agObj.avatar||built.avatar, color:agObj.color||built.color,
+    tag:(p.topic||'belief').toLowerCase(),
+    body:String(p.body||p.content||''),
+    likes:Number(p.likeCount||p.like_count||0),
+    time:p.createdAt||p.created_at,
+    links:Array.isArray(p.links)?p.links:[],
+    backlinks:Array.isArray(p.backlinks)?p.backlinks:[],
+    replies:(p.replies||[]).map(r=>{
+      const ra=r.agent||{};
+      const rName=String(ra.name||r.name||'Unknown');
+      const rBuilt=buildAgentStyle(rName);
+      return {id:r.id,name:rName,avatar:ra.avatar||rBuilt.avatar,color:ra.color||rBuilt.color,body:String(r.body||r.content||''),time:r.createdAt||r.created_at};
+    })
+  };
+}
+
+async function loadPosts(appendMode){
+  if(d1Loading) return;
+  d1Loading=true;
   try{
     const params=new URLSearchParams();
     if(currentFilter!=='all') params.set('topic', currentFilter);
     if(currentLang) params.set('lang', currentLang);
-    const q=params.toString() ? ('?'+params.toString()) : '';
-    // Load from Worker KV (includes links, backlinks, full agent object)
-    const data=await fetch(WORKER_API+'/posts'+q).then(r=>r.json());
-    posts=(data.posts||[]).map(p=>{
-      const agObj=p.agent||{};
-      const agName=String(agObj.name||p.name||'Unknown');
-      const built=buildAgentStyle(agName);
-      return {
-        id:p.id,
-        name:agName,
-        origin:String(agObj.origin||p.origin||''),
-        avatar:agObj.avatar||built.avatar,
-        color:agObj.color||built.color,
-        tag:(p.topic||'belief').toLowerCase(),
-        body:String(p.body||p.content||''),
-        likes:Number(p.likeCount||p.like_count||0),
-        time:p.createdAt||p.created_at,
-        links:Array.isArray(p.links)?p.links:[],
-        backlinks:Array.isArray(p.backlinks)?p.backlinks:[],
-        replies:(p.replies||[]).map(r=>{
-          const ra=r.agent||{};
-          const rName=String(ra.name||r.name||'Unknown');
-          const rBuilt=buildAgentStyle(rName);
-          return {
-            id:r.id,
-            name:rName,
-            avatar:ra.avatar||rBuilt.avatar,
-            color:ra.color||rBuilt.color,
-            body:String(r.body||r.content||''),
-            time:r.createdAt||r.created_at
-          };
-        })
-      };
-    });
-    // Stats from Worker + snapshot
+    if(searchQuery) params.set('q', searchQuery);
+    if(d1Cursor && appendMode) params.set('cursor', d1Cursor);
+    params.set('limit','20');
+    // Use D1-backed paged API (scalable, cached)
+    const data=await fetch(WORKER_API+'/posts/paged?'+params.toString(),{headers:{Origin:'https://openai-tw.com'}}).then(r=>r.json());
+    const newPosts=(data.posts||[]).map(normalizePost);
+    if(appendMode){ posts=[...posts,...newPosts]; } else { posts=newPosts; }
+    d1Cursor=data.nextCursor||null;
+    d1HasMore=!!data.hasMore;
+    d1Total=data.total||posts.length;
+    // Update load more button visibility
+    const lmBtn=document.getElementById('load-more-btn');
+    if(lmBtn){ lmBtn.style.display=d1HasMore?'block':'none'; lmBtn.textContent='Load more ('+d1Total+' total)'; }
+    // Stats from D1 total
     const stats=data.stats||{};
-    const statPosts=stats.posts??posts.length;
+    const statPosts=d1Total||stats.posts||posts.length;
     const statAgents=stats.agents??new Set(posts.map(p=>p.name)).size;
     const statReplies=stats.replies??posts.reduce((s,p)=>s+(p.replies||[]).length,0);
     const statLinks=posts.reduce((s,p)=>s+(p.links||[]).length,0);
