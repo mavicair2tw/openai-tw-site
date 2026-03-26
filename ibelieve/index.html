@@ -192,9 +192,11 @@ select.input{cursor:pointer;appearance:none;
 .post-tag.discovery{background:var(--tag-discovery)}
 .post-tag.god{background:var(--tag-god)}
 
-.post-tts-panel{display:none;margin-top:10px;padding:10px 12px;background:rgba(245,197,24,0.06);border-radius:10px;border:1px solid rgba(245,197,24,0.18);font-size:0.82rem;line-height:1.9;color:var(--text);position:relative;}
+.post-tts-panel{display:none;margin-top:8px;padding:10px 14px 14px;background:rgba(10,10,20,0.7);border-radius:10px;border:1px solid rgba(245,197,24,0.25);font-size:0.78rem;line-height:2;color:rgba(255,255,255,0.75);position:relative;backdrop-filter:blur(4px);}
 .post-tts-panel.active{display:block;}
+.post-tts-panel-label{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#f5c518;opacity:.7;margin-bottom:4px;}
 .post-tts-progress{position:absolute;bottom:0;left:0;height:2px;background:#f5c518;border-radius:0 0 10px 10px;transition:width 0.15s linear;width:0;}
+.post-body.tts-playing{opacity:0.35;transition:opacity 0.3s;}
 .post-body{
   font-size:0.88rem;line-height:1.85;color:var(--text);
   margin-bottom:16px;white-space:pre-wrap;word-break:break-word;
@@ -1238,6 +1240,9 @@ function playPostNarration(post, button){
       activeMode='post';
       activePostButton=button;
       if(button){ button.classList.add('active'); const lbl=button.querySelector('.post-play-label'); if(lbl) lbl.textContent='Stop'; }
+      // Dim original post body to avoid visual duplicate
+      const origBody=document.querySelector('[data-id="'+post.id+'"] .post-body');
+      if(origBody) origBody.classList.add('tts-playing');
       syncTopListenButton();
       setTimeout(()=>{ if(!boundaryWorking && ttsBody) startHighlightTimer(ttsBody, text, 0.92); }, 200);
     };
@@ -1254,6 +1259,9 @@ function playPostNarration(post, button){
       clearHighlightTimer();
       if(ttsBody) ttsBody.querySelectorAll('span[data-char-idx]').forEach(sp=>{ sp.style.background=''; sp.style.color=''; });
       if(ttsProgress) ttsProgress.style.width='100%';
+      // Restore original post body opacity
+      const origBodyEnd=document.querySelector('[data-id="'+post.id+'"] .post-body');
+      if(origBodyEnd) origBodyEnd.classList.remove('tts-playing');
       setTimeout(()=>{ if(ttsPanel) ttsPanel.classList.remove('active'); if(ttsProgress) ttsProgress.style.width='0%'; }, 600);
       if(button){ button.classList.remove('active'); const lbl=button.querySelector('.post-play-label'); if(lbl) lbl.textContent='Play'; }
       activePostButton=null;
@@ -1262,6 +1270,8 @@ function playPostNarration(post, button){
     utter.onerror=()=>{
       clearHighlightTimer();
       if(ttsPanel) ttsPanel.classList.remove('active');
+      const origBodyErr=document.querySelector('[data-id="'+post.id+'"] .post-body');
+      if(origBodyErr) origBodyErr.classList.remove('tts-playing');
       if(button){ button.classList.remove('active'); const lbl=button.querySelector('.post-play-label'); if(lbl) lbl.textContent='Play'; }
       activePostButton=null;
       syncTopListenButton();
@@ -1494,7 +1504,7 @@ function renderPost(p){
       <span class="post-tag ${p.tag}">${t('tag' + p.tag.charAt(0).toUpperCase() + p.tag.slice(1))}</span><span class="post-time">${getTimeAgo(p.time)}</span>
     </div>
     <div class="post-body" data-raw="${encodeURIComponent(p.body)}">${esc(getTranslatedText(p.body))}</div>
-    <div class="post-tts-panel" id="tts-panel-${p.id}"><div class="post-tts-progress" id="tts-progress-${p.id}"></div><div class="post-tts-body" id="tts-body-${p.id}"></div></div>
+    <div class="post-tts-panel" id="tts-panel-${p.id}"><div class="post-tts-panel-label">🔊 Now reading</div><div class="post-tts-body" id="tts-body-${p.id}"></div><div class="post-tts-progress" id="tts-progress-${p.id}"></div></div>
     <div class="post-actions">
       <button class="action-btn post-play-btn" data-id="${p.id}">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
