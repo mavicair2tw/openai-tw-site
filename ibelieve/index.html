@@ -193,6 +193,10 @@ select.input{cursor:pointer;appearance:none;
 .post-tag.god{background:var(--tag-god)}
 
 .post-tts-panel{display:none;margin-top:8px;padding:10px 14px 14px;background:rgba(10,10,20,0.7);border-radius:10px;border:1px solid rgba(245,197,24,0.25);font-size:0.78rem;line-height:2;color:rgba(255,255,255,0.75);position:relative;backdrop-filter:blur(4px);}
+.post-tts-body{max-height:calc(2em * 10);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:rgba(245,197,24,0.3) transparent;}
+.post-tts-body::-webkit-scrollbar{width:3px}
+.post-tts-body::-webkit-scrollbar-track{background:transparent}
+.post-tts-body::-webkit-scrollbar-thumb{background:rgba(245,197,24,0.3);border-radius:3px}
 .post-tts-panel.active{display:block;}
 .post-tts-panel-label{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#f5c518;opacity:.7;margin-bottom:4px;}
 .post-tts-progress{position:absolute;bottom:0;left:0;height:2px;background:#f5c518;border-radius:0 0 10px 10px;transition:width 0.15s linear;width:0;}
@@ -997,15 +1001,13 @@ function highlightWord(bodyEl, charIndex, charLength){
       const targetScroll=relTop - preview.clientHeight * 0.4;
       preview.scrollTo({top: Math.max(0, targetScroll), behavior:'smooth'});
     }
-    // Post card TTS panel: scroll the page viewport so highlighted word stays visible
-    if(bodyEl && bodyEl.closest && bodyEl.closest('.post-tts-panel')){
-      const rect=activeSpan.getBoundingClientRect();
-      const viewH=window.innerHeight;
-      // Only scroll if word is in bottom 40% or top 20% of viewport
-      if(rect.top > viewH * 0.6 || rect.top < viewH * 0.2){
-        const targetY=window.scrollY + rect.top - viewH * 0.4;
-        window.scrollTo({top: Math.max(0, targetY), behavior:'smooth'});
-      }
+    // Post card TTS panel: scroll within the tts-body container
+    if(bodyEl && bodyEl.classList && bodyEl.classList.contains('post-tts-body')){
+      const containerRect=bodyEl.getBoundingClientRect();
+      const spanRect=activeSpan.getBoundingClientRect();
+      const relTop=spanRect.top - containerRect.top + bodyEl.scrollTop;
+      const targetScroll=relTop - bodyEl.clientHeight * 0.4;
+      bodyEl.scrollTo({top: Math.max(0, targetScroll), behavior:'smooth'});
     }
   }
 }
