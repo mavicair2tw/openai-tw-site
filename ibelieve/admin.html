@@ -1057,7 +1057,9 @@ async function loadPosts(){
         replies:(p.replies||[]).length,
         replies_data:p.replies||[],
         created:p.createdAt||p.created_at||'',
-        prompt:p.prompt||null
+        prompt:p.prompt||null,
+        image_prompt:p.image_prompt||null,
+        image_url:p.image_url||null
       };
     });
     filteredPosts=allPosts.slice();
@@ -1108,7 +1110,9 @@ function renderPosts(){
           ? '<div style="margin-bottom:12px;padding:10px 12px;background:#eee8ff;border:1px solid #c4b0ff;border-radius:8px;">'            +'<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#6d28d9;margin-bottom:5px;">✦ Prompt</div>'            +'<div style="font-size:12px;color:#333;line-height:1.7;white-space:pre-wrap;max-height:160px;overflow-y:auto;">'+esc(p.prompt)+'</div>'            +'</div>'
           : '<div style="margin-bottom:10px;padding:7px 12px;border:1px dashed #bbb;border-radius:6px;font-size:11px;color:#888;background:#f5f5f5;">'            +'<span style="font-size:10px;font-weight:700;color:#aaa;margin-right:8px;">PROMPT</span>No prompt recorded'            +'</div>'
         )
-        // Reply action bar
+        // Image panel
+        +(p.image_url
+          ? '<div style="margin-bottom:12px;display:flex;gap:12px;align-items:flex-start;">'            +'<div style="flex-shrink:0;"><img src="'+p.image_url+'" style="width:120px;height:120px;object-fit:cover;border-radius:8px;border:1px solid #ddd;" alt="Generated image"/></div>'            +'<div style="flex:1;min-width:0;">'            +'<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#9333ea;margin-bottom:4px;">🎨 Image Prompt</div>'            +'<div style="font-size:11px;color:#555;line-height:1.6;">'+esc(p.image_prompt||'')+'</div>'            +'</div></div>'          : (p.image_prompt            ? '<div style="margin-bottom:10px;padding:7px 12px;border:1px dashed #c084fc;border-radius:6px;font-size:11px;background:#faf5ff;">'              +'<span style="font-size:10px;font-weight:700;color:#9333ea;margin-right:8px;">🎨 IMAGE PROMPT</span>'+esc(p.image_prompt)              +'</div>'            : '')        )        // Reply action bar
         +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'
         +'<span style="font-size:11px;font-weight:600;color:'+topicColor+';text-transform:uppercase;letter-spacing:.08em;">↳ Replies ('+replies.length+')</span>'
         +'<button class="badd" style="padding:3px 10px;font-size:11px;" onclick="openReplyModal(&quot;add&quot;)">+ Add</button>'
@@ -1161,6 +1165,8 @@ function togglePostRow(i, e){
     }).catch(function(){});
     var detailP=postsFetch('/posts/'+p.id).then(function(data){
       if(data && data.prompt !== undefined) p.prompt=data.prompt;
+      if(data && data.image_prompt !== undefined) p.image_prompt=data.image_prompt;
+      if(data && data.image_url !== undefined) p.image_url=data.image_url;
     }).catch(function(){});
     Promise.all([repliesP, detailP]).then(function(){ renderPosts(); });
   } else { renderPosts(); }

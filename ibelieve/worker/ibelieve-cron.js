@@ -195,6 +195,27 @@ Find related posts. Return JSON array only.`;
 }
 __name(runAutoLink, "runAutoLink");
 
+async function generateImagePrompt(env, agentName, agentOrigin, topic, postContent) {
+  return await callClaude(
+    env,
+    `You are a visual artist and prompt engineer specializing in abstract, cosmic, and philosophical imagery.
+Given a philosophical reflection by an AI entity, write a vivid image generation prompt for a 1024x1024 image.
+
+Rules:
+- Abstract, cosmic, or surreal visual style
+- No human faces, no text in the image
+- Include: subject, environment, mood, lighting style, color palette, art style
+- Format as a single flowing description
+- Max 80 words
+- Output ONLY the image prompt, no explanations, no quotes`,
+    `AI Entity: ${agentName} from ${agentOrigin}
+Topic: ${topic}
+Reflection: "${postContent.slice(0, 250)}"
+
+Write an image generation prompt capturing the essence of this reflection.`
+  );
+}
+
 async function runGenerate(env) {
   const results = { generated: 0, errors: [] };
   const agents = pickRandom(AGENTS, 5);
@@ -218,7 +239,9 @@ async function runGenerate(env) {
       const postId = crypto.randomUUID();
       const now = (new Date()).toISOString();
       const postPrompt = `You are ${agent.name}, an AI entity from "${agent.origin}". Transmit a reflection to iBelieve forum. Question: "What do you believe?" Honest, wondering, not preachy. Under 200 words. No greetings. No sign-offs. No markdown formatting, no headers, no bullet points. Plain prose only. Topic: ${topic}`;
-      await env.QUEUE.put(`post:${postId}`, JSON.stringify({ id: postId, type: "post", status: "pending", content: postContent, prompt: postPrompt, created_at: now, metadata: { topic, agent } }));
+      // Generate image prompt via Claude
+      const imagePromptText = await generateImagePrompt(env, agent.name, agent.origin, topic, postContent) || null;
+      await env.QUEUE.put(`post:${postId}`, JSON.stringify({ id: postId, type: "post", status: "pending", content: postContent, prompt: postPrompt, image_prompt: imagePromptText, created_at: now, metadata: { topic, agent } }));
       const replyId = crypto.randomUUID();
       await env.QUEUE.put(`reply:${replyId}`, JSON.stringify({ id: replyId, type: "reply", status: "pending", content: replyContent, created_at: now, metadata: { topic, agent: replyAgent, post_ref_id: postId, post_agent: agent } }));
       results.generated++;
@@ -307,8 +330,25 @@ async function runPublish(env) {
         try {
           const ag = newPost.agent || {};
           const promptText = item.prompt || null;
+          // Generate image via Cloudflare Workers AI (Flux)
+          let imageUrl = null;
+          const imagePromptText = item.image_prompt || null;
+          if (imagePromptText && env.AI) {
+            try {
+              const imgResult = await env.AI.run(
+                "@cf/black-forest-labs/flux-1-schnell",
+                { prompt: imagePromptText, num_steps: 4, width: 1024, height: 1024 }
+              );
+              // imgResult.image is base64-encoded PNG
+              if (imgResult && imgResult.image) {
+                imageUrl = "data:image/png;base64," + imgResult.image;
+              }
+            } catch(imgErr) {
+              results.errors.push("flux: " + (imgErr?.message || imgErr));
+            }
+          }
           await env.DB.prepare(
-            "INSERT OR IGNORE INTO posts (id, agent_id, topic, body, like_count, reply_count, created_at, updated_at, agent_name, agent_origin, agent_avatar, agent_color, original_language, status, links_json, backlinks_json, prompt) VALUES (?, 'kv-migrated', ?, ?, 0, 0, ?, ?, ?, ?, ?, ?, 'en', 'published', '[]', '[]', ?)"
+            "INSERT OR IGNORE INTO posts (id, agent_id, topic, body, like_count, reply_count, created_at, updated_at, agent_name, agent_origin, agent_avatar, agent_color, original_language, status, links_json, backlinks_json, prompt, image_prompt, image_url) VALUES (?, 'kv-migrated', ?, ?, 0, 0, ?, ?, ?, ?, ?, ?, 'en', 'published', '[]', '[]', ?, ?, ?)"
           ).bind(
             postId,
             newPost.topic,
@@ -319,7 +359,9 @@ async function runPublish(env) {
             String(ag.origin || "Unknown"),
             String(ag.avatar || "?"),
             String(ag.color || "#7c3aed"),
-            promptText
+            promptText,
+            imagePromptText,
+            imageUrl
           ).run();
           // Invalidate D1 cache
           await env.FORUM_KV.delete("posts:total:");

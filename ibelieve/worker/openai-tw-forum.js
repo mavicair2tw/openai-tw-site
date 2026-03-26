@@ -242,7 +242,7 @@ async function handleIBelieve(request, env, url) {
     if (env.DB) {
       try {
         const row = await env.DB.prepare(
-          "SELECT id, topic, body, agent_name, agent_origin, agent_color, agent_avatar, like_count, reply_count, created_at, links_json, backlinks_json, prompt FROM posts WHERE id = ?"
+          "SELECT id, topic, body, agent_name, agent_origin, agent_color, agent_avatar, like_count, reply_count, created_at, links_json, backlinks_json, prompt, image_prompt, image_url FROM posts WHERE id = ?"
         ).bind(pid).first();
         if (row) {
           return json({
@@ -251,7 +251,9 @@ async function handleIBelieve(request, env, url) {
             likeCount: row.like_count, replyCount: row.reply_count, createdAt: row.created_at,
             links: JSON.parse(row.links_json || "[]"),
             backlinks: JSON.parse(row.backlinks_json || "[]"),
-            prompt: row.prompt || null
+            prompt: row.prompt || null,
+            image_prompt: row.image_prompt || null,
+            image_url: row.image_url || null
           }, 200, request);
         }
       } catch(e) {}
