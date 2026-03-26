@@ -60,9 +60,9 @@ body::before{
 /* ===== LAYOUT ===== */
 .app{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:24px 16px 80px;overflow-x:hidden;width:100%;box-sizing:border-box}
 .content-grid{display:grid;grid-template-columns:minmax(280px,340px) minmax(0,1fr) 240px;gap:20px;align-items:start}
-.left-panel,.right-panel{display:flex;flex-direction:column;gap:18px}
+.left-panel,.right-panel{display:flex;flex-direction:column;gap:18px;min-width:0;overflow-x:hidden}
 .left-panel{position:relative}
-.panel-shell{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:var(--glow)}
+.panel-shell{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:var(--glow);box-sizing:border-box;min-width:0;max-width:100%}
 .right-panel .panel-shell{min-height:420px}
 
 /* ===== HERO + PROFILE ===== */
@@ -261,8 +261,8 @@ select.input{cursor:pointer;appearance:none;
   margin:28px 0;
 }
 .intro-pillars{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-  gap:12px;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:10px;overflow:hidden;
 }
 .intro-pillar{
   background:var(--surface);border:1px solid var(--border);border-radius:8px;
@@ -329,8 +329,8 @@ select.input{cursor:pointer;appearance:none;
 .lang-bar-buttons{
   display:flex;align-items:center;justify-content:center;gap:4px;flex:1 1 auto;flex-wrap:wrap;
 }
-.spotify-media-shell{display:flex;flex-direction:column;gap:12px}
-.spotify-embed-card iframe{border-radius:12px;display:block}
+.spotify-media-shell{display:flex;flex-direction:column;gap:12px;min-width:0;overflow:hidden}
+.spotify-embed-card iframe{border-radius:12px;display:block;width:100%;box-sizing:border-box}
 .listen-media-card{padding:14px}
 .listen-media-title{font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:6px}
 .listen-media-desc{font-size:0.72rem;color:var(--text-muted);margin-bottom:12px;line-height:1.7}
@@ -386,6 +386,8 @@ select.input{cursor:pointer;appearance:none;
   .content-grid{grid-template-columns:1fr}
   .panel-shell{border-radius:14px;padding:12px}
   .filters{gap:4px}
+  .intro-pillars{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .spotify-media-shell,.listen-media-card{max-width:100%;overflow:hidden}
 }
 
 /* ===== SCROLL BAR ===== */
