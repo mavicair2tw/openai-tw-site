@@ -510,6 +510,17 @@ td{padding:10px 14px;vertical-align:middle;}
           <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em;">Date (YYYY-MM-DD)</div>
           <input class="search-inp" id="rn-date" placeholder="2026-03-25" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:13px;" oninput="rnSearch()">
         </div>
+        <div style="min-width:150px;">
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em;">Category</div>
+          <select id="rn-filter-cat" onchange="rnSearch()" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:13px;cursor:pointer;">
+            <option value="">All Categories</option>
+            <option value="summary">Summary</option>
+            <option value="release-notes">Release Notes</option>
+            <option value="bug-report">Bug Report</option>
+            <option value="notification">Notification</option>
+            <option value="post">Post</option>
+          </select>
+        </div>
         <button onclick="rnSearch()" style="padding:6px 14px;border:none;border-radius:6px;background:var(--accent);color:#fff;font-size:13px;cursor:pointer;font-weight:600;">Search</button>
         <button onclick="rnOpenNew()" style="padding:6px 14px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:13px;cursor:pointer;">+ New</button>
       </div>
@@ -517,7 +528,7 @@ td{padding:10px 14px;vertical-align:middle;}
       <!-- New / Edit form (hidden by default) -->
       <div id="rn-form" class="card" style="display:none;margin-bottom:16px;">
         <div class="card-title" id="rn-form-title">New Release Note</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-top:10px;">
           <div>
             <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;">Version</div>
             <input id="rn-inp-version" class="form-input" placeholder="v2.1.0" style="width:100%;">
@@ -525,6 +536,21 @@ td{padding:10px 14px;vertical-align:middle;}
           <div>
             <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;">Release Date</div>
             <input id="rn-inp-date" class="form-input" placeholder="2026-03-25" style="width:100%;">
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;">Category</div>
+            <div style="display:flex;gap:4px;">
+              <select id="rn-inp-cat" onchange="rnCatSelectChange()" style="flex:1;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px;cursor:pointer;">
+                <option value="">Select Category</option>
+                <option value="summary">Summary</option>
+                <option value="release-notes">Release Notes</option>
+                <option value="bug-report">Bug Report</option>
+                <option value="notification">Notification</option>
+                <option value="post">Post</option>
+                <option value="__new__">+ New category...</option>
+              </select>
+            </div>
+            <input id="rn-inp-cat-new" class="form-input" placeholder="New category name" style="width:100%;margin-top:4px;display:none;">
           </div>
           <div>
             <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;">Tags (comma separated)</div>
@@ -1904,13 +1930,16 @@ var rnEditId=null;
 async function rnLoad(){
   const q=(document.getElementById('rn-search')?.value||'').trim();
   const date=(document.getElementById('rn-date')?.value||'').trim();
+  const cat=(document.getElementById('rn-filter-cat')?.value||'').trim();
   const status=document.getElementById('rn-status');
   const list=document.getElementById('rn-list');
   if(status) status.textContent='Loading...';
   if(list) list.innerHTML='';
   try{
     var params=new URLSearchParams();
-    if(q) params.set('q',q);
+    var effectiveQ=q;
+    if(cat && !effectiveQ.includes(cat)) effectiveQ=effectiveQ?effectiveQ+' '+cat:cat;
+    if(effectiveQ) params.set('q',effectiveQ);
     if(date) params.set('date',date);
     params.set('limit','50');
     var data=await postsFetch('/release-notes?'+params.toString());
@@ -1969,6 +1998,9 @@ function rnOpenNew(){
   rnEditId=null;
   document.getElementById('rn-form-title').textContent='New Release Note';
   document.getElementById('rn-inp-version').value='';
+  document.getElementById('rn-inp-cat').value='';
+  document.getElementById('rn-inp-cat-new').value='';
+  document.getElementById('rn-inp-cat-new').style.display='none';
   document.getElementById('rn-inp-date').value=new Date().toISOString().slice(0,10);
   document.getElementById('rn-inp-title').value='';
   document.getElementById('rn-inp-content').value='';
@@ -2002,10 +2034,36 @@ function rnEdit(id){
     var tags=[];
     try{ tags=JSON.parse(note.tags||'[]'); }catch(e){ tags=[]; }
     document.getElementById('rn-inp-tags').value=tags.join(', ');
+    // Set category dropdown to first known category tag
+    var knownCats=['summary','release-notes','bug-report','notification','post'];
+    var catTag=tags.find(function(t){ return knownCats.includes(t) || document.querySelector('#rn-inp-cat option[value="'+t+'"]'); });
+    var catSel=document.getElementById('rn-inp-cat');
+    if(catTag && Array.from(catSel.options).some(function(o){ return o.value===catTag; })){
+      catSel.value=catTag;
+    } else if(catTag) {
+      var opt=document.createElement('option'); opt.value=catTag; opt.textContent=catTag;
+      catSel.insertBefore(opt, catSel.querySelector('option[value="__new__"]'));
+      catSel.value=catTag;
+    } else {
+      catSel.value='';
+    }
+    document.getElementById('rn-inp-cat-new').style.display='none';
     document.getElementById('rn-form').style.display='block';
     document.getElementById('rn-inp-version').focus();
     document.getElementById('rn-form').scrollIntoView({behavior:'smooth'});
   });
+}
+
+function rnCatSelectChange(){
+  var sel=document.getElementById('rn-inp-cat');
+  var newInp=document.getElementById('rn-inp-cat-new');
+  if(sel.value==='__new__'){
+    newInp.style.display='block';
+    newInp.focus();
+  } else {
+    newInp.style.display='none';
+    newInp.value='';
+  }
 }
 
 async function rnSave(){
@@ -2014,11 +2072,35 @@ async function rnSave(){
   var title=document.getElementById('rn-inp-title').value.trim();
   var content=document.getElementById('rn-inp-content').value.trim();
   var tagsRaw=document.getElementById('rn-inp-tags').value.trim();
+  var catSel=document.getElementById('rn-inp-cat').value;
+  var catNew=document.getElementById('rn-inp-cat-new').value.trim();
+  // Resolve category
+  var category = catSel==='__new__' ? catNew.toLowerCase().replace(/\s+/g,'-') : catSel;
   if(!version||!date||!title||!content){showToast('Version, date, title and content are required','warn');return;}
   var tags=tagsRaw?tagsRaw.split(',').map(function(t){return t.trim();}).filter(Boolean):[];
+  // Add category to tags if not already present
+  if(category && !tags.includes(category)) tags.unshift(category);
+  // If new category, add to dropdown for future use
+  if(catSel==='__new__' && catNew){
+    var sel=document.getElementById('rn-inp-cat');
+    var exists=Array.from(sel.options).some(function(o){ return o.value===category; });
+    if(!exists){
+      var opt=document.createElement('option');
+      opt.value=category; opt.textContent=catNew;
+      sel.insertBefore(opt, sel.querySelector('option[value="__new__"]'));
+      // Also add to filter dropdown
+      var fsel=document.getElementById('rn-filter-cat');
+      var fexists=Array.from(fsel.options).some(function(o){ return o.value===category; });
+      if(!fexists){
+        var fopt=document.createElement('option');
+        fopt.value=category; fopt.textContent=catNew;
+        fsel.appendChild(fopt);
+      }
+    }
+    sel.value=category;
+  }
   try{
     if(rnEditId){
-      // Delete and re-insert (simple update strategy)
       await postsFetch('/release-notes/'+rnEditId,{method:'DELETE'});
     }
     await postsFetch('/release-notes',{method:'POST',body:JSON.stringify({version,title,content,tags,author:'admin',release_date:date})});
