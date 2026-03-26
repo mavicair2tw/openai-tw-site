@@ -1166,10 +1166,13 @@ function togglePostRow(i, e){
       p.replies_data=Array.isArray(data)?data:(data.replies||data.posts||[]);
     }).catch(function(){});
     var detailP=postsFetch('/posts/'+p.id).then(function(data){
-      if(data && data.prompt !== undefined) p.prompt=data.prompt;
-      if(data && data.image_prompt !== undefined) p.image_prompt=data.image_prompt;
-      if(data && data.image_url !== undefined) p.image_url=data.image_url;
-    }).catch(function(){});
+      // Only set prompt if it's a non-empty string (not null/undefined)
+      p.prompt = (data && typeof data.prompt === 'string' && data.prompt.length > 0) ? data.prompt : null;
+      p.image_prompt = (data && typeof data.image_prompt === 'string' && data.image_prompt.length > 0) ? data.image_prompt : null;
+      p.image_url = (data && typeof data.image_url === 'string' && data.image_url.length > 0) ? data.image_url : null;
+    }).catch(function(){
+      p.prompt = null; p.image_prompt = null; p.image_url = null;
+    });
     Promise.all([repliesP, detailP]).then(function(){ renderPosts(); });
   } else { renderPosts(); }
 }
