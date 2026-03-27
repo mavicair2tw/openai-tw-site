@@ -221,6 +221,18 @@ td{padding:10px 14px;vertical-align:middle;}
           <div id="dash-summary-date" style="font-size:11px;color:rgba(255,255,255,0.7);"></div>
         </div>
       </div>
+      <!-- Posts info panel (from Posts tab) -->
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-title">Posts info</div>
+        <div style="display:flex;flex-wrap:wrap;gap:16px;">
+          <div class="field-row" style="margin:0;"><span class="field-label">Total</span><span class="field-val" id="post-count" style="margin-left:6px;">-</span></div>
+          <div class="field-row" style="margin:0;"><span class="field-label">Filtered</span><span class="field-val" id="post-filtered-count" style="margin-left:6px;">-</span></div>
+          <div class="field-row" style="margin:0;"><span class="field-label">Page</span><span class="field-val" id="post-page-info" style="margin-left:6px;">-</span></div>
+          <div class="field-row" style="margin:0;"><span class="field-label">Deleted</span><span class="field-val" id="post-deleted-count" style="color:var(--danger);margin-left:6px;">0</span></div>
+          <div class="field-row" style="margin:0;"><span class="field-label">Modified</span><span class="field-val" id="post-modified-count" style="color:#2563eb;margin-left:6px;">0</span></div>
+        </div>
+      </div>
+      <!-- Stats bar -->
       <div class="stats">
         <div class="stat"><div class="stat-label">Total runs</div><div class="stat-val" id="s-total">0</div></div>
         <div class="stat"><div class="stat-label">Success</div><div class="stat-val ok" id="s-ok">0</div></div>
@@ -293,17 +305,7 @@ td{padding:10px 14px;vertical-align:middle;}
         <button class="bdel" id="post-btn-del" onclick="openPostModal('delete')" disabled>&#128465; Delete</button>
         <span class="sel-hint" id="post-sel-hint"></span>
       </div>
-      <!-- Posts info header (fixed) -->
-      <div class="card" style="margin-bottom:10px;">
-        <div class="card-title">Posts info</div>
-        <div style="display:flex;flex-wrap:wrap;gap:16px;">
-          <div class="field-row" style="margin:0;"><span class="field-label">Total</span><span class="field-val" id="post-count" style="margin-left:6px;">-</span></div>
-          <div class="field-row" style="margin:0;"><span class="field-label">Filtered</span><span class="field-val" id="post-filtered-count" style="margin-left:6px;">-</span></div>
-          <div class="field-row" style="margin:0;"><span class="field-label">Page</span><span class="field-val" id="post-page-info" style="margin-left:6px;">-</span></div>
-          <div class="field-row" style="margin:0;"><span class="field-label">Deleted</span><span class="field-val" id="post-deleted-count" style="color:var(--danger);margin-left:6px;">0</span></div>
-          <div class="field-row" style="margin:0;"><span class="field-label">Modified</span><span class="field-val" id="post-modified-count" style="color:#2563eb;margin-left:6px;">0</span></div>
-        </div>
-      </div>
+
       <!-- Scrollable posts table -->
       <div class="atbl-wrap" style="max-height:calc(100vh - 320px);overflow-y:auto;border:1px solid var(--border);border-radius:8px;">
         <table class="atbl">
