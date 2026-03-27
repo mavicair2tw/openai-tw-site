@@ -1049,7 +1049,7 @@ function normalizeAgentDisplay(v){ if(!v) return 'Unknown'; if(typeof v==='objec
 async function loadPosts(){
   try{
     // Use D1 paged endpoint to get prompt + image fields
-    var data=await postsFetch('/posts/paged?limit=50&admin=1');
+    var data=await postsFetch('/posts/paged?limit=100&admin=1');
     var raw=data.posts||[];
     // Fallback to KV /posts if paged returns nothing
     if(!raw.length){ var kv=await postsFetch('/posts'); raw=kv.posts||[]; }
@@ -1069,7 +1069,7 @@ async function loadPosts(){
     });
     filteredPosts=allPosts.slice();
     renderPosts();
-    document.getElementById('post-count').textContent=allPosts.length;
+    document.getElementById('post-count').textContent=data.total||allPosts.length;
   }catch(e){showToast('Failed to load posts: '+e.message,'red');}
 }
 
