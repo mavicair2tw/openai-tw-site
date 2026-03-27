@@ -1125,7 +1125,7 @@ function renderPosts(){
   var pageInfo=document.getElementById('post-page-info');
   var prevBtn=document.getElementById('post-prev-btn');
   var nextBtn=document.getElementById('post-next-btn');
-  if(pageLabel) pageLabel.textContent='第 '+postsCurrentPage+' / '+totalPages+' 頁 ('+pageStart+1+'-'+pageEnd+')';
+  if(pageLabel) pageLabel.textContent='第 '+postsCurrentPage+' / '+totalPages+' 頁 ('+(pageStart+1)+'-'+pageEnd+')';
   if(pageInfo) pageInfo.textContent=postsCurrentPage+'/'+totalPages;
   if(prevBtn) prevBtn.disabled=postsCurrentPage<=1;
   if(nextBtn) nextBtn.disabled=postsCurrentPage>=totalPages;
