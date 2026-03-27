@@ -2115,8 +2115,13 @@ async function sumLoad(){
   try {
     var data = await postsFetch('/release-notes?limit=50');
     var all = (data.notes || []).filter(function(n){ return n.version === 'summary'; });
-    var sort = document.getElementById('sum-sort');
-    if(sort && sort.value === 'oldest') all = all.slice().reverse();
+    var sortVal = (document.getElementById('sum-sort') || {}).value || 'newest';
+    // Sort by created_at (numeric) for accurate ordering within same date
+    all.sort(function(a, b){
+      var ta = Number(a.created_at) || 0;
+      var tb = Number(b.created_at) || 0;
+      return sortVal === 'oldest' ? ta - tb : tb - ta;
+    });
     sumReports = all;
     if(countEl) countEl.textContent = all.length;
     if(!all.length){

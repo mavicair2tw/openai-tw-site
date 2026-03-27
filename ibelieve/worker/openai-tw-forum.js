@@ -587,7 +587,7 @@ async function handleIBelieve(request, env, url) {
       sql = "SELECT id,version,title,content,tags,author,release_date,created_at,image_url FROM release_notes WHERE release_date LIKE ? ORDER BY release_date DESC LIMIT ?";
       bindings = [date + "%", limit];
     } else {
-      sql = "SELECT id,version,title,content,tags,author,release_date,created_at,image_url FROM release_notes ORDER BY release_date DESC LIMIT ?";
+      sql = "SELECT id,version,title,content,tags,author,release_date,created_at,image_url FROM release_notes ORDER BY created_at DESC LIMIT ?";
       bindings = [limit];
     }
     const stmt = env.DB.prepare(sql);
