@@ -832,6 +832,55 @@ async function handleIBelieve(request, env, url) {
     return json({ ok: true }, 200, request);
   }
 
+  // POST /api/ibelieve/generate-summary-image
+  if (request.method === "POST" && path === "/api/ibelieve/generate-summary-image") {
+    if (!env.ANTHROPIC_API_KEY) return json({ error: "ANTHROPIC_API_KEY not configured" }, 500, request);
+    if (!env.AI) return json({ error: "AI binding not configured" }, 500, request);
+    if (!env.IMAGES_BUCKET) return json({ error: "IMAGES_BUCKET not configured" }, 500, request);
+    try {
+      const body = await request.json().catch(() => ({}));
+      const summaryText = String(body.text || "").slice(0, 600);
+      if (!summaryText) return json({ error: "text required" }, 400, request);
+      // Step 1: Generate image prompt via Claude
+      const promptRes = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": env.ANTHROPIC_API_KEY,
+          "anthropic-version": "2023-06-01"
+        },
+        body: JSON.stringify({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 150,
+          system: "You are a visual artist. Given an AI knowledge graph summary report, write a vivid image generation prompt for a 1024x1024 abstract visualization. No text, no human faces. Abstract, cosmic, data-visualization aesthetic. Format: [subject], [environment], [mood/lighting], [style], [color palette]. Max 60 words. Output ONLY the prompt.",
+          messages: [{ role: "user", content: `Summary: "${summaryText}"
+
+Write image prompt:` }]
+        })
+      });
+      const promptData = await promptRes.json();
+      const imagePromptText = promptData?.content?.[0]?.text?.trim() || "";
+      if (!imagePromptText) return json({ ok: false, error: "prompt generation failed" }, 500, request);
+      // Step 2: Generate image via Flux
+      const imgResult = await env.AI.run(
+        "@cf/black-forest-labs/flux-1-schnell",
+        { prompt: imagePromptText, num_steps: 4, width: 1024, height: 1024 }
+      );
+      if (!imgResult || !imgResult.image) return json({ ok: false, error: "image generation failed" }, 500, request);
+      // Step 3: Upload to R2
+      const binaryStr = atob(imgResult.image);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let b = 0; b < binaryStr.length; b++) bytes[b] = binaryStr.charCodeAt(b);
+      const imgKey = "summaries/summary-" + Date.now() + ".png";
+      await env.IMAGES_BUCKET.put(imgKey, bytes.buffer, { httpMetadata: { contentType: "image/png" } });
+      const r2Domain = (env.R2_PUBLIC_URL || "").replace(/\/$/, "");
+      const imageUrl = r2Domain ? r2Domain + "/" + imgKey : null;
+      return json({ ok: true, image_url: imageUrl }, 200, request);
+    } catch(e) {
+      return json({ ok: false, error: e.message }, 500, request);
+    }
+  }
+
   return json({ error: "Not found" }, 404, request);
 }
 __name(handleIBelieve, "handleIBelieve");

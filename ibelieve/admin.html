@@ -2251,11 +2251,11 @@ async function cmSaveReportAsNote(reportText){
       var noteObj = { id: noteId, title: title, content: content, release_date: dateStr2, image_url: null };
       sumAppend(noteObj);
       // Generate summary image asynchronously via ibelieve-cron
-      fetch(CRON_API+'/generate-summary-image', {
+      // Use forum worker (has CORS) instead of cron worker
+      postsFetch('/generate-summary-image', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: reportText.slice(0, 600) })
-      }).then(function(r){ return r.json(); }).then(function(imgData){
+      }).then(function(imgData){
         if(imgData.ok && imgData.image_url) {
           // Update D1 with image_url
           postsFetch('/release-notes/'+noteId+'/image', {
