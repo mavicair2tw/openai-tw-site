@@ -1116,27 +1116,24 @@ function playPostNarration(post, button){
 
   utter.onboundary = (e) => {
     if(e.name !== 'word') return;
-    // Highlight nearest word span
-    wordSpans.forEach(s=>s.style.background='');
-    // Find span by character index
+    // Clear all highlights
+    wordSpans.forEach(s=>{ s.style.background=''; s.style.color=''; });
+    // Find which token corresponds to charIndex in the original string
     let charCount=0;
     for(let i=0;i<tokens.length;i++){
-      if(tokens[i].trim()){
-        if(charCount >= e.charIndex){
-          const spanId = 'tw-'+post.id+'-'+i;
-          const span = document.getElementById(spanId);
-          if(span){
-            span.style.background='rgba(250,200,0,0.35)';
-            span.style.color='#ffe066';
-            span.scrollIntoView({block:'nearest',behavior:'smooth'});
-            currentWordIdx=i;
-          }
-          break;
+      const tokLen = tokens[i].length;
+      if(tokens[i].trim() && e.charIndex >= charCount && e.charIndex < charCount + tokLen){
+        const spanId = 'tw-'+post.id+'-'+i;
+        const span = document.getElementById(spanId);
+        if(span){
+          span.style.background='rgba(250,200,0,0.35)';
+          span.style.color='#ffe066';
+          span.scrollIntoView({block:'nearest',behavior:'smooth'});
+          currentWordIdx=i;
         }
-        charCount += tokens[i].length;
-      } else {
-        charCount += tokens[i].length;
+        break;
       }
+      charCount += tokLen;
     }
     // Update progress
     if(progress && text.length>0) progress.style.width=(e.charIndex/text.length*100)+'%';
