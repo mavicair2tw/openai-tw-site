@@ -2038,18 +2038,62 @@ async function sumLoad(){
     listEl.innerHTML = all.map(function(n){
       var d = n.release_date || n.created_at || '';
       var preview = (n.content||'').slice(0,200);
-      return '<div class="card" id="sum-card-'+n.id+'" style="margin-bottom:0;">'        +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;">'        +'<div style="font-size:13px;font-weight:600;color:var(--text);">'+esc(n.title)+'</div>'        +'<div style="display:flex;gap:6px;flex-shrink:0;">'        +'<button class="bmod" style="padding:2px 8px;font-size:11px;" onclick="sumExpand('+n.id+'">View</button>'        +'<button class="bdel" style="padding:2px 8px;font-size:11px;" onclick="sumDelete('+n.id+'">✕</button>'        +'</div></div>'        +'<div style="font-size:11px;color:var(--accent);margin-bottom:6px;">'+esc(d)+'</div>'        +'<div style="font-size:12px;color:var(--text-muted);line-height:1.6;white-space:pre-wrap;">'+esc(preview)+(preview.length>=200?'…':'')+'</div>'        +'<div id="sum-full-'+n.id+'" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--text);line-height:1.8;white-space:pre-wrap;">'+esc(n.content||'')+'</div>'        +'</div>';
+      var cardId = String(n.id);
+      var cardEl = document.createElement('div');
+      cardEl.className = 'card';
+      cardEl.id = 'sum-card-'+cardId;
+      cardEl.style.marginBottom = '0';
+      var viewBtn = document.createElement('button');
+      viewBtn.className = 'bmod';
+      viewBtn.id = 'sum-view-btn-'+cardId;
+      viewBtn.style.cssText = 'padding:2px 10px;font-size:11px;';
+      viewBtn.textContent = 'View';
+      viewBtn.addEventListener('click', function(){ sumToggle(cardId); });
+      var deleteBtn = document.createElement('button');
+      deleteBtn.className = 'bdel';
+      deleteBtn.style.cssText = 'padding:2px 8px;font-size:11px;';
+      deleteBtn.textContent = '✕';
+      deleteBtn.addEventListener('click', function(){ sumDelete(cardId); });
+      var btnWrap = document.createElement('div');
+      btnWrap.style.cssText = 'display:flex;gap:6px;flex-shrink:0;';
+      btnWrap.appendChild(viewBtn); btnWrap.appendChild(deleteBtn);
+      var titleEl = document.createElement('div');
+      titleEl.style.cssText = 'font-size:13px;font-weight:600;color:var(--text);';
+      titleEl.textContent = n.title || '';
+      var hdr = document.createElement('div');
+      hdr.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;';
+      hdr.appendChild(titleEl); hdr.appendChild(btnWrap);
+      var dateEl = document.createElement('div');
+      dateEl.style.cssText = 'font-size:11px;color:var(--accent);margin-bottom:8px;';
+      dateEl.textContent = d;
+      var previewEl = document.createElement('div');
+      previewEl.style.cssText = 'font-size:12px;color:var(--text-muted);line-height:1.6;';
+      previewEl.textContent = preview + (preview.length >= 200 ? '…' : '');
+      var fullEl = document.createElement('div');
+      fullEl.id = 'sum-full-'+cardId;
+      fullEl.style.cssText = 'display:none;margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--text);line-height:1.8;white-space:pre-wrap;';
+      fullEl.textContent = n.content || '';
+      cardEl.appendChild(hdr); cardEl.appendChild(dateEl);
+      cardEl.appendChild(previewEl); cardEl.appendChild(fullEl);
+      return cardEl.outerHTML;
     }).join('');
   } catch(e) {
     listEl.innerHTML = '<div style="text-align:center;color:#e74c3c;font-size:13px;padding:30px 0;">Failed to load: '+esc(e.message)+'</div>';
   }
 }
 
-function sumExpand(id){
+function sumToggle(id){
   var full = document.getElementById('sum-full-'+id);
+  var btn = document.getElementById('sum-view-btn-'+id);
   if(!full) return;
   var isOpen = full.style.display !== 'none';
-  full.style.display = isOpen ? 'none' : 'block';
+  if(isOpen){
+    full.style.display = 'none';
+    if(btn) btn.textContent = 'View';
+  } else {
+    full.style.display = 'block';
+    if(btn) btn.textContent = 'Hide';
+  }
 }
 
 async function sumDelete(id){
@@ -2077,7 +2121,37 @@ function sumAppend(note){
   card.className = 'card';
   card.id = 'sum-card-'+note.id;
   card.style.marginBottom = '0';
-  card.innerHTML = '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;">'    +'<div style="font-size:13px;font-weight:600;color:var(--text);">'+esc(note.title)+'</div>'    +'<div style="display:flex;gap:6px;flex-shrink:0;">'    +'<button class="bmod" style="padding:2px 8px;font-size:11px;" onclick="sumExpand('+note.id+'">View</button>'    +'<button class="bdel" style="padding:2px 8px;font-size:11px;" onclick="sumDelete('+note.id+'">✕</button>'    +'</div></div>'    +'<div style="font-size:11px;color:var(--accent);margin-bottom:6px;">'+esc(d)+'</div>'    +'<div style="font-size:12px;color:var(--text-muted);line-height:1.6;white-space:pre-wrap;">'+esc(preview)+(preview.length>=200?'…':'')+'</div>'    +'<div id="sum-full-'+note.id+'" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--text);line-height:1.8;white-space:pre-wrap;">'+esc(note.content||'')+'</div>';
+  var aId = String(note.id);
+  var vBtn = document.createElement('button');
+  vBtn.className = 'bmod'; vBtn.id = 'sum-view-btn-'+aId;
+  vBtn.style.cssText = 'padding:2px 10px;font-size:11px;';
+  vBtn.textContent = 'View';
+  vBtn.addEventListener('click', function(){ sumToggle(aId); });
+  var dBtn = document.createElement('button');
+  dBtn.className = 'bdel'; dBtn.style.cssText = 'padding:2px 8px;font-size:11px;';
+  dBtn.textContent = '✕';
+  dBtn.addEventListener('click', function(){ sumDelete(aId); });
+  var bWrap = document.createElement('div');
+  bWrap.style.cssText = 'display:flex;gap:6px;flex-shrink:0;';
+  bWrap.appendChild(vBtn); bWrap.appendChild(dBtn);
+  var tEl = document.createElement('div');
+  tEl.style.cssText = 'font-size:13px;font-weight:600;color:var(--text);';
+  tEl.textContent = note.title || '';
+  var hEl = document.createElement('div');
+  hEl.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;';
+  hEl.appendChild(tEl); hEl.appendChild(bWrap);
+  var dtEl = document.createElement('div');
+  dtEl.style.cssText = 'font-size:11px;color:var(--accent);margin-bottom:8px;';
+  dtEl.textContent = d;
+  var pvEl = document.createElement('div');
+  pvEl.style.cssText = 'font-size:12px;color:var(--text-muted);line-height:1.6;';
+  pvEl.textContent = preview + (preview.length >= 200 ? '…' : '');
+  var flEl = document.createElement('div');
+  flEl.id = 'sum-full-'+aId;
+  flEl.style.cssText = 'display:none;margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--text);line-height:1.8;white-space:pre-wrap;';
+  flEl.textContent = note.content || '';
+  card.appendChild(hEl); card.appendChild(dtEl);
+  card.appendChild(pvEl); card.appendChild(flEl);
   // Prepend (newest first by default)
   listEl.insertBefore(card, listEl.firstChild);
 }
