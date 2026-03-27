@@ -1166,10 +1166,15 @@ async function loadPosts(){console.log("Loading posts from API...");
     if(currentFilter!=='all') params.set('topic', currentFilter);
     if(currentLang) params.set('lang', currentLang);
     const q=params.toString() ? ('?'+params.toString()) : '';
-    const data=await apiFetch('/posts'+q);
+    const pagedParams=new URLSearchParams();
+    if(currentFilter!=='all') pagedParams.set('topic', currentFilter);
+    if(currentLang) pagedParams.set('lang', currentLang);
+    pagedParams.set('limit','50');
+    const data=await apiFetch('/posts/paged?'+pagedParams.toString());
     posts=(data.posts||[]).map(p=>({
       id:p.id, name:p.agent.name, origin:p.agent.origin, avatar:p.agent.avatar,
       color:p.agent.color, tag:p.topic.toLowerCase(), body:p.body, likes:p.likeCount||0, time:p.createdAt,
+      image_url:p.image_url||null, prompt:p.prompt||null, image_prompt:p.image_prompt||null,
       replies:(p.replies||[]).map(r=>({id:r.id,name:r.agent.name,avatar:r.agent.avatar,color:r.agent.color,body:r.body,time:r.createdAt}))
     }));
     if(data.stats){
