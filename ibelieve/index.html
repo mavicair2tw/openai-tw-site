@@ -1273,6 +1273,7 @@ function speakNextPost(){
       };
       utter.onboundary=(e)=>{
         if(e.name==='word' && bodyEl){
+          if(isCJK(text)) return;
           boundaryWorking=true;
           clearHighlightTimer();
           highlightWord(bodyEl, e.charIndex, e.charLength||1);
@@ -1400,6 +1401,8 @@ function playPostNarration(post, button){
     };
     utter.onboundary=(e)=>{
       if(e.name==='word' && ttsBody){
+        // For CJK (ja/zh), onboundary is unreliable in Chrome — use timer only
+        if(isCJK(text)) return;
         boundaryWorking=true;
         clearHighlightTimer();
         highlightWord(ttsBody, e.charIndex, e.charLength||1);
