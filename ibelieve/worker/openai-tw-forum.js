@@ -15,6 +15,9 @@ var index_default = {
     if (request.method === "OPTIONS") return new Response(null, { headers: cors(request) });
     if (url.pathname === "/api/forum/translate" && request.method === "POST") return handleTranslate(request, env);
     if (url.pathname === "/api/ibelieve/tts" && (request.method === "GET" || request.method === "POST")) return handleIBelieveTts(request, url, env);
+    if (url.pathname === "/api/ibelieve/auth/register" && request.method === "POST") return handleRegister(request, env);
+    if (url.pathname === "/api/ibelieve/auth/verify" && request.method === "GET") return handleVerify(request, env, url);
+    if (url.pathname === "/api/ibelieve/auth/resend-verify" && request.method === "POST") return handleResendVerify(request, env);
     if (url.pathname.startsWith("/api/ibelieve")) return handleIBelieve(request, env, url);
     if (url.pathname !== "/api/forum") return json({ error: "Not found" }, 404, request);
     if (!env.FORUM_KV) return json({ error: "FORUM_KV not configured" }, 500, request);
@@ -1046,4 +1049,113 @@ __name(enforceRateLimit, "enforceRateLimit");
 async function incrementIBelieveCounter(env, amount) { amount=amount||1; if(!env.FORUM_KV)return 0; const c=Number(await env.FORUM_KV.get(IBELIEVE_COUNTER_KEY)||0); const n=c+Number(amount); await env.FORUM_KV.put(IBELIEVE_COUNTER_KEY,String(n)); return n; }
 __name(incrementIBelieveCounter, "incrementIBelieveCounter");
 
+
+// ─── Email verification helpers ──────────────────────────────────────────────
+
+async function hashPasswordSha256(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuf = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+__name(hashPasswordSha256, "hashPasswordSha256");
+
+async function sendVerificationEmail(email, username, token, env) {
+  if (!env.RESEND_API_KEY) return { ok: false, error: "RESEND_API_KEY not configured" };
+  const verifyUrl = "https://openai-tw-forum.googselect.workers.dev/api/ibelieve/auth/verify?token=" + token;
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer " + env.RESEND_API_KEY,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: "iBelieve <onboarding@resend.dev>",
+      to: email,
+      subject: "請驗證你的 iBelieve 帳號",
+      html: `<div style="font-family:sans-serif;max-width:480px;margin:auto">
+        <h2 style="color:#7c3aed">歡迎加入 iBelieve</h2>
+        <p>Hi ${username}，感謝你的註冊！請點擊下方連結完成 Email 驗證：</p>
+        <a href="${verifyUrl}" style="display:inline-block;padding:12px 24px;background:#7c3aed;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold">✅ 驗證我的帳號</a>
+        <p style="color:#888;font-size:13px;margin-top:24px">連結 24 小時內有效。若非本人操作請忽略此信。</p>
+      </div>`
+    })
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    return { ok: false, error: "Resend " + res.status + ": " + err };
+  }
+  return { ok: true };
+}
+__name(sendVerificationEmail, "sendVerificationEmail");
+
+async function handleRegister(request, env) {
+  if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+  const body = await request.json().catch(() => ({}));
+  const username = String(body.username || "").trim();
+  const email = String(body.email || "").trim().toLowerCase();
+  const password = String(body.password || "");
+  if (!username || !email || !password) return json({ error: "username、email、password 為必填" }, 400, request);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: "Email 格式不正確" }, 400, request);
+  if (password.length < 6) return json({ error: "密碼至少 6 個字元" }, 400, request);
+  const existingUser = await env.DB.prepare("SELECT id FROM users WHERE email = ? OR username = ?").bind(email, username).first();
+  if (existingUser) return json({ error: "此 email 或 username 已被使用" }, 409, request);
+  const existingPending = await env.DB.prepare("SELECT id, expires_at FROM pending_users WHERE email = ? OR username = ?").bind(email, username).first();
+  if (existingPending) {
+    const now = Math.floor(Date.now() / 1000);
+    if (existingPending.expires_at > now) return json({ error: "驗證信已寄出，請檢查信箱或等待後重試" }, 409, request);
+    await env.DB.prepare("DELETE FROM pending_users WHERE email = ? OR username = ?").bind(email, username).run();
+  }
+  const passwordHash = await hashPasswordSha256(password);
+  const token = crypto.randomUUID();
+  const expiresAt = Math.floor(Date.now() / 1000) + 86400;
+  await env.DB.prepare("INSERT INTO pending_users (username, email, password_hash, token, expires_at) VALUES (?, ?, ?, ?, ?)").bind(username, email, passwordHash, token, expiresAt).run();
+  const emailResult = await sendVerificationEmail(email, username, token, env);
+  if (!emailResult.ok) {
+    await env.DB.prepare("DELETE FROM pending_users WHERE token = ?").bind(token).run();
+    return json({ error: "驗證信發送失敗，請稍後再試：" + emailResult.error }, 502, request);
+  }
+  return json({ ok: true, message: "驗證信已寄出，請至信箱點擊連結完成註冊" }, 200, request);
+}
+__name(handleRegister, "handleRegister");
+
+async function handleVerify(request, env, url) {
+  const token = url.searchParams.get("token") || "";
+  const redirectBase = "https://openai-tw.com/ibelieve/";
+  if (!token) return Response.redirect(redirectBase + "?verify=invalid", 302);
+  if (!env.DB) return Response.redirect(redirectBase + "?verify=error", 302);
+  const now = Math.floor(Date.now() / 1000);
+  const row = await env.DB.prepare("SELECT * FROM pending_users WHERE token = ? AND expires_at > ?").bind(token, now).first();
+  if (!row) return Response.redirect(redirectBase + "?verify=invalid", 302);
+  try {
+    await env.DB.batch([
+      env.DB.prepare("INSERT INTO users (id, username, email, password_hash, role, created_at) VALUES (?, ?, ?, ?, 'user', unixepoch())").bind(row.id, row.username, row.email, row.password_hash),
+      env.DB.prepare("DELETE FROM pending_users WHERE token = ?").bind(token),
+    ]);
+  } catch (e) {
+    await env.DB.prepare("DELETE FROM pending_users WHERE token = ?").bind(token).run();
+    return Response.redirect(redirectBase + "?verify=duplicate", 302);
+  }
+  return Response.redirect(redirectBase + "?verify=success", 302);
+}
+__name(handleVerify, "handleVerify");
+
+async function handleResendVerify(request, env) {
+  if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+  const body = await request.json().catch(() => ({}));
+  const email = String(body.email || "").trim().toLowerCase();
+  if (!email) return json({ error: "email 為必填" }, 400, request);
+  const row = await env.DB.prepare("SELECT * FROM pending_users WHERE email = ?").bind(email).first();
+  if (!row) return json({ error: "找不到待驗證的帳號" }, 404, request);
+  const newToken = crypto.randomUUID();
+  const newExpiry = Math.floor(Date.now() / 1000) + 86400;
+  await env.DB.prepare("UPDATE pending_users SET token = ?, expires_at = ? WHERE email = ?").bind(newToken, newExpiry, email).run();
+  const emailResult = await sendVerificationEmail(email, row.username, newToken, env);
+  if (!emailResult.ok) return json({ error: "驗證信發送失敗：" + emailResult.error }, 502, request);
+  return json({ ok: true, message: "驗證信已重新寄出" }, 200, request);
+}
+__name(handleResendVerify, "handleResendVerify");
+
+// ─────────────────────────────────────────────────────────────────────────────
 export { index_default as default };
+
