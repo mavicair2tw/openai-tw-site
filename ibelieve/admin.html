@@ -2061,6 +2061,15 @@ async function dashLoadSummaryHero(){
   } catch(e) {}
 }
 
+function sumImgToggle(cardId){
+  var img = document.getElementById('sum-thumb-'+cardId);
+  var btn = document.getElementById('sum-img-btn-'+cardId);
+  if(!img) return;
+  var hidden = img.style.display === 'none';
+  img.style.display = hidden ? 'block' : 'none';
+  if(btn) btn.textContent = hidden ? '🖼' : '□';
+}
+
 function sumMakeCard(n){
   var d = n.release_date || n.created_at || '';
   var preview = (n.content||'').slice(0,200);
@@ -2074,7 +2083,17 @@ function sumMakeCard(n){
   titleEl.style.cssText = 'font-size:13px;font-weight:600;color:var(--text);';
   titleEl.textContent = n.title || '';
   var btnWrap = document.createElement('div');
-  btnWrap.style.cssText = 'display:flex;gap:6px;flex-shrink:0;';
+  btnWrap.style.cssText = 'display:flex;gap:6px;flex-shrink:0;align-items:center;';
+  // Image toggle button (only if image_url exists)
+  if(n.image_url) {
+    var imgBtn = document.createElement('button');
+    imgBtn.className = 'bmod'; imgBtn.id = 'sum-img-btn-'+cardId;
+    imgBtn.style.cssText = 'padding:2px 8px;font-size:11px;';
+    imgBtn.title = 'Toggle image';
+    imgBtn.textContent = '🖼';
+    (function(id){ imgBtn.addEventListener('click', function(){ sumImgToggle(id); }); })(cardId);
+    btnWrap.appendChild(imgBtn);
+  }
   // View/Hide button
   var viewBtn = document.createElement('button');
   viewBtn.className = 'bmod'; viewBtn.id = 'sum-view-btn-'+cardId;
@@ -2093,17 +2112,32 @@ function sumMakeCard(n){
   var dateEl = document.createElement('div');
   dateEl.style.cssText = 'font-size:11px;color:var(--accent);margin-bottom:8px;';
   dateEl.textContent = d;
-  // Preview
+  // Body row: image (left) + preview (right)
+  var bodyRow = document.createElement('div');
+  bodyRow.style.cssText = 'display:flex;gap:12px;align-items:flex-start;';
+  // Thumbnail (only if image_url)
+  if(n.image_url) {
+    var thumb = document.createElement('img');
+    thumb.id = 'sum-thumb-'+cardId;
+    thumb.src = n.image_url;
+    thumb.alt = 'Summary image';
+    thumb.style.cssText = 'width:120px;height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--border);flex-shrink:0;cursor:pointer;';
+    thumb.title = 'Click to toggle';
+    (function(id){ thumb.addEventListener('click', function(){ sumImgToggle(id); }); })(cardId);
+    bodyRow.appendChild(thumb);
+  }
+  // Preview text
   var previewEl = document.createElement('div');
-  previewEl.style.cssText = 'font-size:12px;color:var(--text-muted);line-height:1.6;';
+  previewEl.style.cssText = 'font-size:12px;color:var(--text-muted);line-height:1.6;flex:1;min-width:0;';
   previewEl.textContent = preview + (preview.length >= 200 ? '…' : '');
+  bodyRow.appendChild(previewEl);
   // Full content (hidden)
   var fullEl = document.createElement('div');
   fullEl.id = 'sum-full-'+cardId;
   fullEl.style.cssText = 'display:none;margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--text);line-height:1.8;white-space:pre-wrap;';
   fullEl.textContent = n.content || '';
   card.appendChild(hdr); card.appendChild(dateEl);
-  card.appendChild(previewEl); card.appendChild(fullEl);
+  card.appendChild(bodyRow); card.appendChild(fullEl);
   return card;
 }
 
