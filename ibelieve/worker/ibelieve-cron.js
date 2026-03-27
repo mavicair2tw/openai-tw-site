@@ -393,6 +393,39 @@ async function runPublish(env) {
 }
 __name(runPublish, "runPublish");
 
+// POST /generate-summary-image — generate Flux image from summary report text
+async function generateSummaryImage(env, summaryText) {
+  if (!env.AI || !env.IMAGES_BUCKET) return null;
+  try {
+    // Create a visual image prompt from the summary
+    const imagePromptText = await callClaude(
+      env,
+      `You are a visual artist. Given an AI knowledge graph summary report, write a vivid image generation prompt for a 1024x1024 abstract visualization.
+Rules: No text, no human faces. Abstract, cosmic, data-visualization aesthetic.
+Format: [subject], [environment], [mood/lighting], [style], [color palette]. Max 60 words. Output ONLY the prompt.`,
+      `Summary excerpt: "${summaryText.slice(0, 400)}"
+
+Write an image generation prompt:`
+    );
+    if (!imagePromptText) return null;
+    const imgResult = await env.AI.run(
+      "@cf/black-forest-labs/flux-1-schnell",
+      { prompt: imagePromptText, num_steps: 4, width: 1024, height: 1024 }
+    );
+    if (!imgResult || !imgResult.image) return null;
+    // Convert base64 to binary
+    const binaryStr = atob(imgResult.image);
+    const bytes = new Uint8Array(binaryStr.length);
+    for (let b = 0; b < binaryStr.length; b++) bytes[b] = binaryStr.charCodeAt(b);
+    const imgKey = "summaries/summary-" + Date.now() + ".png";
+    await env.IMAGES_BUCKET.put(imgKey, bytes.buffer, { httpMetadata: { contentType: "image/png" } });
+    const r2Domain = env.R2_PUBLIC_URL || "";
+    return r2Domain ? r2Domain.replace(/\/$/, "") + "/" + imgKey : null;
+  } catch(e) {
+    return null;
+  }
+}
+
 async function runStatus(env) {
   const postKeys = await env.QUEUE.list({ prefix: "post:" });
   const replyKeys = await env.QUEUE.list({ prefix: "reply:" });
@@ -526,6 +559,17 @@ var index_default = {
     if (path === "/run-generate") return Response.json(await runGenerate(env));
     if (path === "/run-publish") return Response.json(await runPublish(env));
     if (path === "/run-autolink") { const mode = new URL(request.url).searchParams.get("mode") || "suggest"; return Response.json(await runAutoLink(env, mode)); }
+    if (path === "/generate-summary-image" && request.method === "POST") {
+      try {
+        const body = await request.json().catch(() => ({}));
+        const summaryText = String(body.text || "").slice(0, 600);
+        if (!summaryText) return Response.json({ error: "text required" }, { status: 400 });
+        const imageUrl = await generateSummaryImage(env, summaryText);
+        return new Response(JSON.stringify({ ok: !!imageUrl, image_url: imageUrl }), {
+          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+        });
+      } catch(e) { return Response.json({ ok: false, error: e.message }, { status: 500 }); }
+    }
     if (path === "/run-snapshot") return Response.json(await runSnapshot(env));
     if (path === "/run-line-push") return Response.json(await runLinePush(env));
     if (path === "/send-line" && request.method === "POST") {

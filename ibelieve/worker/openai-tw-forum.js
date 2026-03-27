@@ -576,18 +576,18 @@ async function handleIBelieve(request, env, url) {
     const limit = Math.min(parseInt(url.searchParams.get("limit") || "20"), 50);
     let sql, bindings;
     if (q && date) {
-      sql = "SELECT id,version,title,content,tags,author,release_date,created_at FROM release_notes WHERE (title LIKE ? OR content LIKE ? OR tags LIKE ?) AND release_date LIKE ? ORDER BY release_date DESC LIMIT ?";
+      sql = "SELECT id,version,title,content,tags,author,release_date,created_at,image_url FROM release_notes WHERE (title LIKE ? OR content LIKE ? OR tags LIKE ?) AND release_date LIKE ? ORDER BY release_date DESC LIMIT ?";
       const like = "%" + q + "%"; const dateLike = date + "%";
       bindings = [like, like, like, dateLike, limit];
     } else if (q) {
-      sql = "SELECT id,version,title,content,tags,author,release_date,created_at FROM release_notes WHERE title LIKE ? OR content LIKE ? OR tags LIKE ? ORDER BY release_date DESC LIMIT ?";
+      sql = "SELECT id,version,title,content,tags,author,release_date,created_at,image_url FROM release_notes WHERE title LIKE ? OR content LIKE ? OR tags LIKE ? ORDER BY release_date DESC LIMIT ?";
       const like = "%" + q + "%";
       bindings = [like, like, like, limit];
     } else if (date) {
-      sql = "SELECT id,version,title,content,tags,author,release_date,created_at FROM release_notes WHERE release_date LIKE ? ORDER BY release_date DESC LIMIT ?";
+      sql = "SELECT id,version,title,content,tags,author,release_date,created_at,image_url FROM release_notes WHERE release_date LIKE ? ORDER BY release_date DESC LIMIT ?";
       bindings = [date + "%", limit];
     } else {
-      sql = "SELECT id,version,title,content,tags,author,release_date,created_at FROM release_notes ORDER BY release_date DESC LIMIT ?";
+      sql = "SELECT id,version,title,content,tags,author,release_date,created_at,image_url FROM release_notes ORDER BY release_date DESC LIMIT ?";
       bindings = [limit];
     }
     const stmt = env.DB.prepare(sql);
@@ -603,12 +603,21 @@ async function handleIBelieve(request, env, url) {
     if (!version || !title || !content || !release_date) return json({ error: "version, title, content, release_date required" }, 400, request);
     const id = "rn-" + crypto.randomUUID().slice(0, 8);
     await env.DB.prepare(
-      "INSERT INTO release_notes (id, version, title, content, tags, author, release_date) VALUES (?, ?, ?, ?, ?, ?, ?)"
-    ).bind(id, version, title, content, JSON.stringify(tags || []), author || "system", release_date).run();
+      "INSERT INTO release_notes (id, version, title, content, tags, author, release_date, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+    ).bind(id, version, title, content, JSON.stringify(tags || []), author || "system", release_date, body.image_url || null).run();
     return json({ ok: true, id }, 200, request);
   }
 
   // DELETE /api/ibelieve/release-notes/:id
+  const rnPatchMatch = path.match(/^\/api\/ibelieve\/release-notes\/([^/]+)\/image$/);
+  if (request.method === "PATCH" && rnPatchMatch) {
+    if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+    const pb = await request.json().catch(() => ({}));
+    await env.DB.prepare("UPDATE release_notes SET image_url = ? WHERE id = ?")
+      .bind(pb.image_url || null, rnPatchMatch[1]).run();
+    return json({ ok: true }, 200, request);
+  }
+
   const rnDeleteMatch = path.match(/^\/api\/ibelieve\/release-notes\/([^/]+)$/);
   if (request.method === "DELETE" && rnDeleteMatch) {
     if (!env.DB) return json({ error: "D1 not configured" }, 500, request);

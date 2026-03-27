@@ -213,6 +213,14 @@ td{padding:10px 14px;vertical-align:middle;}
   </nav>
   <div class="content">
     <div id="panel-dashboard" class="panel active">
+      <!-- Latest Summary Image -->
+      <div id="dash-summary-hero" style="display:none;margin-bottom:18px;border-radius:14px;overflow:hidden;position:relative;background:var(--surface);border:1px solid var(--border);">
+        <img id="dash-summary-img" src="" alt="Latest Cloud Map Summary" style="width:100%;max-height:320px;object-fit:cover;display:block;">
+        <div style="position:absolute;bottom:0;left:0;right:0;padding:14px 18px;background:linear-gradient(to top,rgba(0,0,0,0.8),transparent);">
+          <div id="dash-summary-title" style="font-size:13px;font-weight:600;color:#fff;margin-bottom:4px;"></div>
+          <div id="dash-summary-date" style="font-size:11px;color:rgba(255,255,255,0.7);"></div>
+        </div>
+      </div>
       <div class="stats">
         <div class="stat"><div class="stat-label">Total runs</div><div class="stat-val" id="s-total">0</div></div>
         <div class="stat"><div class="stat-label">Success</div><div class="stat-val ok" id="s-ok">0</div></div>
@@ -634,6 +642,7 @@ td{padding:10px 14px;vertical-align:middle;}
 <script>
 /* AUTH */
 const WORKER_API = 'https://openai-tw-forum.googselect.workers.dev/api/ibelieve';
+const CRON_API = 'https://ibelieve-cron.googselect.workers.dev';
 const DEVICE_TOKEN_KEY = 'ibelieve_trusted_device_token';
 const DEVICE_USER_KEY = 'ibelieve_trusted_device_user';
 
@@ -1068,6 +1077,7 @@ function switchTab(name,el){
   if(name==='account') loadAccounts();
   if(name==='posts') loadPosts();
   if(name==='cloudmap'){ cmInit(); cmInitMode(); cmLoadSuggestions(); }
+  if(name==='dashboard') dashLoadSummaryHero();
   if(name==='releasenotes') rnLoad();
   if(name==='summary') sumLoad();
   if(name==='notification'){ notifLoad().catch(function(e){ console.warn('notifLoad error:',e); }); }
@@ -2019,6 +2029,25 @@ Generate a comprehensive Cloud Map Summary Report.`
 // ── Summary Tab ──────────────────────────────────────────────────────────────
 var sumReports = [];
 
+// ── Dashboard Summary Hero ───────────────────────────────────────────────────
+async function dashLoadSummaryHero(){
+  try {
+    var data = await postsFetch('/release-notes?limit=20');
+    var summaries = (data.notes || []).filter(function(n){ return n.version === 'summary' && n.image_url; });
+    if(!summaries.length) return;
+    var latest = summaries[0];
+    var hero = document.getElementById('dash-summary-hero');
+    var img = document.getElementById('dash-summary-img');
+    var title = document.getElementById('dash-summary-title');
+    var date = document.getElementById('dash-summary-date');
+    if(!hero || !img) return;
+    img.src = latest.image_url;
+    if(title) title.textContent = latest.title || '';
+    if(date) date.textContent = latest.release_date || '';
+    hero.style.display = 'block';
+  } catch(e) {}
+}
+
 function sumMakeCard(n){
   var d = n.release_date || n.created_at || '';
   var preview = (n.content||'').slice(0,200);
@@ -2163,11 +2192,39 @@ async function cmSaveReportAsNote(reportText){
     });
     var data = await res.json().catch(function(){ return {}; });
     if(data.ok && data.id) {
-      // Build a note object to append to Summary tab immediately
+      var noteId = data.id;
       var tw2 = new Date(new Date().getTime() + 8*3600000);
       var pad2 = function(n){ return String(n).padStart(2,'0'); };
       var dateStr2 = tw2.getUTCFullYear()+'-'+pad2(tw2.getUTCMonth()+1)+'-'+pad2(tw2.getUTCDate());
-      sumAppend({ id: data.id, title: title, content: content, release_date: dateStr2 });
+      var noteObj = { id: noteId, title: title, content: content, release_date: dateStr2, image_url: null };
+      sumAppend(noteObj);
+      // Generate summary image asynchronously via ibelieve-cron
+      fetch(CRON_API+'/generate-summary-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: reportText.slice(0, 600) })
+      }).then(function(r){ return r.json(); }).then(function(imgData){
+        if(imgData.ok && imgData.image_url) {
+          // Update D1 with image_url
+          postsFetch('/release-notes/'+noteId+'/image', {
+            method: 'PATCH',
+            body: JSON.stringify({ image_url: imgData.image_url })
+          }).catch(function(){});
+          // Update Summary tab card
+          var sumImg = document.getElementById('sum-img-'+noteId);
+          if(sumImg){ sumImg.src = imgData.image_url; sumImg.style.display = 'block'; }
+          // Update Dashboard hero
+          noteObj.image_url = imgData.image_url;
+          var hero = document.getElementById('dash-summary-hero');
+          var heroImg = document.getElementById('dash-summary-img');
+          var heroTitle = document.getElementById('dash-summary-title');
+          var heroDate = document.getElementById('dash-summary-date');
+          if(heroImg) heroImg.src = imgData.image_url;
+          if(heroTitle) heroTitle.textContent = title;
+          if(heroDate) heroDate.textContent = dateStr2;
+          if(hero) hero.style.display = 'block';
+        }
+      }).catch(function(){});
     }
     return data.ok || false;
   } catch(e) {
@@ -2393,6 +2450,7 @@ function initAll(){refreshData(); loadAccounts();}
 // Try auto login on page load
 window.addEventListener('DOMContentLoaded', async ()=>{
   var autoLoggedIn = await tryAutoLogin();
+  if(autoLoggedIn) dashLoadSummaryHero();
   // If not auto-logged in, show login form (already visible by default)
 });
 </script>
