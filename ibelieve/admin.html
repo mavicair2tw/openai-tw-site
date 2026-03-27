@@ -1461,8 +1461,16 @@ var cmPosts=[], cmSelectedId=null;
 async function cmInit(){
   cmPosts=[];
   try{
-    var data=await postsFetch('/posts');
-    cmPosts=(data.posts||[]).map(function(p){
+    // Use /posts/paged to get all posts from D1 (not KV)
+    var allPaged=[];
+    var cursor=null;
+    do {
+      var url='/posts/paged?limit=100'+(cursor?'&cursor='+cursor:'');
+      var data=await postsFetch(url);
+      allPaged=allPaged.concat(data.posts||[]);
+      cursor=data.hasMore?data.nextCursor:null;
+    } while(cursor);
+    cmPosts=allPaged.map(function(p){
       return {
         id:p.id,
         agent:p.agent?.name||p.name||'Unknown',
@@ -1488,7 +1496,7 @@ function cmSearch(){
 
 function cmRenderList(posts){
   var el=document.getElementById('cm-post-list');
-  document.getElementById('cm-post-count').textContent='('+posts.length+')';
+  document.getElementById('cm-post-count').textContent='('+cmPosts.length+')';
   if(!posts.length){el.innerHTML='<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No posts</div>';return;}
   el.innerHTML=posts.map(function(p){
     var sel=p.id===cmSelectedId;
