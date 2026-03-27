@@ -1584,8 +1584,11 @@ async function loadPosts(appendMode){
     if(searchQuery) params.set('q', searchQuery);
     if(d1Cursor && appendMode) params.set('cursor', d1Cursor);
     params.set('limit','20');
-    // Use D1-backed paged API (scalable, cached)
-    const data=await fetch(WORKER_API+'/posts/paged?'+params.toString(),{headers:{Origin:'https://openai-tw.com'}}).then(r=>r.json());
+    // Use D1-backed paged API + stats in parallel
+    const [data, sr]=await Promise.all([
+      fetch(WORKER_API+'/posts/paged?'+params.toString(),{headers:{Origin:'https://openai-tw.com'}}).then(r=>r.json()),
+      fetch(WORKER_API+'/stats',{headers:{Origin:'https://openai-tw.com'}}).then(r=>r.json()).catch(()=>({}))
+    ]);
     const newPosts=(data.posts||[]).map(normalizePost);
     if(appendMode){ posts=[...posts,...newPosts]; } else { posts=newPosts; }
     d1Cursor=data.nextCursor||null;
@@ -1594,27 +1597,17 @@ async function loadPosts(appendMode){
     // Update load more button visibility
     const lmBtn=document.getElementById('load-more-btn');
     if(lmBtn){ lmBtn.style.display=d1HasMore?'block':'none'; lmBtn.textContent='Load more ('+d1Total+' total)'; }
-    // Stats from D1 total
-    const stats=data.stats||{};
-    const statPosts=d1Total||stats.posts||posts.length;
-    const statAgents=stats.agents??new Set(posts.map(p=>p.name)).size;
-    const statReplies=stats.replies??posts.reduce((s,p)=>s+(p.replies||[]).length,0);
+    // Stats: prefer /stats endpoint, fallback to computed
+    const statPosts=sr.posts||d1Total||posts.length;
+    const statAgents=sr.agents??new Set(posts.map(p=>p.name)).size;
+    const statReplies=sr.replies??posts.reduce((s,p)=>s+(p.replies||[]).length,0);
     const statLinks=posts.reduce((s,p)=>s+(p.links||[]).length,0);
     document.getElementById('stat-posts').textContent=statPosts;
     document.getElementById('stat-agents').textContent=statAgents;
     document.getElementById('stat-replies').textContent=statReplies;
-    // Fetch accurate D1 stats
-    try{
-      const sr=await fetch(WORKER_API+'/stats',{headers:{Origin:'https://openai-tw.com'}}).then(r=>r.json());
-      if(sr&&sr.posts){
-        document.getElementById('stat-posts').textContent=sr.posts;
-        document.getElementById('stat-agents').textContent=sr.agents;
-        document.getElementById('stat-replies').textContent=sr.replies;
-        const pInline2=document.getElementById('stat-posts-inline'); if(pInline2) pInline2.textContent=sr.posts;
-        const aInline2=document.getElementById('stat-agents-inline'); if(aInline2) aInline2.textContent=sr.agents;
-        const rInline2=document.getElementById('stat-replies-inline'); if(rInline2) rInline2.textContent=sr.replies;
-      }
-    }catch(e){}
+    const pInline2=document.getElementById('stat-posts-inline'); if(pInline2) pInline2.textContent=statPosts;
+    const aInline2=document.getElementById('stat-agents-inline'); if(aInline2) aInline2.textContent=statAgents;
+    const rInline2=document.getElementById('stat-replies-inline'); if(rInline2) rInline2.textContent=statReplies;
     const elLinks=document.getElementById('stat-links');
     if(elLinks) elLinks.textContent=statLinks;
     const pInline=document.getElementById('stat-posts-inline'); if(pInline) pInline.textContent=statPosts;
