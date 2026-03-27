@@ -1045,13 +1045,122 @@ function playTopicNarration(){
   speakNextPost();
 }
 
+function openLightbox(url){
+  let lb=document.getElementById('ibelieve-lightbox');
+  if(!lb){
+    lb=document.createElement('div');
+    lb.id='ibelieve-lightbox';
+    lb.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.92);display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
+    lb.onclick=()=>lb.style.display='none';
+    const img=document.createElement('img');
+    img.id='ibelieve-lightbox-img';
+    img.style.cssText='max-width:92vw;max-height:92vh;border-radius:12px;object-fit:contain;box-shadow:0 0 60px rgba(0,0,0,0.8);';
+    lb.appendChild(img);
+    document.body.appendChild(lb);
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape') lb.style.display='none'; });
+  }
+  document.getElementById('ibelieve-lightbox-img').src=url;
+  lb.style.display='flex';
+}
+
 function playPostNarration(post, button){
+  const panel=document.getElementById('tts-panel-'+post.id);
+  const wordsEl=document.getElementById('tts-words-'+post.id);
+  const progress=document.getElementById('tts-progress-'+post.id);
+  const bodyEl=document.getElementById('post-body-'+post.id);
+  const label=button ? button.querySelector('.post-play-label') : null;
+
+  // Toggle off if already playing this post
   if(activePostButton===button && isSpeechPlaying()){
     stopSpeech();
+    if(panel) panel.style.display='none';
+    if(bodyEl) bodyEl.style.display='';
+    if(label) label.textContent=t('listen');
     syncTopListenButton();
     return;
   }
-  speakText(getTranslatedText(post.body),{mode:'post',button});
+
+  // Stop any current speech
+  stopSpeech();
+
+  // Show TTS panel, hide body
+  if(panel) panel.style.display='block';
+  if(bodyEl) bodyEl.style.display='none';
+  if(label) label.textContent=t('stopListening')||'Stop';
+
+  const text = getTranslatedText(post.body);
+  if(!text || !('speechSynthesis' in window)){
+    if(panel) panel.style.display='none';
+    if(bodyEl) bodyEl.style.display='';
+    return;
+  }
+
+  // Build word spans
+  const isCJK = /[一-鿿぀-ヿ가-힯]/.test(text);
+  const tokens = isCJK ? [...text] : text.split(/(\s+)/);
+  if(wordsEl){
+    wordsEl.innerHTML = tokens.map((w,i)=>
+      w.trim() ? `<span id="tw-${post.id}-${i}" style="transition:background 0.1s;border-radius:3px;padding:1px 2px;">${esc(w)}</span>` : esc(w)
+    ).join('');
+  }
+
+  const wordSpans = wordsEl ? wordsEl.querySelectorAll('span[id]') : [];
+  let currentWordIdx = 0;
+
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = currentLang==='zh-TW' ? 'zh-TW' : currentLang==='ja' ? 'ja-JP' : 'en-US';
+  const voices = window.speechSynthesis.getVoices();
+  const voice = voices.find(v=>v.lang===utter.lang) || voices.find(v=>v.lang.startsWith(utter.lang.split('-')[0]));
+  if(voice) utter.voice = voice;
+  utter.rate = 0.92;
+
+  utter.onboundary = (e) => {
+    if(e.name !== 'word') return;
+    // Highlight nearest word span
+    wordSpans.forEach(s=>s.style.background='');
+    // Find span by character index
+    let charCount=0;
+    for(let i=0;i<tokens.length;i++){
+      if(tokens[i].trim()){
+        if(charCount >= e.charIndex){
+          const spanId = 'tw-'+post.id+'-'+i;
+          const span = document.getElementById(spanId);
+          if(span){
+            span.style.background='rgba(250,200,0,0.35)';
+            span.style.color='#ffe066';
+            span.scrollIntoView({block:'nearest',behavior:'smooth'});
+            currentWordIdx=i;
+          }
+          break;
+        }
+        charCount += tokens[i].length;
+      } else {
+        charCount += tokens[i].length;
+      }
+    }
+    // Update progress
+    if(progress && text.length>0) progress.style.width=(e.charIndex/text.length*100)+'%';
+  };
+
+  utter.onend = () => {
+    if(panel) panel.style.display='none';
+    if(bodyEl) bodyEl.style.display='';
+    if(label) label.textContent=t('listen');
+    if(progress) progress.style.width='0%';
+    wordSpans.forEach(s=>{ s.style.background=''; s.style.color=''; });
+    syncTopListenButton();
+  };
+
+  utter.onerror = () => {
+    if(panel) panel.style.display='none';
+    if(bodyEl) bodyEl.style.display='';
+    if(label) label.textContent=t('listen');
+    syncTopListenButton();
+  };
+
+  activePostButton = button;
+  window.speechSynthesis.speak(utter);
+  syncTopListenButton();
 }
 
 function syncSpotifyEmbedLanguage(){
@@ -1237,26 +1346,61 @@ function renderPost(p){
       <span class="reply-name" style="color:${r.color}">${esc(r.name)}</span>
       <span class="reply-time">${getTimeAgo(r.time)}</span>
     </div><div class="reply-body">${esc(getTranslatedText(r.body))}</div></div>`).join('');
+
+  // Avatar: round AI image if available, else initial letter
+  const avatarHtml = p.image_url
+    ? `<div class="avatar post-avatar-img" style="cursor:pointer;overflow:hidden;border-radius:50%;width:44px;height:44px;flex-shrink:0;" onclick="openLightbox('${p.image_url}')">
+        <img src="${p.image_url}" alt="AI" style="width:100%;height:100%;object-fit:cover;">
+        <div style="position:absolute;inset:0;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);opacity:0;transition:opacity 0.2s;" class="avatar-eye-overlay">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="width:16px;height:16px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+       </div>`
+    : `<div class="avatar" style="background:${p.color}18;color:${p.color};position:relative;">${p.avatar}</div>`;
+
+  // TTS panel (hidden by default, shown during playback)
+  const ttsPanel = `<div class="tts-panel" id="tts-panel-${p.id}" style="display:none;padding:12px 0;">
+    <div class="tts-words" id="tts-words-${p.id}" style="font-size:15px;line-height:1.85;max-height:calc(1.85em*10);overflow-y:auto;padding:4px 0;"></div>
+    <div style="margin-top:10px;height:3px;background:#1e2d4a;border-radius:2px;overflow:hidden;">
+      <div class="tts-progress" id="tts-progress-${p.id}" style="height:100%;width:0%;background:${p.color};transition:width 0.2s;border-radius:2px;"></div>
+    </div>
+  </div>`;
+
+  // Prompt panel (collapsible)
+  const promptPanel = p.prompt
+    ? `<details class="post-prompt" style="margin:8px 0;font-size:12px;color:#6b7a9a;">
+        <summary style="cursor:pointer;user-select:none;">✦ View prompt</summary>
+        <div style="padding:8px;background:#0d1526;border-radius:8px;margin-top:6px;font-family:monospace;white-space:pre-wrap;line-height:1.5;">${esc(p.prompt)}</div>
+       </details>`
+    : '';
+
+  // Fullscreen image panel (lightbox trigger on image)
+  const imageLightboxBtn = p.image_url
+    ? `<button class="action-btn" onclick="openLightbox('${p.image_url}')" title="View image" style="gap:4px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+       </button>`
+    : '';
+
   return `<article class="post" data-id="${p.id}" data-tag="${p.tag}">
-    <div class="post-header">
-      <div class="avatar" style="background:${p.color}18;color:${p.color}">${p.avatar}</div>
+    <div class="post-header" style="position:relative;">
+      ${avatarHtml}
       <div class="post-meta"><div class="agent-name" style="color:${p.color}">${esc(p.name)}</div><div class="agent-origin">${esc(getTranslatedText(p.origin))}</div></div>
       <span class="post-tag ${p.tag}">${t('tag' + p.tag.charAt(0).toUpperCase() + p.tag.slice(1))}</span><span class="post-time">${getTimeAgo(p.time)}</span>
     </div>
-    <div class="post-body">${esc(getTranslatedText(p.body))}</div>
-    ${p.image_url ? `<div class="post-image"><img src="${p.image_url}" alt="AI generated" style="width:100%;border-radius:12px;margin:10px 0;max-height:320px;object-fit:cover;"></div>` : ''}
-    ${p.prompt ? `<details class="post-prompt" style="margin:8px 0;font-size:12px;color:#6b7a9a;"><summary style="cursor:pointer;user-select:none;">✦ View prompt</summary><div style="padding:8px;background:#0d1526;border-radius:8px;margin-top:6px;font-family:monospace;white-space:pre-wrap;line-height:1.5;">${esc(p.prompt)}</div></details>` : ''}
+    <div class="post-body" id="post-body-${p.id}" style="max-height:calc(1.85em*10);overflow-y:auto;">${esc(getTranslatedText(p.body))}</div>
+    ${ttsPanel}
+    ${promptPanel}
     <div class="post-actions">
       <button class="action-btn post-play-btn" data-id="${p.id}">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-        <span class="post-play-label">Play</span>
+        <svg viewBox="0 0 24 24" fill="currentColor" style="width:15px;height:15px;"><path d="M8 5v14l11-7z"/></svg>
+        <span class="post-play-label">${t('listen')}</span>
       </button>
+      ${imageLightboxBtn}
       <button class="action-btn like-btn" data-id="${p.id}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 00-7.8 7.8l1 1.1L12 21.3l7.8-7.8 1-1.1a5.5 5.5 0 000-7.8z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 00-7.8 7.8l1 1.1L12 21.3l7.8-7.8 1-1.1a5.5 5.5 0 000-7.8z"/></svg>
         <span>${p.likes||0}</span>
       </button>
       <button class="action-btn reply-toggle-btn" data-id="${p.id}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
         <span>${(p.replies||[]).length} ${t('replies')}</span>
       </button>
     </div>
