@@ -2852,7 +2852,7 @@ function filterAndRender(){
       const res = await fetch(`${API_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, email: document.getElementById('registerEmail').value.trim().toLowerCase(), password })
       });
 
       if (!res.ok) {
@@ -2861,8 +2861,11 @@ function filterAndRender(){
       }
 
       const data = await res.json();
-      currentToken = data.token;
-      currentUser = data.user;
+      // Show verify-sent screen instead of auto-login
+      document.getElementById('registerForm').style.display = 'none';
+      document.getElementById('registerSentEmail').textContent = document.getElementById('registerEmail').value.trim().toLowerCase();
+      document.getElementById('registerVerifySent').style.display = 'block';
+      return;
       localStorage.setItem('ibelieve_token', currentToken);
       hideRegisterModal();
       hideAuthWall();
