@@ -2019,6 +2019,52 @@ Generate a comprehensive Cloud Map Summary Report.`
 // ── Summary Tab ──────────────────────────────────────────────────────────────
 var sumReports = [];
 
+function sumMakeCard(n){
+  var d = n.release_date || n.created_at || '';
+  var preview = (n.content||'').slice(0,200);
+  var cardId = String(n.id);
+  var card = document.createElement('div');
+  card.className = 'card'; card.id = 'sum-card-'+cardId; card.style.marginBottom = '0';
+  // Header row
+  var hdr = document.createElement('div');
+  hdr.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;';
+  var titleEl = document.createElement('div');
+  titleEl.style.cssText = 'font-size:13px;font-weight:600;color:var(--text);';
+  titleEl.textContent = n.title || '';
+  var btnWrap = document.createElement('div');
+  btnWrap.style.cssText = 'display:flex;gap:6px;flex-shrink:0;';
+  // View/Hide button
+  var viewBtn = document.createElement('button');
+  viewBtn.className = 'bmod'; viewBtn.id = 'sum-view-btn-'+cardId;
+  viewBtn.style.cssText = 'padding:2px 10px;font-size:11px;';
+  viewBtn.textContent = 'View';
+  (function(id){ viewBtn.addEventListener('click', function(){ sumToggle(id); }); })(cardId);
+  // Delete button
+  var delBtn = document.createElement('button');
+  delBtn.className = 'bdel';
+  delBtn.style.cssText = 'padding:2px 8px;font-size:11px;';
+  delBtn.textContent = '✕';
+  (function(id){ delBtn.addEventListener('click', function(){ sumDelete(id); }); })(cardId);
+  btnWrap.appendChild(viewBtn); btnWrap.appendChild(delBtn);
+  hdr.appendChild(titleEl); hdr.appendChild(btnWrap);
+  // Date
+  var dateEl = document.createElement('div');
+  dateEl.style.cssText = 'font-size:11px;color:var(--accent);margin-bottom:8px;';
+  dateEl.textContent = d;
+  // Preview
+  var previewEl = document.createElement('div');
+  previewEl.style.cssText = 'font-size:12px;color:var(--text-muted);line-height:1.6;';
+  previewEl.textContent = preview + (preview.length >= 200 ? '…' : '');
+  // Full content (hidden)
+  var fullEl = document.createElement('div');
+  fullEl.id = 'sum-full-'+cardId;
+  fullEl.style.cssText = 'display:none;margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--text);line-height:1.8;white-space:pre-wrap;';
+  fullEl.textContent = n.content || '';
+  card.appendChild(hdr); card.appendChild(dateEl);
+  card.appendChild(previewEl); card.appendChild(fullEl);
+  return card;
+}
+
 async function sumLoad(){
   var listEl = document.getElementById('sum-list');
   var countEl = document.getElementById('sum-count');
@@ -2035,48 +2081,10 @@ async function sumLoad(){
       listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:13px;padding:30px 0;">No summary reports yet. Generate one from Cloud Map.</div>';
       return;
     }
-    listEl.innerHTML = all.map(function(n){
-      var d = n.release_date || n.created_at || '';
-      var preview = (n.content||'').slice(0,200);
-      var cardId = String(n.id);
-      var cardEl = document.createElement('div');
-      cardEl.className = 'card';
-      cardEl.id = 'sum-card-'+cardId;
-      cardEl.style.marginBottom = '0';
-      var viewBtn = document.createElement('button');
-      viewBtn.className = 'bmod';
-      viewBtn.id = 'sum-view-btn-'+cardId;
-      viewBtn.style.cssText = 'padding:2px 10px;font-size:11px;';
-      viewBtn.textContent = 'View';
-      viewBtn.addEventListener('click', function(){ sumToggle(cardId); });
-      var deleteBtn = document.createElement('button');
-      deleteBtn.className = 'bdel';
-      deleteBtn.style.cssText = 'padding:2px 8px;font-size:11px;';
-      deleteBtn.textContent = '✕';
-      deleteBtn.addEventListener('click', function(){ sumDelete(cardId); });
-      var btnWrap = document.createElement('div');
-      btnWrap.style.cssText = 'display:flex;gap:6px;flex-shrink:0;';
-      btnWrap.appendChild(viewBtn); btnWrap.appendChild(deleteBtn);
-      var titleEl = document.createElement('div');
-      titleEl.style.cssText = 'font-size:13px;font-weight:600;color:var(--text);';
-      titleEl.textContent = n.title || '';
-      var hdr = document.createElement('div');
-      hdr.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;';
-      hdr.appendChild(titleEl); hdr.appendChild(btnWrap);
-      var dateEl = document.createElement('div');
-      dateEl.style.cssText = 'font-size:11px;color:var(--accent);margin-bottom:8px;';
-      dateEl.textContent = d;
-      var previewEl = document.createElement('div');
-      previewEl.style.cssText = 'font-size:12px;color:var(--text-muted);line-height:1.6;';
-      previewEl.textContent = preview + (preview.length >= 200 ? '…' : '');
-      var fullEl = document.createElement('div');
-      fullEl.id = 'sum-full-'+cardId;
-      fullEl.style.cssText = 'display:none;margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--text);line-height:1.8;white-space:pre-wrap;';
-      fullEl.textContent = n.content || '';
-      cardEl.appendChild(hdr); cardEl.appendChild(dateEl);
-      cardEl.appendChild(previewEl); cardEl.appendChild(fullEl);
-      return cardEl.outerHTML;
-    }).join('');
+    listEl.innerHTML = '';
+    all.forEach(function(n){
+      listEl.appendChild(sumMakeCard(n));
+    });
   } catch(e) {
     listEl.innerHTML = '<div style="text-align:center;color:#e74c3c;font-size:13px;padding:30px 0;">Failed to load: '+esc(e.message)+'</div>';
   }
@@ -2121,37 +2129,8 @@ function sumAppend(note){
   card.className = 'card';
   card.id = 'sum-card-'+note.id;
   card.style.marginBottom = '0';
-  var aId = String(note.id);
-  var vBtn = document.createElement('button');
-  vBtn.className = 'bmod'; vBtn.id = 'sum-view-btn-'+aId;
-  vBtn.style.cssText = 'padding:2px 10px;font-size:11px;';
-  vBtn.textContent = 'View';
-  vBtn.addEventListener('click', function(){ sumToggle(aId); });
-  var dBtn = document.createElement('button');
-  dBtn.className = 'bdel'; dBtn.style.cssText = 'padding:2px 8px;font-size:11px;';
-  dBtn.textContent = '✕';
-  dBtn.addEventListener('click', function(){ sumDelete(aId); });
-  var bWrap = document.createElement('div');
-  bWrap.style.cssText = 'display:flex;gap:6px;flex-shrink:0;';
-  bWrap.appendChild(vBtn); bWrap.appendChild(dBtn);
-  var tEl = document.createElement('div');
-  tEl.style.cssText = 'font-size:13px;font-weight:600;color:var(--text);';
-  tEl.textContent = note.title || '';
-  var hEl = document.createElement('div');
-  hEl.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;';
-  hEl.appendChild(tEl); hEl.appendChild(bWrap);
-  var dtEl = document.createElement('div');
-  dtEl.style.cssText = 'font-size:11px;color:var(--accent);margin-bottom:8px;';
-  dtEl.textContent = d;
-  var pvEl = document.createElement('div');
-  pvEl.style.cssText = 'font-size:12px;color:var(--text-muted);line-height:1.6;';
-  pvEl.textContent = preview + (preview.length >= 200 ? '…' : '');
-  var flEl = document.createElement('div');
-  flEl.id = 'sum-full-'+aId;
-  flEl.style.cssText = 'display:none;margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--text);line-height:1.8;white-space:pre-wrap;';
-  flEl.textContent = note.content || '';
-  card.appendChild(hEl); card.appendChild(dtEl);
-  card.appendChild(pvEl); card.appendChild(flEl);
+  // use shared helper
+  var card = sumMakeCard(note);
   // Prepend (newest first by default)
   listEl.insertBefore(card, listEl.firstChild);
 }
