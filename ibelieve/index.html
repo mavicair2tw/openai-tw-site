@@ -1114,29 +1114,61 @@ function playPostNarration(post, button){
   if(voice) utter.voice = voice;
   utter.rate = 0.92;
 
+  // Timer-based word highlight (reliable across all browsers and languages)
+  const wordSpanIds = [];
+  tokens.forEach((tok, i) => { if(tok.trim()) wordSpanIds.push(i); });
+  let timerIdx = 0;
+  let highlightTimer = null;
+  const estDuration = (text.length / 4) * 1000 / utter.rate; // rough ms estimate
+  const msPerToken = wordSpanIds.length > 0 ? estDuration / wordSpanIds.length : 200;
+
+  function highlightNext(){
+    wordSpans.forEach(s=>{ s.style.background=''; s.style.color=''; });
+    if(timerIdx >= wordSpanIds.length) return;
+    const spanId = 'tw-'+post.id+'-'+wordSpanIds[timerIdx];
+    const span = document.getElementById(spanId);
+    if(span){
+      span.style.background='rgba(250,200,0,0.35)';
+      span.style.color='#ffe066';
+      span.scrollIntoView({block:'nearest',behavior:'smooth'});
+    }
+    if(progress) progress.style.width=((timerIdx+1)/wordSpanIds.length*100)+'%';
+    timerIdx++;
+    if(timerIdx < wordSpanIds.length){
+      highlightTimer = setTimeout(highlightNext, msPerToken);
+    }
+  }
+
+  utter.onstart = () => {
+    timerIdx = 0;
+    highlightNext();
+  };
+
+  // Also use onboundary when available for better accuracy
   utter.onboundary = (e) => {
     if(e.name !== 'word') return;
-    // Clear all highlights
+    if(highlightTimer) { clearTimeout(highlightTimer); highlightTimer=null; }
     wordSpans.forEach(s=>{ s.style.background=''; s.style.color=''; });
-    // Find which token corresponds to charIndex in the original string
     let charCount=0;
     for(let i=0;i<tokens.length;i++){
-      const tokLen = tokens[i].length;
-      if(tokens[i].trim() && e.charIndex >= charCount && e.charIndex < charCount + tokLen){
-        const spanId = 'tw-'+post.id+'-'+i;
-        const span = document.getElementById(spanId);
+      const tokLen=tokens[i].length;
+      if(tokens[i].trim() && e.charIndex>=charCount && e.charIndex<charCount+tokLen){
+        const span=document.getElementById('tw-'+post.id+'-'+i);
         if(span){
           span.style.background='rgba(250,200,0,0.35)';
           span.style.color='#ffe066';
           span.scrollIntoView({block:'nearest',behavior:'smooth'});
-          currentWordIdx=i;
+          timerIdx=wordSpanIds.indexOf(i)+1;
         }
         break;
       }
-      charCount += tokLen;
+      charCount+=tokLen;
     }
-    // Update progress
     if(progress && text.length>0) progress.style.width=(e.charIndex/text.length*100)+'%';
+    // Resume timer from current position
+    if(timerIdx < wordSpanIds.length){
+      highlightTimer=setTimeout(highlightNext, msPerToken);
+    }
   };
 
   utter.onend = () => {
