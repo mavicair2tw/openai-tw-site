@@ -1070,7 +1070,7 @@ async function sendVerificationEmail(email, username, token, env) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "iBelieve <onboarding@resend.dev>",
+      from: "iBelieve <noreply@openai-tw.com>",
       to: email,
       subject: "請驗證你的 iBelieve 帳號",
       html: `<div style="font-family:sans-serif;max-width:480px;margin:auto">
