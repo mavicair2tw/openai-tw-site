@@ -2034,19 +2034,30 @@ var sumReports = [];
 // ── Dashboard Summary Hero ───────────────────────────────────────────────────
 async function dashLoadSummaryHero(){
   try {
+    // Load hero image
     var data = await postsFetch('/release-notes?limit=20');
     var summaries = (data.notes || []).filter(function(n){ return n.version === 'summary' && n.image_url; });
-    if(!summaries.length) return;
-    var latest = summaries[0];
-    var hero = document.getElementById('dash-summary-hero');
-    var img = document.getElementById('dash-summary-img');
-    var title = document.getElementById('dash-summary-title');
-    var date = document.getElementById('dash-summary-date');
-    if(!hero || !img) return;
-    img.src = latest.image_url;
-    if(title) title.textContent = latest.title || '';
-    if(date) date.textContent = latest.release_date || '';
-    hero.style.display = 'block';
+    if(summaries.length) {
+      var latest = summaries[0];
+      var hero = document.getElementById('dash-summary-hero');
+      var img = document.getElementById('dash-summary-img');
+      var title = document.getElementById('dash-summary-title');
+      var date = document.getElementById('dash-summary-date');
+      if(hero && img) {
+        img.src = latest.image_url;
+        if(title) title.textContent = latest.title || '';
+        if(date) date.textContent = latest.release_date || '';
+        hero.style.display = 'block';
+      }
+    }
+    // Load post counts for Posts info panel
+    postsFetch('/posts/paged?limit=1').then(function(pd){
+      var total = pd.total || 0;
+      var el = document.getElementById('post-count');
+      var fel = document.getElementById('post-filtered-count');
+      if(el) el.textContent = total;
+      if(fel) fel.textContent = total;
+    }).catch(function(){});
   } catch(e) {}
 }
 
