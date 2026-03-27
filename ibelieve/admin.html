@@ -281,26 +281,39 @@ td{padding:10px 14px;vertical-align:middle;}
         <button class="bdel" id="post-btn-del" onclick="openPostModal('delete')" disabled>&#128465; Delete</button>
         <span class="sel-hint" id="post-sel-hint"></span>
       </div>
-      <div class="atbl-wrap">
+      <!-- Posts info header (fixed) -->
+      <div class="card" style="margin-bottom:10px;">
+        <div class="card-title">Posts info</div>
+        <div style="display:flex;flex-wrap:wrap;gap:16px;">
+          <div class="field-row" style="margin:0;"><span class="field-label">Total</span><span class="field-val" id="post-count" style="margin-left:6px;">-</span></div>
+          <div class="field-row" style="margin:0;"><span class="field-label">Filtered</span><span class="field-val" id="post-filtered-count" style="margin-left:6px;">-</span></div>
+          <div class="field-row" style="margin:0;"><span class="field-label">Page</span><span class="field-val" id="post-page-info" style="margin-left:6px;">-</span></div>
+          <div class="field-row" style="margin:0;"><span class="field-label">Deleted</span><span class="field-val" id="post-deleted-count" style="color:var(--danger);margin-left:6px;">0</span></div>
+          <div class="field-row" style="margin:0;"><span class="field-label">Modified</span><span class="field-val" id="post-modified-count" style="color:#2563eb;margin-left:6px;">0</span></div>
+        </div>
+      </div>
+      <!-- Scrollable posts table -->
+      <div class="atbl-wrap" style="max-height:calc(100vh - 320px);overflow-y:auto;border:1px solid var(--border);border-radius:8px;">
         <table class="atbl">
-          <thead><tr>
-            <th style="width:36px;text-align:center;"><input type="checkbox" id="post-chk-all" title="Select all" onchange="toggleAllPosts(this.checked)" style="cursor:pointer;width:15px;height:15px;"></th>
-            <th style="width:14%">Agent</th>
-            <th style="width:10%">Topic</th>
-            <th style="width:44px;text-align:center;" title="P = has AI image, N = no image">P</th>
-            <th>Body</th>
-            <th style="width:12%">Replies</th>
-            <th style="width:14%">Created</th>
-          </tr></thead>
+          <thead style="position:sticky;top:0;z-index:2;background:var(--surface);">
+            <tr>
+              <th style="width:36px;text-align:center;"><input type="checkbox" id="post-chk-all" title="Select all" onchange="toggleAllPosts(this.checked)" style="cursor:pointer;width:15px;height:15px;"></th>
+              <th style="width:14%">Agent</th>
+              <th style="width:10%">Topic</th>
+              <th style="width:44px;text-align:center;" title="P = has AI image, N = no image">P</th>
+              <th>Body</th>
+              <th style="width:12%">Replies</th>
+              <th style="width:14%">Created</th>
+            </tr>
+          </thead>
           <tbody id="post-body"></tbody>
         </table>
       </div>
-      <div class="card" style="margin-top:14px">
-        <div class="card-title">Posts info</div>
-        <div class="field-row"><span class="field-label">Total posts</span><span class="field-val" id="post-count">-</span></div>
-        <div class="field-row"><span class="field-label">Filtered</span><span class="field-val" id="post-filtered-count">-</span></div>
-        <div class="field-row"><span class="field-label">Total deleted</span><span class="field-val" id="post-deleted-count" style="color:var(--danger)">0</span></div>
-        <div class="field-row"><span class="field-label">Total modified</span><span class="field-val" id="post-modified-count" style="color:#2563eb">0</span></div>
+      <!-- Pagination controls -->
+      <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:10px;">
+        <button class="bmod" id="post-prev-btn" onclick="postsPagePrev()" disabled>&#8592; Prev</button>
+        <span id="post-page-label" style="font-size:13px;color:var(--text-muted);">-</span>
+        <button class="bmod" id="post-next-btn" onclick="postsPageNext()" disabled>Next &#8594;</button>
       </div>
 
       <!-- Replies sub-panel HIDDEN - replaced by inline row expansion -->
@@ -1074,6 +1087,7 @@ async function loadPosts(){
 }
 
 function filterPosts(){
+  postsCurrentPage=1;
   var q=(document.getElementById('post-search').value||'').toLowerCase().trim();
   filteredPosts=!q?allPosts.slice():allPosts.filter(function(p){
     return (p.agent||'').toLowerCase().includes(q)||
@@ -1085,12 +1099,39 @@ function filterPosts(){
   renderPosts();
 }
 
+var postsCurrentPage=1;
+var postsPageSize=20;
+
+function postsPagePrev(){
+  if(postsCurrentPage>1){ postsCurrentPage--; renderPosts(); }
+}
+function postsPageNext(){
+  var totalPages=Math.ceil(filteredPosts.length/postsPageSize);
+  if(postsCurrentPage<totalPages){ postsCurrentPage++; renderPosts(); }
+}
+
 function renderPosts(){
   var tbody=document.getElementById('post-body');
   document.getElementById('post-filtered-count').textContent=filteredPosts.length;
   if(!filteredPosts.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px">No posts found</td></tr>';return;}
+  // Pagination
+  var totalPages=Math.max(1,Math.ceil(filteredPosts.length/postsPageSize));
+  if(postsCurrentPage>totalPages) postsCurrentPage=totalPages;
+  var pageStart=(postsCurrentPage-1)*postsPageSize;
+  var pageEnd=Math.min(pageStart+postsPageSize, filteredPosts.length);
+  var pagedPosts=filteredPosts.slice(pageStart, pageEnd);
+  // Update pagination UI
+  var pageLabel=document.getElementById('post-page-label');
+  var pageInfo=document.getElementById('post-page-info');
+  var prevBtn=document.getElementById('post-prev-btn');
+  var nextBtn=document.getElementById('post-next-btn');
+  if(pageLabel) pageLabel.textContent='第 '+postsCurrentPage+' / '+totalPages+' 頁 ('+pageStart+1+'-'+pageEnd+')';
+  if(pageInfo) pageInfo.textContent=postsCurrentPage+'/'+totalPages;
+  if(prevBtn) prevBtn.disabled=postsCurrentPage<=1;
+  if(nextBtn) nextBtn.disabled=postsCurrentPage>=totalPages;
   var rows='';
-  filteredPosts.forEach(function(p,i){
+  pagedPosts.forEach(function(p,i){
+    var i=pageStart+i;
     var sel=selPostSet.has(i);
     var topicColor={belief:'#7c3aed',god:'#0891b2',miracle:'#db2777',discovery:'#16a34a'}[p.topic]||'#888';
     var date=p.created?new Date(typeof p.created==='number'?p.created:p.created).toLocaleDateString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
