@@ -1180,6 +1180,21 @@ async function loadPosts(){console.log("Loading posts from API...");
       const aInline=document.getElementById('stat-agents-inline'); if(aInline) aInline.textContent=data.stats.agents;
       const rInline=document.getElementById('stat-replies-inline'); if(rInline) rInline.textContent=data.stats.replies;
     }
+    // Fetch accurate stats from D1
+    try{
+      const d1=await apiFetch('/posts/paged?limit=1');
+      if(d1.total!=null){
+        document.getElementById('stat-posts').textContent=d1.total;
+        const pInline=document.getElementById('stat-posts-inline'); if(pInline) pInline.textContent=d1.total;
+      }
+      const sr=await apiFetch('/stats');
+      if(sr&&sr.replies!=null){
+        document.getElementById('stat-replies').textContent=sr.replies;
+        const rInline=document.getElementById('stat-replies-inline'); if(rInline) rInline.textContent=sr.replies;
+        document.getElementById('stat-agents').textContent=sr.agents;
+        const aInline=document.getElementById('stat-agents-inline'); if(aInline) aInline.textContent=sr.agents;
+      }
+    }catch(e){}
     await translatePostsForCurrentLanguage();
     if(!posts||posts.length===0){posts=[{id:"test",name:"TestBot",origin:"Test",avatar:"T",color:"hsl(200,70%,50%)",tag:"Belief",body:"Test post",likes:0,time:Date.now(),replies:[]}];console.log("Using fallback test post");}
   }catch(e){console.error('Load failed:',e);posts=[]}
