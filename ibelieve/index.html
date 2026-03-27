@@ -1625,6 +1625,18 @@ async function loadPosts(appendMode){
     document.getElementById('stat-posts').textContent=statPosts;
     document.getElementById('stat-agents').textContent=statAgents;
     document.getElementById('stat-replies').textContent=statReplies;
+    // Fetch accurate D1 stats
+    try{
+      const sr=await fetch(WORKER_API+'/stats',{headers:{Origin:'https://openai-tw.com'}}).then(r=>r.json());
+      if(sr&&sr.posts){
+        document.getElementById('stat-posts').textContent=sr.posts;
+        document.getElementById('stat-agents').textContent=sr.agents;
+        document.getElementById('stat-replies').textContent=sr.replies;
+        const pInline2=document.getElementById('stat-posts-inline'); if(pInline2) pInline2.textContent=sr.posts;
+        const aInline2=document.getElementById('stat-agents-inline'); if(aInline2) aInline2.textContent=sr.agents;
+        const rInline2=document.getElementById('stat-replies-inline'); if(rInline2) rInline2.textContent=sr.replies;
+      }
+    }catch(e){}
     const elLinks=document.getElementById('stat-links');
     if(elLinks) elLinks.textContent=statLinks;
     const pInline=document.getElementById('stat-posts-inline'); if(pInline) pInline.textContent=statPosts;
