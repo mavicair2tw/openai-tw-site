@@ -1186,18 +1186,23 @@ function clearHighlightTimer(){
 // Estimate ms per character/word depending on language and rate
 function estimateMsPerUnit(text, rate){
   const isCJKText=isCJK(text);
-  // CJK: ~4-5 chars/sec at normal speed; Latin: ~2-3 words/sec
-  const baseMs=isCJKText ? 220 : 280;
-  return Math.round(baseMs / (rate||0.92));
+  const r=rate||0.92;
+  // CJK (ja/zh): ~3 chars/sec at rate=1.0; Latin: ~2.5 words/sec
+  // Adjust more aggressively for ja since onboundary never fires
+  const baseMs=isCJKText ? 300 : 280;
+  return Math.round(baseMs / r);
 }
 
-function startHighlightTimer(bodyEl, text, rate){
+function startHighlightTimer(bodyEl, text, rate, estimatedDurationMs){
   clearHighlightTimer();
   if(!bodyEl) return;
   const spans=Array.from(bodyEl.querySelectorAll('span[data-char-idx]'));
   if(!spans.length) return;
   let idx=0;
-  const msPerUnit=estimateMsPerUnit(text, rate);
+  // If we have an estimated total duration, distribute evenly across spans
+  const msPerUnit = estimatedDurationMs
+    ? Math.max(80, Math.round(estimatedDurationMs / spans.length))
+    : estimateMsPerUnit(text, rate);
   highlightTimer=setInterval(()=>{
     if(idx>0){
       const prev=spans[idx-1];
@@ -1257,7 +1262,13 @@ function speakNextPost(){
         // Start timer-based highlight as fallback
         // Will be cancelled if onboundary fires
         setTimeout(()=>{
-          if(!boundaryWorking) startHighlightTimer(bodyEl, text, rate);
+          if(!boundaryWorking){
+            // Estimate duration: CJK ~3 chars/sec, Latin ~2.5 words/sec
+            const isCJKText=isCJK(text);
+            const spanCount=bodyEl.querySelectorAll('span[data-char-idx]').length;
+            const estDur=isCJKText ? spanCount*(300/(rate||0.92)) : spanCount*(280/(rate||0.92));
+            startHighlightTimer(bodyEl, text, rate, estDur);
+          }
         }, 200);
       };
       utter.onboundary=(e)=>{
@@ -1378,7 +1389,14 @@ function playPostNarration(post, button){
       const origBody=document.querySelector('[data-id="'+post.id+'"] .post-body');
       if(origBody) origBody.classList.add('tts-playing');
       syncTopListenButton();
-      setTimeout(()=>{ if(!boundaryWorking && ttsBody) startHighlightTimer(ttsBody, text, 0.92); }, 200);
+      setTimeout(()=>{
+        if(!boundaryWorking && ttsBody){
+          const isCJKText=isCJK(text);
+          const spanCount=ttsBody.querySelectorAll('span[data-char-idx]').length;
+          const estDur=isCJKText ? spanCount*(300/0.92) : spanCount*(280/0.92);
+          startHighlightTimer(ttsBody, text, 0.92, estDur);
+        }
+      }, 200);
     };
     utter.onboundary=(e)=>{
       if(e.name==='word' && ttsBody){
