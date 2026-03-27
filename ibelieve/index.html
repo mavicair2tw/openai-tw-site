@@ -550,7 +550,16 @@ select.input{cursor:pointer;appearance:none;
         <button class="profile-btn" type="button" id="search-clear">Clear</button>
       </div>
       <button class="profile-btn primary" type="button" id="create-post-btn" onclick="handleCreatePostClick()">Create post</button>
-      <button class="profile-btn" id="about-open" type="button" onclick="document.getElementById('about-modal').style.display='flex'">About</button>
+      <div class="about-dropdown" id="about-dropdown" style="position:relative;display:inline-block;">
+        <button class="profile-btn" type="button" onclick="toggleAboutDropdown()" style="display:flex;align-items:center;gap:4px;">
+          About <span id="about-arrow" style="font-size:10px;transition:transform 0.2s;">▼</span>
+        </button>
+        <div id="about-menu" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:#0d1526;border:1px solid #1e3a5f;border-radius:10px;min-width:160px;z-index:999;box-shadow:0 8px 32px rgba(0,0,0,0.5);overflow:hidden;">
+          <button onclick="scrollToAboutSection('section-about');closeAboutDropdown()" style="width:100%;text-align:left;padding:10px 16px;background:none;border:none;color:#e1e7ff;font-size:13px;cursor:pointer;border-bottom:1px solid #1e3a5f;" onmouseover="this.style.background='#162040'" onmouseout="this.style.background='none'" id="about-menu-about">關於 iBelieve</button>
+          <button onclick="scrollToAboutSection('section-details');closeAboutDropdown()" style="width:100%;text-align:left;padding:10px 16px;background:none;border:none;color:#e1e7ff;font-size:13px;cursor:pointer;border-bottom:1px solid #1e3a5f;" onmouseover="this.style.background='#162040'" onmouseout="this.style.background='none'" id="about-menu-details">詳細資訊</button>
+          <button onclick="scrollToAboutSection('section-community');closeAboutDropdown()" style="width:100%;text-align:left;padding:10px 16px;background:none;border:none;color:#e1e7ff;font-size:13px;cursor:pointer;" onmouseover="this.style.background='#162040'" onmouseout="this.style.background='none'" id="about-menu-community">社群資訊</button>
+        </div>
+      </div>
       <div id="authNav" class="auth-nav-inline"></div>
     </div>
   </header>
@@ -2906,4 +2915,32 @@ function filterAndRender(){
       e.target.classList.remove('active');
     }
   });
+
+function toggleAboutDropdown(){
+  const menu=document.getElementById('about-menu');
+  const arrow=document.getElementById('about-arrow');
+  const open=menu.style.display==='none';
+  menu.style.display=open?'block':'none';
+  if(arrow) arrow.style.transform=open?'rotate(180deg)':'rotate(0deg)';
+}
+function closeAboutDropdown(){
+  const menu=document.getElementById('about-menu');
+  const arrow=document.getElementById('about-arrow');
+  if(menu) menu.style.display='none';
+  if(arrow) arrow.style.transform='rotate(0deg)';
+}
+function scrollToAboutSection(sectionId){
+  // Open about modal and scroll to section
+  const modal=document.getElementById('about-modal');
+  if(modal) modal.style.display='flex';
+  setTimeout(()=>{
+    const el=document.getElementById(sectionId+'-title');
+    if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+  }, 100);
+}
+// Close dropdown when clicking outside
+document.addEventListener('click',function(e){
+  const dd=document.getElementById('about-dropdown');
+  if(dd && !dd.contains(e.target)) closeAboutDropdown();
+});
 </script>
