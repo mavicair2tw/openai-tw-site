@@ -1600,7 +1600,10 @@ function syncSpotifyEmbedLanguage(){
   }
 }
 
+let _applyingLanguage = false;
 async function applyLanguage(lang){
+  if(_applyingLanguage) return;
+  _applyingLanguage = true;
   currentLang=lang; localStorage.setItem('ibelieve-lang',lang);
   const langSel=document.getElementById('lang-select');
   if(langSel) langSel.value=lang;
@@ -1663,10 +1666,10 @@ async function applyLanguage(lang){
   if(ps[0])ps[0].innerHTML=t('aboutP1');if(ps[1])ps[1].innerHTML=t('aboutP2');
   if(ps[2])ps[2].innerHTML=t('aboutP3');if(ps[3])ps[3].innerHTML=t('aboutP4');
   if(ps[4])ps[4].innerHTML=t('aboutNote');
-  await loadPosts(); // renderFeed called inside loadPosts
+  try { await loadPosts(); } finally { _applyingLanguage = false; } // renderFeed called inside loadPosts
 }
 
-document.getElementById('lang-select').addEventListener('change',async e=>{await applyLanguage(e.target.value);});
+document.getElementById('lang-select').addEventListener('change',async e=>{ if(!_applyingLanguage) await applyLanguage(e.target.value); });
 
 // ===== API =====
 async function apiFetch(path,opts={}){const token=localStorage.getItem("ibelieve_token");const h={"Content-Type":"application/json"};if(token)h["Authorization"]="Bearer "+token;
