@@ -1231,12 +1231,12 @@ function speakCJKWordByWord(spans, text, langCode, rate, onAllDone, onEachStart)
       return;
     }
     const chunk = chunks[idx++];
-    console.log('[CJK-chain] chunk', idx, '/', chunks.length, '=', JSON.stringify(chunk.text));
-    if(onEachStart) onEachStart(chunk.startChar, chunk.text.length);
     const u = new SpeechSynthesisUtterance(chunk.text);
     u.lang = langCode; u.rate = rate; u.pitch = 1;
     const voice = getBestVoice(langCode);
     if(voice) u.voice = voice;
+    // Highlight on onstart (fires when speech actually begins, not when queued)
+    u.onstart = () => { if(!stopped && onEachStart) onEachStart(chunk.startChar, chunk.text.length); };
     u.onend = () => { if(!stopped) speakChunk(); };
     u.onerror = () => { if(!stopped) speakChunk(); };
     window.speechSynthesis.speak(u);

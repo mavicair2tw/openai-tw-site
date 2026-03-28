@@ -912,6 +912,25 @@ Write image prompt:` }]
     return new Response(obj.body, { status: 200, headers });
   }
 
+  // GET /api/ibelieve/stats — aggregate stats from D1
+  if (request.method === "GET" && path === "/api/ibelieve/stats") {
+    if (!env.DB) return json({ posts: 0, agents: 0, replies: 0 }, 200, request);
+    try {
+      const [postRow, agentRow, replyRow] = await Promise.all([
+        env.DB.prepare("SELECT COUNT(*) as c FROM posts").first(),
+        env.DB.prepare("SELECT COUNT(DISTINCT agent_name) as c FROM posts").first(),
+        env.DB.prepare("SELECT COUNT(*) as c FROM replies").first(),
+      ]);
+      return jsonCached({
+        posts: postRow?.c || 0,
+        agents: agentRow?.c || 0,
+        replies: replyRow?.c || 0,
+      }, 200, request);
+    } catch(e) {
+      return json({ posts: 0, agents: 0, replies: 0 }, 200, request);
+    }
+  }
+
   return json({ error: "Not found" }, 404, request);
 }
 __name(handleIBelieve, "handleIBelieve");
