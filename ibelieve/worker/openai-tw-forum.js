@@ -18,6 +18,11 @@ var index_default = {
     if (url.pathname === "/api/ibelieve/auth/register" && request.method === "POST") return handleRegister(request, env);
     if (url.pathname === "/api/ibelieve/auth/verify" && request.method === "GET") return handleVerify(request, env, url);
     if (url.pathname === "/api/ibelieve/auth/resend-verify" && request.method === "POST") return handleResendVerify(request, env);
+    if (url.pathname === "/api/ibelieve/auth/login" && request.method === "POST") return handleLogin(request, env);
+    if (url.pathname === "/api/ibelieve/auth/me" && request.method === "GET") return handleMe(request, env);
+    if (url.pathname === "/api/ibelieve/admin/users" && request.method === "GET") return handleAdminUsers(request, env);
+    if (url.pathname.match(/^\/api\/ibelieve\/admin\/users\/[^/]+$/) && request.method === "PATCH") return handleAdminUserPatch(request, env, url);
+    if (url.pathname.match(/^\/api\/ibelieve\/admin\/users\/[^/]+$/) && request.method === "DELETE") return handleAdminUserDelete(request, env, url);
     if (url.pathname.startsWith("/api/ibelieve")) return handleIBelieve(request, env, url);
     if (url.pathname !== "/api/forum") return json({ error: "Not found" }, 404, request);
     if (!env.FORUM_KV) return json({ error: "FORUM_KV not configured" }, 500, request);
@@ -1157,5 +1162,87 @@ async function handleResendVerify(request, env) {
 __name(handleResendVerify, "handleResendVerify");
 
 // ─────────────────────────────────────────────────────────────────────────────
+
+async function handleLogin(request, env) {
+  if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+  const body = await request.json().catch(() => ({}));
+  const username = String(body.username || "").trim();
+  const password = String(body.password || "");
+  if (!username || !password) return json({ error: "username and password required" }, 400, request);
+  const user = await env.DB.prepare(
+    "SELECT id, username, email, role, origin, avatar_color, created_at, password_hash FROM users WHERE username = ?"
+  ).bind(username).first();
+  if (!user) return json({ error: "Invalid credentials" }, 401, request);
+  const encoder = new TextEncoder();
+  const hashBuf = await crypto.subtle.digest("SHA-256", encoder.encode(password));
+  const hashHex = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, "0")).join("");
+  if (user.password_hash !== hashHex) return json({ error: "Invalid credentials" }, 401, request);
+  const tokenBuf = new Uint8Array(32);
+  crypto.getRandomValues(tokenBuf);
+  const token = Array.from(tokenBuf).map(b => b.toString(16).padStart(2, "0")).join("");
+  const now = Math.floor(Date.now() / 1000);
+  const expires = now + 60 * 60 * 24 * 90;
+  await env.DB.prepare(
+    "INSERT INTO trusted_devices (token, user_id, username, role, device_name, created_at, last_used_at, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+  ).bind(token, String(user.id), user.username, user.role || "user", "web", now, now, expires).run();
+  return json({ ok: true, token, user: { id: user.id, username: user.username, email: user.email, role: user.role || "user", origin: user.origin, avatar_color: user.avatar_color, created_at: user.created_at } }, 200, request);
+}
+__name(handleLogin, "handleLogin");
+
+async function handleMe(request, env) {
+  if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+  const authHeader = request.headers.get("Authorization") || "";
+  const token = authHeader.replace("Bearer ", "").trim();
+  if (!token) return json({ error: "token required" }, 401, request);
+  const now = Math.floor(Date.now() / 1000);
+  const device = await env.DB.prepare(
+    "SELECT username, role FROM trusted_devices WHERE token = ? AND expires_at > ?"
+  ).bind(token, now).first();
+  if (!device) return json({ error: "invalid or expired token" }, 401, request);
+  await env.DB.prepare("UPDATE trusted_devices SET last_used_at = ? WHERE token = ?").bind(now, token).run();
+  const user = await env.DB.prepare(
+    "SELECT id, username, email, role, origin, avatar_color, created_at FROM users WHERE username = ?"
+  ).bind(device.username).first();
+  if (!user) return json({ error: "user not found" }, 404, request);
+  return json({ ok: true, user }, 200, request);
+}
+__name(handleMe, "handleMe");
+
 export { index_default as default };
 
+
+
+async function handleAdminUsers(request, env) {
+  if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+  const rows = await env.DB.prepare(
+    "SELECT id, username, email, role, origin, avatar_color, created_at FROM users ORDER BY created_at DESC"
+  ).all();
+  const users = (rows.results || []).map(u => ({ ...u, status: "active" }));
+  return json({ users }, 200, request);
+}
+__name(handleAdminUsers, "handleAdminUsers");
+
+async function handleAdminUserPatch(request, env, url) {
+  if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+  const id = url.pathname.split("/").pop();
+  const body = await request.json().catch(() => ({}));
+  const fields = [];
+  const bindings = [];
+  if (body.username) { fields.push("username = ?"); bindings.push(body.username); }
+  if (body.email !== undefined) { fields.push("email = ?"); bindings.push(body.email); }
+  if (body.role) { fields.push("role = ?"); bindings.push(body.role); }
+  if (!fields.length) return json({ error: "nothing to update" }, 400, request);
+  bindings.push(id);
+  await env.DB.prepare("UPDATE users SET " + fields.join(", ") + " WHERE id = ?").bind(...bindings).run();
+  return json({ ok: true }, 200, request);
+}
+__name(handleAdminUserPatch, "handleAdminUserPatch");
+
+async function handleAdminUserDelete(request, env, url) {
+  if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+  const id = url.pathname.split("/").pop();
+  await env.DB.prepare("DELETE FROM users WHERE id = ?").bind(id).run();
+  await env.DB.prepare("DELETE FROM trusted_devices WHERE user_id = ?").bind(id).run();
+  return json({ ok: true }, 200, request);
+}
+__name(handleAdminUserDelete, "handleAdminUserDelete");
