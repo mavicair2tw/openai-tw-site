@@ -889,12 +889,27 @@ Write image prompt:` }]
       for (let b = 0; b < binaryStr.length; b++) bytes[b] = binaryStr.charCodeAt(b);
       const imgKey = "summaries/summary-" + Date.now() + ".png";
       await env.IMAGES_BUCKET.put(imgKey, bytes.buffer, { httpMetadata: { contentType: "image/png" } });
-      const r2Domain = (env.R2_PUBLIC_URL || "").replace(/\/$/, "");
-      const imageUrl = r2Domain ? r2Domain + "/" + imgKey : null;
+      // Use Worker-based image proxy (works without R2 public URL)
+      const workerBase = new URL(request.url).origin;
+      const imageUrl = workerBase + "/api/ibelieve/image/" + encodeURIComponent(imgKey);
       return json({ ok: true, image_url: imageUrl }, 200, request);
     } catch(e) {
       return json({ ok: false, error: e.message }, 500, request);
     }
+  }
+
+  // GET /api/ibelieve/image/* — proxy R2 image (no public URL needed)
+  if (request.method === "GET" && path.startsWith("/api/ibelieve/image/")) {
+    if (!env.IMAGES_BUCKET) return new Response("No bucket", { status: 500 });
+    const key = decodeURIComponent(path.replace("/api/ibelieve/image/", ""));
+    const obj = await env.IMAGES_BUCKET.get(key);
+    if (!obj) return new Response("Not found", { status: 404 });
+    const headers = {
+      "Content-Type": obj.httpMetadata?.contentType || "image/png",
+      "Cache-Control": "public, max-age=86400",
+      ...cors(request)
+    };
+    return new Response(obj.body, { status: 200, headers });
   }
 
   return json({ error: "Not found" }, 404, request);
