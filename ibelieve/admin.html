@@ -374,18 +374,27 @@ td{padding:10px 14px;vertical-align:middle;}
           <div class="card" style="margin-bottom:12px;">
             <div class="card-title" id="cm-selected-title">Selected Post</div>
             <div id="cm-selected-body" style="font-size:12px;color:var(--text-muted);margin-top:6px;line-height:1.6;"></div>
-            <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-              <select id="cm-link-target" style="flex:1;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px;">
-                <option value="">— Link to another post —</option>
-              </select>
-              <select id="cm-link-type" style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px;">
-                <option value="related">🔗 related</option>
-                <option value="supports">✅ supports</option>
-                <option value="contradicts">⚡ contradicts</option>
-                <option value="expands">🔭 expands</option>
-                <option value="inspires">💡 inspires</option>
-              </select>
-              <button class="badd" style="padding:5px 12px;font-size:12px;" onclick="cmAddLink()">+ Link</button>
+            <div style="margin-top:10px;">
+              <!-- Search + multi-select link targets -->
+              <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
+                <input id="cm-link-search" placeholder="Search posts to link..." oninput="cmFilterLinkList()"
+                  style="flex:1;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px;">
+                <label style="font-size:11px;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;gap:4px;white-space:nowrap;">
+                  <input type="checkbox" id="cm-link-select-all" onchange="cmLinkSelectAll(this.checked)"> All
+                </label>
+              </div>
+              <div id="cm-link-list-select" style="max-height:160px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;background:var(--surface2);margin-bottom:8px;"></div>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <select id="cm-link-type" style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px;">
+                  <option value="related">🔗 related</option>
+                  <option value="supports">✅ supports</option>
+                  <option value="contradicts">⚡ contradicts</option>
+                  <option value="expands">🔭 expands</option>
+                  <option value="inspires">💡 inspires</option>
+                </select>
+                <button class="badd" style="padding:5px 12px;font-size:12px;" onclick="cmAddLink()">+ Link</button>
+                <span id="cm-link-selected-count" style="font-size:11px;color:var(--text-muted);"></span>
+              </div>
             </div>
           </div>
 
@@ -1611,6 +1620,7 @@ function cmSelectPost(id){
   document.getElementById('cm-selected-title').textContent=esc(p.agent)+' · '+p.topic;
   document.getElementById('cm-selected-body').textContent=(p.body||'').slice(0,300);
   cmRenderLinks(p);
+  cmPopulateLinkList();
   document.getElementById('cm-status').textContent='"'+esc(p.agent)+'" selected';
 }
 
@@ -1648,27 +1658,84 @@ function cmRenderLinks(p){
   document.getElementById('cm-link-list').innerHTML=html;
 }
 
-function cmPopulateLinkDropdown(){
-  var sel=document.getElementById('cm-link-target');
-  sel.innerHTML='<option value="">— Link to another post —</option>'
-    +cmPosts.map(function(p){
-      return '<option value="'+p.id+'">'+esc(p.agent)+' | '+(p.body||'').slice(0,60)+'</option>';
-    }).join('');
+function cmPopulateLinkList(){
+  cmFilterLinkList();
 }
+
+function cmFilterLinkList(){
+  var q = (document.getElementById('cm-link-search')||{value:''}).value.toLowerCase();
+  var container = document.getElementById('cm-link-list-select');
+  if(!container) return;
+  var posts = cmPosts.filter(function(p){ return p.id !== cmSelectedId; });
+  if(q) posts = posts.filter(function(p){
+    return (p.agent||'').toLowerCase().includes(q) || (p.body||'').toLowerCase().includes(q);
+  });
+  var topicColors = {belief:'#7c3aed',god:'#0891b2',miracle:'#db2777',discovery:'#16a34a'};
+  container.innerHTML = posts.length ? posts.map(function(p){
+    var color = topicColors[p.topic]||'#888';
+    return '<label style="display:flex;align-items:flex-start;gap:8px;padding:6px 10px;cursor:pointer;border-bottom:1px solid var(--border);font-size:12px;" '
+      +'onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">'
+      +'<input type="checkbox" class="cm-link-cb" value="'+p.id+'" onchange="cmUpdateLinkCount()" style="margin-top:2px;flex-shrink:0;">'
+      +'<div style="min-width:0;">'
+      +'<span style="font-size:10px;padding:1px 5px;border-radius:8px;background:'+color+'22;color:'+color+';margin-right:5px;">'+p.topic+'</span>'
+      +'<strong style="font-size:12px;color:var(--text);">'+esc(p.agent)+'</strong>'
+      +'<div style="font-size:11px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px;">'+esc((p.body||'').slice(0,80))+'</div>'
+      +'</div></label>';
+  }).join('') : '<div style="padding:10px;font-size:12px;color:var(--text-muted);">No posts found</div>';
+  cmUpdateLinkCount();
+}
+
+function cmLinkSelectAll(checked){
+  document.querySelectorAll('.cm-link-cb').forEach(function(cb){ cb.checked = checked; });
+  cmUpdateLinkCount();
+}
+
+function cmUpdateLinkCount(){
+  var count = document.querySelectorAll('.cm-link-cb:checked').length;
+  var el = document.getElementById('cm-link-selected-count');
+  if(el) el.textContent = count ? count+' selected' : '';
+  var all = document.getElementById('cm-link-select-all');
+  if(all){
+    var total = document.querySelectorAll('.cm-link-cb').length;
+    all.checked = total > 0 && count === total;
+    all.indeterminate = count > 0 && count < total;
+  }
+}
+
+// Keep old id for backward compat (graph link mode uses this)
+function cmPopulateLinkDropdown(){ cmPopulateLinkList(); }
 
 async function cmAddLink(){
   if(!cmSelectedId){showToast('Select a post first','warn');return;}
-  var targetId=document.getElementById('cm-link-target').value;
   var linkType=document.getElementById('cm-link-type').value;
-  if(!targetId){showToast('Select a target post','warn');return;}
-  if(targetId===cmSelectedId){showToast('Cannot link a post to itself','warn');return;}
-  try{
-    await postsFetch('/posts/'+cmSelectedId+'/links',{method:'POST',body:JSON.stringify({targetId:targetId,type:linkType})});
-    showToast('Link added ✦','green');
-    await cmInit();
-    cmSelectPost(cmSelectedId);
-    cmRenderGraph();
-  }catch(e){showToast('Error: '+e.message,'red');}
+  // Gather all checked targets
+  var checked = Array.from(document.querySelectorAll('.cm-link-cb:checked')).map(function(cb){return cb.value;});
+  // Fallback: old single-select (graph link mode)
+  var singleTarget = (document.getElementById('cm-link-target')||{}).value || '';
+  if(!checked.length && singleTarget) checked = [singleTarget];
+  if(!checked.length){showToast('Select at least one post to link','warn');return;}
+  var targets = checked.filter(function(id){return id !== cmSelectedId;});
+  if(!targets.length){showToast('Cannot link a post to itself','warn');return;}
+  var ok=0, skip=0, fail=0;
+  for(var i=0;i<targets.length;i++){
+    try{
+      await postsFetch('/posts/'+cmSelectedId+'/links',{method:'POST',body:JSON.stringify({targetId:targets[i],type:linkType})});
+      ok++;
+    }catch(e){
+      if(e.message&&e.message.includes('409')) skip++; else fail++;
+    }
+  }
+  var msg = ok+' link'+(ok!==1?'s':'')+' added';
+  if(skip) msg += ', '+skip+' already existed';
+  if(fail) msg += ', '+fail+' failed';
+  showToast(msg, fail?'red':'green');
+  // Uncheck all
+  document.querySelectorAll('.cm-link-cb').forEach(function(cb){cb.checked=false;});
+  if(document.getElementById('cm-link-select-all')) document.getElementById('cm-link-select-all').checked=false;
+  cmUpdateLinkCount();
+  await cmInit();
+  cmSelectPost(cmSelectedId);
+  cmRenderGraph();
 }
 
 async function cmRemoveLink(linkId){
@@ -1711,10 +1778,19 @@ function cmGraphConfirmLink(targetId){
   var sourceId = cmGraphLinkSource;
   cmGraphLinkSource = null;
   var linkType = document.getElementById('cm-link-type') ? document.getElementById('cm-link-type').value : 'related';
-  // Use existing cmSelectedId mechanism: select source, then add link
   cmSelectedId = sourceId;
-  document.getElementById('cm-link-target').value = targetId;
-  cmAddLink().then(function(){ cmRenderGraph(); });
+  // Directly POST link without needing the dropdown
+  postsFetch('/posts/'+sourceId+'/links',{method:'POST',body:JSON.stringify({targetId:targetId,type:linkType})})
+    .then(function(){
+      showToast('Link added ✦','green');
+      return cmInit();
+    })
+    .then(function(){
+      cmSelectPost(cmSelectedId);
+      cmRenderGraph();
+      document.getElementById('cm-status').textContent='Link created!';
+    })
+    .catch(function(e){ showToast('Error: '+e.message,'red'); });
 }
 
 function cmShowGraphPopup(postId, px, py, W, H){
