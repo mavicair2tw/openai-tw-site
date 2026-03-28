@@ -1188,7 +1188,7 @@ function startHighlightTimer(bodyEl, text, rate, estimatedDurationMs){
   const r = rate || 0.92;
   // Real-world browser TTS: CJK ~2.6 chars/s, Latin ~2.2 words/s at rate=1.0
   // These are intentionally conservative (slower) so highlight trails voice, not leads
-  const baseMs = isCJKText ? Math.round(385 / r) : Math.round(360 / r);
+  const baseMs = isCJKText ? Math.round(550 / r) : Math.round(400 / r);
   const totalMs = estimatedDurationMs || (spans.length * baseMs);
   const msPerSpan = Math.max(80, Math.round(totalMs / spans.length));
 
@@ -1249,8 +1249,7 @@ function speakNextPost(){
       const voice=getBestVoice(langCode);
       if(voice) utter.voice=voice;
       let boundaryWorking=false;
-      let _nSpeechStart=0, _nLastBoundaryTime=0, _nLastBoundaryChar=0;
-      const _nTotalChars=text.length;
+      // Latin highlight driven by onboundary; CJK by RAF timer
 
       utter.onstart=()=>{
         _nSpeechStart=performance.now();
@@ -1260,7 +1259,7 @@ function speakNextPost(){
         // Latin: defer to first boundary for real t=0 calibration
         if(isCJK(text)){
           const spanCount=bodyEl.querySelectorAll('span[data-char-idx]').length;
-          const estDur=spanCount*(385/rate);
+          const estDur=spanCount*(550/rate);
           startHighlightTimer(bodyEl, text, rate, estDur);
         }
       };
@@ -1273,21 +1272,7 @@ function speakNextPost(){
             boundaryWorking=true;
             _nSpeechStart=now;
           }
-          // Re-anchor: measure actual chars/ms from last boundary
-          if(_nLastBoundaryTime>0 && e.charIndex>_nLastBoundaryChar){
-            const dtMs=now-_nLastBoundaryTime;
-            const dtChars=e.charIndex-_nLastBoundaryChar;
-            const charsPerMs=dtChars/dtMs;
-            if(charsPerMs>0){
-              const remaining=_nTotalChars-e.charIndex;
-              if(remaining>8){
-                const estRemaining=Math.round(remaining/charsPerMs);
-                startHighlightTimer(bodyEl, text.slice(e.charIndex), rate, estRemaining);
-              }
-            }
-          }
-          _nLastBoundaryTime=now;
-          _nLastBoundaryChar=e.charIndex;
+          // Latin: boundary events are precise — highlight directly, no timer restart
           highlightWord(bodyEl, e.charIndex, e.charLength||1);
         }
       };
@@ -1390,9 +1375,7 @@ function playPostNarration(post, button){
     if(voice) utter.voice=voice;
 
     let boundaryWorking = false;
-    let _speechStartTime = 0;
-    let _lastBoundaryTime = 0;
-    let _lastBoundaryChar = 0;
+    // Latin highlight driven by onboundary; CJK by RAF timer
 
     utter.onstart = () => {
       _speechStartTime = performance.now();
@@ -1406,7 +1389,7 @@ function playPostNarration(post, button){
       // For Latin: wait for first boundary to get real start time calibration
       if(ttsBody && isCJK(text)){
         const spanCount = ttsBody.querySelectorAll('span[data-char-idx]').length;
-        const estDur = spanCount * (385 / 0.92);
+        const estDur = spanCount * (550 / 0.92);
         startHighlightTimer(ttsBody, text, 0.92, estDur);
       }
       // Latin timer starts on first onboundary event (see below)
@@ -1417,29 +1400,8 @@ function playPostNarration(post, button){
         if(isCJK(text)) return; // CJK: timer-only, boundary unreliable
         const now = performance.now();
 
-        if(!boundaryWorking){
-          // ── FIRST boundary: calibrate actual speech start time ──
-          // The gap between onstart and first boundary = TTS engine startup latency
-          // Use this as the real t=0 for any timer-based fallback
-          boundaryWorking = true;
-          _speechStartTime = now - (e.charIndex > 0 ? (e.charIndex / totalChars) * 500 : 0);
-        }
-
-        // ── Re-anchor timer: use observed chars/ms rate to predict remainder ──
-        if(_lastBoundaryTime > 0 && e.charIndex > _lastBoundaryChar){
-          const dtMs = now - _lastBoundaryTime;
-          const dtChars = e.charIndex - _lastBoundaryChar;
-          const charsPerMs = dtChars / dtMs;
-          if(charsPerMs > 0){
-            const remaining = totalChars - e.charIndex;
-            const estRemaining = Math.round(remaining / charsPerMs);
-            // Only restart timer if we have meaningful remaining text
-            if(remaining > 10) startHighlightTimer(ttsBody, text.slice(e.charIndex), 0.92, estRemaining);
-          }
-        }
-        _lastBoundaryTime = now;
-        _lastBoundaryChar = e.charIndex;
-
+        boundaryWorking = true;
+        // Latin: onboundary is the highlight source — direct, no timer
         highlightWord(ttsBody, e.charIndex, e.charLength || 1);
         if(ttsProgress) ttsProgress.style.width = Math.round((e.charIndex / totalChars) * 100) + '%';
       }
