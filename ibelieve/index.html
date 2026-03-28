@@ -219,13 +219,9 @@ select.input{cursor:pointer;appearance:none;
 .post-tts-body::-webkit-scrollbar{width:3px}
 .post-tts-body::-webkit-scrollbar-track{background:transparent}
 .post-tts-body::-webkit-scrollbar-thumb{background:rgba(245,197,24,0.3);border-radius:3px}
-.post-tts-body span,.narration-body-words span{transition:none!important}
-span.tts-active{background:#f5c518!important;color:#1a1a2e!important;border-radius:3px}
 .post-tts-panel.active{display:block;}
 .post-tts-panel-label{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#f5c518;opacity:.7;margin-bottom:4px;}
 .post-tts-progress{position:absolute;bottom:0;left:0;height:2px;background:#f5c518;border-radius:0 0 10px 10px;transition:width 0.15s linear;width:0;}
-#narration-progress-wrap{height:3px;background:rgba(255,255,255,0.08);border-radius:0 0 12px 12px;margin-top:10px;overflow:hidden;display:none;}
-#narration-progress-bar{height:100%;width:0%;background:linear-gradient(90deg,#f5c518,#ffdd57);border-radius:2px;transition:none;}
 
 .post-body{
   font-size:0.88rem;line-height:1.85;color:var(--text);
@@ -575,7 +571,6 @@ span.tts-active{background:#f5c518!important;color:#1a1a2e!important;border-radi
             <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:8px;">▶ Now narrating</div>
             <div id="narration-text" style="font-size:0.8rem;color:var(--text-dim);line-height:1.85;white-space:pre-wrap;word-break:break-word;"></div>
           </div>
-          <div id="narration-progress-wrap"><div id="narration-progress-bar"></div></div>
         </section>
       </div>
 
@@ -863,8 +858,6 @@ let activeMode='';
 let spotifyPlaying=false;  // tracks if Spotify is likely playing
 
 function stopSpeech(hidePreview=false){
-  // Stop CJK word-by-word chain if running
-  if(speakCJKWordByWord._stop) speakCJKWordByWord._stop();
   if('speechSynthesis' in window){
     window.speechSynthesis.cancel();
   }
@@ -1017,7 +1010,6 @@ function stopNarrationDisplay(){
   narrationActive=false;
   narrationPosts=[];
   narrationPostIndex=0;
-  stopNarrationProgress();
   const preview=document.getElementById('narration-preview');
   const narrationText=document.getElementById('narration-text');
   if(preview) preview.style.display='none';
@@ -1070,50 +1062,42 @@ function buildWordSpans(text){
   return spans;
 }
 
-/* ── TTS SYNC ENGINE v2 ──
-   Instant scroll (no smooth inertia drift), RAF-gated highlight,
-   per-word timing derived from onboundary timestamps.
-*/
-let _ttsLastScrollTarget = -1; // debounce identical scroll positions
-
 function highlightWord(bodyEl, charIndex, charLength){
   if(!bodyEl) return;
-  const len = charLength || 1;
-  const spans = bodyEl.querySelectorAll('span[data-char-idx]');
-  let activeSpan = null;
-  spans.forEach(sp => {
-    const idx = parseInt(sp.dataset.charIdx, 10);
-    if(idx >= charIndex && idx < charIndex + len){
-      sp.classList.add('tts-active');
-      if(!activeSpan) activeSpan = sp;
+  const len=charLength||1;
+  const spans=bodyEl.querySelectorAll('span[data-char-idx]');
+  let activeSpan=null;
+  spans.forEach(sp=>{
+    const idx=parseInt(sp.dataset.charIdx,10);
+    const spLen=sp.textContent.length;
+    if(idx>=charIndex && idx<charIndex+len){
+      sp.style.background='#f5c518';
+      sp.style.color='#1a1a2e';
+      if(!activeSpan) activeSpan=sp;
     } else {
-      sp.classList.remove('tts-active');
+      sp.style.background='';
+      sp.style.color='';
     }
   });
-  if(activeSpan) _ttsScrollTo(bodyEl, activeSpan);
-}
-
-function _ttsScrollTo(containerEl, spanEl){
-  // Use instant scroll — no smooth, no drift
-  // Target: keep active word at ~35% from top of container
-  const ANCHOR = 0.35;
-  if(!spanEl || !containerEl) return;
-  const cRect = containerEl.getBoundingClientRect();
-  const sRect = spanEl.getBoundingClientRect();
-  const relTop = sRect.top - cRect.top + containerEl.scrollTop;
-  const target = Math.max(0, Math.round(relTop - containerEl.clientHeight * ANCHOR));
-  if(Math.abs(target - _ttsLastScrollTarget) < 4) return; // skip near-identical jumps
-  _ttsLastScrollTarget = target;
-  containerEl.scrollTop = target; // instant, no smooth
-
-  // Also scroll the narration-preview listen card if applicable
-  const preview = document.getElementById('narration-preview');
-  if(preview && containerEl !== preview){
-    const pRect = preview.getBoundingClientRect();
-    const sRect2 = spanEl.getBoundingClientRect();
-    const relTop2 = sRect2.top - pRect.top + preview.scrollTop;
-    const t2 = Math.max(0, Math.round(relTop2 - preview.clientHeight * ANCHOR));
-    if(Math.abs(t2 - _ttsLastScrollTarget) >= 4) preview.scrollTop = t2;
+  // Auto-scroll the preview box so active word stays visible
+  if(activeSpan){
+    // Listen card: scroll narration-preview box
+    const preview=document.getElementById('narration-preview');
+    if(preview){
+      const previewRect=preview.getBoundingClientRect();
+      const spanRect=activeSpan.getBoundingClientRect();
+      const relTop=spanRect.top - previewRect.top + preview.scrollTop;
+      const targetScroll=relTop - preview.clientHeight * 0.4;
+      preview.scrollTo({top: Math.max(0, targetScroll), behavior:'smooth'});
+    }
+    // Post card TTS panel: scroll within the tts-body container
+    if(bodyEl && bodyEl.classList && bodyEl.classList.contains('post-tts-body')){
+      const containerRect=bodyEl.getBoundingClientRect();
+      const spanRect=activeSpan.getBoundingClientRect();
+      const relTop=spanRect.top - containerRect.top + bodyEl.scrollTop;
+      const targetScroll=relTop - bodyEl.clientHeight * 0.4;
+      bodyEl.scrollTo({top: Math.max(0, targetScroll), behavior:'smooth'});
+    }
   }
 }
 
@@ -1175,160 +1159,49 @@ let highlightTimer=null;
 
 function clearHighlightTimer(){
   if(highlightTimer){ clearInterval(highlightTimer); highlightTimer=null; }
-  if(_ttsRafId){ cancelAnimationFrame(_ttsRafId); _ttsRafId=null; }
-  _ttsLastScrollTarget = -1;
 }
 
-let _ttsRafId = null;
-let _ttsResync = null; // set by startHighlightTimer; call with (charIndex, totalChars) to resync
-let _narProgressRaf = null;
-let _narProgressStart = 0;
-let _narProgressDur = 0;
-
-function startNarrationProgress(durationMs){
-  stopNarrationProgress();
-  const bar = document.getElementById('narration-progress-bar');
-  const wrap = document.getElementById('narration-progress-wrap');
-  if(!bar || !wrap) return;
-  wrap.style.display = 'block';
-  bar.style.width = '0%';
-  _narProgressStart = performance.now();
-  _narProgressDur = durationMs;
-  function rafTick(now){
-    const pct = Math.min(100, ((now - _narProgressStart) / _narProgressDur) * 100);
-    bar.style.width = pct.toFixed(1) + '%';
-    if(pct < 100) _narProgressRaf = requestAnimationFrame(rafTick);
-    else _narProgressRaf = null;
-  }
-  _narProgressRaf = requestAnimationFrame(rafTick);
-}
-
-function stopNarrationProgress(){
-  if(_narProgressRaf){ cancelAnimationFrame(_narProgressRaf); _narProgressRaf = null; }
-  const bar = document.getElementById('narration-progress-bar');
-  const wrap = document.getElementById('narration-progress-wrap');
-  if(bar) bar.style.width = '0%';
-  if(wrap) wrap.style.display = 'none';
-}
-
-/* Adaptive fallback timer for CJK / browsers where onboundary never fires.
-   Uses a per-span timing derived from actual speech start time + estimated
-   total duration, re-anchored every 500ms to prevent drift. */
-// ── CJK TTS calibration: learn actual ms/char from real playback ──
-const _TTS_CAL_KEY = 'ibelieve_tts_cjk_ms';
-const _TTS_CAL_DEFAULT = 280; // fast default; calibration corrects per-browser
-let _ttsCalHistory = [];      // last 5 measurements for rolling average
-
-function _ttsGetCalibratedMs(){
-  try {
-    const stored = JSON.parse(localStorage.getItem(_TTS_CAL_KEY) || 'null');
-    if(stored && stored.ms > 80 && stored.ms < 800) return stored.ms;
-  } catch(e){}
-  return _TTS_CAL_DEFAULT;
-}
-
-function _ttsRecordCalibration(actualMs, charCount){
-  if(!charCount || actualMs < 500) return; // ignore suspiciously short utterances
-  const msPerChar = actualMs / charCount;
-  if(msPerChar < 80 || msPerChar > 800) return; // sanity bounds
-  _ttsCalHistory.push(msPerChar);
-  if(_ttsCalHistory.length > 5) _ttsCalHistory.shift();
-  const avg = Math.round(_ttsCalHistory.reduce((a,b)=>a+b,0) / _ttsCalHistory.length);
-  try { localStorage.setItem(_TTS_CAL_KEY, JSON.stringify({ms: avg, n: _ttsCalHistory.length})); } catch(e){}
+// Estimate ms per character/word depending on language and rate
+function estimateMsPerUnit(text, rate){
+  const isCJKText=isCJK(text);
+  const r=rate||0.92;
+  // CJK (ja/zh): ~3 chars/sec at rate=1.0; Latin: ~2.5 words/sec
+  // Adjust more aggressively for ja since onboundary never fires
+  const baseMs=isCJKText ? 300 : 280;
+  return Math.round(baseMs / r);
 }
 
 function startHighlightTimer(bodyEl, text, rate, estimatedDurationMs){
   clearHighlightTimer();
   if(!bodyEl) return;
-  const spans = Array.from(bodyEl.querySelectorAll('span[data-char-idx]'));
+  const spans=Array.from(bodyEl.querySelectorAll('span[data-char-idx]'));
   if(!spans.length) return;
-
-  const isCJKText = isCJK(text);
-  const r = rate || 0.92;
-  // Use calibrated ms/char from previous real playback; fallback to 340ms (conservative start)
-  const calibrated = _ttsGetCalibratedMs();
-  const baseMs = isCJKText ? Math.round(calibrated / r) : Math.round(400 / r);
-  const totalMs = estimatedDurationMs || (spans.length * baseMs);
-  const msPerSpan = Math.max(50, Math.round(totalMs / spans.length));
-
-  // virtualStart: the moment t=0 of the RAF timeline (adjustable for resync)
-  let virtualStart = performance.now();
-  let lastIdx = -1;
-
-  // Exposed so CJK sentence-boundary or charIndex events can resync in real-time
-  _ttsResync = function(charIndex, charCount){
-    if(!charCount || charIndex < 0) return;
-    const ratio = charIndex / charCount;
-    // Shift virtualStart so current time maps to ratio * totalMs
-    virtualStart = performance.now() - ratio * totalMs;
-  };
-
-  function tick(now){
-    const elapsed = now - virtualStart;
-    const idx = Math.min(spans.length - 1, Math.floor(elapsed / msPerSpan));
-    if(idx !== lastIdx){
-      if(lastIdx >= 0) spans[lastIdx].classList.remove('tts-active');
-      if(idx < spans.length){
-        spans[idx].classList.add('tts-active');
-        _ttsScrollTo(bodyEl, spans[idx]);
-      }
-      lastIdx = idx;
+  let idx=0;
+  // If we have an estimated total duration, distribute evenly across spans
+  const msPerUnit = estimatedDurationMs
+    ? Math.max(80, Math.round(estimatedDurationMs / spans.length))
+    : estimateMsPerUnit(text, rate);
+  highlightTimer=setInterval(()=>{
+    if(idx>0){
+      const prev=spans[idx-1];
+      if(prev){ prev.style.background=''; prev.style.color=''; }
     }
-    if(elapsed < totalMs + msPerSpan){
-      _ttsRafId = requestAnimationFrame(tick);
-    } else {
-      spans.forEach(s => s.classList.remove('tts-active'));
-      _ttsRafId = null;
+    if(idx>=spans.length){ clearHighlightTimer(); return; }
+    const sp=spans[idx];
+    sp.style.background='#f5c518';
+    sp.style.color='#fff';
+    // Auto-scroll preview so active word stays visible
+    const preview=document.getElementById('narration-preview');
+    if(preview && sp){
+      const previewRect=preview.getBoundingClientRect();
+      const spanRect=sp.getBoundingClientRect();
+      const relTop=spanRect.top - previewRect.top + preview.scrollTop;
+      const targetScroll=relTop - preview.clientHeight * 0.4;
+      preview.scrollTo({top: Math.max(0, targetScroll), behavior:'smooth'});
     }
-  }
-  _ttsRafId = requestAnimationFrame(tick);
+    idx++;
+  }, msPerUnit);
 }
-
-// ── CJK word-by-word TTS: chain one utterance per unit, highlight on each onstart ──
-// This is the only free method that guarantees highlight === voice position.
-function speakCJKWordByWord(spans, text, langCode, rate, onAllDone, onEachStart){
-  if(!spans.length){ if(onAllDone) onAllDone(); return; }
-  // Split into chunks: punctuation ends a chunk, otherwise group 2-3 chars
-  const chunks = [];
-  let buf = '';
-  let bufStart = 0;
-  let charPos = 0;
-  const PUNCT = /[，。！？、；：「」『』【】〔〕・…—\n]/;
-  for(let i = 0; i < text.length; i++){
-    const ch = text[i];
-    buf += ch;
-    if(PUNCT.test(ch) || buf.length >= 3 || i === text.length - 1){
-      chunks.push({ text: buf, startChar: bufStart });
-      bufStart = i + 1;
-      buf = '';
-    }
-  }
-  let idx = 0;
-  let stopped = false;
-  // Expose stop handle
-  speakCJKWordByWord._stop = () => { stopped = true; window.speechSynthesis.cancel(); };
-
-  function speakChunk(){
-    if(stopped || idx >= chunks.length){
-      if(onAllDone && !stopped) onAllDone();
-      return;
-    }
-    const chunk = chunks[idx++];
-    // Highlight all spans that belong to this chunk's char range
-    if(onEachStart) onEachStart(chunk.startChar, chunk.text.length);
-    const u = new SpeechSynthesisUtterance(chunk.text);
-    u.lang = langCode;
-    u.rate = rate;
-    u.pitch = 1;
-    const voice = getBestVoice(langCode);
-    if(voice) u.voice = voice;
-    u.onend = () => { if(!stopped) speakChunk(); };
-    u.onerror = () => { if(!stopped) speakChunk(); }; // skip on error
-    window.speechSynthesis.speak(u);
-  }
-  speakChunk();
-}
-speakCJKWordByWord._stop = null;
 
 function speakNextPost(){
   if(!narrationActive) return;
@@ -1353,62 +1226,50 @@ function speakNextPost(){
     clearHighlightTimer();
     const voices=window.speechSynthesis.getVoices();
     const go=()=>{
-      const langCode=getLangCode();
-      activeMode='topic';
-      syncTopListenButton();
-      const _nWrap=document.getElementById('narration-progress-wrap');
-      if(_nWrap) _nWrap.style.display='block';
-
-      if(isCJK(text)){
-        // ── CJK: word-by-word utterance chaining — highlight 100% in sync ──
-        _nSpeechStart=performance.now();
-        const spans=bodyEl ? Array.from(bodyEl.querySelectorAll('span[data-char-idx]')) : [];
-        const estDur=spans.length*(_ttsGetCalibratedMs()/rate);
-        startNarrationProgress(estDur);
-
-        speakCJKWordByWord(spans, text, langCode, rate,
-          ()=>{ // onAllDone
-            _ttsRecordCalibration(performance.now()-_nSpeechStart, text.length);
-            stopNarrationProgress();
-            if(bodyEl) bodyEl.querySelectorAll('span[data-char-idx]').forEach(sp=>sp.classList.remove('tts-active'));
-            if(narrationActive) speakNextPost(); else syncTopListenButton();
-          },
-          (charIndex, chunkLen)=>{ // onEachStart: highlight matching spans
-            if(!bodyEl) return;
-            spans.forEach(sp=>{
-              const ci=parseInt(sp.dataset.charIdx,10);
-              sp.classList.toggle('tts-active', ci>=charIndex && ci<charIndex+chunkLen);
-            });
-            const active=bodyEl.querySelector('.tts-active');
-            if(active) _ttsScrollTo(bodyEl, active);
-            const bar=document.getElementById('narration-progress-bar');
-            if(bar) bar.style.width=Math.min(100,Math.round((charIndex/text.length)*100))+'%';
-          }
-        );
-        activeUtterance={cancel:()=>{ if(speakCJKWordByWord._stop) speakCJKWordByWord._stop(); }};
-        return;
-      }
-
-      // ── Latin: single utterance, onboundary highlight ──
       const utter=new SpeechSynthesisUtterance(text);
-      utter.lang=langCode; utter.rate=rate; utter.pitch=1;
-      const voice=getBestVoice(langCode); if(voice) utter.voice=voice;
+      const langCode=getLangCode();
+      utter.lang=langCode;
+      utter.rate=rate;
+      utter.pitch=1;
+      const voice=getBestVoice(langCode);
+      if(voice) utter.voice=voice;
       let boundaryWorking=false;
-      utter.onstart=()=>{ _nSpeechStart=performance.now(); };
+      utter.onstart=()=>{
+        activeMode='topic';
+        syncTopListenButton();
+        // Start timer-based highlight as fallback
+        // Will be cancelled if onboundary fires
+        setTimeout(()=>{
+          if(!boundaryWorking){
+            // Estimate duration: CJK ~3 chars/sec, Latin ~2.5 words/sec
+            const isCJKText=isCJK(text);
+            const spanCount=bodyEl.querySelectorAll('span[data-char-idx]').length;
+            const estDur=isCJKText ? spanCount*(300/(rate||0.92)) : spanCount*(280/(rate||0.92));
+            startHighlightTimer(bodyEl, text, rate, estDur);
+          }
+        }, 200);
+      };
       utter.onboundary=(e)=>{
         if(e.name==='word' && bodyEl){
-          if(!boundaryWorking){ boundaryWorking=true; }
+          if(isCJK(text)) return;
+          boundaryWorking=true;
+          clearHighlightTimer();
           highlightWord(bodyEl, e.charIndex, e.charLength||1);
-          const bar=document.getElementById('narration-progress-bar');
-          if(bar) bar.style.width=Math.min(100,Math.round((e.charIndex/text.length)*100))+'%';
         }
       };
       utter.onend=()=>{
-        stopNarrationProgress();
-        if(bodyEl) bodyEl.querySelectorAll('span[data-char-idx]').forEach(sp=>sp.classList.remove('tts-active'));
+        clearHighlightTimer();
+        if(bodyEl){
+          bodyEl.querySelectorAll('span[data-char-idx]').forEach(sp=>{
+            sp.style.background=''; sp.style.color='';
+          });
+        }
         if(narrationActive) speakNextPost(); else syncTopListenButton();
       };
-      utter.onerror=()=>{ if(narrationActive) setTimeout(speakNextPost,800); else syncTopListenButton(); };
+      utter.onerror=()=>{
+        clearHighlightTimer();
+        if(narrationActive) setTimeout(speakNextPost,800); else syncTopListenButton();
+      };
       activeUtterance=utter;
       window.speechSynthesis.speak(utter);
       syncTopListenButton();
@@ -1498,64 +1359,38 @@ function playPostNarration(post, button){
     const voice=getBestVoice(langCode);
     if(voice) utter.voice=voice;
 
-    let boundaryWorking = false;
-    // Latin highlight driven by onboundary; CJK by RAF timer
-
-    utter.onstart = () => {
-      _speechStartTime = performance.now();
-      activeMode = 'post';
-      activePostButton = button;
-      if(button){ button.classList.add('active'); const lbl = button.querySelector('.post-play-label'); if(lbl) lbl.textContent = 'Stop'; }
-      const origBody = document.querySelector('[data-id="' + post.id + '"] .post-body');
+    let boundaryWorking=false;
+    utter.onstart=()=>{
+      activeMode='post';
+      activePostButton=button;
+      if(button){ button.classList.add('active'); const lbl=button.querySelector('.post-play-label'); if(lbl) lbl.textContent='Stop'; }
+      // Dim original post body to avoid visual duplicate
+      const origBody=document.querySelector('[data-id="'+post.id+'"] .post-body');
       if(origBody) origBody.classList.add('tts-playing');
       syncTopListenButton();
-      // For CJK: start timer immediately (no boundary events in Chrome)
-      // For Latin: wait for first boundary to get real start time calibration
-      window._ttsPostStartTime = performance.now();
-      if(ttsBody && isCJK(text)){
-        const spanCount = ttsBody.querySelectorAll('span[data-char-idx]').length;
-        const msPerChar = _ttsGetCalibratedMs();
-        const estDur = spanCount * (msPerChar / 0.92);
-        startHighlightTimer(ttsBody, text, 0.92, estDur);
-        // Mid-speech resync probe at 40% mark
-        const probeAt = Math.round(estDur * 0.4);
-        setTimeout(()=>{
-          if(_ttsResync && isSpeechPlaying() && window._ttsPostStartTime > 0){
-            const realElapsed = performance.now() - window._ttsPostStartTime;
-            const drift = realElapsed - probeAt;
-            if(Math.abs(drift) > 200){
-              const correctedRatio = realElapsed / estDur;
-              _ttsResync(Math.round(correctedRatio * text.length), text.length);
-            }
-          }
-        }, probeAt);
-      }
-      // Latin timer starts on first onboundary event (see below)
-    };
-
-    utter.onboundary = (e) => {
-      if(e.name === 'word' && ttsBody){
-        if(isCJK(text)){
-          // CJK sentence boundary from Chrome — resync RAF timeline
-          if((e.name==='sentence'||e.name==='word') && e.charIndex > 0){
-            if(_ttsResync) _ttsResync(e.charIndex, totalChars);
-          }
-          return;
+      setTimeout(()=>{
+        if(!boundaryWorking && ttsBody){
+          const isCJKText=isCJK(text);
+          const spanCount=ttsBody.querySelectorAll('span[data-char-idx]').length;
+          const estDur=isCJKText ? spanCount*(300/0.92) : spanCount*(280/0.92);
+          startHighlightTimer(ttsBody, text, 0.92, estDur);
         }
-        const now = performance.now();
-        boundaryWorking = true;
-        highlightWord(ttsBody, e.charIndex, e.charLength || 1);
-        if(ttsProgress) ttsProgress.style.width = Math.round((e.charIndex / totalChars) * 100) + '%';
+      }, 200);
+    };
+    utter.onboundary=(e)=>{
+      if(e.name==='word' && ttsBody){
+        // For CJK (ja/zh), onboundary is unreliable in Chrome — use timer only
+        if(isCJK(text)) return;
+        boundaryWorking=true;
+        clearHighlightTimer();
+        highlightWord(ttsBody, e.charIndex, e.charLength||1);
+        // Update progress bar
+        if(ttsProgress) ttsProgress.style.width=Math.round((e.charIndex/totalChars)*100)+'%';
       }
     };
     utter.onend=()=>{
-      // Record actual duration for CJK calibration
-      if(isCJK(text)){
-        const started = window._ttsPostStartTime || 0;
-        if(started > 0) _ttsRecordCalibration(performance.now() - started, text.length);
-      }
       clearHighlightTimer();
-      if(ttsBody) ttsBody.querySelectorAll('span[data-char-idx]').forEach(sp=>{ sp.classList.remove('tts-active'); sp.style.background=''; sp.style.color=''; });
+      if(ttsBody) ttsBody.querySelectorAll('span[data-char-idx]').forEach(sp=>{ sp.style.background=''; sp.style.color=''; });
       if(ttsProgress) ttsProgress.style.width='100%';
       // Restore original post body opacity
       const origBodyEnd=document.querySelector('[data-id="'+post.id+'"] .post-body');
