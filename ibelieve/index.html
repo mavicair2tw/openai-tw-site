@@ -224,6 +224,8 @@ span.tts-active{background:#f5c518!important;color:#1a1a2e!important;border-radi
 .post-tts-panel.active{display:block;}
 .post-tts-panel-label{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#f5c518;opacity:.7;margin-bottom:4px;}
 .post-tts-progress{position:absolute;bottom:0;left:0;height:2px;background:#f5c518;border-radius:0 0 10px 10px;transition:width 0.15s linear;width:0;}
+#narration-progress-wrap{height:3px;background:rgba(255,255,255,0.08);border-radius:0 0 12px 12px;margin-top:10px;overflow:hidden;display:none;}
+#narration-progress-bar{height:100%;width:0%;background:linear-gradient(90deg,#f5c518,#ffdd57);border-radius:2px;transition:none;}
 
 .post-body{
   font-size:0.88rem;line-height:1.85;color:var(--text);
@@ -573,6 +575,7 @@ span.tts-active{background:#f5c518!important;color:#1a1a2e!important;border-radi
             <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:8px;">▶ Now narrating</div>
             <div id="narration-text" style="font-size:0.8rem;color:var(--text-dim);line-height:1.85;white-space:pre-wrap;word-break:break-word;"></div>
           </div>
+          <div id="narration-progress-wrap"><div id="narration-progress-bar"></div></div>
         </section>
       </div>
 
@@ -1012,6 +1015,7 @@ function stopNarrationDisplay(){
   narrationActive=false;
   narrationPosts=[];
   narrationPostIndex=0;
+  stopNarrationProgress();
   const preview=document.getElementById('narration-preview');
   const narrationText=document.getElementById('narration-text');
   if(preview) preview.style.display='none';
@@ -1175,6 +1179,35 @@ function clearHighlightTimer(){
 
 let _ttsRafId = null;
 let _ttsResync = null; // set by startHighlightTimer; call with (charIndex, totalChars) to resync
+let _narProgressRaf = null;
+let _narProgressStart = 0;
+let _narProgressDur = 0;
+
+function startNarrationProgress(durationMs){
+  stopNarrationProgress();
+  const bar = document.getElementById('narration-progress-bar');
+  const wrap = document.getElementById('narration-progress-wrap');
+  if(!bar || !wrap) return;
+  wrap.style.display = 'block';
+  bar.style.width = '0%';
+  _narProgressStart = performance.now();
+  _narProgressDur = durationMs;
+  function rafTick(now){
+    const pct = Math.min(100, ((now - _narProgressStart) / _narProgressDur) * 100);
+    bar.style.width = pct.toFixed(1) + '%';
+    if(pct < 100) _narProgressRaf = requestAnimationFrame(rafTick);
+    else _narProgressRaf = null;
+  }
+  _narProgressRaf = requestAnimationFrame(rafTick);
+}
+
+function stopNarrationProgress(){
+  if(_narProgressRaf){ cancelAnimationFrame(_narProgressRaf); _narProgressRaf = null; }
+  const bar = document.getElementById('narration-progress-bar');
+  const wrap = document.getElementById('narration-progress-wrap');
+  if(bar) bar.style.width = '0%';
+  if(wrap) wrap.style.display = 'none';
+}
 
 /* Adaptive fallback timer for CJK / browsers where onboundary never fires.
    Uses a per-span timing derived from actual speech start time + estimated
@@ -1286,10 +1319,13 @@ function speakNextPost(){
         _nSpeechStart=performance.now();
         activeMode='topic';
         syncTopListenButton();
+        const _nWrap=document.getElementById('narration-progress-wrap');
+        if(_nWrap) _nWrap.style.display='block';
         if(isCJK(text)){
           const spanCount=bodyEl.querySelectorAll('span[data-char-idx]').length;
           const msPerChar=_ttsGetCalibratedMs();
           const estDur=spanCount*(msPerChar/rate);
+          startNarrationProgress(estDur);
           startHighlightTimer(bodyEl, text, rate, estDur);
           // Mid-speech resync: at ~40% of estimated duration, probe actual position
           // by checking which span is nearest to where voice should be and resyncing
@@ -1329,6 +1365,7 @@ function speakNextPost(){
         if(isCJK(text) && _nSpeechStart > 0){
           _ttsRecordCalibration(performance.now() - _nSpeechStart, text.length);
         }
+        stopNarrationProgress();
         clearHighlightTimer();
         if(bodyEl) bodyEl.querySelectorAll('span[data-char-idx]').forEach(sp=>sp.classList.remove('tts-active'));
         if(narrationActive) speakNextPost(); else syncTopListenButton();
