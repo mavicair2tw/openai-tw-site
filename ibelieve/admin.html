@@ -365,7 +365,7 @@ td{padding:10px 14px;vertical-align:middle;}
         <!-- Left: Post list -->
         <div class="card" style="min-width:0;">
           <div class="card-title">Posts <span id="cm-post-count" style="font-weight:400;color:var(--text-muted);font-size:12px;"></span></div>
-          <div id="cm-post-list" style="margin-top:8px;max-height:400px;overflow-y:auto;min-width:280px;"></div>
+          <div id="cm-post-list" style="margin-top:8px;max-height:800px;overflow-y:auto;min-width:280px;"></div>
           <div id="cm-pagination" style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px;"></div>
         </div>
 
@@ -1496,7 +1496,7 @@ async function confirmReplyModal(){
 
 /* CLOUD MAP */
 var cmPosts=[], cmSelectedId=null;
-var cmCurrentPage=1, cmPageSize=20, cmFilteredPosts=[];
+var cmCurrentPage=1, cmPageSize=40, cmFilteredPosts=[], cmExpandedId=null;
 
 async function cmInit(){
   cmPosts=[];
@@ -1546,15 +1546,22 @@ function cmRenderList(posts){
   var paged=posts.slice(start, start+cmPageSize);
   el.innerHTML=paged.map(function(p){
     var sel=p.id===cmSelectedId;
+    var exp=p.id===cmExpandedId;
     var linkCount=(p.links||[]).length+(p.backlinks||[]).length;
     var topicColor={belief:'#7c3aed',god:'#0891b2',miracle:'#db2777',discovery:'#16a34a'}[p.topic]||'#888';
-    return '<div onclick="cmSelectPost(&quot;'+p.id+'&quot;)" style="padding:8px 10px;border-radius:6px;cursor:pointer;margin-bottom:4px;background:'+(sel?'#fffde7':'var(--surface2)')+';border:1px solid '+(sel?'#f5c518':'var(--border)')+';">'
-      +'<div style="display:flex;align-items:center;gap:8px;">'
+    var bodyPreview=esc((p.body||'').slice(0,80));
+    var bodyFull=esc(p.body||'');
+    return '<div id="cm-item-'+p.id+'" style="padding:8px 10px;border-radius:6px;cursor:pointer;margin-bottom:4px;background:'+(sel?'#fffde7':'var(--surface2)')+';border:1px solid '+(sel?'#f5c518':'var(--border)')+';">'
+      +'<div style="display:flex;align-items:center;gap:8px;" onclick="cmSelectPost(&quot;'+p.id+'&quot;)">'
       +'<span style="font-size:11px;padding:1px 6px;border-radius:8px;background:'+topicColor+'22;color:'+topicColor+'">'+p.topic+'</span>'
       +'<span style="font-weight:500;font-size:12px;">'+esc(p.agent)+'</span>'
       +'<span style="margin-left:auto;font-size:11px;color:var(--text-muted);">🔗 '+linkCount+'</span>'
+      +'<span onclick="event.stopPropagation();cmToggleExpand(&quot;'+p.id+'&quot;)" style="font-size:10px;padding:1px 5px;border-radius:4px;border:1px solid var(--border);color:var(--text-muted);margin-left:4px;">'+(exp?'▲':'▼')+'</span>'
       +'</div>'
-      +'<div style="font-size:11px;color:var(--text-muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc((p.body||'').slice(0,80))+'</div>'
+      +(exp
+        ? '<div style="font-size:11px;color:var(--text-dim);margin-top:6px;line-height:1.7;white-space:pre-wrap;word-break:break-word;border-top:1px solid var(--border);padding-top:6px;">'+bodyFull+'</div>'
+        : '<div style="font-size:11px;color:var(--text-muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+bodyPreview+'</div>'
+      )
       +'</div>';
   }).join('');
   cmRenderPagination();
@@ -1577,6 +1584,11 @@ function cmPagePrev(){
 function cmPageNext(){
   var totalPages=Math.max(1,Math.ceil((cmFilteredPosts||[]).length/cmPageSize));
   if(cmCurrentPage<totalPages){ cmCurrentPage++; cmRenderList(cmFilteredPosts); }
+}
+
+function cmToggleExpand(id){
+  cmExpandedId = (cmExpandedId === id) ? null : id;
+  cmRenderList(cmFilteredPosts);
 }
 
 function cmSelectPost(id){
