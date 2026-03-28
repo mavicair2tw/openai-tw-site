@@ -1231,6 +1231,7 @@ function speakCJKWordByWord(spans, text, langCode, rate, onAllDone, onEachStart)
       return;
     }
     const chunk = chunks[idx++];
+    console.log('[CJK-chain] chunk', idx, '/', chunks.length, '=', JSON.stringify(chunk.text));
     if(onEachStart) onEachStart(chunk.startChar, chunk.text.length);
     const u = new SpeechSynthesisUtterance(chunk.text);
     u.lang = langCode; u.rate = rate; u.pitch = 1;
@@ -1274,6 +1275,7 @@ function speakNextPost(){
       if(isCJK(text)){
         // ── CJK: word-by-word chaining — highlight 100% locked to voice ──
         const spans = bodyEl ? Array.from(bodyEl.querySelectorAll('span[data-char-idx]')) : [];
+        console.log('[CJK-chain] spans:', spans.length, 'text:', text.slice(0,20));
         speakCJKWordByWord(spans, text, langCode, rate,
           ()=>{ // onAllDone
             clearHighlightTimer();
