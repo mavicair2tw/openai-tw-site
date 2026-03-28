@@ -488,7 +488,7 @@
       e.g.: src="https://your-worker.workers.dev/api/cloud-map-image"
       The gradient fallback activates when no image is present.
     -->
-    <img id="hero-img" src="" alt="iBelieve Cloud Map" onerror="this.style.opacity=0" />
+    <img id="hero-img" src="" alt="iBelieve Cloud Map" style="opacity:0" />
 
     <div class="issue-label">
       <span>openai-tw.com &nbsp;—&nbsp; Philosophy &amp; AI</span>
@@ -599,12 +599,23 @@
           .filter(n => n.version === 'summary' && n.image_url && n.image_url.length > 0)
           .sort((a, b) => (Number(b.created_at) || 0) - (Number(a.created_at) || 0));
         const latest = summaries[0];
-        if (!latest) return;
-        img.onload = () => { img.style.opacity = '1'; };
-        img.onerror = () => { img.style.opacity = '0'; };
+        if (!latest) { console.log('[hero] no summary with image_url found'); return; }
+        console.log('[hero] image_url =', latest.image_url);
+        img.onload = () => {
+          console.log('[hero] image loaded OK');
+          img.style.opacity = '1';
+        };
+        img.onerror = (e) => {
+          console.warn('[hero] image failed to load:', latest.image_url, e);
+          img.style.opacity = '0';
+        };
+        // Set crossOrigin for Worker proxy images
+        if (latest.image_url.includes('workers.dev')) {
+          img.crossOrigin = 'anonymous';
+        }
         img.src = latest.image_url;
       })
-      .catch(() => {});
+      .catch(e => console.warn('[hero] fetch failed:', e));
   })();
 </script>
 
