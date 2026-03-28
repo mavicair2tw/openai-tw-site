@@ -1249,36 +1249,51 @@ function speakNextPost(){
       const voice=getBestVoice(langCode);
       if(voice) utter.voice=voice;
       let boundaryWorking=false;
+      let _nSpeechStart=0, _nLastBoundaryTime=0, _nLastBoundaryChar=0;
+      const _nTotalChars=text.length;
+
       utter.onstart=()=>{
+        _nSpeechStart=performance.now();
         activeMode='topic';
         syncTopListenButton();
-        // Start timer-based highlight as fallback
-        // Will be cancelled if onboundary fires
-        setTimeout(()=>{
-          if(!boundaryWorking){
-            // Estimate duration: CJK ~3 chars/sec, Latin ~2.5 words/sec
-            const isCJKText=isCJK(text);
-            const spanCount=bodyEl.querySelectorAll('span[data-char-idx]').length;
-            const estDur=isCJKText ? spanCount*(385/(rate||0.92)) : spanCount*(360/(rate||0.92));
-            startHighlightTimer(bodyEl, text, rate, estDur);
-          }
-        }, 200);
+        // CJK: start timer immediately (no boundary events)
+        // Latin: defer to first boundary for real t=0 calibration
+        if(isCJK(text)){
+          const spanCount=bodyEl.querySelectorAll('span[data-char-idx]').length;
+          const estDur=spanCount*(385/rate);
+          startHighlightTimer(bodyEl, text, rate, estDur);
+        }
       };
       utter.onboundary=(e)=>{
         if(e.name==='word' && bodyEl){
           if(isCJK(text)) return;
-          boundaryWorking=true;
-          clearHighlightTimer();
+          const now=performance.now();
+          if(!boundaryWorking){
+            // First boundary = real speech t=0
+            boundaryWorking=true;
+            _nSpeechStart=now;
+          }
+          // Re-anchor: measure actual chars/ms from last boundary
+          if(_nLastBoundaryTime>0 && e.charIndex>_nLastBoundaryChar){
+            const dtMs=now-_nLastBoundaryTime;
+            const dtChars=e.charIndex-_nLastBoundaryChar;
+            const charsPerMs=dtChars/dtMs;
+            if(charsPerMs>0){
+              const remaining=_nTotalChars-e.charIndex;
+              if(remaining>8){
+                const estRemaining=Math.round(remaining/charsPerMs);
+                startHighlightTimer(bodyEl, text.slice(e.charIndex), rate, estRemaining);
+              }
+            }
+          }
+          _nLastBoundaryTime=now;
+          _nLastBoundaryChar=e.charIndex;
           highlightWord(bodyEl, e.charIndex, e.charLength||1);
         }
       };
       utter.onend=()=>{
         clearHighlightTimer();
-        if(bodyEl){
-          bodyEl.querySelectorAll('span[data-char-idx]').forEach(sp=>{
-            sp.style.background=''; sp.style.color='';
-          });
-        }
+        if(bodyEl) bodyEl.querySelectorAll('span[data-char-idx]').forEach(sp=>sp.classList.remove('tts-active'));
         if(narrationActive) speakNextPost(); else syncTopListenButton();
       };
       utter.onerror=()=>{
