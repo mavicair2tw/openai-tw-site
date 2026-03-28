@@ -410,7 +410,10 @@ td{padding:10px 14px;vertical-align:middle;}
             <div class="gp-agent" id="gp-agent"></div>
             <div class="gp-body" id="gp-body"></div>
             <div class="gp-links" id="gp-links"></div>
-            <div class="gp-select" onclick="cmSelectFromPopup()">Select this post &#x2192;</div>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <div class="gp-select" onclick="cmSelectFromPopup()" style="flex:1;">Select &#x2192;</div>
+              <div class="gp-select" onclick="cmStartGraphLink(cmGraphPopupId);cmCloseGraphPopup();" style="color:#f5c518;">&#x1F517; Link from here</div>
+            </div>
           </div>
         </div>
       </div>
@@ -1690,6 +1693,29 @@ function cmUpdateStats(){
 }
 
 var cmGraphPopupId = null;
+var cmGraphSim = null;
+var cmGraphLinkSource = null; // id of source node when drawing a new link
+
+function cmStartGraphLink(sourceId){
+  cmGraphLinkSource = sourceId;
+  cmCloseGraphPopup();
+  document.getElementById('cm-status').textContent = 'Click target node to link from "' + (cmPosts.find(function(p){return p.id===sourceId;})||{}).agent + '"';
+}
+
+function cmCancelGraphLink(){
+  cmGraphLinkSource = null;
+  document.getElementById('cm-status').textContent = 'Select a post to manage its connections';
+}
+
+function cmGraphConfirmLink(targetId){
+  var sourceId = cmGraphLinkSource;
+  cmGraphLinkSource = null;
+  var linkType = document.getElementById('cm-link-type') ? document.getElementById('cm-link-type').value : 'related';
+  // Use existing cmSelectedId mechanism: select source, then add link
+  cmSelectedId = sourceId;
+  document.getElementById('cm-link-target').value = targetId;
+  cmAddLink().then(function(){ cmRenderGraph(); });
+}
 
 function cmShowGraphPopup(postId, px, py, W, H){
   var p = cmPosts.find(function(x){ return x.id === postId; });
@@ -1725,99 +1751,123 @@ function cmSelectFromPopup(){
 }
 
 function cmRenderGraph(){
-  var placeholder=document.getElementById('cm-graph-placeholder');
-  var container=document.getElementById('cm-graph');
-  if(placeholder) placeholder.style.display='none';
-  // Remove old SVG
-  var old=container.querySelector('svg');
-  if(old) old.remove();
+  var placeholder = document.getElementById('cm-graph-placeholder');
+  var container = document.getElementById('cm-graph');
+  if(placeholder) placeholder.style.display = 'none';
+  d3.select('#cm-graph svg').remove();
+  cmCloseGraphPopup();
 
-  if(!cmPosts.length){if(placeholder){placeholder.style.display='flex';placeholder.textContent='No posts to display';}return;}
+  if(!cmPosts.length){ if(placeholder){ placeholder.style.display='flex'; placeholder.textContent='No posts'; } return; }
 
-  // Build nodes and edges
-  var nodes=cmPosts.filter(function(p){return (p.links||[]).length+(p.backlinks||[]).length>0 || p.id===cmSelectedId;}).slice(0,80);
-  if(nodes.length<2) nodes=cmPosts.slice(0,30);
-  var nodeIds=new Set(nodes.map(function(n){return n.id;}));
-  var edges=[];
+  var nodes = cmPosts.filter(function(p){ return (p.links||[]).length+(p.backlinks||[]).length>0 || p.id===cmSelectedId; }).slice(0,100);
+  if(nodes.length < 2) nodes = cmPosts.slice(0,40);
+  var nodeIds = new Set(nodes.map(function(n){ return n.id; }));
+  var links = [];
   nodes.forEach(function(p){
     (p.links||[]).forEach(function(l){
-      if(nodeIds.has(l.targetId)) edges.push({source:p.id,target:l.targetId,type:l.type});
+      if(nodeIds.has(l.targetId)) links.push({source:p.id, target:l.targetId, type:l.type, id:l.id});
     });
   });
 
-  var W=container.clientWidth||600, H=420;
-  var typeColors={related:'#888',supports:'#16a34a',contradicts:'#e74c3c',expands:'#2563eb',inspires:'#9333ea'};
-  var topicColors={belief:'#7c3aed',god:'#0891b2',miracle:'#db2777',discovery:'#16a34a'};
+  var W = container.clientWidth||600, H = 420;
+  var topicColors = {belief:'#7c3aed',god:'#0891b2',miracle:'#db2777',discovery:'#16a34a'};
+  var typeColors = {related:'#888',supports:'#16a34a',contradicts:'#e74c3c',expands:'#2563eb',inspires:'#9333ea'};
 
-  var svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
-  svg.setAttribute('width',W); svg.setAttribute('height',H);
-  svg.style.cssText='position:absolute;inset:0;';
+  var svg = d3.select('#cm-graph').append('svg')
+    .attr('width', W).attr('height', H)
+    .style('position','absolute').style('inset','0');
 
-  // Simple static layout: circle arrangement
-  var n=nodes.length;
-  var cx=W/2, cy=H/2, r=Math.min(W,H)*0.35;
-
-  var positions={};
-  nodes.forEach(function(node,i){
-    var angle=(2*Math.PI*i/n)-Math.PI/2;
-    positions[node.id]={x:cx+r*Math.cos(angle), y:cy+r*Math.sin(angle)};
+  // Arrow markers
+  Object.entries(typeColors).forEach(function(entry){
+    var t = entry[0], c = entry[1];
+    svg.append('defs').append('marker')
+      .attr('id','arrow-'+t).attr('viewBox','0 -4 8 8').attr('refX',18).attr('refY',0)
+      .attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto')
+      .append('path').attr('d','M0,-4L8,0L0,4').attr('fill',c).attr('opacity',0.7);
   });
-  // Selected node in center
-  if(cmSelectedId && positions[cmSelectedId]){
-    positions[cmSelectedId]={x:cx,y:cy};
+
+  var g = svg.append('g');
+
+  // Zoom + pan
+  var zoom = d3.zoom().scaleExtent([0.2,4]).on('zoom',function(e){ g.attr('transform',e.transform); });
+  svg.call(zoom);
+
+  // Force simulation
+  var sim = d3.forceSimulation(nodes)
+    .force('link', d3.forceLink(links).id(function(d){ return d.id; }).distance(100).strength(0.5))
+    .force('charge', d3.forceManyBody().strength(-220))
+    .force('center', d3.forceCenter(W/2, H/2))
+    .force('collision', d3.forceCollide(22));
+
+  // Fix selected node at center initially
+  if(cmSelectedId){
+    var sel = nodes.find(function(n){ return n.id===cmSelectedId; });
+    if(sel){ sel.fx = W/2; sel.fy = H/2; }
   }
 
   // Draw edges
-  edges.forEach(function(e){
-    var s=positions[e.source], t=positions[e.target];
-    if(!s||!t) return;
-    var line=document.createElementNS('http://www.w3.org/2000/svg','line');
-    line.setAttribute('x1',s.x); line.setAttribute('y1',s.y);
-    line.setAttribute('x2',t.x); line.setAttribute('y2',t.y);
-    line.setAttribute('stroke',typeColors[e.type]||'#888');
-    line.setAttribute('stroke-width','1.5');
-    line.setAttribute('stroke-opacity','0.5');
-    svg.appendChild(line);
-  });
+  var link = g.append('g').selectAll('line').data(links).enter().append('line')
+    .attr('stroke', function(d){ return typeColors[d.type]||'#888'; })
+    .attr('stroke-width', 1.5).attr('stroke-opacity', 0.55)
+    .attr('marker-end', function(d){ return 'url(#arrow-'+(d.type||'related')+')'; });
+
+  // Link type labels (small)
+  var linkLabel = g.append('g').selectAll('text').data(links).enter().append('text')
+    .attr('font-size', 8).attr('fill','var(--text-muted)').attr('text-anchor','middle')
+    .text(function(d){ return d.type; });
 
   // Draw nodes
-  nodes.forEach(function(node){
-    var pos=positions[node.id];
-    var degree=(node.links||[]).length+(node.backlinks||[]).length;
-    var nodeR=6+Math.sqrt(degree)*3;
-    var color=topicColors[node.topic]||'#888';
-    var isSel=node.id===cmSelectedId;
+  var node = g.append('g').selectAll('g').data(nodes).enter().append('g')
+    .style('cursor','pointer')
+    .call(d3.drag()
+      .on('start', function(e,d){ if(!e.active) sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
+      .on('drag',  function(e,d){ d.fx=e.x; d.fy=e.y; })
+      .on('end',   function(e,d){ if(!e.active) sim.alphaTarget(0); })
+    )
+    .on('click', function(e,d){
+      e.stopPropagation();
+      // If in link-draw mode: complete the link
+      if(cmGraphLinkSource && cmGraphLinkSource !== d.id){
+        cmGraphConfirmLink(d.id);
+        return;
+      }
+      // Toggle popup
+      if(cmGraphPopupId === d.id){ cmCloseGraphPopup(); }
+      else {
+        var rect = container.getBoundingClientRect();
+        var ex = e.clientX - rect.left, ey = e.clientY - rect.top;
+        cmShowGraphPopup(d.id, ex, ey, W, H);
+      }
+    });
 
-    var g=document.createElementNS('http://www.w3.org/2000/svg','g');
-    g.style.cursor='pointer';
-    (function(nid, nx, ny, nW, nH){
-      g.addEventListener('click',function(e){
-        e.stopPropagation();
-        if(cmGraphPopupId === nid){ cmCloseGraphPopup(); }
-        else { cmShowGraphPopup(nid, nx, ny, nW, nH); }
-      });
-    })(node.id, pos.x, pos.y, W, H);
+  node.append('circle')
+    .attr('r', function(d){ return 7+Math.sqrt(((d.links||[]).length+(d.backlinks||[]).length))*2.5; })
+    .attr('fill', function(d){ return topicColors[d.topic]||'#888'; })
+    .attr('fill-opacity', function(d){ return d.id===cmSelectedId ? 1 : 0.75; })
+    .attr('stroke', function(d){ return d.id===cmSelectedId ? '#f5c518' : '#fff'; })
+    .attr('stroke-width', function(d){ return d.id===cmSelectedId ? 3 : 1; });
 
-    var circle=document.createElementNS('http://www.w3.org/2000/svg','circle');
-    circle.setAttribute('cx',pos.x); circle.setAttribute('cy',pos.y); circle.setAttribute('r',nodeR);
-    circle.setAttribute('fill',color); circle.setAttribute('fill-opacity',isSel?'1':'0.7');
-    circle.setAttribute('stroke',isSel?'#f5c518':'#fff'); circle.setAttribute('stroke-width',isSel?'3':'1');
-    g.appendChild(circle);
+  node.append('text')
+    .attr('dy', function(d){ return 9+Math.sqrt(((d.links||[]).length+(d.backlinks||[]).length))*2.5+10; })
+    .attr('text-anchor','middle').attr('font-size',9).attr('fill','var(--text-muted)')
+    .text(function(d){ return (d.agent||'?').slice(0,14); });
 
-    var text=document.createElementNS('http://www.w3.org/2000/svg','text');
-    text.setAttribute('x',pos.x); text.setAttribute('y',pos.y+nodeR+12);
-    text.setAttribute('text-anchor','middle');
-    text.setAttribute('font-size','9');
-    text.setAttribute('fill','var(--text-muted)');
-    text.textContent=(node.agent||'?').slice(0,12);
-    g.appendChild(text);
+  // Close popup on SVG background click
+  svg.on('click', function(){ cmCloseGraphPopup(); cmCancelGraphLink(); });
 
-    svg.appendChild(g);
+  // Tick
+  sim.on('tick', function(){
+    link.attr('x1',function(d){ return d.source.x; }).attr('y1',function(d){ return d.source.y; })
+        .attr('x2',function(d){ return d.target.x; }).attr('y2',function(d){ return d.target.y; });
+    linkLabel.attr('x',function(d){ return (d.source.x+d.target.x)/2; })
+             .attr('y',function(d){ return (d.source.y+d.target.y)/2 - 4; });
+    node.attr('transform',function(d){ return 'translate('+d.x+','+d.y+')'; });
   });
 
-  svg.addEventListener('click', function(){ cmCloseGraphPopup(); });
-  container.appendChild(svg);
+  // Store sim reference for external stop
+  cmGraphSim = sim;
 }
+
 
 /* AUTOLINK MODE CONTROL */
 function cmSaveMode(mode){
