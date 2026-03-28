@@ -858,7 +858,6 @@ let activeMode='';
 let spotifyPlaying=false;  // tracks if Spotify is likely playing
 
 function stopSpeech(hidePreview=false){
-  if(typeof speakCJKWordByWord !== 'undefined' && speakCJKWordByWord._stop) speakCJKWordByWord._stop();
   if('speechSynthesis' in window){
     window.speechSynthesis.cancel();
   }
@@ -1204,69 +1203,6 @@ function startHighlightTimer(bodyEl, text, rate, estimatedDurationMs){
   }, msPerUnit);
 }
 
-// ── CJK word-by-word TTS: chain one utterance per chunk, highlight on each start ──
-// Only free method that guarantees highlight === voice for CJK (no boundary events in Chrome)
-function speakCJKWordByWord(spans, text, langCode, rate, onAllDone, onEachStart){
-  if(!spans.length){ if(onAllDone) onAllDone(); return; }
-
-  // Smart chunking: group 2-3 CJK chars, absorb punctuation/ASCII into adjacent chunk
-  const isCJKChar = c => /[　-鿿豈-﫿︰-﹏⺀-⻿]/.test(c);
-  const chunks = [];
-  let buf = '', bufStart = 0;
-
-  for(let i = 0; i < text.length; i++){
-    const ch = text[i];
-    if(ch === '\n' || ch === '\r'){
-      if(buf){ chunks.push({text:buf, startChar:bufStart}); buf=''; }
-      bufStart = i + 1;
-      continue;
-    }
-    buf += ch;
-    const isLast = i === text.length - 1;
-    const nextCh = text[i+1] || '';
-    const nextIsCJK = isCJKChar(nextCh);
-    // Break when buffer has 3+ CJK chars and next is also CJK (natural break point)
-    if(isLast || (isCJKChar(ch) && buf.length >= 3 && nextIsCJK)){
-      chunks.push({ text: buf, startChar: bufStart });
-      bufStart = i + 1; buf = '';
-    }
-  }
-  if(buf) chunks.push({ text: buf, startChar: bufStart });
-
-  // Post-process: merge chunks that are only punctuation or short ASCII into previous
-  const merged = [];
-  for(let i = 0; i < chunks.length; i++){
-    const c = chunks[i];
-    const onlySingleNonCJK = c.text.length <= 2 && !isCJKChar(c.text[0]);
-    if(merged.length > 0 && onlySingleNonCJK){
-      merged[merged.length-1].text += c.text; // absorb into previous
-    } else {
-      merged.push({ text: c.text, startChar: c.startChar });
-    }
-  }
-
-  let idx = 0, stopped = false;
-  speakCJKWordByWord._stop = () => { stopped = true; window.speechSynthesis.cancel(); };
-
-  function speakChunk(){
-    if(stopped || idx >= merged.length){
-      if(!stopped && onAllDone) onAllDone();
-      return;
-    }
-    const chunk = merged[idx++];
-    const u = new SpeechSynthesisUtterance(chunk.text);
-    u.lang = langCode; u.rate = rate; u.pitch = 1;
-    const voice = getBestVoice(langCode);
-    if(voice) u.voice = voice;
-    u.onstart = () => { if(!stopped && onEachStart) onEachStart(chunk.startChar, chunk.text.length); };
-    u.onend = () => { if(!stopped) speakChunk(); };
-    u.onerror = () => { if(!stopped) speakChunk(); };
-    window.speechSynthesis.speak(u);
-  }
-  speakChunk();
-}
-speakCJKWordByWord._stop = null;
-
 function speakNextPost(){
   if(!narrationActive) return;
   if(narrationPostIndex>=narrationPosts.length){
@@ -1290,69 +1226,44 @@ function speakNextPost(){
     clearHighlightTimer();
     const voices=window.speechSynthesis.getVoices();
     const go=()=>{
-      const langCode=getLangCode();
-      activeMode='topic';
-      syncTopListenButton();
-
-      if(isCJK(text)){
-        // Use word-by-word only if text is mostly CJK (>70%)
-        // Mixed text (AI terms, English words) must use single utterance to avoid mispronunciation
-        const cjkCount = (text.match(/[　-鿿豈-﫿぀-ヿ가-힯]/g)||[]).length;
-        const cjkRatio = cjkCount / text.length;
-
-        if(cjkRatio >= 0.7){
-          // Mostly CJK — safe to use word-by-word chaining
-          const spans = bodyEl ? Array.from(bodyEl.querySelectorAll('span[data-char-idx]')) : [];
-          speakCJKWordByWord(spans, text, langCode, rate,
-            ()=>{
-              clearHighlightTimer();
-              if(bodyEl) bodyEl.querySelectorAll('span[data-char-idx]').forEach(sp=>{sp.style.background='';sp.style.color='';});
-              if(narrationActive) speakNextPost(); else syncTopListenButton();
-            },
-            (charIndex, chunkLen)=>{
-              if(!bodyEl) return;
-              spans.forEach(sp=>{
-                const ci=parseInt(sp.dataset.charIdx,10);
-                const active = ci>=charIndex && ci<charIndex+chunkLen;
-                sp.style.background = active ? '#f5c518' : '';
-                sp.style.color = active ? '#1a1a2e' : '';
-              });
-              const activeSpan = spans.find(sp=>sp.style.background==='rgb(245, 197, 24)');
-              if(activeSpan){
-                const cRect=bodyEl.getBoundingClientRect();
-                const sRect=activeSpan.getBoundingClientRect();
-                bodyEl.scrollTop=Math.max(0, sRect.top-cRect.top+bodyEl.scrollTop-bodyEl.clientHeight*0.35);
-              }
-            }
-          );
-          activeUtterance={cancel:()=>{ if(speakCJKWordByWord._stop) speakCJKWordByWord._stop(); }};
-          return;
-        }
-        // Mixed CJK+Latin — fall through to single utterance (avoids mispronunciation)
-      }
-
-      // ── Latin: single utterance, boundary-driven highlight ──
       const utter=new SpeechSynthesisUtterance(text);
-      utter.lang=langCode; utter.rate=rate; utter.pitch=1;
-      const voice=getBestVoice(langCode); if(voice) utter.voice=voice;
+      const langCode=getLangCode();
+      utter.lang=langCode;
+      utter.rate=rate;
+      utter.pitch=1;
+      const voice=getBestVoice(langCode);
+      if(voice) utter.voice=voice;
       let boundaryWorking=false;
       utter.onstart=()=>{
+        activeMode='topic';
+        syncTopListenButton();
+        // Start timer-based highlight as fallback
+        // Will be cancelled if onboundary fires
         setTimeout(()=>{
           if(!boundaryWorking){
+            // Estimate duration: CJK ~3 chars/sec, Latin ~2.5 words/sec
+            const isCJKText=isCJK(text);
             const spanCount=bodyEl.querySelectorAll('span[data-char-idx]').length;
-            startHighlightTimer(bodyEl, text, rate, spanCount*(280/(rate||0.92)));
+            const estDur=isCJKText ? spanCount*(300/(rate||0.92)) : spanCount*(280/(rate||0.92));
+            startHighlightTimer(bodyEl, text, rate, estDur);
           }
-        },200);
+        }, 200);
       };
       utter.onboundary=(e)=>{
-        if(e.name==='word'&&bodyEl){
-          boundaryWorking=true; clearHighlightTimer();
+        if(e.name==='word' && bodyEl){
+          if(isCJK(text)) return;
+          boundaryWorking=true;
+          clearHighlightTimer();
           highlightWord(bodyEl, e.charIndex, e.charLength||1);
         }
       };
       utter.onend=()=>{
         clearHighlightTimer();
-        if(bodyEl) bodyEl.querySelectorAll('span[data-char-idx]').forEach(sp=>{sp.style.background='';sp.style.color='';});
+        if(bodyEl){
+          bodyEl.querySelectorAll('span[data-char-idx]').forEach(sp=>{
+            sp.style.background=''; sp.style.color='';
+          });
+        }
         if(narrationActive) speakNextPost(); else syncTopListenButton();
       };
       utter.onerror=()=>{
