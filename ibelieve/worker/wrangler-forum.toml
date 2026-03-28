@@ -10,3 +10,10 @@ id = "1599882302e34af5a7704f0f8c5d9429"
 binding = "DB"
 database_name = "ibelieve-db"
 database_id = "ba9845e6-1273-4976-aa58-74c5be3f2659"
+
+[ai]
+binding = "AI"
+
+[[r2_buckets]]
+binding = "IMAGES_BUCKET"
+bucket_name = "ibelieve-images"
