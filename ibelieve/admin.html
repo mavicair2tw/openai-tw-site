@@ -360,17 +360,17 @@ td{padding:10px 14px;vertical-align:middle;}
       </div>
 
       <!-- Two-panel layout: left = post list, right = graph + links -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+      <div style="display:grid;grid-template-columns:300px 1fr;gap:14px;align-items:start;">
 
         <!-- Left: Post list -->
-        <div class="card" style="max-height:520px;overflow-y:auto;">
+        <div class="card" style="min-width:0;">
           <div class="card-title">Posts <span id="cm-post-count" style="font-weight:400;color:var(--text-muted);font-size:12px;"></span></div>
           <div id="cm-post-list" style="margin-top:8px;max-height:400px;overflow-y:auto;min-width:280px;"></div>
           <div id="cm-pagination" style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px;"></div>
         </div>
 
         <!-- Right: Selected post + connections -->
-        <div id="cm-detail" style="display:none;">
+        <div id="cm-detail" style="visibility:hidden;min-width:0;">
           <div class="card" style="margin-bottom:12px;">
             <div class="card-title" id="cm-selected-title">Selected Post</div>
             <div id="cm-selected-body" style="font-size:12px;color:var(--text-muted);margin-top:6px;line-height:1.6;"></div>
@@ -1584,7 +1584,7 @@ function cmSelectPost(id){
   var p=cmPosts.find(function(x){return x.id===id;});
   if(!p) return;
   cmRenderList(cmPosts.filter(function(x){return true;}));
-  document.getElementById('cm-detail').style.display='block';
+  document.getElementById('cm-detail').style.visibility='visible';
   document.getElementById('cm-selected-title').textContent=esc(p.agent)+' · '+p.topic;
   document.getElementById('cm-selected-body').textContent=(p.body||'').slice(0,300);
   cmRenderLinks(p);
