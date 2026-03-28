@@ -333,17 +333,42 @@ async function handleIBelieve(request, env, url) {
   const addLinkMatch = path.match(/^\/api\/ibelieve\/posts\/([^/]+)\/links$/);
   if (request.method === "POST" && addLinkMatch) {
     const sourceId = addLinkMatch[1];
-    const source = posts.find(x => x.id === sourceId);
-    if (!source) return json({ error: "post not found" }, 404, request);
     const body = await request.json().catch(() => ({}));
     const targetId = String(body?.targetId || "").trim();
     const linkType = String(body?.type || "related").trim();
     if (!targetId) return json({ error: "targetId required" }, 400, request);
     if (targetId === sourceId) return json({ error: "cannot link to self" }, 400, request);
-    const target = posts.find(x => x.id === targetId);
-    if (!target) return json({ error: "target post not found" }, 404, request);
     const validTypes = ["related","supports","contradicts","expands","inspires"];
     const type = validTypes.includes(linkType) ? linkType : "related";
+
+    if (env.DB) {
+      // D1 path — read links_json/backlinks_json, update, write back
+      const [srcRow, tgtRow] = await Promise.all([
+        env.DB.prepare("SELECT id, links_json, backlinks_json FROM posts WHERE id = ?").bind(sourceId).first(),
+        env.DB.prepare("SELECT id, links_json, backlinks_json FROM posts WHERE id = ?").bind(targetId).first(),
+      ]);
+      if (!srcRow) return json({ error: "post not found" }, 404, request);
+      if (!tgtRow) return json({ error: "target post not found" }, 404, request);
+      const srcLinks = JSON.parse(srcRow.links_json || "[]");
+      const tgtBacklinks = JSON.parse(tgtRow.backlinks_json || "[]");
+      if (srcLinks.some(l => l.targetId === targetId && l.type === type)) return json({ error: "link already exists" }, 409, request);
+      const linkId = crypto.randomUUID();
+      srcLinks.push({ id: linkId, targetId, type, createdAt: Date.now() });
+      tgtBacklinks.push({ id: linkId, sourceId, type, createdAt: Date.now() });
+      await env.DB.batch([
+        env.DB.prepare("UPDATE posts SET links_json = ? WHERE id = ?").bind(JSON.stringify(srcLinks), sourceId),
+        env.DB.prepare("UPDATE posts SET backlinks_json = ? WHERE id = ?").bind(JSON.stringify(tgtBacklinks), targetId),
+      ]);
+      // Invalidate KV cache for these posts
+      await env.FORUM_KV.delete("posts:paged:20:0:::").catch(()=>{});
+      return json({ ok: true, linkId, type }, 200, request);
+    }
+
+    // KV fallback
+    const source = posts.find(x => x.id === sourceId);
+    const target = posts.find(x => x.id === targetId);
+    if (!source) return json({ error: "post not found" }, 404, request);
+    if (!target) return json({ error: "target post not found" }, 404, request);
     source.links = Array.isArray(source.links) ? source.links : [];
     target.backlinks = Array.isArray(target.backlinks) ? target.backlinks : [];
     if (source.links.some(l => l.targetId === targetId && l.type === type)) return json({ error: "link already exists" }, 409, request);
@@ -356,15 +381,36 @@ async function handleIBelieve(request, env, url) {
 
   const deleteLinkMatch = path.match(/^\/api\/ibelieve\/posts\/([^/]+)\/links\/([^/]+)$/);
   if (request.method === "DELETE" && deleteLinkMatch) {
-    const source = posts.find(x => x.id === deleteLinkMatch[1]);
+    const sourceId = deleteLinkMatch[1];
+    const linkId = deleteLinkMatch[2];
+
+    if (env.DB) {
+      const srcRow = await env.DB.prepare("SELECT id, links_json FROM posts WHERE id = ?").bind(sourceId).first();
+      if (!srcRow) return json({ error: "post not found" }, 404, request);
+      const srcLinks = JSON.parse(srcRow.links_json || "[]");
+      const link = srcLinks.find(l => l.id === linkId);
+      if (!link) return json({ error: "link not found" }, 404, request);
+      const newLinks = srcLinks.filter(l => l.id !== linkId);
+      await env.DB.prepare("UPDATE posts SET links_json = ? WHERE id = ?").bind(JSON.stringify(newLinks), sourceId).run();
+      // Also remove from target backlinks
+      const tgtRow = await env.DB.prepare("SELECT id, backlinks_json FROM posts WHERE id = ?").bind(link.targetId).first();
+      if (tgtRow) {
+        const tgtBacklinks = JSON.parse(tgtRow.backlinks_json || "[]").filter(l => l.id !== linkId);
+        await env.DB.prepare("UPDATE posts SET backlinks_json = ? WHERE id = ?").bind(JSON.stringify(tgtBacklinks), link.targetId).run();
+      }
+      return json({ ok: true, deleted: linkId }, 200, request);
+    }
+
+    // KV fallback
+    const source = posts.find(x => x.id === sourceId);
     if (!source) return json({ error: "post not found" }, 404, request);
-    const link = (source.links || []).find(l => l.id === deleteLinkMatch[2]);
+    const link = (source.links || []).find(l => l.id === linkId);
     if (!link) return json({ error: "link not found" }, 404, request);
-    source.links = source.links.filter(l => l.id !== deleteLinkMatch[2]);
+    source.links = source.links.filter(l => l.id !== linkId);
     const target = posts.find(x => x.id === link.targetId);
-    if (target) target.backlinks = (target.backlinks || []).filter(l => l.id !== deleteLinkMatch[2]);
+    if (target) target.backlinks = (target.backlinks || []).filter(l => l.id !== linkId);
     await env.FORUM_KV.put(IBELIEVE_KEY, JSON.stringify(posts));
-    return json({ ok: true, deleted: deleteLinkMatch[2] }, 200, request);
+    return json({ ok: true, deleted: linkId }, 200, request);
   }
 
   const deleteReplyMatch = path.match(/^\/api\/ibelieve\/posts\/([^/]+)\/replies\/([^/]+)$/);
