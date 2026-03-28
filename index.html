@@ -589,14 +589,17 @@
     if (!img) return;
     img.style.opacity = '0';
 
-    // Fetch latest summary with image directly using supported filters
-    fetch('https://openai-tw-forum.googselect.workers.dev/api/ibelieve/release-notes?version=summary&has_image=1&limit=1', {
-      headers: { 'Origin': 'https://openai-tw.com' }
-    })
+    // Same logic as admin dashLoadSummaryHero — fetch all, client-side filter
+    fetch('https://openai-tw-forum.googselect.workers.dev/api/ibelieve/release-notes?limit=50')
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        const latest = (data && data.notes && data.notes[0]) || null;
-        if (!latest || !latest.image_url) return;
+        if (!data) return;
+        const notes = data.notes || [];
+        const summaries = notes
+          .filter(n => n.version === 'summary' && n.image_url && n.image_url.length > 0)
+          .sort((a, b) => (Number(b.created_at) || 0) - (Number(a.created_at) || 0));
+        const latest = summaries[0];
+        if (!latest) return;
         img.onload = () => { img.style.opacity = '1'; };
         img.onerror = () => { img.style.opacity = '0'; };
         img.src = latest.image_url;
