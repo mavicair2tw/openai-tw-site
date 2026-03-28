@@ -154,6 +154,10 @@ select.input{cursor:pointer;appearance:none;
 /* ===== POSTS ===== */
 .posts{display:flex;flex-direction:column;gap:16px}
 .feed-header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.sort-switcher{display:flex;align-items:center;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;flex-shrink:0;}
+.sort-btn{padding:5px 14px;font-size:12px;font-weight:500;border:none;cursor:pointer;background:transparent;color:var(--text-muted);letter-spacing:.04em;transition:background .15s,color .15s;}
+.sort-btn.active{background:var(--accent);color:#fff;}
+.sort-btn:first-child{border-right:1px solid var(--border);}
 .feed-heading{font-family:var(--font-display);font-size:1.7rem;font-weight:700;color:var(--text)}
 .feed-subtitle{font-size:.78rem;color:var(--text-muted)}
 .message-card{background:linear-gradient(180deg,#fff,#f8fbff);border:1px solid var(--border);border-radius:18px;padding:16px 18px;box-shadow:var(--glow)}
@@ -693,6 +697,14 @@ select.input{cursor:pointer;appearance:none;
     </aside>
     <section class="right-panel" id="right-panel">
       <div class="panel-shell">
+        <!-- SORT SWITCHER -->
+        <div class="feed-header" style="margin-bottom:12px;">
+          <span id="feed-count" style="font-size:13px;color:var(--text-muted);"></span>
+          <div class="sort-switcher">
+            <button class="sort-btn active" id="sort-btn-newest" onclick="setPostSort('newest')">Newest</button>
+            <button class="sort-btn" id="sort-btn-oldest" onclick="setPostSort('oldest')">Oldest</button>
+          </div>
+        </div>
         <!-- POSTS FEED -->
         <div class="posts" id="feed">
           <div class="loading"><span class="spinner"></span>Scanning the cosmos...</div>
@@ -780,7 +792,7 @@ select.input{cursor:pointer;appearance:none;
 const API = 'https://openai-tw-forum.googselect.workers.dev/api/ibelieve';
 const FORUM_API = 'https://openai-tw-forum.googselect.workers.dev/api/forum';
 const WORKER_API = 'https://openai-tw-forum.googselect.workers.dev/api/ibelieve';
-let posts = [], currentFilter = 'all', currentLang = 'en', searchQuery = '';
+let posts = [], currentFilter = 'all', currentLang = 'en', searchQuery = '', currentSort = 'newest';
 let d1Cursor=null, d1HasMore=false, d1Loading=false, d1Total=0;
 let currentPage = 1;
 const POSTS_PER_PAGE = 20;
@@ -1725,15 +1737,31 @@ function scrollToPost(id){
   if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.outline='2px solid var(--accent,#7c3aed)';setTimeout(()=>el.style.outline='',1500);}
 }
 
+function setPostSort(dir){
+  currentSort = dir;
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('sort-btn-' + dir);
+  if(btn) btn.classList.add('active');
+  currentPage = 1;
+  renderFeed();
+}
+
 function renderFeed(){
   const feed=document.getElementById('feed');
   const q=searchQuery.trim().toLowerCase();
   let filtered=posts.filter(p=>matchesSearch(p,q));
   if(currentFilter!=='all') filtered=filtered.filter(p=>p.tag===currentFilter);
+  // Sort by createdAt
+  filtered = filtered.slice().sort(function(a,b){
+    const ta = Number(a.createdAt||a.time||0), tb = Number(b.createdAt||b.time||0);
+    return currentSort === 'oldest' ? ta - tb : tb - ta;
+  });
   const totalPages=Math.max(1, Math.ceil(filtered.length / POSTS_PER_PAGE));
   if(currentPage > totalPages) currentPage = totalPages;
   if(currentPage < 1) currentPage = 1;
   const start=(currentPage-1)*POSTS_PER_PAGE;
+  const feedCount = document.getElementById('feed-count');
+  if(feedCount) feedCount.textContent = filtered.length + ' posts';
   const paged=filtered.slice(start, start + POSTS_PER_PAGE);
   if(!paged.length){feed.innerHTML=`<div class="empty"><div class="empty-icon">🌌</div><div class="empty-text">${q ? 'No matching transmissions found.' : t('emptyText')}</div></div>`}
   else{feed.innerHTML=paged.map(renderPost).join('')}
