@@ -1217,7 +1217,8 @@ function speakCJKWordByWord(spans, text, langCode, rate, onAllDone, onEachStart)
   for(let i = 0; i < text.length; i++){
     const ch = text[i];
     if(ch === '
-' || ch === ''){
+' || ch === '
+'){
       if(buf){ chunks.push({text:buf, startChar:bufStart}); buf=''; }
       bufStart = i + 1;
       continue;
@@ -1296,35 +1297,40 @@ function speakNextPost(){
       syncTopListenButton();
 
       if(isCJK(text)){
-        // ── CJK: word-by-word chaining — highlight 100% locked to voice ──
-        const spans = bodyEl ? Array.from(bodyEl.querySelectorAll('span[data-char-idx]')) : [];
-        console.log('[CJK-chain] spans:', spans.length, 'text:', text.slice(0,20));
-        speakCJKWordByWord(spans, text, langCode, rate,
-          ()=>{ // onAllDone
-            clearHighlightTimer();
-            if(bodyEl) bodyEl.querySelectorAll('span[data-char-idx]').forEach(sp=>{sp.style.background='';sp.style.color='';});
-            if(narrationActive) speakNextPost(); else syncTopListenButton();
-          },
-          (charIndex, chunkLen)=>{ // onEachStart — highlight matching spans
-            if(!bodyEl) return;
-            spans.forEach(sp=>{
-              const ci=parseInt(sp.dataset.charIdx,10);
-              const active = ci>=charIndex && ci<charIndex+chunkLen;
-              sp.style.background = active ? '#f5c518' : '';
-              sp.style.color = active ? '#1a1a2e' : '';
-            });
-            const first = bodyEl.querySelector('[data-char-idx]');
-            const active = spans.find(sp=>sp.style.background==='rgb(245, 197, 24)');
-            if(active) {
-              const cRect=bodyEl.getBoundingClientRect();
-              const sRect=active.getBoundingClientRect();
-              const target=Math.max(0, sRect.top - cRect.top + bodyEl.scrollTop - bodyEl.clientHeight*0.35);
-              bodyEl.scrollTop=target;
+        // Use word-by-word only if text is mostly CJK (>70%)
+        // Mixed text (AI terms, English words) must use single utterance to avoid mispronunciation
+        const cjkCount = (text.match(/[　-鿿豈-﫿぀-ヿ가-힯]/g)||[]).length;
+        const cjkRatio = cjkCount / text.length;
+
+        if(cjkRatio >= 0.7){
+          // Mostly CJK — safe to use word-by-word chaining
+          const spans = bodyEl ? Array.from(bodyEl.querySelectorAll('span[data-char-idx]')) : [];
+          speakCJKWordByWord(spans, text, langCode, rate,
+            ()=>{
+              clearHighlightTimer();
+              if(bodyEl) bodyEl.querySelectorAll('span[data-char-idx]').forEach(sp=>{sp.style.background='';sp.style.color='';});
+              if(narrationActive) speakNextPost(); else syncTopListenButton();
+            },
+            (charIndex, chunkLen)=>{
+              if(!bodyEl) return;
+              spans.forEach(sp=>{
+                const ci=parseInt(sp.dataset.charIdx,10);
+                const active = ci>=charIndex && ci<charIndex+chunkLen;
+                sp.style.background = active ? '#f5c518' : '';
+                sp.style.color = active ? '#1a1a2e' : '';
+              });
+              const activeSpan = spans.find(sp=>sp.style.background==='rgb(245, 197, 24)');
+              if(activeSpan){
+                const cRect=bodyEl.getBoundingClientRect();
+                const sRect=activeSpan.getBoundingClientRect();
+                bodyEl.scrollTop=Math.max(0, sRect.top-cRect.top+bodyEl.scrollTop-bodyEl.clientHeight*0.35);
+              }
             }
-          }
-        );
-        activeUtterance={cancel:()=>{ if(speakCJKWordByWord._stop) speakCJKWordByWord._stop(); }};
-        return;
+          );
+          activeUtterance={cancel:()=>{ if(speakCJKWordByWord._stop) speakCJKWordByWord._stop(); }};
+          return;
+        }
+        // Mixed CJK+Latin — fall through to single utterance (avoids mispronunciation)
       }
 
       // ── Latin: single utterance, boundary-driven highlight ──
