@@ -1029,6 +1029,43 @@ function stopNarrationDisplay(){
 }
 
 // Detect if text is CJK (Chinese/Japanese/Korean)
+// ── jieba-wasm: CJK word segmentation ──
+// Loaded async; falls back to char-level if not ready
+let _jiebaReady = false;
+let _jiebaModule = null;
+
+(function loadJieba(){
+  import('https://cdn.jsdelivr.net/npm/jieba-wasm@0.0.2/pkg/jieba_wasm.js')
+    .then(function(m){
+      return m.default().then(function(){ return m; });
+    })
+    .then(function(m){
+      _jiebaModule = m;
+      _jiebaReady = true;
+    })
+    .catch(function(e){ console.warn('[jieba-wasm] load failed, using char-level:', e.message); });
+})();
+
+function cjkTokenize(text){
+  // If jieba ready: return array of {word, charIdx}
+  // Else fallback: each character is its own token
+  if(_jiebaReady && _jiebaModule){
+    try{
+      const words = _jiebaModule.cut(text, true); // cut_all=true gives finer granularity
+      const tokens = [];
+      let pos = 0;
+      words.forEach(function(w){
+        const idx = text.indexOf(w, pos);
+        if(idx >= 0){ tokens.push({word: w, charIdx: idx}); pos = idx + w.length; }
+        else { tokens.push({word: w, charIdx: pos}); pos += w.length; }
+      });
+      return tokens;
+    }catch(e){ /* fallback */ }
+  }
+  // Char-level fallback
+  return Array.from(text).map(function(ch, i){ return {word: ch, charIdx: i}; });
+}
+
 function isCJK(text){
   return /[　-鿿가-힯豈-﫿]/.test(text);
 }
@@ -1037,19 +1074,26 @@ function isCJK(text){
 function buildWordSpans(text){
   const spans=[];
   if(isCJK(text)){
-    // CJK: one span per character
-    for(let i=0;i<text.length;i++){
-      const ch=text[i];
-      if(ch==='\n'){
+    // CJK: word-level spans via jieba-wasm (falls back to char-level if not loaded)
+    const lines = text.split('\n');
+    let charOffset = 0;
+    lines.forEach(function(line, li){
+      if(li > 0){
         spans.push(document.createElement('br'));
-      } else {
-        const sp=document.createElement('span');
-        sp.textContent=ch;
-        sp.dataset.charIdx=String(i);
-        sp.style.cssText='border-radius:2px;transition:background 0.08s,color 0.08s;display:inline-block;';
-        spans.push(sp);
+        charOffset++; // account for the \n
       }
-    }
+      if(!line) return;
+      const tokens = cjkTokenize(line);
+      tokens.forEach(function(tok){
+        if(!tok.word.trim()){ charOffset += tok.word.length; return; } // skip whitespace tokens
+        const sp = document.createElement('span');
+        sp.textContent = tok.word;
+        sp.dataset.charIdx = String(charOffset + tok.charIdx);
+        sp.style.cssText = 'border-radius:3px;padding:0 1px;transition:background 0.06s,color 0.06s;display:inline;';
+        spans.push(sp);
+      });
+      charOffset += line.length;
+    });
   } else {
     // Latin/other: split by word boundaries, keep spaces as text nodes
     const parts=text.split(/([ \t\n]+)/);
@@ -1177,9 +1221,9 @@ function clearHighlightTimer(){
 function estimateMsPerUnit(text, rate){
   const isCJKText=isCJK(text);
   const r=rate||0.92;
-  // CJK (ja/zh): ~3 chars/sec at rate=1.0; Latin: ~2.5 words/sec
-  // Adjust more aggressively for ja since onboundary never fires
-  const baseMs=isCJKText ? 300 : 280;
+  // CJK word-level (jieba): avg word ~2.5 chars, ~2.6 words/sec at rate=1
+  // Latin word-level: ~2.5 words/sec at rate=1
+  const baseMs=isCJKText ? 380 : 280;
   return Math.round(baseMs / r);
 }
 
