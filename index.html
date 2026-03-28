@@ -583,22 +583,26 @@
     el.textContent = now.toLocaleDateString('zh-TW', opts);
   })();
 
-  /*
-  ── Optional: dynamically load Cloud Map hero image ──
-  Swap the URL below with your actual Cloud Map image endpoint
-  once the feature is built.
-
-  fetch('https://openai-tw-forum.googselect.workers.dev/api/cloud-map-image')
-    .then(r => r.json())
-    .then(d => {
-      if (d.url) {
-        const img = document.getElementById('hero-img');
-        img.src = d.url;
-        img.style.opacity = 1;
-      }
+  // ── Load latest Cloud Map Summary hero image from Admin Summary tab ──
+  (function loadHeroImage() {
+    const img = document.getElementById('hero-img');
+    if (!img) return;
+    // Fetch latest release-notes with version=summary that have an image_url
+    fetch('https://openai-tw-forum.googselect.workers.dev/api/ibelieve/release-notes?limit=20', {
+      headers: { 'Origin': 'https://openai-tw.com' }
     })
-    .catch(() => {}); // graceful fallback to gradient
-  */
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data) return;
+        const notes = data.notes || [];
+        const latest = notes.find(n => n.version === 'summary' && n.image_url);
+        if (latest && latest.image_url) {
+          img.onload = () => { img.style.opacity = 1; };
+          img.src = latest.image_url;
+        }
+      })
+      .catch(() => {}); // graceful fallback to gradient
+  })();
 </script>
 
 </body>
