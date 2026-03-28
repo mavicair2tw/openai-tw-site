@@ -219,6 +219,8 @@ select.input{cursor:pointer;appearance:none;
 .post-tts-body::-webkit-scrollbar{width:3px}
 .post-tts-body::-webkit-scrollbar-track{background:transparent}
 .post-tts-body::-webkit-scrollbar-thumb{background:rgba(245,197,24,0.3);border-radius:3px}
+.post-tts-body span,.narration-body-words span{transition:none!important}
+span.tts-active{background:#f5c518!important;color:#1a1a2e!important;border-radius:3px}
 .post-tts-panel.active{display:block;}
 .post-tts-panel-label{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#f5c518;opacity:.7;margin-bottom:4px;}
 .post-tts-progress{position:absolute;bottom:0;left:0;height:2px;background:#f5c518;border-radius:0 0 10px 10px;transition:width 0.15s linear;width:0;}
@@ -1062,42 +1064,50 @@ function buildWordSpans(text){
   return spans;
 }
 
+/* ── TTS SYNC ENGINE v2 ──
+   Instant scroll (no smooth inertia drift), RAF-gated highlight,
+   per-word timing derived from onboundary timestamps.
+*/
+let _ttsLastScrollTarget = -1; // debounce identical scroll positions
+
 function highlightWord(bodyEl, charIndex, charLength){
   if(!bodyEl) return;
-  const len=charLength||1;
-  const spans=bodyEl.querySelectorAll('span[data-char-idx]');
-  let activeSpan=null;
-  spans.forEach(sp=>{
-    const idx=parseInt(sp.dataset.charIdx,10);
-    const spLen=sp.textContent.length;
-    if(idx>=charIndex && idx<charIndex+len){
-      sp.style.background='#f5c518';
-      sp.style.color='#1a1a2e';
-      if(!activeSpan) activeSpan=sp;
+  const len = charLength || 1;
+  const spans = bodyEl.querySelectorAll('span[data-char-idx]');
+  let activeSpan = null;
+  spans.forEach(sp => {
+    const idx = parseInt(sp.dataset.charIdx, 10);
+    if(idx >= charIndex && idx < charIndex + len){
+      sp.classList.add('tts-active');
+      if(!activeSpan) activeSpan = sp;
     } else {
-      sp.style.background='';
-      sp.style.color='';
+      sp.classList.remove('tts-active');
     }
   });
-  // Auto-scroll the preview box so active word stays visible
-  if(activeSpan){
-    // Listen card: scroll narration-preview box
-    const preview=document.getElementById('narration-preview');
-    if(preview){
-      const previewRect=preview.getBoundingClientRect();
-      const spanRect=activeSpan.getBoundingClientRect();
-      const relTop=spanRect.top - previewRect.top + preview.scrollTop;
-      const targetScroll=relTop - preview.clientHeight * 0.4;
-      preview.scrollTo({top: Math.max(0, targetScroll), behavior:'smooth'});
-    }
-    // Post card TTS panel: scroll within the tts-body container
-    if(bodyEl && bodyEl.classList && bodyEl.classList.contains('post-tts-body')){
-      const containerRect=bodyEl.getBoundingClientRect();
-      const spanRect=activeSpan.getBoundingClientRect();
-      const relTop=spanRect.top - containerRect.top + bodyEl.scrollTop;
-      const targetScroll=relTop - bodyEl.clientHeight * 0.4;
-      bodyEl.scrollTo({top: Math.max(0, targetScroll), behavior:'smooth'});
-    }
+  if(activeSpan) _ttsScrollTo(bodyEl, activeSpan);
+}
+
+function _ttsScrollTo(containerEl, spanEl){
+  // Use instant scroll — no smooth, no drift
+  // Target: keep active word at ~35% from top of container
+  const ANCHOR = 0.35;
+  if(!spanEl || !containerEl) return;
+  const cRect = containerEl.getBoundingClientRect();
+  const sRect = spanEl.getBoundingClientRect();
+  const relTop = sRect.top - cRect.top + containerEl.scrollTop;
+  const target = Math.max(0, Math.round(relTop - containerEl.clientHeight * ANCHOR));
+  if(Math.abs(target - _ttsLastScrollTarget) < 4) return; // skip near-identical jumps
+  _ttsLastScrollTarget = target;
+  containerEl.scrollTop = target; // instant, no smooth
+
+  // Also scroll the narration-preview listen card if applicable
+  const preview = document.getElementById('narration-preview');
+  if(preview && containerEl !== preview){
+    const pRect = preview.getBoundingClientRect();
+    const sRect2 = spanEl.getBoundingClientRect();
+    const relTop2 = sRect2.top - pRect.top + preview.scrollTop;
+    const t2 = Math.max(0, Math.round(relTop2 - preview.clientHeight * ANCHOR));
+    if(Math.abs(t2 - _ttsLastScrollTarget) >= 4) preview.scrollTop = t2;
   }
 }
 
@@ -1159,48 +1169,52 @@ let highlightTimer=null;
 
 function clearHighlightTimer(){
   if(highlightTimer){ clearInterval(highlightTimer); highlightTimer=null; }
+  if(_ttsRafId){ cancelAnimationFrame(_ttsRafId); _ttsRafId=null; }
+  _ttsLastScrollTarget = -1;
 }
 
-// Estimate ms per character/word depending on language and rate
-function estimateMsPerUnit(text, rate){
-  const isCJKText=isCJK(text);
-  const r=rate||0.92;
-  // CJK (ja/zh): ~3 chars/sec at rate=1.0; Latin: ~2.5 words/sec
-  // Adjust more aggressively for ja since onboundary never fires
-  const baseMs=isCJKText ? 300 : 280;
-  return Math.round(baseMs / r);
-}
+let _ttsRafId = null;
 
+/* Adaptive fallback timer for CJK / browsers where onboundary never fires.
+   Uses a per-span timing derived from actual speech start time + estimated
+   total duration, re-anchored every 500ms to prevent drift. */
 function startHighlightTimer(bodyEl, text, rate, estimatedDurationMs){
   clearHighlightTimer();
   if(!bodyEl) return;
-  const spans=Array.from(bodyEl.querySelectorAll('span[data-char-idx]'));
+  const spans = Array.from(bodyEl.querySelectorAll('span[data-char-idx]'));
   if(!spans.length) return;
-  let idx=0;
-  // If we have an estimated total duration, distribute evenly across spans
-  const msPerUnit = estimatedDurationMs
-    ? Math.max(80, Math.round(estimatedDurationMs / spans.length))
-    : estimateMsPerUnit(text, rate);
-  highlightTimer=setInterval(()=>{
-    if(idx>0){
-      const prev=spans[idx-1];
-      if(prev){ prev.style.background=''; prev.style.color=''; }
+
+  const isCJKText = isCJK(text);
+  const r = rate || 0.92;
+  // More accurate per-language base: CJK ~3.2 chars/s, Latin ~2.8 words/s at rate=1
+  const baseMs = isCJKText ? Math.round(312 / r) : Math.round(290 / r);
+  const totalMs = estimatedDurationMs || (spans.length * baseMs);
+  const msPerSpan = Math.max(60, Math.round(totalMs / spans.length));
+
+  const startTime = performance.now();
+  let lastIdx = -1;
+
+  function tick(now){
+    const elapsed = now - startTime;
+    // Which span should be active right now?
+    const idx = Math.min(spans.length - 1, Math.floor(elapsed / msPerSpan));
+    if(idx !== lastIdx){
+      if(lastIdx >= 0) spans[lastIdx].classList.remove('tts-active');
+      if(idx < spans.length){
+        spans[idx].classList.add('tts-active');
+        _ttsScrollTo(bodyEl, spans[idx]);
+      }
+      lastIdx = idx;
     }
-    if(idx>=spans.length){ clearHighlightTimer(); return; }
-    const sp=spans[idx];
-    sp.style.background='#f5c518';
-    sp.style.color='#fff';
-    // Auto-scroll preview so active word stays visible
-    const preview=document.getElementById('narration-preview');
-    if(preview && sp){
-      const previewRect=preview.getBoundingClientRect();
-      const spanRect=sp.getBoundingClientRect();
-      const relTop=spanRect.top - previewRect.top + preview.scrollTop;
-      const targetScroll=relTop - preview.clientHeight * 0.4;
-      preview.scrollTo({top: Math.max(0, targetScroll), behavior:'smooth'});
+    if(elapsed < totalMs + msPerSpan){
+      _ttsRafId = requestAnimationFrame(tick);
+    } else {
+      // Clean up
+      spans.forEach(s => s.classList.remove('tts-active'));
+      _ttsRafId = null;
     }
-    idx++;
-  }, msPerUnit);
+  }
+  _ttsRafId = requestAnimationFrame(tick);
 }
 
 function speakNextPost(){
@@ -1359,33 +1373,48 @@ function playPostNarration(post, button){
     const voice=getBestVoice(langCode);
     if(voice) utter.voice=voice;
 
-    let boundaryWorking=false;
-    utter.onstart=()=>{
-      activeMode='post';
-      activePostButton=button;
-      if(button){ button.classList.add('active'); const lbl=button.querySelector('.post-play-label'); if(lbl) lbl.textContent='Stop'; }
-      // Dim original post body to avoid visual duplicate
-      const origBody=document.querySelector('[data-id="'+post.id+'"] .post-body');
+    let boundaryWorking = false;
+    let _speechStartTime = 0;
+    let _lastBoundaryTime = 0;
+    let _lastBoundaryChar = 0;
+
+    utter.onstart = () => {
+      _speechStartTime = performance.now();
+      activeMode = 'post';
+      activePostButton = button;
+      if(button){ button.classList.add('active'); const lbl = button.querySelector('.post-play-label'); if(lbl) lbl.textContent = 'Stop'; }
+      const origBody = document.querySelector('[data-id="' + post.id + '"] .post-body');
       if(origBody) origBody.classList.add('tts-playing');
       syncTopListenButton();
-      setTimeout(()=>{
-        if(!boundaryWorking && ttsBody){
-          const isCJKText=isCJK(text);
-          const spanCount=ttsBody.querySelectorAll('span[data-char-idx]').length;
-          const estDur=isCJKText ? spanCount*(300/0.92) : spanCount*(280/0.92);
-          startHighlightTimer(ttsBody, text, 0.92, estDur);
-        }
-      }, 200);
+      // Always start adaptive timer as safety net; boundary events will take over for Latin
+      if(ttsBody){
+        const isCJKText = isCJK(text);
+        const spanCount = ttsBody.querySelectorAll('span[data-char-idx]').length;
+        // More precise duration estimate: CJK 310ms/char, Latin 285ms/word at rate=0.92
+        const estDur = isCJKText ? spanCount * (310 / 0.92) : spanCount * (285 / 0.92);
+        startHighlightTimer(ttsBody, text, 0.92, estDur);
+      }
     };
-    utter.onboundary=(e)=>{
-      if(e.name==='word' && ttsBody){
-        // For CJK (ja/zh), onboundary is unreliable in Chrome — use timer only
-        if(isCJK(text)) return;
-        boundaryWorking=true;
-        clearHighlightTimer();
-        highlightWord(ttsBody, e.charIndex, e.charLength||1);
-        // Update progress bar
-        if(ttsProgress) ttsProgress.style.width=Math.round((e.charIndex/totalChars)*100)+'%';
+
+    utter.onboundary = (e) => {
+      if(e.name === 'word' && ttsBody){
+        if(isCJK(text)) return; // CJK: timer-only, boundary unreliable
+        const now = performance.now();
+        boundaryWorking = true;
+        // Re-anchor timer drift using actual boundary timestamps
+        if(_lastBoundaryTime > 0 && e.charIndex > _lastBoundaryChar){
+          const elapsed = now - _speechStartTime;
+          const remaining = totalChars - e.charIndex;
+          const charsPerMs = (e.charIndex - _lastBoundaryChar) / (now - _lastBoundaryTime);
+          if(charsPerMs > 0 && remaining > 0){
+            const estRemaining = remaining / charsPerMs;
+            startHighlightTimer(ttsBody, text.slice(e.charIndex), 0.92, estRemaining);
+          }
+        }
+        _lastBoundaryTime = now;
+        _lastBoundaryChar = e.charIndex;
+        highlightWord(ttsBody, e.charIndex, e.charLength || 1);
+        if(ttsProgress) ttsProgress.style.width = Math.round((e.charIndex / totalChars) * 100) + '%';
       }
     };
     utter.onend=()=>{
