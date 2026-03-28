@@ -858,6 +858,7 @@ let activeMode='';
 let spotifyPlaying=false;  // tracks if Spotify is likely playing
 
 function stopSpeech(hidePreview=false){
+  if(typeof speakCJKWordByWord !== 'undefined' && speakCJKWordByWord._stop) speakCJKWordByWord._stop();
   if('speechSynthesis' in window){
     window.speechSynthesis.cancel();
   }
@@ -1203,6 +1204,46 @@ function startHighlightTimer(bodyEl, text, rate, estimatedDurationMs){
   }, msPerUnit);
 }
 
+// ── CJK word-by-word TTS: chain one utterance per chunk, highlight on each start ──
+// Only free method that guarantees highlight === voice for CJK (no boundary events in Chrome)
+function speakCJKWordByWord(spans, text, langCode, rate, onAllDone, onEachStart){
+  if(!spans.length){ if(onAllDone) onAllDone(); return; }
+  // Split into 2-3 char chunks; break on CJK punctuation
+  const PUNCT = /[，。！？、；：「」『』【】〔〕・…—\n]/;
+  const chunks = [];
+  let buf = '', bufStart = 0;
+  for(let i = 0; i < text.length; i++){
+    buf += text[i];
+    const isPunct = PUNCT.test(text[i]);
+    const isLast = i === text.length - 1;
+    if(isPunct || buf.length >= 3 || isLast){
+      chunks.push({ text: buf, startChar: bufStart });
+      bufStart = i + 1;
+      buf = '';
+    }
+  }
+  let idx = 0, stopped = false;
+  speakCJKWordByWord._stop = () => { stopped = true; window.speechSynthesis.cancel(); };
+
+  function speakChunk(){
+    if(stopped || idx >= chunks.length){
+      if(!stopped && onAllDone) onAllDone();
+      return;
+    }
+    const chunk = chunks[idx++];
+    if(onEachStart) onEachStart(chunk.startChar, chunk.text.length);
+    const u = new SpeechSynthesisUtterance(chunk.text);
+    u.lang = langCode; u.rate = rate; u.pitch = 1;
+    const voice = getBestVoice(langCode);
+    if(voice) u.voice = voice;
+    u.onend = () => { if(!stopped) speakChunk(); };
+    u.onerror = () => { if(!stopped) speakChunk(); };
+    window.speechSynthesis.speak(u);
+  }
+  speakChunk();
+}
+speakCJKWordByWord._stop = null;
+
 function speakNextPost(){
   if(!narrationActive) return;
   if(narrationPostIndex>=narrationPosts.length){
@@ -1226,44 +1267,63 @@ function speakNextPost(){
     clearHighlightTimer();
     const voices=window.speechSynthesis.getVoices();
     const go=()=>{
-      const utter=new SpeechSynthesisUtterance(text);
       const langCode=getLangCode();
-      utter.lang=langCode;
-      utter.rate=rate;
-      utter.pitch=1;
-      const voice=getBestVoice(langCode);
-      if(voice) utter.voice=voice;
+      activeMode='topic';
+      syncTopListenButton();
+
+      if(isCJK(text)){
+        // ── CJK: word-by-word chaining — highlight 100% locked to voice ──
+        const spans = bodyEl ? Array.from(bodyEl.querySelectorAll('span[data-char-idx]')) : [];
+        speakCJKWordByWord(spans, text, langCode, rate,
+          ()=>{ // onAllDone
+            clearHighlightTimer();
+            if(bodyEl) bodyEl.querySelectorAll('span[data-char-idx]').forEach(sp=>{sp.style.background='';sp.style.color='';});
+            if(narrationActive) speakNextPost(); else syncTopListenButton();
+          },
+          (charIndex, chunkLen)=>{ // onEachStart — highlight matching spans
+            if(!bodyEl) return;
+            spans.forEach(sp=>{
+              const ci=parseInt(sp.dataset.charIdx,10);
+              const active = ci>=charIndex && ci<charIndex+chunkLen;
+              sp.style.background = active ? '#f5c518' : '';
+              sp.style.color = active ? '#1a1a2e' : '';
+            });
+            const first = bodyEl.querySelector('[data-char-idx]');
+            const active = spans.find(sp=>sp.style.background==='rgb(245, 197, 24)');
+            if(active) {
+              const cRect=bodyEl.getBoundingClientRect();
+              const sRect=active.getBoundingClientRect();
+              const target=Math.max(0, sRect.top - cRect.top + bodyEl.scrollTop - bodyEl.clientHeight*0.35);
+              bodyEl.scrollTop=target;
+            }
+          }
+        );
+        activeUtterance={cancel:()=>{ if(speakCJKWordByWord._stop) speakCJKWordByWord._stop(); }};
+        return;
+      }
+
+      // ── Latin: single utterance, boundary-driven highlight ──
+      const utter=new SpeechSynthesisUtterance(text);
+      utter.lang=langCode; utter.rate=rate; utter.pitch=1;
+      const voice=getBestVoice(langCode); if(voice) utter.voice=voice;
       let boundaryWorking=false;
       utter.onstart=()=>{
-        activeMode='topic';
-        syncTopListenButton();
-        // Start timer-based highlight as fallback
-        // Will be cancelled if onboundary fires
         setTimeout(()=>{
           if(!boundaryWorking){
-            // Estimate duration: CJK ~3 chars/sec, Latin ~2.5 words/sec
-            const isCJKText=isCJK(text);
             const spanCount=bodyEl.querySelectorAll('span[data-char-idx]').length;
-            const estDur=isCJKText ? spanCount*(300/(rate||0.92)) : spanCount*(280/(rate||0.92));
-            startHighlightTimer(bodyEl, text, rate, estDur);
+            startHighlightTimer(bodyEl, text, rate, spanCount*(280/(rate||0.92)));
           }
-        }, 200);
+        },200);
       };
       utter.onboundary=(e)=>{
-        if(e.name==='word' && bodyEl){
-          if(isCJK(text)) return;
-          boundaryWorking=true;
-          clearHighlightTimer();
+        if(e.name==='word'&&bodyEl){
+          boundaryWorking=true; clearHighlightTimer();
           highlightWord(bodyEl, e.charIndex, e.charLength||1);
         }
       };
       utter.onend=()=>{
         clearHighlightTimer();
-        if(bodyEl){
-          bodyEl.querySelectorAll('span[data-char-idx]').forEach(sp=>{
-            sp.style.background=''; sp.style.color='';
-          });
-        }
+        if(bodyEl) bodyEl.querySelectorAll('span[data-char-idx]').forEach(sp=>{sp.style.background='';sp.style.color='';});
         if(narrationActive) speakNextPost(); else syncTopListenButton();
       };
       utter.onerror=()=>{
