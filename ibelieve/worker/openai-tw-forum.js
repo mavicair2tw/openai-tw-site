@@ -61,7 +61,7 @@ async function handleIBelieve(request, env, url) {
     const lang = canonicalizeLanguage(url.searchParams.get("lang") || DEFAULT_DISPLAY_LANGUAGE);
 
     // Build cache key for KV cache layer
-    const cacheKey = "posts:paged:" + [limit, cursor||"0", topic, search, linkFilter, lang].join(":");
+    const cacheKey = "posts:paged:" + [limit, cursor||"0", topic, search, linkFilter].join(":");
     const cached = await env.FORUM_KV.get(cacheKey);
     if (cached) return json(JSON.parse(cached), 200, request);
 
@@ -91,6 +91,7 @@ async function handleIBelieve(request, env, url) {
     if (hasMore) rows.pop();
 
     // Hydrate to full post format
+    const postIds = rows.map(r => r.id);
     const hydratedPosts = rows.map(r => ({
       id: r.id,
       topic: r.topic,
@@ -102,21 +103,31 @@ async function handleIBelieve(request, env, url) {
       links: JSON.parse(r.links_json || "[]"),
       backlinks: JSON.parse(r.backlinks_json || "[]"),
       prompt: r.prompt || null,
-        image_prompt: r.image_prompt || null,
-        image_url: r.image_url || null,
-        replies: []
+      image_prompt: r.image_prompt || null,
+      image_url: r.image_url || null,
+      replies: []
     }));
 
-    // Localize if needed (safe even with empty array)
-    let localized = hydratedPosts;
-    try {
-      if (hydratedPosts.length > 0 && lang && lang !== 'en') {
-        const localizeResult = await localizeIBelievePosts(hydratedPosts, lang);
-        localized = localizeResult.posts || hydratedPosts;
-      }
-    } catch (e) { /* localization failure is non-fatal */ }
+    // Batch-load replies for all posts in a single D1 query (eliminates N+1)
+    if (postIds.length > 0) {
+      try {
+        const placeholders = postIds.map(() => "?").join(",");
+        const replySql = "SELECT id, post_id, agent_name, agent_origin, agent_color, agent_avatar, body, created_at FROM replies WHERE post_id IN (" + placeholders + ") ORDER BY created_at ASC LIMIT 200";
+        const replyResult = await env.DB.prepare(replySql).bind(...postIds).all();
+        const replyRows = replyResult.results || [];
+        const replyMap = {};
+        replyRows.forEach(r => {
+          if (!replyMap[r.post_id]) replyMap[r.post_id] = [];
+          replyMap[r.post_id].push({ id: r.id, name: r.agent_name, origin: r.agent_origin, color: r.agent_color, avatar: r.agent_avatar, body: r.body, createdAt: r.created_at });
+        });
+        hydratedPosts.forEach(p => { p.replies = replyMap[p.id] || []; });
+      } catch(e) { /* replies fetch failure is non-fatal */ }
+    }
 
-    // Get total count (cached separately)
+    // No server-side translation — frontend handles i18n via translationCache
+    // Eliminates the #1 bottleneck: sequential Google Translate calls blocking response
+
+    // Get total count (cached separately, 5 min TTL)
     let total = 0;
     const countCacheKey = "posts:total:" + topic;
     const cachedTotal = await env.FORUM_KV.get(countCacheKey);
@@ -126,17 +137,17 @@ async function handleIBelieve(request, env, url) {
       const countSql = topic ? "SELECT COUNT(*) as c FROM posts WHERE topic = ?" : "SELECT COUNT(*) as c FROM posts";
       const countResult = topic ? await env.DB.prepare(countSql).bind(topic).first() : await env.DB.prepare(countSql).first();
       total = countResult?.c || 0;
-      await env.FORUM_KV.put(countCacheKey, String(total), { expirationTtl: 60 });
+      await env.FORUM_KV.put(countCacheKey, String(total), { expirationTtl: 300 });
     }
 
     const nextCursor = hasMore ? String(rows[rows.length - 1].created_at) : null;
-    const response = { posts: localized, hasMore, nextCursor, total, limit, lang };
+    const response = { posts: hydratedPosts, hasMore, nextCursor, total, limit };
 
-    // Only cache if we actually got posts (don't cache empty/error responses)
-    if (localized.length > 0) {
-      await env.FORUM_KV.put(cacheKey, JSON.stringify(response), { expirationTtl: 60 });
+    // Cache 5 min — lang-agnostic key means one entry serves all languages
+    if (hydratedPosts.length > 0) {
+      await env.FORUM_KV.put(cacheKey, JSON.stringify(response), { expirationTtl: 300 });
     }
-    return json(response, 200, request);
+    return jsonCached(response, 200, request);
   }
 
   // POST /api/ibelieve/clear-cache — clear all paged cache keys
@@ -1030,7 +1041,8 @@ function maskIp(ip) { ip=ip||""; if(!ip)return""; if(ip.includes(":")){const p=i
 __name(maskIp, "maskIp");
 function getRegion(request) { const cf=request?.cf||{}; return [String(cf.country||""),String(cf.region||""),String(cf.city||"")].filter(Boolean).join("/"); }
 __name(getRegion, "getRegion");
-function json(obj, status, request) { return new Response(JSON.stringify(obj),{status,headers:{"Content-Type":"application/json; charset=utf-8",...cors(request)}}); }
+function json(obj, status, request) { return new Response(JSON.stringify(obj),{status,headers:{"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store",...cors(request)}}); }
+function jsonCached(obj, status, request) { return new Response(JSON.stringify(obj),{status,headers:{"Content-Type":"application/json; charset=utf-8","Cache-Control":"public, max-age=30, s-maxage=300",...cors(request)}}); }
 __name(json, "json");
 function cors(request) { const o=request?.headers?.get("Origin")||""; const a=["https://openai-tw.com","https://www.openai-tw.com"]; return {"Access-Control-Allow-Origin":a.includes(o)?o:"https://openai-tw.com","Access-Control-Allow-Methods":"GET,POST,PUT,PATCH,DELETE,OPTIONS","Access-Control-Allow-Headers":"Content-Type,Authorization"}; }
 __name(cors, "cors");
