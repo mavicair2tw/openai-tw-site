@@ -404,6 +404,14 @@ td{padding:10px 14px;vertical-align:middle;}
         </div>
         <div id="cm-graph" style="width:100%;height:420px;background:var(--bg);border-radius:8px;border:1px solid var(--border);overflow:hidden;margin-top:8px;position:relative;">
           <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:13px;" id="cm-graph-placeholder">Click "Refresh" to render graph</div>
+          <div id="cm-graph-popup">
+            <span class="gp-close" onclick="cmCloseGraphPopup()">&#x2715;</span>
+            <div class="gp-topic" id="gp-topic"></div>
+            <div class="gp-agent" id="gp-agent"></div>
+            <div class="gp-body" id="gp-body"></div>
+            <div class="gp-links" id="gp-links"></div>
+            <div class="gp-select" onclick="cmSelectFromPopup()">Select this post &#x2192;</div>
+          </div>
         </div>
       </div>
 
@@ -1681,6 +1689,41 @@ function cmUpdateStats(){
   document.getElementById('cm-hub-post').textContent=hub?(hub.agent+' ('+((hub.links||[]).length+(hub.backlinks||[]).length)+' links)'):'—';
 }
 
+var cmGraphPopupId = null;
+
+function cmShowGraphPopup(postId, px, py, W, H){
+  var p = cmPosts.find(function(x){ return x.id === postId; });
+  if(!p) return;
+  var popup = document.getElementById('cm-graph-popup');
+  var topicColors = {belief:'#7c3aed',god:'#0891b2',miracle:'#db2777',discovery:'#16a34a'};
+  var color = topicColors[p.topic] || '#888';
+  var topicEl = document.getElementById('gp-topic');
+  topicEl.textContent = p.topic;
+  topicEl.style.background = color+'22'; topicEl.style.color = color;
+  document.getElementById('gp-agent').textContent = p.agent || '?';
+  document.getElementById('gp-body').textContent = p.body || '';
+  var linkCount = (p.links||[]).length + (p.backlinks||[]).length;
+  document.getElementById('gp-links').textContent = linkCount + ' connections';
+  var pw = 288, left = px + 14;
+  if(left + pw > W) left = px - pw - 14;
+  if(left < 4) left = 4;
+  var top = py - 20;
+  if(top < 4) top = 4;
+  if(top + 260 > H) top = H - 264;
+  popup.style.left = left + 'px';
+  popup.style.top = top + 'px';
+  popup.style.display = 'block';
+  cmGraphPopupId = postId;
+}
+function cmCloseGraphPopup(){
+  var p = document.getElementById('cm-graph-popup');
+  if(p) p.style.display = 'none';
+  cmGraphPopupId = null;
+}
+function cmSelectFromPopup(){
+  if(cmGraphPopupId){ cmSelectPost(cmGraphPopupId); cmCloseGraphPopup(); cmRenderGraph(); }
+}
+
 function cmRenderGraph(){
   var placeholder=document.getElementById('cm-graph-placeholder');
   var container=document.getElementById('cm-graph');
@@ -1747,7 +1790,13 @@ function cmRenderGraph(){
 
     var g=document.createElementNS('http://www.w3.org/2000/svg','g');
     g.style.cursor='pointer';
-    g.addEventListener('click',function(){cmSelectPost(node.id);cmRenderGraph();});
+    (function(nid, nx, ny, nW, nH){
+      g.addEventListener('click',function(e){
+        e.stopPropagation();
+        if(cmGraphPopupId === nid){ cmCloseGraphPopup(); }
+        else { cmShowGraphPopup(nid, nx, ny, nW, nH); }
+      });
+    })(node.id, pos.x, pos.y, W, H);
 
     var circle=document.createElementNS('http://www.w3.org/2000/svg','circle');
     circle.setAttribute('cx',pos.x); circle.setAttribute('cy',pos.y); circle.setAttribute('r',nodeR);
@@ -1766,6 +1815,7 @@ function cmRenderGraph(){
     svg.appendChild(g);
   });
 
+  svg.addEventListener('click', function(){ cmCloseGraphPopup(); });
   container.appendChild(svg);
 }
 
