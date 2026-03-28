@@ -1174,13 +1174,14 @@ function clearHighlightTimer(){
 }
 
 let _ttsRafId = null;
+let _ttsResync = null; // set by startHighlightTimer; call with (charIndex, totalChars) to resync
 
 /* Adaptive fallback timer for CJK / browsers where onboundary never fires.
    Uses a per-span timing derived from actual speech start time + estimated
    total duration, re-anchored every 500ms to prevent drift. */
 // ── CJK TTS calibration: learn actual ms/char from real playback ──
 const _TTS_CAL_KEY = 'ibelieve_tts_cjk_ms';
-const _TTS_CAL_DEFAULT = 340; // start conservative; gets corrected after first play
+const _TTS_CAL_DEFAULT = 280; // fast default; calibration corrects per-browser
 let _ttsCalHistory = [];      // last 5 measurements for rolling average
 
 function _ttsGetCalibratedMs(){
@@ -1215,12 +1216,20 @@ function startHighlightTimer(bodyEl, text, rate, estimatedDurationMs){
   const totalMs = estimatedDurationMs || (spans.length * baseMs);
   const msPerSpan = Math.max(50, Math.round(totalMs / spans.length));
 
-  const startTime = performance.now();
+  // virtualStart: the moment t=0 of the RAF timeline (adjustable for resync)
+  let virtualStart = performance.now();
   let lastIdx = -1;
 
+  // Exposed so CJK sentence-boundary or charIndex events can resync in real-time
+  _ttsResync = function(charIndex, charCount){
+    if(!charCount || charIndex < 0) return;
+    const ratio = charIndex / charCount;
+    // Shift virtualStart so current time maps to ratio * totalMs
+    virtualStart = performance.now() - ratio * totalMs;
+  };
+
   function tick(now){
-    const elapsed = now - startTime;
-    // Which span should be active right now?
+    const elapsed = now - virtualStart;
     const idx = Math.min(spans.length - 1, Math.floor(elapsed / msPerSpan));
     if(idx !== lastIdx){
       if(lastIdx >= 0) spans[lastIdx].classList.remove('tts-active');
@@ -1233,7 +1242,6 @@ function startHighlightTimer(bodyEl, text, rate, estimatedDurationMs){
     if(elapsed < totalMs + msPerSpan){
       _ttsRafId = requestAnimationFrame(tick);
     } else {
-      // Clean up
       spans.forEach(s => s.classList.remove('tts-active'));
       _ttsRafId = null;
     }
@@ -1278,23 +1286,41 @@ function speakNextPost(){
         _nSpeechStart=performance.now();
         activeMode='topic';
         syncTopListenButton();
-        // CJK: start timer immediately (no boundary events in Chrome)
         if(isCJK(text)){
           const spanCount=bodyEl.querySelectorAll('span[data-char-idx]').length;
-          const estDur=spanCount*(_ttsGetCalibratedMs()/rate);
+          const msPerChar=_ttsGetCalibratedMs();
+          const estDur=spanCount*(msPerChar/rate);
           startHighlightTimer(bodyEl, text, rate, estDur);
+          // Mid-speech resync: at ~40% of estimated duration, probe actual position
+          // by checking which span is nearest to where voice should be and resyncing
+          const probeAt=Math.round(estDur*0.4);
+          setTimeout(()=>{
+            if(_ttsResync && isSpeechPlaying()){
+              // We don't know exact charIndex, but we can correct using elapsed real time
+              // Use actual elapsed vs expected to compute ratio offset
+              const realElapsed=performance.now()-_nSpeechStart;
+              const expectedAt=probeAt;
+              const drift=realElapsed-expectedAt; // positive=speech faster than timer
+              if(Math.abs(drift)>200 && _ttsResync){
+                const correctedRatio=realElapsed/estDur;
+                _ttsResync(Math.round(correctedRatio*text.length), text.length);
+              }
+            }
+          }, probeAt);
         }
       };
       utter.onboundary=(e)=>{
-        if(e.name==='word' && bodyEl){
-          if(isCJK(text)) return;
-          const now=performance.now();
-          if(!boundaryWorking){
-            // First boundary = real speech t=0
-            boundaryWorking=true;
-            _nSpeechStart=now;
+        if(!bodyEl) return;
+        if(isCJK(text)){
+          // CJK: Chrome fires sentence boundaries — use charIndex to resync RAF timer
+          if((e.name==='sentence'||e.name==='word') && e.charIndex > 0){
+            if(_ttsResync) _ttsResync(e.charIndex, text.length);
           }
-          // Latin: boundary events are precise — highlight directly, no timer restart
+          return;
+        }
+        if(e.name==='word'){
+          const now=performance.now();
+          if(!boundaryWorking){ boundaryWorking=true; _nSpeechStart=now; }
           highlightWord(bodyEl, e.charIndex, e.charLength||1);
         }
       };
@@ -1416,19 +1442,36 @@ function playPostNarration(post, button){
       window._ttsPostStartTime = performance.now();
       if(ttsBody && isCJK(text)){
         const spanCount = ttsBody.querySelectorAll('span[data-char-idx]').length;
-        const estDur = spanCount * (_ttsGetCalibratedMs() / 0.92);
+        const msPerChar = _ttsGetCalibratedMs();
+        const estDur = spanCount * (msPerChar / 0.92);
         startHighlightTimer(ttsBody, text, 0.92, estDur);
+        // Mid-speech resync probe at 40% mark
+        const probeAt = Math.round(estDur * 0.4);
+        setTimeout(()=>{
+          if(_ttsResync && isSpeechPlaying() && window._ttsPostStartTime > 0){
+            const realElapsed = performance.now() - window._ttsPostStartTime;
+            const drift = realElapsed - probeAt;
+            if(Math.abs(drift) > 200){
+              const correctedRatio = realElapsed / estDur;
+              _ttsResync(Math.round(correctedRatio * text.length), text.length);
+            }
+          }
+        }, probeAt);
       }
       // Latin timer starts on first onboundary event (see below)
     };
 
     utter.onboundary = (e) => {
       if(e.name === 'word' && ttsBody){
-        if(isCJK(text)) return; // CJK: timer-only, boundary unreliable
+        if(isCJK(text)){
+          // CJK sentence boundary from Chrome — resync RAF timeline
+          if((e.name==='sentence'||e.name==='word') && e.charIndex > 0){
+            if(_ttsResync) _ttsResync(e.charIndex, totalChars);
+          }
+          return;
+        }
         const now = performance.now();
-
         boundaryWorking = true;
-        // Latin: onboundary is the highlight source — direct, no timer
         highlightWord(ttsBody, e.charIndex, e.charLength || 1);
         if(ttsProgress) ttsProgress.style.width = Math.round((e.charIndex / totalChars) * 100) + '%';
       }
