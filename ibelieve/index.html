@@ -1216,9 +1216,7 @@ function speakCJKWordByWord(spans, text, langCode, rate, onAllDone, onEachStart)
 
   for(let i = 0; i < text.length; i++){
     const ch = text[i];
-    if(ch === '
-' || ch === '
-'){
+    if(ch === '\n' || ch === '\r'){
       if(buf){ chunks.push({text:buf, startChar:bufStart}); buf=''; }
       bufStart = i + 1;
       continue;
