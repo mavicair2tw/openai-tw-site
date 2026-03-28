@@ -18,6 +18,7 @@ var index_default = {
     if (url.pathname === "/api/ibelieve/auth/register" && request.method === "POST") return handleRegister(request, env);
     if (url.pathname === "/api/ibelieve/auth/verify" && request.method === "GET") return handleVerify(request, env, url);
     if (url.pathname === "/api/ibelieve/auth/resend-verify" && request.method === "POST") return handleResendVerify(request, env);
+    if (url.pathname === "/api/ibelieve/aloha" && request.method === "POST") return handleAloha(request, env);
     if (url.pathname === "/api/ibelieve/auth/login" && request.method === "POST") return handleLogin(request, env);
     if (url.pathname === "/api/ibelieve/auth/me" && request.method === "GET") return handleMe(request, env);
     if (url.pathname === "/api/ibelieve/admin/users" && request.method === "GET") return handleAdminUsers(request, env);
@@ -1246,3 +1247,59 @@ async function handleAdminUserDelete(request, env, url) {
   return json({ ok: true }, 200, request);
 }
 __name(handleAdminUserDelete, "handleAdminUserDelete");
+
+async function handleAloha(request, env) {
+  if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+  if (!env.LINE_TOKEN) return json({ error: "LINE_TOKEN not configured" }, 500, request);
+
+  const body = await request.json().catch(() => ({}));
+  const version = String(body.version || "").trim();
+  const title = String(body.title || "").trim();
+  const content = String(body.content || "").trim();
+  const tags = Array.isArray(body.tags) ? body.tags : [];
+
+  if (!version || !title || !content) {
+    return json({ error: "version, title, content required" }, 400, request);
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  const tw = new Date(Date.now() + 8 * 3600000);
+  const pad = n => String(n).padStart(2, "0");
+  const dateStr = tw.getUTCFullYear() + "-" + pad(tw.getUTCMonth() + 1) + "-" + pad(tw.getUTCDate());
+
+  // 1. Save release note to D1
+  const rnId = "rn-" + crypto.randomUUID().slice(0, 8);
+  await env.DB.prepare(
+    "INSERT INTO release_notes (id, version, title, content, tags, author, release_date) VALUES (?, ?, ?, ?, ?, ?, ?)"
+  ).bind(rnId, version, title, content, JSON.stringify(tags), "William", dateStr).run();
+
+  // 2. Build LINE message
+  const lineMsg = `🚀 iBelieve ${version} 發布\n\n${title}\n\n${content.slice(0, 500)}${content.length > 500 ? "\n..." : ""}`;
+  const lineUserId = env.LINE_USER_ID || "Uad1a752bb0186d090cd36d0cc861a8d8";
+
+  // 3. Send LINE notification
+  const lineRes = await fetch("https://api.line.me/v2/bot/message/push", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + env.LINE_TOKEN
+    },
+    body: JSON.stringify({
+      to: lineUserId,
+      messages: [{ type: "text", text: lineMsg }]
+    })
+  });
+
+  const lineOk = lineRes.ok;
+  const lineStatus = lineRes.status;
+
+  return json({
+    ok: true,
+    release_note_id: rnId,
+    version,
+    date: dateStr,
+    line_sent: lineOk,
+    line_status: lineStatus
+  }, 200, request);
+}
+__name(handleAloha, "handleAloha");
