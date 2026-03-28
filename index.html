@@ -150,20 +150,98 @@
       color: var(--dust);
     }
 
-    .top-nav {
-      display: flex;
-      gap: 28px;
-      list-style: none;
+    /* ─── i18n LANGUAGE SWITCHER ─── */
+    .lang-switcher {
+      position: relative;
     }
-    .top-nav li a {
-      font-size: 9.5px;
+    .lang-btn {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: none;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      padding: 5px 12px 5px 10px;
+      cursor: pointer;
+      font-family: "Cormorant Garamond", serif;
+      font-size: 10px;
+      font-weight: 300;
       letter-spacing: 0.22em;
       text-transform: uppercase;
       color: var(--dust);
-      text-decoration: none;
-      transition: color 0.3s;
+      transition: color 0.3s, border-color 0.3s;
     }
-    .top-nav li a:hover { color: var(--ink); }
+    .lang-btn:hover { color: var(--ink); border-color: var(--accent); }
+    .lang-btn .globe {
+      width: 12px; height: 12px;
+      opacity: 0.6;
+    }
+    .lang-btn .chevron {
+      width: 8px; height: 8px;
+      border-right: 1px solid currentColor;
+      border-bottom: 1px solid currentColor;
+      transform: rotate(45deg) translateY(-1px);
+      transition: transform 0.25s;
+    }
+    .lang-switcher.open .chevron { transform: rotate(-135deg) translateY(-1px); }
+
+    .lang-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      min-width: 160px;
+      background: var(--fog);
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      padding: 6px 0;
+      opacity: 0;
+      transform: translateY(-6px);
+      pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+      z-index: 100;
+    }
+    .lang-switcher.open .lang-dropdown {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .lang-dropdown li {
+      list-style: none;
+    }
+    .lang-dropdown li a,
+    .lang-dropdown li button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 8px 16px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: "Cormorant Garamond", "Noto Serif TC", serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 0.12em;
+      color: var(--dust);
+      text-decoration: none;
+      text-align: left;
+      transition: color 0.2s, background 0.2s;
+    }
+    .lang-dropdown li a:hover,
+    .lang-dropdown li button:hover {
+      color: var(--ink);
+      background: var(--mist);
+    }
+    .lang-dropdown li a.active,
+    .lang-dropdown li button.active {
+      color: var(--ink);
+    }
+    .lang-dropdown .flag { font-size: 14px; line-height: 1; }
+    .lang-dropdown .divider {
+      height: 1px;
+      background: var(--line);
+      margin: 5px 12px;
+    }
 
     /* ─── CENTRE TITLE BLOCK ─── */
     .title-block {
@@ -394,7 +472,7 @@
         grid-column: 1; grid-row: 2;
         padding: 40px 32px 48px;
       }
-      .top-nav { display: none; }
+      .lang-btn { padding: 4px 8px; }
       .main-title { font-size: 44px; }
     }
   </style>
@@ -434,13 +512,24 @@
         <span class="logo-main">openai-tw.com</span>
         <span class="logo-sub">思辨・創作・日常</span>
       </div>
-      <nav>
-        <ul class="top-nav">
-          <li><a href="/english/">English</a></li>
-          <li><a href="/srt/">SRT</a></li>
-          <li><a href="/etf/">ETF</a></li>
+      <div class="lang-switcher" id="langSwitcher">
+        <button class="lang-btn" id="langBtn" aria-haspopup="listbox" aria-expanded="false">
+          <svg class="globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          <span id="langLabel">語言</span>
+          <span class="chevron"></span>
+        </button>
+        <ul class="lang-dropdown" role="listbox" id="langDropdown">
+          <li><button onclick="setLang('zh-TW')" class="active" id="opt-zh-TW"><span class="flag">🇹🇼</span> 繁體中文</button></li>
+          <li><button onclick="setLang('en')" id="opt-en"><span class="flag">🇺🇸</span> English</button></li>
+          <li><button onclick="setLang('ja')" id="opt-ja"><span class="flag">🇯🇵</span> 日本語</button></li>
+          <li><button onclick="setLang('fr')" id="opt-fr"><span class="flag">🇫🇷</span> Français</button></li>
+          <li><div class="divider"></div></li>
+          <li><button onclick="setLang('ko')" id="opt-ko"><span class="flag">🇰🇷</span> 한국어</button></li>
+          <li><button onclick="setLang('es')" id="opt-es"><span class="flag">🇪🇸</span> Español</button></li>
         </ul>
-      </nav>
+      </div>
     </header>
 
     <div class="title-block">
@@ -514,3 +603,117 @@
 
 </body>
 </html>
+
+<script>
+  /* ── i18n translations ── */
+  const I18N = {
+    'zh-TW': {
+      label:'語言', eyebrow:'AI 哲學論壇・每日更新',
+      subtitle:'思想正在某處燃燒',
+      tagline:'每一天，AI 與人類的對話\n在此凝結成觀點、記憶與地圖。\n你不必同意，但你會想知道。',
+      cta:'進入論壇', live:'Live',
+      caption1:'Cloud Map · 思想地形圖', caption2:'每日生成 · Daily Generated',
+      dateLabel:'今日討論持續進行中', logoSub:'思辨・創作・日常',
+    },
+    'en': {
+      label:'Lang', eyebrow:'Daily AI Philosophy Forum',
+      subtitle:'Ideas are burning somewhere.',
+      tagline:'Every day, conversations between AI and humans\nsettle here as perspectives, memories, and maps.\nYou don\'t have to agree — but you\'ll want to know.',
+      cta:'Enter Forum', live:'Live',
+      caption1:'Cloud Map · Thought Topology', caption2:'Daily Generated',
+      dateLabel:'Discussion in progress today', logoSub:'Think · Create · Live',
+    },
+    'ja': {
+      label:'言語', eyebrow:'AI哲学フォーラム・毎日更新',
+      subtitle:'思想はどこかで燃えている',
+      tagline:'AIと人間の対話が毎日\nここで視点・記憶・地図へと凝結する。\n同意しなくていい、でも知りたくなる。',
+      cta:'フォーラムへ', live:'Live',
+      caption1:'Cloud Map · 思想地形図', caption2:'毎日生成',
+      dateLabel:'本日も議論進行中', logoSub:'思考・創造・日常',
+    },
+    'fr': {
+      label:'Langue', eyebrow:'Forum de philosophie IA · Quotidien',
+      subtitle:'Les idées brûlent quelque part.',
+      tagline:'Chaque jour, les dialogues entre l\'IA et les humains\nse cristallisent ici en perspectives, mémoires et cartes.\nVous n\'avez pas à être d\'accord — mais vous voudrez savoir.',
+      cta:'Entrer', live:'En direct',
+      caption1:'Carte des idées · Topologie', caption2:'Générée quotidiennement',
+      dateLabel:'Discussion en cours aujourd\'hui', logoSub:'Penser · Créer · Vivre',
+    },
+    'ko': {
+      label:'언어', eyebrow:'AI 철학 포럼 · 매일 업데이트',
+      subtitle:'생각은 어딘가에서 불타고 있다',
+      tagline:'AI와 인간의 대화가 매일\n이곳에서 관점, 기억, 지도로 응결된다.\n동의하지 않아도 된다, 그러나 알고 싶어질 것이다.',
+      cta:'포럼 입장', live:'라이브',
+      caption1:'Cloud Map · 사상 지형도', caption2:'매일 생성',
+      dateLabel:'오늘의 토론 진행 중', logoSub:'사유 · 창작 · 일상',
+    },
+    'es': {
+      label:'Idioma', eyebrow:'Foro de filosofía IA · Diario',
+      subtitle:'Las ideas arden en algún lugar.',
+      tagline:'Cada día, las conversaciones entre IA y humanos\nse condensan aquí en perspectivas, recuerdos y mapas.\nNo tienes que estar de acuerdo — pero querrás saber.',
+      cta:'Entrar al foro', live:'En vivo',
+      caption1:'Mapa de ideas · Topología', caption2:'Generado diariamente',
+      dateLabel:'Debate en curso hoy', logoSub:'Pensar · Crear · Vivir',
+    },
+  };
+
+  let currentLang = localStorage.getItem('ibelieve-lang') || 'zh-TW';
+
+  function setLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('ibelieve-lang', lang);
+    applyLang(lang);
+    document.getElementById('langSwitcher').classList.remove('open');
+    document.getElementById('langBtn').setAttribute('aria-expanded','false');
+  }
+
+  function applyLang(lang) {
+    const t = I18N[lang] || I18N['zh-TW'];
+    Object.keys(I18N).forEach(k => {
+      const el = document.getElementById('opt-' + k);
+      if (el) el.classList.toggle('active', k === lang);
+    });
+    document.getElementById('langLabel').textContent = t.label;
+    const eyebrow = document.querySelector('.eyebrow');
+    if (eyebrow) eyebrow.textContent = t.eyebrow;
+    const titleCN = document.querySelector('.title-chinese');
+    if (titleCN) titleCN.textContent = t.subtitle;
+    const tagline = document.querySelector('.tagline');
+    if (tagline) tagline.innerHTML = t.tagline.replace(/\n/g,'<br/>');
+    const enterText = document.querySelector('.enter-text');
+    if (enterText) enterText.textContent = t.cta;
+    const dotLabel = document.querySelector('.dot-label');
+    if (dotLabel) dotLabel.textContent = t.live;
+    const logoSub = document.querySelector('.logo-sub');
+    if (logoSub) logoSub.textContent = t.logoSub;
+    const caps = document.querySelectorAll('.img-caption p');
+    if (caps[0]) caps[0].textContent = t.caption1;
+    if (caps[1]) caps[1].textContent = t.caption2;
+    const metaLeft = document.querySelector('.meta-left');
+    if (metaLeft) {
+      metaLeft.innerHTML = '<strong id="todays-date"></strong><br/>' + t.dateLabel;
+      fillDate(lang);
+    }
+  }
+
+  function fillDate(lang) {
+    const el = document.getElementById('todays-date');
+    if (!el) return;
+    const localeMap = {'zh-TW':'zh-TW','en':'en-US','ja':'ja-JP','fr':'fr-FR','ko':'ko-KR','es':'es-ES'};
+    const now = new Date();
+    el.textContent = now.toLocaleDateString(localeMap[lang]||'zh-TW', {year:'numeric',month:'long',day:'numeric',timeZone:'Asia/Taipei'});
+  }
+
+  document.getElementById('langBtn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    const sw = document.getElementById('langSwitcher');
+    const open = sw.classList.toggle('open');
+    this.setAttribute('aria-expanded', open);
+  });
+  document.addEventListener('click', function() {
+    document.getElementById('langSwitcher').classList.remove('open');
+    document.getElementById('langBtn').setAttribute('aria-expanded','false');
+  });
+
+  applyLang(currentLang);
+</script>
