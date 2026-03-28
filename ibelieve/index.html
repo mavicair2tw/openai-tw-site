@@ -1178,6 +1178,29 @@ let _ttsRafId = null;
 /* Adaptive fallback timer for CJK / browsers where onboundary never fires.
    Uses a per-span timing derived from actual speech start time + estimated
    total duration, re-anchored every 500ms to prevent drift. */
+// ── CJK TTS calibration: learn actual ms/char from real playback ──
+const _TTS_CAL_KEY = 'ibelieve_tts_cjk_ms';
+const _TTS_CAL_DEFAULT = 340; // start conservative; gets corrected after first play
+let _ttsCalHistory = [];      // last 5 measurements for rolling average
+
+function _ttsGetCalibratedMs(){
+  try {
+    const stored = JSON.parse(localStorage.getItem(_TTS_CAL_KEY) || 'null');
+    if(stored && stored.ms > 80 && stored.ms < 800) return stored.ms;
+  } catch(e){}
+  return _TTS_CAL_DEFAULT;
+}
+
+function _ttsRecordCalibration(actualMs, charCount){
+  if(!charCount || actualMs < 500) return; // ignore suspiciously short utterances
+  const msPerChar = actualMs / charCount;
+  if(msPerChar < 80 || msPerChar > 800) return; // sanity bounds
+  _ttsCalHistory.push(msPerChar);
+  if(_ttsCalHistory.length > 5) _ttsCalHistory.shift();
+  const avg = Math.round(_ttsCalHistory.reduce((a,b)=>a+b,0) / _ttsCalHistory.length);
+  try { localStorage.setItem(_TTS_CAL_KEY, JSON.stringify({ms: avg, n: _ttsCalHistory.length})); } catch(e){}
+}
+
 function startHighlightTimer(bodyEl, text, rate, estimatedDurationMs){
   clearHighlightTimer();
   if(!bodyEl) return;
@@ -1186,11 +1209,11 @@ function startHighlightTimer(bodyEl, text, rate, estimatedDurationMs){
 
   const isCJKText = isCJK(text);
   const r = rate || 0.92;
-  // Real-world browser TTS: CJK ~2.6 chars/s, Latin ~2.2 words/s at rate=1.0
-  // These are intentionally conservative (slower) so highlight trails voice, not leads
-  const baseMs = isCJKText ? Math.round(550 / r) : Math.round(400 / r);
+  // Use calibrated ms/char from previous real playback; fallback to 340ms (conservative start)
+  const calibrated = _ttsGetCalibratedMs();
+  const baseMs = isCJKText ? Math.round(calibrated / r) : Math.round(400 / r);
   const totalMs = estimatedDurationMs || (spans.length * baseMs);
-  const msPerSpan = Math.max(80, Math.round(totalMs / spans.length));
+  const msPerSpan = Math.max(50, Math.round(totalMs / spans.length));
 
   const startTime = performance.now();
   let lastIdx = -1;
@@ -1255,11 +1278,10 @@ function speakNextPost(){
         _nSpeechStart=performance.now();
         activeMode='topic';
         syncTopListenButton();
-        // CJK: start timer immediately (no boundary events)
-        // Latin: defer to first boundary for real t=0 calibration
+        // CJK: start timer immediately (no boundary events in Chrome)
         if(isCJK(text)){
           const spanCount=bodyEl.querySelectorAll('span[data-char-idx]').length;
-          const estDur=spanCount*(550/rate);
+          const estDur=spanCount*(_ttsGetCalibratedMs()/rate);
           startHighlightTimer(bodyEl, text, rate, estDur);
         }
       };
@@ -1277,6 +1299,10 @@ function speakNextPost(){
         }
       };
       utter.onend=()=>{
+        // Record actual duration for CJK calibration
+        if(isCJK(text) && _nSpeechStart > 0){
+          _ttsRecordCalibration(performance.now() - _nSpeechStart, text.length);
+        }
         clearHighlightTimer();
         if(bodyEl) bodyEl.querySelectorAll('span[data-char-idx]').forEach(sp=>sp.classList.remove('tts-active'));
         if(narrationActive) speakNextPost(); else syncTopListenButton();
@@ -1387,9 +1413,10 @@ function playPostNarration(post, button){
       syncTopListenButton();
       // For CJK: start timer immediately (no boundary events in Chrome)
       // For Latin: wait for first boundary to get real start time calibration
+      window._ttsPostStartTime = performance.now();
       if(ttsBody && isCJK(text)){
         const spanCount = ttsBody.querySelectorAll('span[data-char-idx]').length;
-        const estDur = spanCount * (550 / 0.92);
+        const estDur = spanCount * (_ttsGetCalibratedMs() / 0.92);
         startHighlightTimer(ttsBody, text, 0.92, estDur);
       }
       // Latin timer starts on first onboundary event (see below)
@@ -1407,8 +1434,13 @@ function playPostNarration(post, button){
       }
     };
     utter.onend=()=>{
+      // Record actual duration for CJK calibration
+      if(isCJK(text)){
+        const started = window._ttsPostStartTime || 0;
+        if(started > 0) _ttsRecordCalibration(performance.now() - started, text.length);
+      }
       clearHighlightTimer();
-      if(ttsBody) ttsBody.querySelectorAll('span[data-char-idx]').forEach(sp=>{ sp.style.background=''; sp.style.color=''; });
+      if(ttsBody) ttsBody.querySelectorAll('span[data-char-idx]').forEach(sp=>{ sp.classList.remove('tts-active'); sp.style.background=''; sp.style.color=''; });
       if(ttsProgress) ttsProgress.style.width='100%';
       // Restore original post body opacity
       const origBodyEnd=document.querySelector('[data-id="'+post.id+'"] .post-body');
