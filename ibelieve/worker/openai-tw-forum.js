@@ -593,25 +593,21 @@ async function handleIBelieve(request, env, url) {
     if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
     const q = (url.searchParams.get("q") || "").trim();
     const date = (url.searchParams.get("date") || "").trim();
-    const limit = Math.min(parseInt(url.searchParams.get("limit") || "20"), 50);
-    let sql, bindings;
-    if (q && date) {
-      sql = "SELECT id,version,title,content,tags,author,release_date,created_at,image_url FROM release_notes WHERE (title LIKE ? OR content LIKE ? OR tags LIKE ?) AND release_date LIKE ? ORDER BY release_date DESC LIMIT ?";
-      const like = "%" + q + "%"; const dateLike = date + "%";
-      bindings = [like, like, like, dateLike, limit];
-    } else if (q) {
-      sql = "SELECT id,version,title,content,tags,author,release_date,created_at,image_url FROM release_notes WHERE title LIKE ? OR content LIKE ? OR tags LIKE ? ORDER BY release_date DESC LIMIT ?";
-      const like = "%" + q + "%";
-      bindings = [like, like, like, limit];
-    } else if (date) {
-      sql = "SELECT id,version,title,content,tags,author,release_date,created_at,image_url FROM release_notes WHERE release_date LIKE ? ORDER BY release_date DESC LIMIT ?";
-      bindings = [date + "%", limit];
-    } else {
-      sql = "SELECT id,version,title,content,tags,author,release_date,created_at,image_url FROM release_notes ORDER BY created_at DESC LIMIT ?";
-      bindings = [limit];
+    const version = (url.searchParams.get("version") || "").trim();
+    const hasImage = url.searchParams.get("has_image") === "1";
+    const limit = Math.min(parseInt(url.searchParams.get("limit") || "20"), 100);
+    let conditions = [], bindings = [];
+    if (q) {
+      conditions.push("(title LIKE ? OR content LIKE ? OR tags LIKE ?)");
+      const like = "%" + q + "%"; bindings.push(like, like, like);
     }
-    const stmt = env.DB.prepare(sql);
-    const rows = await stmt.bind(...bindings).all();
+    if (date) { conditions.push("release_date LIKE ?"); bindings.push(date + "%"); }
+    if (version) { conditions.push("version = ?"); bindings.push(version); }
+    if (hasImage) { conditions.push("image_url IS NOT NULL AND image_url != ''"); }
+    const where = conditions.length ? "WHERE " + conditions.join(" AND ") : "";
+    const sql = "SELECT id,version,title,content,tags,author,release_date,created_at,image_url FROM release_notes " + where + " ORDER BY created_at DESC LIMIT ?";
+    bindings.push(limit);
+    const rows = await env.DB.prepare(sql).bind(...bindings).all();
     return json({ notes: rows.results || [], total: (rows.results || []).length }, 200, request);
   }
 

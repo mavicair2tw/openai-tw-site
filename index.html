@@ -587,21 +587,21 @@
   (function loadHeroImage() {
     const img = document.getElementById('hero-img');
     if (!img) return;
-    // Fetch latest release-notes with version=summary that have an image_url
-    fetch('https://openai-tw-forum.googselect.workers.dev/api/ibelieve/release-notes?limit=20', {
+    img.style.opacity = '0';
+
+    // Fetch latest summary with image directly using supported filters
+    fetch('https://openai-tw-forum.googselect.workers.dev/api/ibelieve/release-notes?version=summary&has_image=1&limit=1', {
       headers: { 'Origin': 'https://openai-tw.com' }
     })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        if (!data) return;
-        const notes = data.notes || [];
-        const latest = notes.find(n => n.version === 'summary' && n.image_url);
-        if (latest && latest.image_url) {
-          img.onload = () => { img.style.opacity = 1; };
-          img.src = latest.image_url;
-        }
+        const latest = (data && data.notes && data.notes[0]) || null;
+        if (!latest || !latest.image_url) return;
+        img.onload = () => { img.style.opacity = '1'; };
+        img.onerror = () => { img.style.opacity = '0'; };
+        img.src = latest.image_url;
       })
-      .catch(() => {}); // graceful fallback to gradient
+      .catch(() => {});
   })();
 </script>
 
