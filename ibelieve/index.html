@@ -1208,34 +1208,57 @@ function startHighlightTimer(bodyEl, text, rate, estimatedDurationMs){
 // Only free method that guarantees highlight === voice for CJK (no boundary events in Chrome)
 function speakCJKWordByWord(spans, text, langCode, rate, onAllDone, onEachStart){
   if(!spans.length){ if(onAllDone) onAllDone(); return; }
-  // Split into 2-3 char chunks; break on CJK punctuation
-  const PUNCT = /[，。！？、；：「」『』【】〔〕・…—\n]/;
+
+  // Smart chunking: group 2-3 CJK chars, absorb punctuation/ASCII into adjacent chunk
+  const isCJKChar = c => /[　-鿿豈-﫿︰-﹏⺀-⻿]/.test(c);
   const chunks = [];
   let buf = '', bufStart = 0;
+
   for(let i = 0; i < text.length; i++){
-    buf += text[i];
-    const isPunct = PUNCT.test(text[i]);
-    const isLast = i === text.length - 1;
-    if(isPunct || buf.length >= 3 || isLast){
-      chunks.push({ text: buf, startChar: bufStart });
+    const ch = text[i];
+    if(ch === '
+' || ch === ''){
+      if(buf){ chunks.push({text:buf, startChar:bufStart}); buf=''; }
       bufStart = i + 1;
-      buf = '';
+      continue;
+    }
+    buf += ch;
+    const isLast = i === text.length - 1;
+    const nextCh = text[i+1] || '';
+    const nextIsCJK = isCJKChar(nextCh);
+    // Break when buffer has 3+ CJK chars and next is also CJK (natural break point)
+    if(isLast || (isCJKChar(ch) && buf.length >= 3 && nextIsCJK)){
+      chunks.push({ text: buf, startChar: bufStart });
+      bufStart = i + 1; buf = '';
     }
   }
+  if(buf) chunks.push({ text: buf, startChar: bufStart });
+
+  // Post-process: merge chunks that are only punctuation or short ASCII into previous
+  const merged = [];
+  for(let i = 0; i < chunks.length; i++){
+    const c = chunks[i];
+    const onlySingleNonCJK = c.text.length <= 2 && !isCJKChar(c.text[0]);
+    if(merged.length > 0 && onlySingleNonCJK){
+      merged[merged.length-1].text += c.text; // absorb into previous
+    } else {
+      merged.push({ text: c.text, startChar: c.startChar });
+    }
+  }
+
   let idx = 0, stopped = false;
   speakCJKWordByWord._stop = () => { stopped = true; window.speechSynthesis.cancel(); };
 
   function speakChunk(){
-    if(stopped || idx >= chunks.length){
+    if(stopped || idx >= merged.length){
       if(!stopped && onAllDone) onAllDone();
       return;
     }
-    const chunk = chunks[idx++];
+    const chunk = merged[idx++];
     const u = new SpeechSynthesisUtterance(chunk.text);
     u.lang = langCode; u.rate = rate; u.pitch = 1;
     const voice = getBestVoice(langCode);
     if(voice) u.voice = voice;
-    // Highlight on onstart (fires when speech actually begins, not when queued)
     u.onstart = () => { if(!stopped && onEachStart) onEachStart(chunk.startChar, chunk.text.length); };
     u.onend = () => { if(!stopped) speakChunk(); };
     u.onerror = () => { if(!stopped) speakChunk(); };
