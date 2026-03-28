@@ -1029,38 +1029,43 @@ function stopNarrationDisplay(){
 }
 
 // Detect if text is CJK (Chinese/Japanese/Korean)
-// ── jieba-wasm: CJK word segmentation ──
-// Loaded async; falls back to char-level if not ready
-let _jiebaReady = false;
-let _jiebaModule = null;
-
-(function loadJieba(){
-  import('https://cdn.jsdelivr.net/npm/jieba-wasm@0.0.2/pkg/jieba_wasm.js')
-    .then(function(m){
-      return m.default().then(function(){ return m; });
-    })
-    .then(function(m){
-      _jiebaModule = m;
-      _jiebaReady = true;
-    })
-    .catch(function(e){ console.warn('[jieba-wasm] load failed, using char-level:', e.message); });
+// ── CJK word segmentation via Intl.Segmenter (native, no CDN needed) ──
+// Chrome 87+, Firefox 126+, Safari 16.4+ — falls back to char-level automatically
+const _intlSegmenter = (function(){
+  try {
+    if(typeof Intl !== 'undefined' && Intl.Segmenter) {
+      return {
+        zh: new Intl.Segmenter('zh', {granularity:'word'}),
+        ja: new Intl.Segmenter('ja', {granularity:'word'}),
+        ko: new Intl.Segmenter('ko', {granularity:'word'}),
+      };
+    }
+  } catch(e){}
+  return null;
 })();
 
+function _detectCJKLang(text){
+  if(/[぀-ヿ]/.test(text)) return 'ja';
+  if(/[가-힯]/.test(text)) return 'ko';
+  return 'zh';
+}
+
 function cjkTokenize(text){
-  // If jieba ready: return array of {word, charIdx}
-  // Else fallback: each character is its own token
-  if(_jiebaReady && _jiebaModule){
+  if(_intlSegmenter){
     try{
-      const words = _jiebaModule.cut(text, true); // cut_all=true gives finer granularity
+      const lang = _detectCJKLang(text);
+      const seg = _intlSegmenter[lang];
       const tokens = [];
-      let pos = 0;
-      words.forEach(function(w){
-        const idx = text.indexOf(w, pos);
-        if(idx >= 0){ tokens.push({word: w, charIdx: idx}); pos = idx + w.length; }
-        else { tokens.push({word: w, charIdx: pos}); pos += w.length; }
-      });
-      return tokens;
-    }catch(e){ /* fallback */ }
+      let charIdx = 0;
+      for(const s of seg.segment(text)){
+        // Only create spans for non-whitespace segments
+        if(s.segment.trim()){
+          tokens.push({word: s.segment, charIdx: s.index});
+        }
+        charIdx = s.index + s.segment.length;
+      }
+      return tokens.length ? tokens : null;
+    }catch(e){}
   }
   // Char-level fallback
   return Array.from(text).map(function(ch, i){ return {word: ch, charIdx: i}; });
@@ -1083,7 +1088,7 @@ function buildWordSpans(text){
         charOffset++; // account for the \n
       }
       if(!line) return;
-      const tokens = cjkTokenize(line);
+      const tokens = cjkTokenize(line) || Array.from(line).map(function(ch,i){return {word:ch,charIdx:i};});
       tokens.forEach(function(tok){
         if(!tok.word.trim()){ charOffset += tok.word.length; return; } // skip whitespace tokens
         const sp = document.createElement('span');
