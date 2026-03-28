@@ -799,7 +799,7 @@ async function doLogout(revokeDevice) {
 }
 
 /* HELPERS */
-var JOBS = ['daily-stock-report','etf-price-sync','line-push-notification','fx-rate-fetch','tw-market-summary','us-market-summary','vocab-db-backup','user-session-cleanup','cache-warm','db-health-check'];
+var JOBS = ['line-push-notification','fx-rate-fetch','vocab-db-backup','user-session-cleanup','cache-warm','db-health-check'];
 var TRIGGERS = ['cron','manual','webhook','api'];
 var SLOG = ['success','success','success','success','failed','running','warning'];
 function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
