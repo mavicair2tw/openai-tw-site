@@ -133,6 +133,8 @@ td{padding:10px 14px;vertical-align:middle;}
 .toast.warn{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-border);}
 .toast.blue{background:var(--info-bg);color:var(--info);border:1px solid var(--info-border);}
 @media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr);}.dash-grid{grid-template-columns:1fr;}.content{padding:14px;}.nav{padding:0 14px;}}
+.cm-link-row{display:flex;align-items:flex-start;gap:8px;padding:6px 10px;cursor:pointer;border-bottom:0.5px solid var(--border);font-size:12px;}
+.cm-link-row:hover{background:var(--surface2);}
 </style>
 </head>
 <body>
@@ -1674,7 +1676,7 @@ function cmFilterLinkList(){
   container.innerHTML = posts.length ? posts.map(function(p){
     var color = topicColors[p.topic]||'#888';
     return '<label style="display:flex;align-items:flex-start;gap:8px;padding:6px 10px;cursor:pointer;border-bottom:1px solid var(--border);font-size:12px;" '
-      +'onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">'
+      +'class="cm-link-row">'
       +'<input type="checkbox" class="cm-link-cb" value="'+p.id+'" onchange="cmUpdateLinkCount()" style="margin-top:2px;flex-shrink:0;">'
       +'<div style="min-width:0;">'
       +'<span style="font-size:10px;padding:1px 5px;border-radius:8px;background:'+color+'22;color:'+color+';margin-right:5px;">'+p.topic+'</span>'
