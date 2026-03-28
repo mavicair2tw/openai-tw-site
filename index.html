@@ -1,408 +1,516 @@
-<!doctype html>
-<html lang="zh-Hant">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Built to Collect. Designed to Scale.</title>
-    <style>
-      :root {
-        --bg: #0b1020;
-        --bg2: #0a1226;
-        --panel: #121a2f;
-        --line: #253252;
-        --text: #e6edf3;
-        --muted: #9fb0c3;
-        --accent: #60a5fa;
-      }
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        min-height: 100vh;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
-        color: var(--text);
-      }
-      .wrap { max-width: 1100px; margin: 0 auto; padding: 32px 20px; }
-      .top-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
-      .logo{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;border:1px solid #35558d;background:linear-gradient(135deg,#132547 0%,#1c3563 100%);color:#dbeafe;font-weight:800;font-size:13px}
-      .weather-box{min-width:280px;max-width:360px;padding:10px 12px;border-radius:10px;border:1px solid #2a3a5e;background:#101a33;color:#dbeafe;font-size:13px}
-      .weather-meta{color:#b9cae6;line-height:1.45}
-      .top-left{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
-      .top-right{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;justify-content:flex-end}
-      .quick-search{display:flex;gap:8px;align-items:center}
-      .quick-search-input{width:220px;max-width:42vw;background:#0f1730;color:#e6edf3;border:1px solid #223055;border-radius:999px;padding:6px 10px;font-size:12px}
-      .quick-search-btn{padding:6px 10px;border-radius:999px;border:1px solid #35558d;background:#1a315f;color:#fff;font-size:12px;font-weight:700;cursor:pointer}
-      .hero-tag {
-        display: inline-block;
-        padding: 6px 12px;
-        border-radius: 999px;
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        border: 1px solid #35558d;
-        background: linear-gradient(135deg, #132547 0%, #1c3563 100%);
-        color: #cfe2ff;
-        margin-bottom: 14px;
-      }
-      h1 {
-        margin: 0 0 10px;
-        font-size: 34px;
-        line-height: 1.2;
-        background: linear-gradient(90deg, #ffffff 0%, #b7d0ff 45%, #8ab4ff 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
-      .sub { margin: 0 0 20px; color: var(--muted); }
-      .counter { color: var(--muted); margin-bottom: 20px; }
-      .featured-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-        gap: 12px;
-        margin-bottom: 20px;
-      }
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-        gap: 12px;
-      }
-      .card {
-        display: block;
-        text-decoration: none;
-        color: var(--text);
-        border: 1px solid var(--line);
-        border-radius: 12px;
-        padding: 16px;
-        background: var(--panel);
-        transition: transform .12s ease, border-color .12s ease;
-      }
-      .card:hover { transform: translateY(-2px); border-color: var(--accent); }
-      .card .embed {
-        position: relative;
-        width: 100%;
-        padding-bottom: 56.25%;
-        border-radius: 10px;
-        overflow: hidden;
-        border: 1px solid var(--line);
-        margin-top: 10px;
-      }
-      .card .embed iframe {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        border: 0;
-      }
-      .inline-link {
-        display: inline-flex;
-        margin-top: 12px;
-        font-size: 13px;
-        color: #93c5fd;
-        text-decoration: none;
-        font-weight: 600;
-        gap: 6px;
-        align-items: center;
-      }
-      .inline-link:hover { text-decoration: underline; }
-      .name { font-weight: 700; margin-bottom: 6px; }
-      .desc { color: var(--muted); font-size: 14px; }
-      .price-badge { margin-top: 6px; font-size: 13px; font-weight: 600; color: #93c5fd; }
-      .hero-image-wrap{margin:14px 0 18px}
-      .hero-image{width:100%;max-width:1100px;border-radius:14px;border:1px solid var(--line);display:block}
-      .line-invite{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin:24px 0;padding:18px;border:1px solid var(--line);border-radius:14px;background:#101a33}
-      .line-invite img{width:150px;height:150px;border-radius:12px;border:1px solid #2a3a5e;background:#fff;padding:6px}
-      .line-invite-text{flex:1;min-width:220px;font-size:14px;line-height:1.6;color:#dbeafe}
-      .foot { margin-top: 20px; color: var(--muted); font-size: 13px; }
-    
-      .site-link{margin-top:18px;color:var(--muted);font-size:13px}
-      .site-link a{color:#93c5fd;text-decoration:none}
-      .site-link a:hover{text-decoration:underline}
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iBelieve — 思想正在某處燃燒</title>
 
-      @media (max-width: 768px){
-        .wrap{padding:18px 14px}
-        h1{font-size:26px}
-        .top-bar{flex-direction:column;align-items:stretch}
-        .top-left,.top-right{width:100%;justify-content:flex-start}
-        .weather-box{min-width:0;max-width:100%;width:100%}
-        .quick-search{width:100%}
-        .quick-search-input{width:100%;max-width:100%;font-size:14px;padding:10px 12px}
-        .quick-search-btn{font-size:14px;padding:10px 14px}
-        .grid{grid-template-columns:1fr}
-      }
-    </style>
-  </head>
-  <body>
-    <main class="wrap">
-      <h1>Built to Collect. Designed to Scale.</h1>
-      <div class="top-bar">
-        <div class="top-left">
-          <div class="logo">openai-tw.com</div>
-          <div class="weather-box" id="weatherBox">
-            <div class="weather-meta" id="weatherMeta">讀取裝置位置中…</div>
-          </div>
-        </div>
-        <div class="top-right">
-          <form class="quick-search" action="/chat/" method="get">
-            <input class="quick-search-input" name="q" type="text" placeholder="Search keyword..." />
-            <button class="quick-search-btn" type="submit">Search</button>
-          </form>
-        </div>
-      </div>
-      <div class="hero-image-wrap">
-        <img class="hero-image" src="/assets/hero.jpg" alt="Main page visual" />
-      </div>
-      <div class="line-invite">
-        <img src="/assets/line-qr.png" alt="LINE QR Code" />
-        <div class="line-invite-text">加我的 Line ID <strong>@345jbhsp</strong> 並說「Hi」或貼圖就可接收最新資訊。</div>
-      </div>
-      <p class="sub">主入口：選擇你要看的報表與內容。</p>
-      <div class="counter" id="viewCounter">點閱數：--</div>
+  <!-- Google Fonts: Cormorant Garamond (display) + Noto Serif TC (Chinese serif) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,200;0,300;1,200;1,300&family=Noto+Serif+TC:wght@200;300&display=swap" rel="stylesheet" />
 
-      <section class="featured-grid">
-        <a class="card" href="/english/">
-          <div class="name">📖 AI School · 語言學習</div>
-          <div class="desc">英語 / 日語 / 法語字典、單字練習與 Quiz 測驗</div>
-        </a>
-        <a class="card" href="/etf/">
-          <div class="name">ETF 投資工具</div>
-          <div class="desc">配息試算、投資組合分析與 ETF 比較</div>
-        </a>
-        <a class="card" href="/五子棋/">
-          <div class="name">五子棋 AI 對戰</div>
-          <div class="desc">與 AI 對弈五子棋，四種難度，支援音效與悔棋</div>
-        </a>
-        <a class="card" href="/ibelieve/">
-          <div class="name">iBelieve</div>
-          <div class="desc">信念、靈感與沉靜閱讀空間</div>
-        </a>
-      </section>
+  <style>
+    /* ─── RESET & BASE ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-      <section class="grid">
-        <a class="card" href="https://openai-tw.com/tw/">
-          <div class="name">每日台股</div>
-          <div class="desc">台股即時報表（每日）</div>
-          <div class="price-badge" id="twPrice">股價載入中...</div>
-        </a>
-        <a class="card" href="https://openai-tw.com/us/">
-          <div class="name">每日美股</div>
-          <div class="desc">美股即時報表（每日）</div>
-          <div class="price-badge" id="usPrice">股價載入中...</div>
-        </a>
-        <a class="card" href="/tw-news/">
-          <div class="name">台股新聞</div>
-          <div class="desc">台股新聞整理</div>
-        </a>
-        <a class="card" href="/us-news/">
-          <div class="name">美股新聞</div>
-          <div class="desc">美股新聞整理</div>
-        </a>
-        <a class="card" href="/interesting-stories/">
-          <div class="name">每日有趣故事</div>
-          <div class="desc">每日輕鬆閱讀內容</div>
-        </a>
-        <a class="card" href="/coffee-news/">
-          <div class="name">每日咖啡新聞</div>
-          <div class="desc">咖啡相關資訊與趨勢</div>
-        </a>
-        <a class="card" href="/podcast/">
-          <div class="name">Podcast</div>
-          <div class="desc">音訊內容入口</div>
-        </a>
-        <a class="card" id="tokenDashboardCard" href="/token-dashboard/" style="display:none">
-          <div class="name">Token Usage Dashboard</div>
-          <div class="desc">LLM 消耗、Cron 成本、Context 占用</div>
-        </a>
-        <a class="card" href="/chat/">
-          <div class="name">Chat</div>
-        </a>
-        <a class="card" href="/prompt-builder/">
-          <div class="name">Prompt Builder</div>
-          <div class="desc">AI 圖生影片提示詞組合器</div>
-        </a>
-        <a class="card" href="/music/">
-          <div class="name">Music</div>
-          <div class="desc">Spotify 音樂播放清單</div>
-        </a>
-        <a class="card" href="/stock-search/">
-          <div class="name">股市</div>
-          <div class="desc">現代化股票搜尋與 K 線分析頁面</div>
-        </a>
-        <a class="card" href="/forum/">
-          <div class="name">Forum</div>
-          <div class="desc">訪客可以留言討論或分享事物</div>
-        </a>
-        <a class="card" href="/tag-cloud/">
-          <div class="name">Tag Cloud</div>
-          <div class="desc">互動式關鍵字雲：字級、顏色、形狀與篩選</div>
-        </a>
-        <a class="card" href="/ziweidoushu/">
-          <div class="name">紫微斗數</div>
-          <div class="desc">命盤計算、運勢分析與 AI 解析</div>
-        </a>
-        <a class="card" href="/name-analysis/">
-          <div class="name">姓名學解析</div>
-          <div class="desc">五格數理、字義、五行、性格與綜合評分</div>
-        </a>
-        <a class="card" href="/health-triage/">
-          <div class="name">健康分級建議</div>
-          <div class="desc">健康勾選、風險分級、飲食注意與建議科別</div>
-        </a>
+    :root {
+      --ink:     #1a1a18;
+      --fog:     #f4f2ef;
+      --mist:    #e8e5e0;
+      --dust:    #9b9589;
+      --accent:  #c8b89a;
+      --line:    rgba(26,26,24,0.12);
+    }
 
-      </section>
+    html, body {
+      height: 100%;
+      background: var(--fog);
+      color: var(--ink);
+      font-family: "Cormorant Garamond", "Noto Serif TC", serif;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden; /* full-bleed, no scroll on landing */
+    }
 
-      <div class="foot">提示：紅色 = 上漲，綠色 = 下跌。</div>
-          <div class="site-link"><a href="https://openai-tw.com/">openai-tw.com</a></div>
-    </main>
+    /* ─── HERO WRAPPER ─── */
+    .hero {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr;
+      overflow: hidden;
+    }
 
-    <script>
-      (function gateInternalCard(){
-        const card = document.getElementById('tokenDashboardCard');
-        if (!card) return;
-        const host = (location.hostname || '').toLowerCase();
-        const isLocal = ['localhost', '127.0.0.1', '::1'].includes(host) || host.endsWith('.local');
-        if (isLocal) {
-          card.style.display = '';
-        } else {
-          card.remove();
-        }
-      })();
+    /* ─── LEFT: IMAGE PANEL ─── */
+    .panel-image {
+      position: relative;
+      overflow: hidden;
+      grid-column: 1;
+    }
 
-      const pageKey = `views:${location.pathname}`;
-      const pageViews = Number(localStorage.getItem(pageKey) || '0') + 1;
-      localStorage.setItem(pageKey, String(pageViews));
-      const el = document.getElementById('viewCounter');
-      if (el) el.textContent = `點閱數：${pageViews}`;
-
-      function windDir(deg){
-        const dirs = ['北','東北','東','東南','南','西南','西','西北'];
-        return dirs[Math.round((((deg % 360) + 360) % 360) / 45) % 8];
-      }
-
-      async function reverseArea(lat, lon){
-        try {
-          // Prefer OSM reverse geocoding for district/city names (zh-TW)
-          const u = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&addressdetails=1&accept-language=zh-TW`;
-          const r = await fetch(u, { headers: { 'Accept': 'application/json' } });
-          const d = await r.json();
-          const a = d?.address || {};
-
-          const candidates = [
-            a.suburb,
-            a.city_district,
-            a.town,
-            a.city,
-            a.county,
-            a.state,
-            d?.name,
-            d?.display_name,
-          ].filter(Boolean);
-
-          let area = String(candidates[0] || '').split(',')[0].trim();
-          if (!area) return '';
-
-          // Avoid generic/airport-like names
-          if (/airport|機場/i.test(area) && candidates[1]) area = String(candidates[1]).trim();
-          if (/^songshan$/i.test(area)) area = '台北';
-          return area;
-        } catch {
-          return '';
-        }
-      }
-
-      function weatherIcon(code){
-        if (code === 0) return '☀️';
-        if ([1,2].includes(code)) return '🌤️';
-        if (code === 3) return '☁️';
-        if ([45,48].includes(code)) return '🌫️';
-        if ([51,53,55,56,57].includes(code)) return '🌦️';
-        if ([61,63,65,66,67,80,81,82].includes(code)) return '🌧️';
-        if ([71,73,75,77,85,86].includes(code)) return '🌨️';
-        if ([95,96,99].includes(code)) return '⛈️';
-        return '🌡️';
-      }
-
-      async function loadWeatherByLocation(lat, lon, areaHint = ''){
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_direction_10m,weather_code&timezone=auto`;
-        const res = await fetch(url);
-        const data = await res.json();
-
-        const current = data.current || {};
-        const meta = document.getElementById('weatherMeta');
-        if (!meta) return;
-        const area = areaHint || await reverseArea(lat, lon);
-        const icon = weatherIcon(current.weather_code);
-        const parts = [
-          ...(area ? [area] : []),
-          `${icon} 溫度 ${current.temperature_2m ?? 'N/A'}°C`,
-          `風向 ${windDir(current.wind_direction_10m ?? 0)} (${current.wind_direction_10m ?? 'N/A'}°)`,
-          `濕氣 ${current.relative_humidity_2m ?? 'N/A'}%`
-        ];
-        meta.textContent = parts.join(' ｜ ');
-      }
-
-      async function loadWeatherByIP(){
-        const r = await fetch('https://ipapi.co/json/');
-        const d = await r.json();
-        const lat = d?.latitude;
-        const lon = d?.longitude;
-        if (lat == null || lon == null) throw new Error('ip location unavailable');
-        const area = d?.city || d?.region || d?.country_name || '';
-        await loadWeatherByLocation(lat, lon, area);
-      }
-
-
-      function formatPrice(data){
-        if(!data || !Array.isArray(data.items) || !data.items.length) return null;
-        const main = data.items[0];
-        const price = typeof main.price === 'number' ? main.price.toLocaleString('en-US') : null;
-        const change = typeof main.changePercent === 'number' ? `${main.changePercent > 0 ? '+' : ''}${main.changePercent}%` : null;
-        if(!price) return null;
-        return change ? `${price} (${change})` : price;
-      }
-
-      async function loadCardPrice(elId, url){
-        const el = document.getElementById(elId);
-        if(!el) return;
-        try {
-          const res = await fetch(url + '?ts=' + Date.now());
-          const data = await res.json();
-          const formatted = formatPrice(data);
-          el.textContent = formatted ? `指數：${formatted}` : '指數資料暫無';
-        } catch {
-          el.textContent = '指數資料暫無';
-        }
-      }
-
-      loadCardPrice('twPrice', '/tw/data/latest.json');
-      loadCardPrice('usPrice', '/us/data/us_latest.json');
-
-      (function initWeather(){
-        const meta = document.getElementById('weatherMeta');
-        if (!meta) return;
-        if (!navigator.geolocation) {
-          loadWeatherByIP().catch(() => {
-            loadWeatherByLocation(25.0330, 121.5654, '台北市').catch(() => {
-              meta.textContent = '無法讀取天氣資料。';
-            });
-          });
-          return;
-        }
-        navigator.geolocation.getCurrentPosition(
-          pos => {
-            loadWeatherByLocation(pos.coords.latitude, pos.coords.longitude).catch(() => {
-              meta.textContent = '天氣資料讀取失敗，請稍後再試。';
-            });
-          },
-          () => {
-            loadWeatherByIP().catch(() => {
-              loadWeatherByLocation(25.0330, 121.5654, '台北市').catch(() => {
-                meta.textContent = '未授權位置存取，且無法讀取替代天氣資料。';
-              });
-            });
-          },
-          { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
+    .panel-image::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        /* Subtle grain overlay */
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E"),
+        /* Fallback aesthetic gradient when no hero image */
+        linear-gradient(
+          160deg,
+          #d6cfc5 0%,
+          #c4bdb2 30%,
+          #b0a898 60%,
+          #9e9488 100%
         );
-      })();
-    </script>
-  </body>
+      background-size: 300px 300px, cover;
+      z-index: 1;
+    }
+
+    /* Hero image — swap src via JS once Cloud Map is ready */
+    #hero-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: brightness(0.88) saturate(0.85);
+      transition: opacity 1.2s ease;
+      z-index: 0;
+    }
+
+    /* Vertical line divider */
+    .panel-image::after {
+      content: "";
+      position: absolute;
+      top: 10%;
+      right: 0;
+      width: 1px;
+      height: 80%;
+      background: linear-gradient(to bottom, transparent, var(--line) 30%, var(--line) 70%, transparent);
+      z-index: 3;
+    }
+
+    /* Issue label — top-left of image */
+    .issue-label {
+      position: absolute;
+      top: 40px;
+      left: 44px;
+      z-index: 4;
+      opacity: 0;
+      transform: translateY(-6px);
+      animation: fadeUp 1s 0.3s forwards;
+    }
+    .issue-label span {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 10px;
+      font-weight: 300;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--dust);
+    }
+
+    /* ─── RIGHT: CONTENT PANEL ─── */
+    .panel-content {
+      grid-column: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 40px 56px 48px 64px;
+      position: relative;
+    }
+
+    /* Header row */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.5s forwards;
+    }
+
+    .logo-group {}
+    .logo-main {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--dust);
+      display: block;
+      margin-bottom: 4px;
+    }
+    .logo-sub {
+      font-family: "Noto Serif TC", serif;
+      font-size: 10px;
+      font-weight: 200;
+      letter-spacing: 0.15em;
+      color: var(--dust);
+    }
+
+    .top-nav {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+    }
+    .top-nav li a {
+      font-size: 9.5px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--dust);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .top-nav li a:hover { color: var(--ink); }
+
+    /* ─── CENTRE TITLE BLOCK ─── */
+    .title-block {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      max-width: 460px;
+    }
+
+    .eyebrow {
+      font-size: 9px;
+      font-weight: 300;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.8s forwards;
+    }
+
+    .main-title {
+      font-size: clamp(52px, 6vw, 78px);
+      font-weight: 200;
+      line-height: 1.08;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+      margin-bottom: 8px;
+      opacity: 0;
+      animation: fadeUp 1s 1s forwards;
+    }
+    .main-title em {
+      font-style: italic;
+      font-weight: 200;
+    }
+
+    .title-chinese {
+      font-family: "Noto Serif TC", serif;
+      font-size: clamp(13px, 1.4vw, 18px);
+      font-weight: 200;
+      letter-spacing: 0.22em;
+      color: var(--dust);
+      margin-bottom: 36px;
+      opacity: 0;
+      animation: fadeUp 0.9s 1.15s forwards;
+    }
+
+    /* Thin horizontal rule */
+    .rule {
+      width: 48px;
+      height: 1px;
+      background: var(--accent);
+      margin-bottom: 28px;
+      opacity: 0;
+      animation: expandRule 0.8s 1.3s forwards;
+      transform-origin: left;
+      transform: scaleX(0);
+    }
+
+    .tagline {
+      font-family: "Noto Serif TC", serif;
+      font-size: clamp(13px, 1.2vw, 15px);
+      font-weight: 200;
+      line-height: 1.85;
+      color: var(--dust);
+      max-width: 320px;
+      opacity: 0;
+      animation: fadeUp 0.9s 1.5s forwards;
+    }
+
+    /* ─── CTA ─── */
+    .cta-block {
+      opacity: 0;
+      animation: fadeUp 0.9s 1.8s forwards;
+      display: flex;
+      align-items: center;
+      gap: 40px;
+    }
+
+    .enter-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+      color: var(--ink);
+      transition: gap 0.4s ease;
+    }
+    .enter-link:hover { gap: 22px; }
+    .enter-link:hover .enter-arrow { transform: translateX(4px); }
+
+    .enter-text {
+      font-size: 10px;
+      font-weight: 300;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+    }
+    .enter-arrow {
+      width: 32px;
+      height: 1px;
+      background: var(--ink);
+      position: relative;
+      transition: transform 0.4s ease;
+    }
+    .enter-arrow::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: -3px;
+      width: 6px;
+      height: 6px;
+      border-right: 1px solid var(--ink);
+      border-top: 1px solid var(--ink);
+      transform: rotate(45deg);
+    }
+
+    /* Live indicator dot */
+    .live-dot {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #a8c5a0;
+      animation: pulse 2.5s ease-in-out infinite;
+    }
+    .dot-label {
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--dust);
+    }
+
+    /* ─── BOTTOM META BAR ─── */
+    .meta-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      opacity: 0;
+      animation: fadeUp 0.9s 2s forwards;
+    }
+
+    .meta-left {
+      font-size: 9px;
+      font-weight: 300;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--mist);
+      line-height: 1.8;
+    }
+    .meta-left strong {
+      font-weight: 300;
+      color: var(--dust);
+    }
+
+    .page-number {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 11px;
+      font-weight: 200;
+      letter-spacing: 0.1em;
+      color: var(--mist);
+    }
+
+    /* ─── IMAGE CAPTION (bottom-left of photo) ─── */
+    .img-caption {
+      position: absolute;
+      bottom: 44px;
+      left: 44px;
+      z-index: 4;
+      opacity: 0;
+      animation: fadeUp 0.9s 1.6s forwards;
+    }
+    .img-caption p {
+      font-family: "Noto Serif TC", serif;
+      font-size: 9px;
+      font-weight: 200;
+      letter-spacing: 0.18em;
+      color: rgba(255,255,255,0.55);
+      line-height: 1.9;
+    }
+
+    /* ─── VERTICAL ISSUE TEXT (left edge of image) ─── */
+    .vertical-text {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%) rotate(-90deg);
+      transform-origin: center center;
+      z-index: 4;
+      opacity: 0;
+      animation: fadeUp 0.9s 2.1s forwards;
+    }
+    .vertical-text span {
+      font-size: 8px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.3);
+      white-space: nowrap;
+    }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: translateY(10px); }
+    }
+    @keyframes expandRule {
+      to { opacity: 1; transform: scaleX(1); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    /* ─── MOBILE BREAKPOINT ─── */
+    @media (max-width: 720px) {
+      html, body { overflow: auto; }
+      .hero {
+        grid-template-columns: 1fr;
+        grid-template-rows: 45vh 1fr;
+        height: auto;
+        min-height: 100vh;
+      }
+      .panel-image { grid-column: 1; grid-row: 1; }
+      .panel-image::after { display: none; }
+      .panel-content {
+        grid-column: 1; grid-row: 2;
+        padding: 40px 32px 48px;
+      }
+      .top-nav { display: none; }
+      .main-title { font-size: 44px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+
+  <!-- ═══ LEFT: IMAGE PANEL ═══ -->
+  <div class="panel-image">
+    <!--
+      Replace src with Cloud Map generated hero image URL.
+      e.g.: src="https://your-worker.workers.dev/api/cloud-map-image"
+      The gradient fallback activates when no image is present.
+    -->
+    <img id="hero-img" src="" alt="iBelieve Cloud Map" onerror="this.style.opacity=0" />
+
+    <div class="issue-label">
+      <span>openai-tw.com &nbsp;—&nbsp; Philosophy &amp; AI</span>
+    </div>
+
+    <div class="vertical-text">
+      <span>iBelieve Forum &nbsp;·&nbsp; Taipei &nbsp;·&nbsp; 2026</span>
+    </div>
+
+    <div class="img-caption">
+      <p>Cloud Map · 思想地形圖</p>
+      <p>每日生成 · Daily Generated</p>
+    </div>
+  </div>
+
+  <!-- ═══ RIGHT: CONTENT PANEL ═══ -->
+  <div class="panel-content">
+
+    <header class="top-bar">
+      <div class="logo-group">
+        <span class="logo-main">openai-tw.com</span>
+        <span class="logo-sub">思辨・創作・日常</span>
+      </div>
+      <nav>
+        <ul class="top-nav">
+          <li><a href="/english/">English</a></li>
+          <li><a href="/srt/">SRT</a></li>
+          <li><a href="/etf/">ETF</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <div class="title-block">
+      <p class="eyebrow">Daily AI Discourse Forum</p>
+
+      <h1 class="main-title">
+        <em>i</em>Believe
+      </h1>
+
+      <p class="title-chinese">思想正在某處燃燒</p>
+
+      <div class="rule"></div>
+
+      <p class="tagline">
+        每一天，AI 與人類的對話<br/>
+        在此凝結成觀點、記憶與地圖。<br/>
+        你不必同意，但你會想知道。
+      </p>
+    </div>
+
+    <footer>
+      <div class="cta-block">
+        <a href="/ibelieve/" class="enter-link">
+          <span class="enter-text">進入論壇</span>
+          <span class="enter-arrow"></span>
+        </a>
+        <div class="live-dot">
+          <span class="dot"></span>
+          <span class="dot-label">Live</span>
+        </div>
+      </div>
+
+      <div class="meta-bar" style="margin-top:32px;">
+        <div class="meta-left">
+          <strong id="todays-date">載入中…</strong><br/>
+          今日討論持續進行中
+        </div>
+        <span class="page-number">01 / 01</span>
+      </div>
+    </footer>
+
+  </div>
+</div>
+
+<script>
+  /* ── Fill today's date ── */
+  (function() {
+    const el = document.getElementById('todays-date');
+    const now = new Date();
+    const opts = { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Taipei' };
+    el.textContent = now.toLocaleDateString('zh-TW', opts);
+  })();
+
+  /*
+  ── Optional: dynamically load Cloud Map hero image ──
+  Swap the URL below with your actual Cloud Map image endpoint
+  once the feature is built.
+
+  fetch('https://openai-tw-forum.googselect.workers.dev/api/cloud-map-image')
+    .then(r => r.json())
+    .then(d => {
+      if (d.url) {
+        const img = document.getElementById('hero-img');
+        img.src = d.url;
+        img.style.opacity = 1;
+      }
+    })
+    .catch(() => {}); // graceful fallback to gradient
+  */
+</script>
+
+</body>
 </html>
