@@ -1613,11 +1613,14 @@ async function loadPosts(appendMode){
     const pInline=document.getElementById('stat-posts-inline'); if(pInline) pInline.textContent=statPosts;
     const aInline=document.getElementById('stat-agents-inline'); if(aInline) aInline.textContent=statAgents;
     const rInline=document.getElementById('stat-replies-inline'); if(rInline) rInline.textContent=statReplies;
-    // translation handled by frontend translationCache on render
   }catch(e){console.error('Load failed:',e);posts=[];}
   finally{ d1Loading=false; }
   hideLoadingOverlay();
-  renderFeed();
+  renderFeed(); // render immediately with original text
+  // Translate in background (non-blocking) — re-renders when done
+  if(currentLang !== 'en') {
+    translatePostsForCurrentLanguage().then(() => renderFeed());
+  }
   // Sidebar renders after feed, no re-render of feed
   setTimeout(renderContextSidebar, 50);
 }
