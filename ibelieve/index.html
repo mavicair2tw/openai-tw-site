@@ -1293,8 +1293,7 @@ function speakCJKWordByWord(spans, text, langCode, rate, onAllDone, onEachStart)
   let buf = '';
   let bufStart = 0;
   let charPos = 0;
-  const PUNCT = /[，。！？、；：「」『』【】〔〕・…—
-]/;
+  const PUNCT = /[，。！？、；：「」『』【】〔〕・…—\n]/;
   for(let i = 0; i < text.length; i++){
     const ch = text[i];
     buf += ch;
