@@ -1,215 +1,163 @@
-"use client";
+'use client';
 
-import { useMemo, useState } from 'react';
+import { FormEvent, useMemo, useState } from 'react';
 
-const sections = [
-  {
-    title: 'Cloud Map',
-    body: 'A structured space for navigation, themes, and the idea map behind the site.',
-    meta: 'Framework / routes / story',
-    video: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-    label: 'Video Card 01',
-  },
-  {
-    title: 'Daily Generated',
-    body: 'A rotating content zone for fresh entries, updates, or surfaced reflections.',
-    meta: 'Latest / live / current',
-    video: 'https://www.youtube.com/embed/oHg5SJYRHA0',
-    label: 'Video Card 02',
-  },
-  {
-    title: 'Archive Notes',
-    body: 'A quieter section for older material, references, and preserved context.',
-    meta: 'History / memory / log',
-    video: 'https://www.youtube.com/embed/9bZkp7q19f0',
-    label: 'Video Card 03',
-  },
-];
+type ApiResponse = {
+  id?: string;
+  status?: string;
+  message?: string;
+  data?: unknown;
+  raw?: unknown;
+};
 
-const navItems = ['Home', 'Cloud Map', 'Daily Generated', 'Archive'];
+const defaultPrompt =
+  'The runner continues jogging forward with subtle arm swing and steady cadence. Strong wind pushes the runner\'s hair and jacket fabric. Street lamps on the right glow warmly with soft bokeh and slight streaking. The ocean on the left surges with waves and mist. Camera: handheld, low-to-mid height, tracking alongside the runner, slight micro-shake, shallow depth of field, natural motion blur.';
 
 export default function Home() {
-  const [fullScreen, setFullScreen] = useState(true);
-  const layoutClass = useMemo(
-    () =>
-      fullScreen
-        ? 'fixed inset-0 z-50 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-6'
-        : 'relative min-h-screen overflow-hidden px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8',
-    [fullScreen],
+  const [image, setImage] = useState('https://static.wavespeed.ai/examples/5b777712a78a4ebcbe4dcf9d9a35df03/1.png');
+  const [prompt, setPrompt] = useState(defaultPrompt);
+  const [duration, setDuration] = useState(5);
+  const [resolution, setResolution] = useState('720p');
+  const [shotType, setShotType] = useState('single');
+  const [enableAudio, setEnableAudio] = useState(true);
+  const [enablePromptExpansion, setEnablePromptExpansion] = useState(false);
+  const [seed, setSeed] = useState(-1);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<ApiResponse | null>(null);
+  const [error, setError] = useState('');
+
+  const payload = useMemo(
+    () => ({
+      duration,
+      enable_audio: enableAudio,
+      enable_prompt_expansion: enablePromptExpansion,
+      image,
+      prompt,
+      resolution,
+      seed,
+      shot_type: shotType,
+    }),
+    [duration, enableAudio, enablePromptExpansion, image, prompt, resolution, seed, shotType],
   );
 
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setResult(null);
+
+    try {
+      const response = await fetch('/api/image-to-video', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.message || data?.error || 'Request failed');
+      }
+      setResult(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <main className={`bg-[#050816] text-white ${layoutClass}`}>
-      {!fullScreen ? (
-        <div className="stars" aria-hidden="true">
-          <span className="star star-1" />
-          <span className="star star-2" />
-          <span className="star star-3" />
-          <span className="star star-4" />
-          <span className="star star-5" />
-          <span className="star star-6" />
-        </div>
-      ) : null}
-
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.18),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(99,102,241,0.16),_transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.03),transparent_25%)]" />
-
-      <div
-        className={
-          fullScreen
-            ? 'relative flex min-h-[calc(100vh-1.5rem)] w-full flex-col justify-between border border-white/10 bg-white/[0.045] px-5 py-6 shadow-2xl shadow-black/30 backdrop-blur sm:px-8 sm:py-8 lg:px-12 lg:py-10'
-            : 'relative mx-auto flex min-h-[calc(100vh-2rem)] max-w-7xl flex-col justify-between border border-white/10 bg-white/[0.045] px-5 py-6 shadow-2xl shadow-black/30 backdrop-blur sm:px-8 sm:py-8 lg:px-12 lg:py-10'
-        }
-      >
-        <header className="flex flex-col gap-6 border-b border-white/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-3">
-            <p className="text-xs uppercase tracking-[0.42em] text-sky-300/80">
-              iBelieve-inspired
+    <main className="min-h-screen bg-zinc-950 text-zinc-100">
+      <div className="mx-auto flex min-h-screen max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8">
+        <section className="space-y-4 rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30 backdrop-blur">
+          <div className="space-y-2">
+            <p className="text-sm uppercase tracking-[0.22em] text-cyan-300">Wavespeed demo</p>
+            <h1 className="text-3xl font-semibold sm:text-5xl">Image to video generator</h1>
+            <p className="max-w-3xl text-sm leading-7 text-zinc-300 sm:text-base">
+              Upload or paste an image URL, tune the motion prompt, and send the request through a
+              server-side proxy so your API key stays private.
             </p>
-            <div className="flex items-center gap-4 text-sm text-slate-400">
-              <span>playfulsoundengineer360-web</span>
-              <span className="hidden h-px w-12 bg-white/15 sm:block" />
-              <span>Editorial migration framework</span>
-            </div>
           </div>
+        </section>
 
-          <div className="flex flex-col items-start gap-3 lg:items-end">
-            <nav className="flex flex-wrap gap-2 text-sm text-slate-300">
-              {navItems.map((item) => (
-                <a
-                  key={item}
-                  href={`#${item.toLowerCase().replace(/\s+/g, '-')}`}
-                  className="rounded-full border border-white/10 bg-white/5 px-4 py-2 transition hover:border-sky-300/40 hover:bg-white/10 hover:text-white"
-                >
-                  {item}
-                </a>
-              ))}
-            </nav>
+        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+          <form onSubmit={handleSubmit} className="space-y-5 rounded-3xl border border-white/10 bg-zinc-900/80 p-6">
+            <Field label="Image URL">
+              <input className="input" value={image} onChange={(e) => setImage(e.target.value)} />
+            </Field>
+
+            <Field label="Prompt">
+              <textarea className="input min-h-40" value={prompt} onChange={(e) => setPrompt(e.target.value)} />
+            </Field>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Duration">
+                <input className="input" type="number" min={1} max={30} value={duration} onChange={(e) => setDuration(Number(e.target.value))} />
+              </Field>
+              <Field label="Resolution">
+                <select className="input" value={resolution} onChange={(e) => setResolution(e.target.value)}>
+                  <option value="720p">720p</option>
+                  <option value="1080p">1080p</option>
+                </select>
+              </Field>
+              <Field label="Shot type">
+                <select className="input" value={shotType} onChange={(e) => setShotType(e.target.value)}>
+                  <option value="single">single</option>
+                  <option value="multi">multi</option>
+                </select>
+              </Field>
+              <Field label="Seed">
+                <input className="input" type="number" value={seed} onChange={(e) => setSeed(Number(e.target.value))} />
+              </Field>
+            </div>
+
+            <div className="flex flex-wrap gap-4 text-sm text-zinc-300">
+              <label className="flex items-center gap-2">
+                <input type="checkbox" checked={enableAudio} onChange={(e) => setEnableAudio(e.target.checked)} />
+                Enable audio
+              </label>
+              <label className="flex items-center gap-2">
+                <input type="checkbox" checked={enablePromptExpansion} onChange={(e) => setEnablePromptExpansion(e.target.checked)} />
+                Enable prompt expansion
+              </label>
+            </div>
+
             <button
-              type="button"
-              onClick={() => setFullScreen((value) => !value)}
-              className="rounded-full border border-sky-300/30 bg-sky-300/10 px-4 py-2 text-sm text-sky-100 transition hover:bg-sky-300/20"
+              type="submit"
+              disabled={loading}
+              className="rounded-2xl bg-cyan-400 px-5 py-3 font-medium text-zinc-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {fullScreen ? 'ON · full screen' : 'OFF · small view'}
+              {loading ? 'Generating…' : 'Generate video'}
             </button>
-          </div>
-        </header>
 
-        <section className="grid gap-10 py-16 lg:grid-cols-[1.35fr_0.65fr] lg:items-end lg:py-20">
-          <div className="max-w-4xl space-y-8">
-            <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.35em] text-sky-300/80">
-              Taipei · 2026
+            {error ? <p className="rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-sm text-red-200">{error}</p> : null}
+          </form>
+
+          <aside className="space-y-5 rounded-3xl border border-white/10 bg-zinc-900/80 p-6">
+            <div>
+              <h2 className="text-lg font-semibold">Request payload</h2>
+              <pre className="mt-3 overflow-auto rounded-2xl bg-black/40 p-4 text-xs text-zinc-200">
+                {JSON.stringify(payload, null, 2)}
+              </pre>
             </div>
-            <h1 className="max-w-4xl text-5xl font-semibold tracking-[-0.04em] text-white sm:text-7xl lg:text-8xl">
-              A quiet, editorial home for the migration.
-            </h1>
-            <p className="max-w-2xl text-lg leading-8 text-slate-300 sm:text-xl sm:leading-9">
-              This starter follows the mood of openai-tw.com: dark, minimal,
-              spacious, and centered around calm presentation instead of heavy UI.
-            </p>
-          </div>
 
-          <aside className="overflow-hidden rounded-[2rem] border border-white/10 bg-black/20">
-            <div className="h-40 bg-[linear-gradient(135deg,rgba(56,189,248,0.25),rgba(99,102,241,0.08),transparent)]" />
-            <div className="space-y-4 p-6">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
-                Current build
-              </p>
-              <p className="text-3xl font-semibold text-white">Starter v0.1</p>
-              <p className="leading-7 text-slate-300">
-                Ready for content, migration pages, and future data integration.
-              </p>
+            <div>
+              <h2 className="text-lg font-semibold">Result</h2>
+              <pre className="mt-3 overflow-auto rounded-2xl bg-black/40 p-4 text-xs text-zinc-200 min-h-40">
+                {result ? JSON.stringify(result, null, 2) : 'No result yet.'}
+              </pre>
             </div>
           </aside>
-        </section>
-
-        <div className="border-t border-white/10" />
-
-        <section id="cloud-map" className="py-10 lg:py-12">
-          <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div className="space-y-3">
-              <p className="text-xs uppercase tracking-[0.35em] text-sky-300/80">
-                Cloud Map
-              </p>
-              <h2 className="text-2xl font-medium text-white sm:text-3xl">
-                A structured map of the site
-              </h2>
-            </div>
-            <p className="max-w-lg text-sm leading-7 text-slate-400 sm:text-base">
-              A more publication-like arrangement with disciplined spacing,
-              section rhythm, and clear editorial hierarchy.
-            </p>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-3">
-            {sections.map((section, index) => (
-              <article
-                key={section.title}
-                className="overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/5 transition hover:-translate-y-1 hover:border-sky-300/30 hover:bg-white/10"
-              >
-                <div className="border-b border-white/10 bg-black/30 p-4 text-xs uppercase tracking-[0.28em] text-slate-400">
-                  {section.label}
-                </div>
-                <div className={fullScreen ? 'h-[360px] border-b border-white/10 bg-black' : 'aspect-video border-b border-white/10 bg-black'}>
-                  <iframe
-                    className="h-full w-full"
-                    src={section.video}
-                    title={section.title}
-                    loading="lazy"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                  />
-                </div>
-                <div className="p-6">
-                  <p className="text-xs uppercase tracking-[0.3em] text-sky-300/80">
-                    {section.meta}
-                  </p>
-                  <h3 className="mt-5 text-2xl font-medium text-white">
-                    {section.title}
-                  </h3>
-                  <p className="mt-4 leading-8 text-slate-300">{section.body}</p>
-                  <div className="mt-8 h-px bg-gradient-to-r from-white/20 via-white/8 to-transparent" />
-                  <p className="mt-4 text-xs uppercase tracking-[0.28em] text-slate-500">
-                    0{index + 1}
-                  </p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <div className="border-t border-white/10" />
-
-        <section id="daily-generated" className="py-10 lg:py-12">
-          <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
-            <div className="space-y-3">
-              <p className="text-xs uppercase tracking-[0.35em] text-sky-300/80">
-                Daily Generated
-              </p>
-              <h2 className="text-2xl font-medium text-white sm:text-3xl">
-                Fresh content area
-              </h2>
-            </div>
-            <div className="rounded-[1.75rem] border border-white/10 bg-black/20 p-6 sm:p-8">
-              <p className="max-w-3xl text-base leading-8 text-slate-300 sm:text-lg sm:leading-9">
-                This section can later rotate daily posts, featured updates, or
-                generated fragments — like a living front page. The spacing and
-                divider treatment now lean closer to publication design than a
-                standard marketing landing page.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <div className="border-t border-white/10" />
-
-        <footer
-          id="archive"
-          className="flex flex-col gap-3 pt-8 text-sm text-slate-400 lg:flex-row lg:items-center lg:justify-between"
-        >
-          <p>Designed to feel close to the reference style, but unique to your site.</p>
-          <p>Migration-ready · Next.js · Tailwind</p>
-        </footer>
+        </div>
       </div>
     </main>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block space-y-2">
+      <span className="text-sm font-medium text-zinc-300">{label}</span>
+      {children}
+    </label>
   );
 }
