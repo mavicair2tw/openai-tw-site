@@ -10,18 +10,23 @@ export async function POST(req: Request) {
 
   const body = await req.json();
 
-  const upstream = await fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify(body),
-  });
+  try {
+    const upstream = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(body),
+    });
 
-  const text = await upstream.text();
-  const contentType = upstream.headers.get('content-type') || '';
-  const data = contentType.includes('application/json') ? JSON.parse(text || '{}') : { raw: text };
+    const text = await upstream.text();
+    const contentType = upstream.headers.get('content-type') || '';
+    const data = contentType.includes('application/json') ? JSON.parse(text || '{}') : { raw: text };
 
-  return NextResponse.json(data, { status: upstream.status });
+    return NextResponse.json(data, { status: upstream.status });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'WaveSpeed request failed';
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }
