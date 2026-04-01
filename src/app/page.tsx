@@ -6,12 +6,38 @@ type ApiResponse = {
   id?: string;
   status?: string;
   message?: string;
-  data?: unknown;
+  data?: {
+    id?: string;
+    status?: string;
+    outputs?: Array<{ url?: string } | string>;
+    urls?: { get?: string };
+    error?: string;
+  };
   raw?: unknown;
 };
 
 const defaultPrompt =
   'The runner continues jogging forward with subtle arm swing and steady cadence. Strong wind pushes the runner\'s hair and jacket fabric. Street lamps on the right glow warmly with soft bokeh and slight streaking. The ocean on the left surges with waves and mist. Camera: handheld, low-to-mid height, tracking alongside the runner, slight micro-shake, shallow depth of field, natural motion blur.';
+
+function extractVideoUrl(payload: unknown): string | null {
+  if (!payload || typeof payload !== 'object') return null;
+  const obj = payload as any;
+  const outputs = obj.outputs;
+  if (Array.isArray(outputs)) {
+    for (const item of outputs) {
+      if (typeof item === 'string' && item.startsWith('http')) return item;
+      if (item && typeof item === 'object') {
+        const url = item.url;
+        if (typeof url === 'string' && url.startsWith('http')) return url;
+      }
+    }
+  }
+  const data = obj.data;
+  if (data && typeof data === 'object') {
+    return extractVideoUrl(data);
+  }
+  return null;
+}
 
 export default function Home() {
   const [image, setImage] = useState('https://static.wavespeed.ai/examples/5b777712a78a4ebcbe4dcf9d9a35df03/1.png');
@@ -23,7 +49,9 @@ export default function Home() {
   const [enablePromptExpansion, setEnablePromptExpansion] = useState(false);
   const [seed, setSeed] = useState(-1);
   const [loading, setLoading] = useState(false);
+  const [polling, setPolling] = useState(false);
   const [result, setResult] = useState<ApiResponse | null>(null);
+  const [videoUrl, setVideoUrl] = useState('');
   const [error, setError] = useState('');
 
   const payload = useMemo(
@@ -40,11 +68,45 @@ export default function Home() {
     [duration, enableAudio, enablePromptExpansion, image, prompt, resolution, seed, shotType],
   );
 
+  async function waitForVideo(jobResult: ApiResponse) {
+    const getUrl = jobResult.data?.urls?.get;
+    if (!getUrl) return;
+
+    setPolling(true);
+    try {
+      for (let i = 0; i < 60; i += 1) {
+        const res = await fetch(getUrl);
+        const data = await res.json();
+        setResult(data);
+        const url = extractVideoUrl(data);
+        if (url) {
+          setVideoUrl(url);
+          setPolling(false);
+          return;
+        }
+        const status = (data?.data?.status || data?.status || '').toLowerCase();
+        if (['failed', 'canceled', 'cancelled'].includes(status)) {
+          setError(data?.data?.error || data?.message || 'Video generation failed');
+          setPolling(false);
+          return;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+      }
+      setError('Timed out waiting for the video. Try again in a minute.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Polling failed');
+    } finally {
+      setPolling(false);
+    }
+  }
+
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
+    setPolling(false);
     setError('');
     setResult(null);
+    setVideoUrl('');
 
     try {
       const response = await fetch('/api/image-to-video', {
@@ -58,6 +120,7 @@ export default function Home() {
         throw new Error(data?.message || data?.error || 'Request failed');
       }
       setResult(data);
+      await waitForVideo(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
@@ -123,10 +186,10 @@ export default function Home() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || polling}
               className="rounded-2xl bg-cyan-400 px-5 py-3 font-medium text-zinc-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loading ? 'Generating…' : 'Generate video'}
+              {loading ? 'Generating…' : polling ? 'Waiting for video…' : 'Generate video'}
             </button>
 
             {error ? <p className="rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-sm text-red-200">{error}</p> : null}
@@ -146,6 +209,16 @@ export default function Home() {
                 {result ? JSON.stringify(result, null, 2) : 'No result yet.'}
               </pre>
             </div>
+
+            {videoUrl ? (
+              <div>
+                <h2 className="text-lg font-semibold">Video</h2>
+                <video className="mt-3 w-full rounded-2xl" controls src={videoUrl} />
+                <a className="mt-2 block text-sm text-cyan-300 underline" href={videoUrl} target="_blank" rel="noreferrer">
+                  Open video in new tab
+                </a>
+              </div>
+            ) : null}
           </aside>
         </div>
       </div>
