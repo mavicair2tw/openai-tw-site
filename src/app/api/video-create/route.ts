@@ -4,8 +4,8 @@ export async function POST() {
   return NextResponse.json(
     {
       error:
-        'OpenAI video API is not wired correctly in this environment yet. The installed SDK does not expose the video methods we tried to call.',
+        'Gemini video integration has not been wired in this workspace yet. The exact SDK/API surface needs to be matched to your installed package version.',
     },
-    { status: 500 },
+    { status: 501 },
   );
 }
