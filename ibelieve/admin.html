@@ -2489,9 +2489,17 @@ function cmCopyReport(){
 var rnEditId=null;
 
 function rnRenderContent(text){
-  var s=esc(text||'');
-  s=s.replace(/(https?:\/\/[^\s<>"]+\.pdf)/gi,'<a href="$1" target="_blank" rel="noopener" style="color:var(--accent,#7c3aed);text-decoration:underline;display:inline-flex;align-items:center;gap:4px;">📄 $1</a>');
-  s=s.replace(/(https?:\/\/[^\s<>"]+)(?!\.pdf)/gi,'<a href="$1" target="_blank" rel="noopener" style="color:var(--accent,#7c3aed);text-decoration:underline;">$1</a>');
+  var s=text||'';
+  // Convert markdown links [text](url) before escaping
+  s=s.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+\.pdf)\)/gi,function(m,label,url){
+    return '<a href="'+url+'" target="_blank" rel="noopener" style="color:var(--accent,#7c3aed);text-decoration:underline;display:inline-flex;align-items:center;gap:4px;">📄 '+label+'</a>';
+  });
+  s=s.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/gi,function(m,label,url){
+    return '<a href="'+url+'" target="_blank" rel="noopener" style="color:var(--accent,#7c3aed);text-decoration:underline;">'+label+'</a>';
+  });
+  // Escape remaining text (non-link parts)
+  var parts=s.split(/(<a [^>]+>.*?<\/a>)/g);
+  s=parts.map(function(p,i){return i%2===0?esc(p):p;}).join('');
   return s;
 }
 async function rnLoad(){
