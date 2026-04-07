@@ -2488,6 +2488,12 @@ function cmCopyReport(){
 /* RELEASE NOTES */
 var rnEditId=null;
 
+function rnRenderContent(text){
+  var s=esc(text||'');
+  s=s.replace(/(https?:\/\/[^\s<>"]+\.pdf)/gi,'<a href="$1" target="_blank" rel="noopener" style="color:var(--accent,#7c3aed);text-decoration:underline;display:inline-flex;align-items:center;gap:4px;">📄 $1</a>');
+  s=s.replace(/(https?:\/\/[^\s<>"]+)(?!\.pdf)/gi,'<a href="$1" target="_blank" rel="noopener" style="color:var(--accent,#7c3aed);text-decoration:underline;">$1</a>');
+  return s;
+}
 async function rnLoad(){
   const q=(document.getElementById('rn-search')?.value||'').trim();
   const date=(document.getElementById('rn-date')?.value||'').trim();
@@ -2526,6 +2532,7 @@ async function rnLoad(){
         +'<span style="font-size:11px;color:var(--text-muted);">by '+esc(n.author||'system')+'</span>'
         +'<span style="margin-left:auto;display:flex;gap:6px;">'
         +'<button onclick="rnExpand(&quot;'+n.id+'&quot;)" style="padding:2px 8px;font-size:11px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);cursor:pointer;color:var(--text);">📖 Read</button>'
+        +(function(){ var m=(n.content||'').match(/https?:\/\/[^\s)]+\.pdf/i); return m?'<a href="'+m[0]+'" target="_blank" rel="noopener" style="padding:2px 8px;font-size:11px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);cursor:pointer;color:var(--accent,#7c3aed);text-decoration:none;display:inline-flex;align-items:center;gap:3px;">📄 PDF</a>':''; })()
         +'<button onclick="rnEdit(&quot;'+n.id+'&quot;)" style="padding:2px 8px;font-size:11px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);cursor:pointer;color:var(--text);">✎ Edit</button>'
         +'<button onclick="rnDelete(&quot;'+n.id+'&quot;)" style="padding:2px 8px;font-size:11px;border:none;border-radius:4px;background:var(--danger,#e74c3c);cursor:pointer;color:#fff;">✗</button>'
         +'</span>'
@@ -2533,7 +2540,7 @@ async function rnLoad(){
         +'<div style="font-size:14px;font-weight:600;margin-bottom:4px;">'+esc(n.title)+'</div>'
         +'<div style="margin-bottom:6px;">'+tagHtml+'</div>'
         +'<div style="font-size:12px;color:var(--text-muted);line-height:1.5;" id="rn-preview-'+n.id+'">'+esc(contentPreview)+'…</div>'
-        +'<div id="rn-full-'+n.id+'" style="display:none;margin-top:10px;font-size:13px;line-height:1.8;border-top:1px solid var(--border);padding-top:10px;white-space:pre-wrap;">'+esc(n.content)+'</div>'
+        +'<div id="rn-full-'+n.id+'" style="display:none;margin-top:10px;font-size:13px;line-height:1.8;border-top:1px solid var(--border);padding-top:10px;white-space:pre-wrap;word-break:break-word;">'+rnRenderContent(n.content)+'</div>'
         +'</div>'
         +'</div>'
         +'</div>';
