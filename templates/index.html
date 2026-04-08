@@ -178,7 +178,6 @@
 
     <div id="create-panel">
       <div class="actions">
-        <button id="demo-btn" type="button">Show Demo Image</button>
         <button id="generate-btn" type="button">Generate Image</button>
       </div>
 
@@ -213,7 +212,6 @@
     const imagesTab = document.getElementById('images-tab');
     const createPanel = document.getElementById('create-panel');
     const imagesPanel = document.getElementById('images-panel');
-    const demoBtn = document.getElementById('demo-btn');
     const generateBtn = document.getElementById('generate-btn');
     const promptInput = document.getElementById('prompt-input');
     const loadingMessage = document.getElementById('loading-message');
@@ -227,7 +225,6 @@
       return document.querySelector('input[name="scale"]:checked')?.value || '1:1';
     }
 
-    demoBtn.addEventListener('click', showDemoImage);
     generateBtn.addEventListener('click', generateImage);
     createTab.addEventListener('click', () => showTab('create'));
     imagesTab.addEventListener('click', () => showTab('images'));
@@ -265,12 +262,6 @@
         savedStatus.textContent = 'Could not load saved images.';
         console.error(error);
       }
-    }
-
-    function showDemoImage() {
-      demoBox.style.display = 'block';
-      imageDisplay.style.display = 'none';
-      imageDisplay.src = '';
     }
 
     async function generateImage() {
