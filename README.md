@@ -30,3 +30,4 @@ http://127.0.0.1:5000/
 
 - Click **Show Demo Image** to confirm the page is working.
 - Click **Generate Image** after entering a prompt.
+- Generated files are saved in `saved_images/` with a matching `.txt` file for the prompt, model, and aspect ratio.

@@ -1,5 +1,6 @@
 import base64
 import os
+from datetime import datetime
 
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
@@ -9,6 +10,8 @@ from google.genai.errors import APIError
 load_dotenv()
 
 app = Flask(__name__)
+SAVED_DIR = os.path.join(os.path.dirname(__file__), "saved_images")
+os.makedirs(SAVED_DIR, exist_ok=True)
 
 try:
     gemini_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
@@ -77,10 +80,22 @@ def generate_image():
                 image_bytes = result.generated_images[0].image.image_bytes
                 base64_image = base64.b64encode(image_bytes).decode("utf-8")
 
+                stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+                image_name = f"image-{stamp}.png"
+                prompt_name = f"image-{stamp}.txt"
+                image_path = os.path.join(SAVED_DIR, image_name)
+                prompt_path = os.path.join(SAVED_DIR, prompt_name)
+
+                with open(image_path, "wb") as f:
+                    f.write(image_bytes)
+                with open(prompt_path, "w", encoding="utf-8") as f:
+                    f.write(f"prompt: {prompt}\nmodel: {model_name}\naspect_ratio: {aspect_ratio}\n")
+
                 return jsonify(
                     {
                         "success": True,
                         "model": model_name,
+                        "saved_image": image_name,
                         "image_data": base64_image,
                         "mime_type": "image/png",
                     }
