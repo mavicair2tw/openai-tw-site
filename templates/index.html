@@ -59,6 +59,20 @@
       flex-wrap: wrap;
       margin: 18px 0 22px;
     }
+    .scales {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 0 0 18px;
+      align-items: center;
+    }
+    .scale-option {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #444;
+      font-size: 14px;
+    }
     #loading-message {
       margin-top: 20px;
       color: #4285F4;
@@ -115,6 +129,12 @@
       <button id="generate-btn" type="button">Generate Image</button>
     </div>
 
+    <div class="scales" role="radiogroup" aria-label="Image scale">
+      <label class="scale-option"><input type="radio" name="scale" value="1:1" checked> 1:1</label>
+      <label class="scale-option"><input type="radio" name="scale" value="9:16"> 9:16</label>
+      <label class="scale-option"><input type="radio" name="scale" value="16:9"> 16:9</label>
+    </div>
+
     <label for="prompt-input">Prompt:</label>
     <textarea id="prompt-input" placeholder="Example: A hyper-realistic portrait of an astronaut riding a Bengal tiger on the surface of Mars, cinematic lighting."></textarea>
 
@@ -136,6 +156,11 @@
     const loadingMessage = document.getElementById('loading-message');
     const imageDisplay = document.getElementById('generated-image');
     const demoBox = document.getElementById('demo-box');
+    const scaleInputs = document.querySelectorAll('input[name="scale"]');
+
+    function getSelectedScale() {
+      return document.querySelector('input[name="scale"]:checked')?.value || '1:1';
+    }
 
     demoBtn.addEventListener('click', showDemoImage);
     generateBtn.addEventListener('click', generateImage);
@@ -148,6 +173,7 @@
 
     async function generateImage() {
       const prompt = promptInput.value.trim();
+      const aspectRatio = getSelectedScale();
       if (!prompt) {
         alert('Please enter a prompt before generating.');
         return;
@@ -164,7 +190,7 @@
         const response = await fetch('/generate_image', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt })
+          body: JSON.stringify({ prompt, aspect_ratio: aspectRatio })
         });
 
         const data = await response.json();

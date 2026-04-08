@@ -49,6 +49,7 @@ def generate_image():
 
     data = request.get_json(silent=True) or {}
     prompt = data.get("prompt", "").strip()
+    aspect_ratio = data.get("aspect_ratio", "1:1")
 
     if not prompt:
         return jsonify({"error": "Please enter a prompt to generate an image."}), 400
@@ -68,7 +69,7 @@ def generate_image():
                 config={
                     "number_of_images": 1,
                     "output_mime_type": "image/png",
-                    "aspect_ratio": "1:1",
+                    "aspect_ratio": aspect_ratio,
                 },
             )
 
