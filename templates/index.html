@@ -59,6 +59,25 @@
       flex-wrap: wrap;
       margin: 18px 0 22px;
     }
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+    .tab {
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid #ccc;
+      background: #f8f8f8;
+      color: #333;
+      cursor: pointer;
+    }
+    .tab.active {
+      background: #4285F4;
+      color: white;
+      border-color: #4285F4;
+    }
     .scales {
       display: flex;
       gap: 12px;
@@ -107,6 +126,34 @@
       box-sizing: border-box;
       text-align: left;
     }
+    #images-panel {
+      display: none;
+      width: 100%;
+    }
+    .saved-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .saved-card {
+      border: 1px solid #eee;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .saved-card img {
+      width: 100%;
+      display: block;
+    }
+    .saved-card pre {
+      margin: 0;
+      padding: 12px;
+      font-size: 12px;
+      white-space: pre-wrap;
+      color: #444;
+    }
     .demo-box h2 {
       margin: 0 0 10px;
       font-size: 28px;
@@ -124,12 +171,18 @@
     <h1>AI Image Generator</h1>
     <p>Use the demo first to confirm the page works, then generate images with Gemini.</p>
 
-    <div class="actions">
-      <button id="demo-btn" type="button">Show Demo Image</button>
-      <button id="generate-btn" type="button">Generate Image</button>
+    <div class="tabs">
+      <button class="tab active" id="create-tab" type="button">Create</button>
+      <button class="tab" id="images-tab" type="button">Images</button>
     </div>
 
-    <div class="scales" role="radiogroup" aria-label="Image scale">
+    <div id="create-panel">
+      <div class="actions">
+        <button id="demo-btn" type="button">Show Demo Image</button>
+        <button id="generate-btn" type="button">Generate Image</button>
+      </div>
+
+      <div class="scales" role="radiogroup" aria-label="Image scale">
       <label class="scale-option"><input type="radio" name="scale" value="1:1" checked> 1:1</label>
       <label class="scale-option"><input type="radio" name="scale" value="9:16"> 9:16</label>
       <label class="scale-option"><input type="radio" name="scale" value="16:9"> 16:9</label>
@@ -138,18 +191,28 @@
     <label for="prompt-input">Prompt:</label>
     <textarea id="prompt-input" placeholder="Example: A hyper-realistic portrait of an astronaut riding a Bengal tiger on the surface of Mars, cinematic lighting."></textarea>
 
-    <div id="loading-message">Generating image... Please wait.</div>
+      <div id="loading-message">Generating image... Please wait.</div>
 
-    <div id="image-container">
-      <img id="generated-image" src="" alt="Generated image will appear here">
-      <div id="demo-box" class="demo-box">
-        <h2>Hello, World!</h2>
-        <p>This is a demo preview so you can verify the page is working before connecting the API.</p>
+      <div id="image-container">
+        <img id="generated-image" src="" alt="Generated image will appear here">
+        <div id="demo-box" class="demo-box">
+          <h2>Hello, World!</h2>
+          <p>This is a demo preview so you can verify the page is working before connecting the API.</p>
+        </div>
       </div>
+    </div>
+
+    <div id="images-panel">
+      <div id="saved-status">Loading saved images...</div>
+      <div id="saved-grid" class="saved-grid"></div>
     </div>
   </div>
 
   <script>
+    const createTab = document.getElementById('create-tab');
+    const imagesTab = document.getElementById('images-tab');
+    const createPanel = document.getElementById('create-panel');
+    const imagesPanel = document.getElementById('images-panel');
     const demoBtn = document.getElementById('demo-btn');
     const generateBtn = document.getElementById('generate-btn');
     const promptInput = document.getElementById('prompt-input');
@@ -157,6 +220,8 @@
     const imageDisplay = document.getElementById('generated-image');
     const demoBox = document.getElementById('demo-box');
     const scaleInputs = document.querySelectorAll('input[name="scale"]');
+    const savedGrid = document.getElementById('saved-grid');
+    const savedStatus = document.getElementById('saved-status');
 
     function getSelectedScale() {
       return document.querySelector('input[name="scale"]:checked')?.value || '1:1';
@@ -164,6 +229,43 @@
 
     demoBtn.addEventListener('click', showDemoImage);
     generateBtn.addEventListener('click', generateImage);
+    createTab.addEventListener('click', () => showTab('create'));
+    imagesTab.addEventListener('click', () => showTab('images'));
+
+    function showTab(name) {
+      const createActive = name === 'create';
+      createPanel.style.display = createActive ? 'block' : 'none';
+      imagesPanel.style.display = createActive ? 'none' : 'block';
+      createTab.classList.toggle('active', createActive);
+      imagesTab.classList.toggle('active', !createActive);
+      if (!createActive) {
+        loadSavedImages();
+      }
+    }
+
+    async function loadSavedImages() {
+      savedStatus.textContent = 'Loading saved images...';
+      savedGrid.innerHTML = '';
+      try {
+        const response = await fetch('/images');
+        const data = await response.json();
+        if (!data.success) throw new Error(data.error || 'Could not load images');
+        if (!data.images.length) {
+          savedStatus.textContent = 'No saved images yet.';
+          return;
+        }
+        savedStatus.textContent = '';
+        savedGrid.innerHTML = data.images.map(item => `
+          <div class="saved-card">
+            <img src="/saved_images/${item.file}" alt="${item.file}">
+            <pre>${item.prompt || ''}</pre>
+          </div>
+        `).join('');
+      } catch (error) {
+        savedStatus.textContent = 'Could not load saved images.';
+        console.error(error);
+      }
+    }
 
     function showDemoImage() {
       demoBox.style.display = 'block';
