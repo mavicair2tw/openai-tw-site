@@ -1,38 +1,32 @@
-# playfulsoundengineer360-web
+# Gemini AI Image Generator
 
-Starter repo for the new website migration.
+## Run locally
 
-## Style direction
-
-Inspired by the calm, editorial feel of openai-tw.com:
-
-- dark background
-- minimal hierarchy
-- spacious layout
-- refined typography
-- subtle borders and glow
-
-## Stack
-
-- Next.js
-- TypeScript
-- App Router
-- Tailwind CSS
-- ESLint + Prettier
-
-## Getting started
+1. Install dependencies:
 
 ```bash
-npm install
-npm run dev
+python3 -m pip install -r requirements.txt
 ```
 
-## Structure
+2. Create a `.env` file:
 
-- `src/app` — routes and layouts
-- `src/components` — shared UI components
-- `src/lib` — helpers and data access
-- `src/styles` — global styles
-- `public` — static assets
-- `tests` — test files
-- `scripts` — utility scripts
+```bash
+GEMINI_API_KEY=your_key_here
+```
+
+3. Start the app:
+
+```bash
+python3 app.py
+```
+
+4. Open:
+
+```bash
+http://127.0.0.1:5000/
+```
+
+## Notes
+
+- Click **Show Demo Image** to confirm the page is working.
+- Click **Generate Image** after entering a prompt.
