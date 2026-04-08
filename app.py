@@ -54,9 +54,9 @@ def generate_image():
         return jsonify({"error": "Please enter a prompt to generate an image."}), 400
 
     model_candidates = [
-        "imagen-3.0-generate-002",
-        "gemini-2.0-flash-exp",
-        "gemini-2.5-flash-image",
+        "models/imagen-4.0-generate-001",
+        "models/imagen-4.0-fast-generate-001",
+        "models/gemini-2.5-flash-image",
     ]
 
     last_error = None
