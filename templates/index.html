@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gemini AI Image Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f7f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 700px;
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    textarea {
+      width: 98%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      resize: vertical;
+      min-height: 100px;
+      font-size: 16px;
+    }
+    button {
+      background-color: #4285F4;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+    button:hover:not(:disabled) {
+      background-color: #3367D6;
+    }
+    button:disabled {
+      background-color: #b3cde0;
+      cursor: not-allowed;
+    }
+    #loading-message {
+      margin-top: 20px;
+      color: #4285F4;
+      display: none;
+    }
+    #image-container {
+      margin-top: 30px;
+      text-align: center;
+      min-height: 300px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 10px;
+    }
+    #generated-image {
+      max-width: 100%;
+      height: auto;
+      border-radius: 6px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>AI Image Generator</h1>
+    <p>Enter a detailed prompt and let the AI create a visual.</p>
+
+    <label for="prompt-input">Prompt:</label>
+    <textarea id="prompt-input" placeholder="Example: A hyper-realistic portrait of an astronaut riding a Bengal tiger on the surface of Mars, cinematic lighting."></textarea>
+
+    <button id="generate-btn">Generate Image</button>
+
+    <div id="loading-message">Generating image... Please wait.</div>
+
+    <div id="image-container">
+      <img id="generated-image" src="" alt="Generated image will appear here">
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('generate-btn').addEventListener('click', generateImage);
+
+    async function generateImage() {
+      const promptInput = document.getElementById('prompt-input');
+      const generateBtn = document.getElementById('generate-btn');
+      const loadingMessage = document.getElementById('loading-message');
+      const imageDisplay = document.getElementById('generated-image');
+
+      const prompt = promptInput.value.trim();
+      if (!prompt) {
+        alert('Please enter a prompt before generating.');
+        return;
+      }
+
+      generateBtn.disabled = true;
+      generateBtn.textContent = 'Processing...';
+      loadingMessage.style.display = 'block';
+      imageDisplay.src = '';
+      imageDisplay.style.display = 'none';
+
+      try {
+        const response = await fetch('/generate_image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          alert('Error: ' + data.error);
+        } else if (data.success && data.image_data) {
+          imageDisplay.src = `data:${data.mime_type};base64,${data.image_data}`;
+          imageDisplay.style.display = 'block';
+        } else {
+          alert('An unknown error occurred during image generation.');
+        }
+      } catch (error) {
+        console.error('Fetch error:', error);
+        alert('Could not connect to the server. Is the Flask backend running?');
+      } finally {
+        generateBtn.disabled = false;
+        generateBtn.textContent = 'Generate Image';
+        loadingMessage.style.display = 'none';
+      }
+    }
+  </script>
+</body>
+</html>
