@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import '../styles/globals.css';
 
 export const metadata: Metadata = {
-  title: 'PlayfulSoundEngineer360',
-  description: 'Migration of the PlayfulSoundEngineer360 Google Sites home page.',
+  title: 'Hello World',
+  description: 'A simple web-based home page.',
 };
 
 export default function RootLayout({
