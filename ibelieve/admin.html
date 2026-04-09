@@ -292,7 +292,46 @@ td{padding:10px 14px;vertical-align:middle;}
         </table>
       </div>
       <div class="card">
-        <div class="card-title">System info</div>
+        <div class="card-title">
+<!-- Creator Users Table (injected) -->
+<div id="creatorUsersPanel" style="margin-top:24px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <span style="font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;color:#888">
+      Imagen Creator Users &nbsp;<span id="creatorUsersTotal" style="color:#c8a96e">-</span>
+    </span>
+    <button onclick="loadCreatorUsers()" style="background:none;border:1px solid #3a3a3a;border-radius:4px;color:#888;cursor:pointer;font-size:0.7rem;padding:4px 10px">&#8635; Refresh</button>
+  </div>
+  <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:0.82rem">
+      <thead>
+        <tr style="border-bottom:1px solid #2a2a2a;color:#666;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em">
+          <th style="padding:8px 4px;text-align:left;width:32px"></th>
+          <th style="padding:8px;text-align:left">Username</th>
+          <th style="padding:8px;text-align:left">Email</th>
+          <th style="padding:8px;text-align:left">Role</th>
+          <th style="padding:8px;text-align:left">Status</th>
+          <th style="padding:8px;text-align:left">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="creatorUsersTbody">
+        <tr><td colspan="6" style="text-align:center;padding:20px;color:#888">Click Refresh to load</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<style>
+.role-badge{font-size:0.65rem;letter-spacing:0.1em;padding:2px 8px;border-radius:100px;text-transform:uppercase}
+.role-admin{background:rgba(200,169,110,0.15);color:#c8a96e;border:1px solid #8a6e3e}
+.role-user{background:rgba(100,100,150,0.15);color:#8888cc;border:1px solid #4a4a8a}
+.status-badge{font-size:0.65rem;letter-spacing:0.1em;padding:2px 8px;border-radius:100px;text-transform:uppercase}
+.status-active{background:rgba(100,180,100,0.15);color:#8bc48b;border:1px solid #4a7a4a}
+.status-inactive{background:rgba(192,96,96,0.1);color:#e88888;border:1px solid #8a4a4a}
+.tbl-btn{background:none;border:1px solid #3a3a3a;border-radius:4px;color:#888;cursor:pointer;font-size:0.75rem;margin:0 2px;padding:3px 8px;transition:all 0.2s}
+.tbl-btn:hover{border-color:#c8a96e;color:#c8a96e}
+.tbl-btn--danger:hover{border-color:#c06060;color:#c06060}
+</style>
+
+System info</div>
         <div class="field-row"><span class="field-label">Host</span><span class="field-val mono">ibelieve-backend.vercel.app</span></div>
         <div class="field-row"><span class="field-label">Environment</span><span class="field-val">Production</span></div>
         <div class="field-row"><span class="field-label">Total accounts</span><span class="field-val" id="acct-count">-</span></div>
@@ -2975,6 +3014,86 @@ function dtResetZoom(){ if(dtSvg&&dtZoom) dtSvg.transition().duration(400).call(
 function dtDragStart(e,d){ if(!e.active) dtSim.alphaTarget(.3).restart(); d.fx=d.x; d.fy=d.y; }
 function dtDragged(e,d){ d.fx=e.x; d.fy=e.y; }
 function dtDragEnd(e,d){ if(!e.active) dtSim.alphaTarget(0); d.fx=null; d.fy=null; }
+</script>
+<script>
+// ── Imagen Creator Users ─────────────────────────────────────
+const FORUM_API = 'https://openai-tw-forum.googselect.workers.dev';
+
+async function loadCreatorUsers() {
+  const token = localStorage.getItem('ibelieve_admin_token') || '';
+  const tbody = document.getElementById('creatorUsersTbody');
+  const total = document.getElementById('creatorUsersTotal');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#888">Loading…</td></tr>';
+  try {
+    const res = await fetch(FORUM_API + '/api/ibelieve/admin/users', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+    const users = data.users || [];
+    if (total) total.textContent = users.length;
+    if (!users.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#888">No users yet</td></tr>';
+      return;
+    }
+    tbody.innerHTML = users.map(u => `
+      <tr data-id="${u.id}" data-username="${u.username}" data-email="${u.email||''}" data-role="${u.role||'user'}">
+        <td><input type="checkbox" class="user-check" data-id="${u.id}"/></td>
+        <td style="font-weight:500">${esc(u.username)}</td>
+        <td style="color:#888;font-size:0.85em">${esc(u.email||'')}</td>
+        <td><span class="role-badge role-${u.role||'user'}">${u.role||'user'}</span></td>
+        <td><span class="status-badge status-${u.status||'active'}">${u.status||'active'}</span></td>
+        <td style="white-space:nowrap">
+          <button class="tbl-btn" onclick="editCreatorUser('${u.id}','${esc(u.username)}','${esc(u.email||'')}','${u.role||'user'}')">✎</button>
+          <button class="tbl-btn tbl-btn--danger" onclick="deleteCreatorUser('${u.id}','${esc(u.username)}')">🗑</button>
+        </td>
+      </tr>
+    `).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="6" style="color:#e88;padding:20px">${e.message}</td></tr>`;
+  }
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function editCreatorUser(id, username, email, role) {
+  const newUsername = prompt('Username:', username);
+  if (newUsername === null) return;
+  const newRole = prompt('Role (user / admin):', role);
+  if (newRole === null) return;
+  const token = localStorage.getItem('ibelieve_admin_token') || '';
+  fetch(FORUM_API + '/api/ibelieve/admin/users/' + id, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify({ username: newUsername, role: newRole })
+  }).then(r => r.json()).then(d => {
+    if (d.ok) { alert('Updated!'); loadCreatorUsers(); }
+    else alert('Error: ' + (d.error || 'unknown'));
+  });
+}
+
+function deleteCreatorUser(id, username) {
+  if (!confirm('Delete user "' + username + '"? This cannot be undone.')) return;
+  const token = localStorage.getItem('ibelieve_admin_token') || '';
+  fetch(FORUM_API + '/api/ibelieve/admin/users/' + id, {
+    method: 'DELETE',
+    headers: { 'Authorization': 'Bearer ' + token }
+  }).then(r => r.json()).then(d => {
+    if (d.ok) { alert('Deleted.'); loadCreatorUsers(); }
+    else alert('Error: ' + (d.error || 'unknown'));
+  });
+}
+
+// Hook into tab switching — load users when Account tab is clicked
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    const accountTab = Array.from(document.querySelectorAll('[data-tab], .tab-btn, .nav-item'))
+      .find(el => el.textContent.trim() === 'Account');
+    if (accountTab) {
+      accountTab.addEventListener('click', () => setTimeout(loadCreatorUsers, 100));
+    }
+  }, 1000);
+});
 </script>
 </body>
 </html>
