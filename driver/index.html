@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1A3A6B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>監理所考試練習 | 長者駕照更新</title>
+<meta name="description" content="專為70歲以上長者設計的監理所交通安全測驗練習系統，大字體、語音朗讀、三種練習模式。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #1A3A6B;
+    --navy-dark: #122B52;
+    --navy-light: #E8F0FE;
+    --green: #155724;
+    --green-bg: #D4EDDA;
+    --green-border: #C3E6CB;
+    --red: #721C24;
+    --red-bg: #F8D7DA;
+    --red-border: #F5C6CB;
+    --yellow-bg: #FFF9E6;
+    --yellow-border: #FFC107;
+    --text: #1A1A1A;
+    --text-muted: #555;
+    --bg: #F4F3EE;
+    --surface: #FFFFFF;
+    --border: #D8D5CC;
+    --radius: 14px;
+    --font: 'Noto Sans TC', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+  }
+
+  html, body {
+    height: 100%;
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  #app {
+    max-width: 680px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--bg);
+    position: relative;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: block; }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--navy);
+    color: white;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .header h1 { font-size: 20px; font-weight: 600; flex: 1; }
+  .header .counter { font-size: 15px; opacity: 0.85; white-space: nowrap; }
+  .back-btn {
+    background: rgba(255,255,255,0.18);
+    border: none;
+    color: white;
+    font-size: 24px;
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .back-btn:hover { background: rgba(255,255,255,0.28); }
+
+  /* ── HOME ── */
+  .home-hero {
+    background: var(--navy);
+    color: white;
+    padding: 36px 20px 44px;
+    text-align: center;
+  }
+  .home-hero .car-icon { font-size: 56px; margin-bottom: 12px; }
+  .home-hero h2 { font-size: 30px; font-weight: 700; margin-bottom: 6px; }
+  .home-hero .subtitle { font-size: 18px; opacity: 0.85; margin-bottom: 16px; }
+  .home-hero .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #FFC107;
+    color: #1A1A1A;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 6px 16px;
+    border-radius: 20px;
+    margin-bottom: 6px;
+  }
+
+  .stats-row {
+    display: flex;
+    background: var(--surface);
+    margin: 0 16px;
+    margin-top: -16px;
+    border-radius: var(--radius);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    overflow: hidden;
+  }
+  .stat-cell {
+    flex: 1;
+    padding: 14px 8px;
+    text-align: center;
+    border-right: 1px solid var(--border);
+  }
+  .stat-cell:last-child { border-right: none; }
+  .stat-num { font-size: 26px; font-weight: 700; color: var(--navy); }
+  .stat-lbl { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+  .section-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 24px 16px 10px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .mode-cards { padding: 0 16px; display: flex; flex-direction: column; gap: 14px; }
+  .mode-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .mode-card:hover, .mode-card:active { border-color: var(--navy); transform: translateY(-1px); }
+  .mode-icon {
+    width: 62px;
+    height: 62px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    flex-shrink: 0;
+  }
+  .icon-blue { background: var(--navy-light); }
+  .icon-green { background: #E6F4EA; }
+  .icon-orange { background: #FEF3E2; }
+  .mode-label { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .mode-desc { font-size: 16px; color: var(--text-muted); }
+  .mode-arrow { margin-left: auto; font-size: 28px; color: #CCC; flex-shrink: 0; }
+
+  .tip-box {
+    background: var(--navy-light);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin: 20px 16px 32px;
+    font-size: 16px;
+    color: var(--navy);
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    line-height: 1.5;
+  }
+
+  /* ── QUESTION SCREEN ── */
+  .q-body { padding: 16px 16px 24px; }
+
+  .progress-wrap {
+    background: #E0DDD4;
+    border-radius: 8px;
+    height: 10px;
+    margin-bottom: 6px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    background: var(--navy);
+    height: 10px;
+    border-radius: 8px;
+    transition: width 0.5s ease;
+  }
+  .progress-label { font-size: 15px; color: var(--text-muted); margin-bottom: 20px; }
+
+  .cat-tag {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 600;
+    background: var(--navy-light);
+    color: var(--navy);
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+  }
+
+  .q-text {
+    font-size: 26px;
+    line-height: 1.65;
+    color: var(--text);
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+
+  .speak-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: 2px solid var(--navy);
+    color: var(--navy);
+    border-radius: 10px;
+    padding: 9px 18px;
+    font-size: 17px;
+    font-family: var(--font);
+    cursor: pointer;
+    margin-bottom: 22px;
+    transition: background 0.15s;
+  }
+  .speak-btn:hover { background: var(--navy-light); }
+
+  .q-image {
+    width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    background: #F0F0EA;
+    display: none;
+  }
+  .q-image.has-image { display: block; }
+
+  .choices { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
+  .choice-btn {
+    background: #F5F4EE;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    font-size: 21px;
+    font-family: var(--font);
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text);
+    width: 100%;
+    line-height: 1.45;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    min-height: 70px;
+  }
+  .choice-btn:hover:not(:disabled) { border-color: var(--navy); background: var(--navy-light); }
+  .choice-btn:active:not(:disabled) { transform: scale(0.98); }
+  .choice-btn:disabled { cursor: default; }
+
+  .label-circle {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    font-weight: 700;
+    flex-shrink: 0;
+    transition: all 0.25s;
+  }
+  .choice-btn .choice-text { padding-top: 4px; }
+
+  .choice-btn.correct {
+    background: var(--green-bg);
+    border-color: var(--green-border);
+    color: var(--green);
+  }
+  .choice-btn.correct .label-circle { background: #28A745; color: white; }
+  .choice-btn.wrong {
+    background: var(--red-bg);
+    border-color: var(--red-border);
+    color: var(--red);
+  }
+  .choice-btn.wrong .label-circle { background: #DC3545; color: white; }
+
+  .result-banner {
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    font-size: 22px;
+    font-weight: 700;
+    display: none;
+  }
+  .result-banner.ok { background: var(--green-bg); color: var(--green); border: 2px solid var(--green-border); }
+  .result-banner.bad { background: var(--red-bg); color: var(--red); border: 2px solid var(--red-border); }
+
+  .explanation-box {
+    background: var(--yellow-bg);
+    border: 2px solid var(--yellow-border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    font-size: 18px;
+    color: #444;
+    line-height: 1.65;
+    margin-bottom: 20px;
+    display: none;
+  }
+
+  .next-btn {
+    background: var(--navy);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    padding: 20px;
+    width: 100%;
+    font-size: 22px;
+    font-weight: 600;
+    font-family: var(--font);
+    cursor: pointer;
+    transition: background 0.15s;
+    display: none;
+  }
+  .next-btn:hover { background: var(--navy-dark); }
+  .next-btn:active { transform: scale(0.99); }
+
+  /* ── FINISH SCREEN ── */
+  .finish-body { padding: 28px 16px 40px; text-align: center; }
+  .score-ring {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: var(--navy);
+    color: white;
+    margin: 0 auto 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .score-ring .big-num { font-size: 48px; font-weight: 700; line-height: 1; }
+  .score-ring .small-lbl { font-size: 14px; opacity: 0.75; margin-top: 4px; }
+
+  .finish-title { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .finish-sub { font-size: 18px; color: var(--text-muted); margin-bottom: 24px; }
+
+  .advice-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 28px;
+    text-align: left;
+    border: 1px solid var(--border);
+  }
+  .advice-title { font-size: 17px; font-weight: 600; margin-bottom: 10px; }
+  .advice-text { font-size: 17px; color: var(--text-muted); line-height: 1.7; }
+
+  .finish-btns { display: flex; gap: 12px; }
+  .btn-outline {
+    flex: 1;
+    padding: 18px;
+    border-radius: var(--radius);
+    font-size: 20px;
+    font-weight: 600;
+    font-family: var(--font);
+    cursor: pointer;
+    background: var(--surface);
+    border: 2px solid var(--navy);
+    color: var(--navy);
+    transition: background 0.15s;
+  }
+  .btn-outline:hover { background: var(--navy-light); }
+  .btn-primary {
+    flex: 1;
+    padding: 18px;
+    border-radius: var(--radius);
+    font-size: 20px;
+    font-weight: 600;
+    font-family: var(--font);
+    cursor: pointer;
+    background: var(--navy);
+    border: none;
+    color: white;
+    transition: background 0.15s;
+  }
+  .btn-primary:hover { background: var(--navy-dark); }
+
+  /* ── WRONG REVIEW LIST ── */
+  .wrong-header { padding: 20px 16px 10px; font-size: 20px; font-weight: 600; }
+  .wrong-empty { text-align: center; padding: 60px 20px; font-size: 20px; color: var(--text-muted); }
+  .wrong-list { padding: 0 16px 24px; display: flex; flex-direction: column; gap: 10px; }
+  .wrong-item {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 2px solid var(--red-border);
+  }
+  .wrong-item .wi-text { flex: 1; font-size: 17px; line-height: 1.4; color: var(--text); }
+  .wrong-badge {
+    background: #DC3545;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    flex-shrink: 0;
+  }
+
+  /* ── SETTINGS ── */
+  .settings-body { padding: 16px; }
+  .settings-row {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 18px 16px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border: 1px solid var(--border);
+  }
+  .settings-row .sr-label { flex: 1; font-size: 20px; font-weight: 500; }
+  .settings-row .sr-desc { font-size: 15px; color: var(--text-muted); }
+
+  /* Toggle */
+  .toggle {
+    position: relative;
+    width: 56px;
+    height: 30px;
+    flex-shrink: 0;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: #CCC;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 22px; height: 22px;
+    left: 4px; top: 4px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+  .toggle input:checked + .toggle-slider { background: var(--navy); }
+  .toggle input:checked + .toggle-slider::before { transform: translateX(26px); }
+
+  /* ── FONT SIZE SLIDER ── */
+  input[type=range] { width: 100%; accent-color: var(--navy); }
+
+  /* ── SPEAKING INDICATOR ── */
+  .speaking-dot {
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #FFC107;
+    margin-left: 6px;
+    animation: pulse 1s infinite;
+    vertical-align: middle;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .speaking-dot.active { opacity: 1; }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.5)} }
+
+  /* ── FOOTER ── */
+  .site-footer {
+    text-align: center;
+    padding: 20px 16px;
+    font-size: 14px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    margin-top: 8px;
+  }
+  .site-footer a { color: var(--navy); text-decoration: none; }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141414;
+      --surface: #1E1E1E;
+      --text: #F0F0F0;
+      --text-muted: #999;
+      --border: #333;
+    }
+    .mode-card { box-shadow: none; }
+    .choice-btn { background: #252525; }
+    .choice-btn:hover:not(:disabled) { background: #1A3060; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══════════════════════════════════
+     HOME SCREEN
+══════════════════════════════════ -->
+<div id="screen-home" class="screen active">
+  <div class="home-hero">
+    <div class="car-icon">🚗</div>
+    <h2>監理所考試練習</h2>
+    <p class="subtitle">專為長者設計・大字清晰・語音朗讀</p>
+    <span class="badge">🔊 內建語音朗讀</span>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-cell">
+      <div class="stat-num" id="stat-done">0</div>
+      <div class="stat-lbl">已練題數</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num" id="stat-wrong">0</div>
+      <div class="stat-lbl">錯題數</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num" id="stat-rate">—</div>
+      <div class="stat-lbl">答對率</div>
+    </div>
+  </div>
+
+  <div class="section-title">選擇練習模式</div>
+  <div class="mode-cards">
+    <div class="mode-card" onclick="startMode('quick')" role="button" tabindex="0">
+      <div class="mode-icon icon-blue">⚡</div>
+      <div>
+        <div class="mode-label">快速通關</div>
+        <div class="mode-desc">最重要的必考題，快速熟悉</div>
+      </div>
+      <div class="mode-arrow">›</div>
+    </div>
+    <div class="mode-card" onclick="startMode('mock')" role="button" tabindex="0">
+      <div class="mode-icon icon-green">📋</div>
+      <div>
+        <div class="mode-label">模擬考試</div>
+        <div class="mode-desc">模擬真實測驗，計算分數</div>
+      </div>
+      <div class="mode-arrow">›</div>
+    </div>
+    <div class="mode-card" onclick="startMode('wrong')" role="button" tabindex="0" id="wrong-card">
+      <div class="mode-icon icon-orange">🔁</div>
+      <div>
+        <div class="mode-label">錯題複習</div>
+        <div class="mode-desc" id="wrong-desc">先練習後才會出現</div>
+      </div>
+      <div class="mode-arrow">›</div>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    <span>💡</span>
+    <span>建議：每天練習15分鐘，大約一週後成績就會進步！點選答案後可聽語音說明。</span>
+  </div>
+  <div class="site-footer">
+    <a href="https://openai-tw.com">openai-tw.com</a> · 長者駕照更新練習系統 v1.0
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     QUESTION SCREEN
+══════════════════════════════════ -->
+<div id="screen-question" class="screen">
+  <div class="header">
+    <button class="back-btn" onclick="goHome()" aria-label="返回首頁">←</button>
+    <h1 id="q-mode-label">快速通關</h1>
+    <span class="counter" id="q-counter">1 / 10</span>
+  </div>
+
+  <div class="q-body">
+    <div class="progress-wrap">
+      <div class="progress-fill" id="q-progress" style="width:5%"></div>
+    </div>
+    <div class="progress-label" id="q-progress-label">第 1 題，共 10 題</div>
+
+    <span class="cat-tag" id="q-cat">交通規則</span>
+    <img class="q-image" id="q-image" src="" alt="題目圖片">
+    <div class="q-text" id="q-text">題目載入中...</div>
+
+    <button class="speak-btn" onclick="speakCurrent()" id="speak-btn">
+      🔊 朗讀題目
+      <span class="speaking-dot" id="speaking-dot"></span>
+    </button>
+
+    <div class="choices" id="q-choices"></div>
+
+    <div class="result-banner" id="q-result"></div>
+    <div class="explanation-box" id="q-explanation"></div>
+    <button class="next-btn" id="q-next" onclick="nextQuestion()">下一題 →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     FINISH SCREEN
+══════════════════════════════════ -->
+<div id="screen-finish" class="screen">
+  <div class="header">
+    <button class="back-btn" onclick="goHome()">←</button>
+    <h1>練習結果</h1>
+  </div>
+  <div class="finish-body">
+    <div class="score-ring">
+      <div class="big-num" id="f-score">80</div>
+      <div class="small-lbl">分</div>
+    </div>
+    <div class="finish-title" id="f-title">做得很好！</div>
+    <div class="finish-sub" id="f-sub">共10題，答對8題</div>
+    <div class="advice-card">
+      <div class="advice-title">💬 建議</div>
+      <div class="advice-text" id="f-advice">繼續加油！</div>
+    </div>
+    <div class="finish-btns">
+      <button class="btn-outline" onclick="goHome()">回首頁</button>
+      <button class="btn-primary" onclick="repeatMode()">再練一次</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- #app -->
+
+<script>
+/* ─────────────────────────────────────────────────
+   題庫（100題，涵蓋交通標誌、規則、安全駕駛）
+───────────────────────────────────────────────── */
+const QUESTIONS = [
+  // ── 交通規則 ──
+  { id:1,  cat:'交通規則', key:true,  text:'看到紅燈時，應該怎麼做？',
+    ch:['慢慢通過即可','停車等待，綠燈再走','按喇叭後通過','左轉不用等紅燈'],
+    ans:1, exp:'紅燈必須完全停車等待。闖紅燈會被罰款 1,800～5,400 元並記點，也非常危險。' },
+
+  { id:2,  cat:'交通規則', key:true,  text:'行人走在斑馬線上時，駕駛人應該怎麼做？',
+    ch:['按喇叭提醒行人快點','慢慢通過斑馬線','必須停車，禮讓行人通過','繞道從旁邊過去'],
+    ans:2, exp:'行人在斑馬線上有優先通行權，駕駛人必須完全停車等待行人通過後才能前進，違者罰款1,200元。' },
+
+  { id:3,  cat:'交通規則', key:true,  text:'看到救護車或消防車鳴笛時，應該怎麼做？',
+    ch:['加速離開讓路','立刻靠路邊停車讓路','繼續正常行駛','跟著救護車走'],
+    ans:1, exp:'看到救護車或消防車，必須靠路邊停車讓行，讓緊急車輛優先通過，不讓路最高罰 1,200 元。' },
+
+  { id:4,  cat:'交通規則', key:false, text:'在高速公路上，最低速限通常是多少？',
+    ch:['每小時 40 公里','每小時 60 公里','每小時 80 公里','沒有最低速限'],
+    ans:1, exp:'台灣高速公路最低速限為每小時 60 公里。行駛太慢也危及其他車輛安全，可被罰款。' },
+
+  { id:5,  cat:'交通規則', key:true,  text:'路口閃黃燈代表什麼？',
+    ch:['可以正常通過','減速慢行，注意安全','必須停車','禁止通行'],
+    ans:1, exp:'閃黃燈表示警示，必須減速慢行，確認安全後再通過。不能當成綠燈直接衝過去。' },
+
+  { id:6,  cat:'交通規則', key:false, text:'超越前方車輛時，應該從哪一側超車？',
+    ch:['右側超車','左側超車','任意一側都可以','不能超車'],
+    ans:1, exp:'超車必須從左側（快車道）超越，且需確認前後方安全，禁止從右側超車。' },
+
+  { id:7,  cat:'交通規則', key:true,  text:'在市區內一般道路，最高速限通常是多少？',
+    ch:['每小時 30 公里','每小時 50 公里','每小時 70 公里','每小時 90 公里'],
+    ans:1, exp:'市區一般道路最高速限為每小時 50 公里（除非另有標示）。超速行駛是造成交通事故的主因之一。' },
+
+  { id:8,  cat:'交通規則', key:false, text:'路口沒有標誌也沒有號誌時，應該怎麼處理？',
+    ch:['快速通過即可','減速並禮讓右方來車','按喇叭提醒其他車輛','停車等另一輛車先過'],
+    ans:1, exp:'無號誌路口應減速慢行，並禮讓右方來車先行，這是台灣道路交通管理條例的基本規定。' },
+
+  { id:9,  cat:'交通規則', key:true,  text:'開車時，車上所有乘客都需要繫安全帶嗎？',
+    ch:['只有駕駛需要繫','前座需要，後座不用','全車乘客都必須繫','12歲以下才需要繫'],
+    ans:2, exp:'依法規定，全車乘客（包括後座）都必須繫安全帶，違者各罰 1,500 元。安全帶是最有效的保命裝置。' },
+
+  { id:10, cat:'交通規則', key:false, text:'在學校附近行駛，應特別注意什麼？',
+    ch:['可以正常速度行駛','減速慢行，注意兒童','按喇叭提醒兒童','只在上課時間才需注意'],
+    ans:1, exp:'學校附近必須減速（通常30公里以下），隨時注意可能衝出的兒童，尤其是上下學時間。' },
+
+  // ── 交通標誌 ──
+  { id:11, cat:'交通標誌', key:true,  text:'紅色八角形的「停」字標誌，代表什麼意思？',
+    ch:['減速慢行即可','完全停車，確認安全後再前進','只有大型車需停車','左右看一下即可'],
+    ans:1, exp:'「停車再開」是最高優先標誌，必須完全停下來（速度歸零），確認左右安全後才能前進。' },
+
+  { id:12, cat:'交通標誌', key:true,  text:'黃色菱形標誌通常代表什麼意思？',
+    ch:['指示方向','禁止通行','警告前方有危險，需減速注意','限制速度'],
+    ans:2, exp:'黃色菱形是「警告標誌」，提醒前方有危險（如彎道、學校、工程等），必須減速注意。' },
+
+  { id:13, cat:'交通標誌', key:true,  text:'「禁止進入」標誌（紅色圓形，中間白橫線）代表什麼？',
+    ch:['可以進去，但要限速','禁止所有車輛進入','只有大車不能進入','需要鳴喇叭才能進入'],
+    ans:1, exp:'「禁止進入」代表任何車輛（包括機車）都不能進入該路段，違者可被罰款並吊扣駕照。' },
+
+  { id:14, cat:'交通標誌', key:false, text:'藍色圓形標誌通常代表什麼？',
+    ch:['禁止事項','警告危險','指示或遵行方向','限制速度'],
+    ans:2, exp:'藍色圓形是「指示標誌」，告訴駕駛可以做的事或必須遵行的方向，如單行道方向等。' },
+
+  { id:15, cat:'交通標誌', key:true,  text:'看到數字「40」的圓形速限標誌，代表什麼？',
+    ch:['最低速限40公里','最高速限40公里','建議速限40公里','學校區域40公里'],
+    ans:1, exp:'速限標誌代表「最高速限」，不能超過該數字行駛。違反速限是交通事故的重要原因之一。' },
+
+  { id:16, cat:'交通標誌', key:false, text:'「單行道」標誌表示什麼？',
+    ch:['這條路只能單向行駛','可以雙向行駛','只有公車可以走','只能單線行駛，可逆向'],
+    ans:0, exp:'單行道只能朝標誌所指方向行駛，嚴禁逆向，違者罰款並有事故風險。' },
+
+  { id:17, cat:'交通標誌', key:true,  text:'「禁止停車」標誌（紅色）和「禁止臨時停車」有什麼不同？',
+    ch:['完全一樣，都不能停','禁止停車連臨時停也不行；禁止臨時停是指不能停放，但可以短暫停讓人上下車','禁止停車只限白天','隨意，都可以停一下'],
+    ans:1, exp:'「禁止停車」連人上下車也不行；「禁止臨時停車」則是不能長時間停放，但快速讓人上下車是允許的。' },
+
+  { id:18, cat:'交通標誌', key:false, text:'斑馬線前的三角形倒三角「讓」字標誌代表什麼？',
+    ch:['可以直行不用停','必須讓行人或對向車輛先行','只是建議，可以不理','限速標誌'],
+    ans:1, exp:'倒三角「讓」字是「讓路標誌」，必須讓行人或其他有路權的車輛先行通過。' },
+
+  { id:19, cat:'交通標誌', key:true,  text:'「禁止超車」標誌代表什麼？',
+    ch:['在該路段不能超越其他車輛','只有貨車不能超車','可以超慢速車','只限夜間禁止'],
+    ans:0, exp:'「禁止超車」表示在該路段不得超越前方車輛，因為前方路況危險，強行超車非常危險。' },
+
+  { id:20, cat:'交通標誌', key:false, text:'「學校」警告標誌提醒駕駛什麼？',
+    ch:['前方是學校，可以停車','前方有學校，注意兒童，要減速','學校限定才能通行','禁止進入'],
+    ans:1, exp:'學校警告標誌提醒前方附近有學校，兒童可能隨時衝出，必須大幅減速並提高警覺。' },
+
+  // ── 安全駕駛 ──
+  { id:21, cat:'安全駕駛', key:true,  text:'喝了一瓶啤酒之後，可以開車嗎？',
+    ch:['可以，只喝一瓶沒關係','等一小時就可以了','絕對不行，酒後不能開車','喝咖啡後就可以開'],
+    ans:2, exp:'喝酒後絕對不能開車！酒精會降低判斷力和反應時間，酒駕是嚴重犯罪，最重可判有期徒刑。' },
+
+  { id:22, cat:'安全駕駛', key:true,  text:'開車時感到非常疲倦、眼睛快睜不開，應該怎麼做？',
+    ch:['開窗讓風吹，繼續開','喝咖啡後繼續開','立刻找安全地方靠邊停車休息','打開音樂提神繼續開'],
+    ans:2, exp:'疲勞駕駛非常危險，反應速度和判斷力都會下降。應立即靠邊停車休息至少20分鐘。' },
+
+  { id:23, cat:'安全駕駛', key:true,  text:'開車時可以使用手機講電話嗎？',
+    ch:['可以，只要不發簡訊','短暫講沒關係','完全不行，違法且危險','停紅燈時可以'],
+    ans:2, exp:'開車（包括停紅燈時）使用手機是違法的，罰款3,000元。應使用免持聽筒，或靠邊停車再接聽。' },
+
+  { id:24, cat:'安全駕駛', key:true,  text:'服用了安眠藥或某些感冒藥後，可以開車嗎？',
+    ch:['可以，藥效不影響開車','等兩小時後可以','不能，這些藥物會影響開車能力','喝水後就可以'],
+    ans:2, exp:'許多藥物（安眠藥、抗過敏藥、某些感冒藥）會造成嗜睡，服用後嚴禁開車。服藥前請詢問醫師。' },
+
+  { id:25, cat:'安全駕駛', key:true,  text:'下雨天行駛時，應該怎麼調整駕駛方式？',
+    ch:['跟平常一樣就好','增加車距並降低速度','打開警示燈快速通過','雨天不能開車'],
+    ans:1, exp:'雨天路面濕滑，煞車距離增加，應降低速度並加大與前車距離（至少3秒以上），並打開頭燈。' },
+
+  { id:26, cat:'安全駕駛', key:false, text:'隧道行駛時，下列何者正確？',
+    ch:['進隧道要加速通過','進隧道前要打開頭燈','進隧道可以停車','隧道裡可以超車'],
+    ans:1, exp:'進入隧道前必須打開頭燈，以確保視線清晰，也讓對向車輛能看到你。隧道內嚴禁停車和超車。' },
+
+  { id:27, cat:'安全駕駛', key:true,  text:'行車中，後方車輛靠近閃燈時，應該如何回應？',
+    ch:['立刻急煞車','加速離開','在安全情況下靠右讓路','繼續維持現有速度'],
+    ans:2, exp:'後方車輛閃燈通常是要求超車，應在安全情況下靠右讓出行車空間，不必急煞或加速。' },
+
+  { id:28, cat:'安全駕駛', key:false, text:'長時間駕駛後，建議多久休息一次？',
+    ch:['4小時一次','連續開12小時','每2小時休息15分鐘以上','疲倦了再休息'],
+    ans:2, exp:'建議每連續駕駛2小時，休息15分鐘以上，長途行駛更需如此，避免疲勞造成危險。' },
+
+  { id:29, cat:'安全駕駛', key:true,  text:'夜間行駛時，遇到對向車輛開遠光燈，應該怎麼做？',
+    ch:['也開遠光燈對抗','閉上眼睛等燈過去','視線偏向右側路邊，降低速度','停車等對方先過'],
+    ans:2, exp:'對向遠光燈會使視線模糊，應將視線偏向右側路邊，降低速度，等對方燈光過去後再恢復正常。' },
+
+  { id:30, cat:'安全駕駛', key:false, text:'輪胎突然爆胎時，最正確的處理方式是什麼？',
+    ch:['猛踩煞車','立刻打方向盤轉彎','穩住方向盤，緩慢減速靠邊停車','加速衝到路邊'],
+    ans:2, exp:'爆胎時切勿急踩煞車或猛打方向盤，應穩住方向盤，緩慢踩煞車，讓車子慢慢減速靠邊停下。' },
+
+  // ── 長者特殊題 ──
+  { id:31, cat:'長者安全', key:true,  text:'年紀增長後，反應時間會有什麼變化？',
+    ch:['反應會更快','反應時間會變慢，需要更多時間刹車','沒有太大變化','只有視力變差，反應不變'],
+    ans:1, exp:'隨年齡增長，神經傳導速度下降，反應時間會增加。應增加與前車距離，以彌補反應時間的不足。' },
+
+  { id:32, cat:'長者安全', key:true,  text:'視力退化後，夜間行駛應特別注意什麼？',
+    ch:['夜間開車和白天一樣','減慢速度，避免夜間長途駕駛','戴太陽眼鏡行駛','開遠光燈就沒問題'],
+    ans:1, exp:'視力退化讓夜間視力更差，建議降低速度、縮短行駛距離，必要時避免夜間長途駕駛。' },
+
+  { id:33, cat:'長者安全', key:false, text:'服用多種藥物的長者，開車前應該怎麼做？',
+    ch:['正常開車，藥物無影響','詢問醫師或藥師，了解藥物是否影響開車','只在白天開車','喝咖啡提神後再開'],
+    ans:1, exp:'多種藥物同時服用可能影響注意力和反應。開車前務必詢問醫師或藥師，確認藥物對駕駛的影響。' },
+
+  { id:34, cat:'長者安全', key:true,  text:'長者開車時，以下哪項做法最安全？',
+    ch:['盡量走不熟悉的路線練習','選擇交通流量小、熟悉的路線行駛','在尖峰時間多開車練習','隨時高速行駛'],
+    ans:1, exp:'長者應選擇熟悉且交通流量較小的路線，避免尖峰時間行駛，這樣最安全也最舒適。' },
+
+  { id:35, cat:'長者安全', key:false, text:'長者如果感到頭暈或不舒服，應該怎麼做？',
+    ch:['繼續開，很快就好了','立刻靠邊安全停車，不要繼續駕駛','降低速度繼續開','打電話給家人再說'],
+    ans:1, exp:'身體不舒服時判斷力和反應都會下降，必須立刻靠邊停車，確保自己和他人的安全。' },
+
+  // ── 繼續補充到100題 ──
+  { id:36, cat:'交通規則', key:false, text:'右轉時，應該注意什麼？',
+    ch:['直接右轉即可','提前打右方向燈，注意直行車和行人','快速右轉','按喇叭後右轉'],
+    ans:1, exp:'右轉前必須提早打方向燈，讓後方車輛知道，並確認直行車道和斑馬線上無行人才能轉彎。' },
+
+  { id:37, cat:'交通規則', key:false, text:'停紅燈等待時，前方紅燈轉為綠燈，應該怎麼做？',
+    ch:['立刻全速前進','稍等一下，確認路口安全後再出發','按喇叭催促其他車輛','繼續等待'],
+    ans:1, exp:'綠燈亮起應稍候確認路口（特別是斜向來車和行人），確定安全後再前進，不要搶快。' },
+
+  { id:38, cat:'安全駕駛', key:true,  text:'行車前，應該做哪些基本檢查？',
+    ch:['不需要檢查，直接出發','檢查輪胎、油量、燈光、煞車等基本狀況','只看後視鏡是否清潔','只要油夠就好'],
+    ans:1, exp:'行車前應檢查：輪胎氣壓、油量、冷卻水、燈光、煞車是否正常，這是基本的安全習慣。' },
+
+  { id:39, cat:'交通標誌', key:false, text:'「讓行人先行」的標誌主要出現在哪裡？',
+    ch:['高速公路上','斑馬線、路口、停車場出入口附近','市中心大樓外','隨機路段'],
+    ans:1, exp:'讓行人先行標誌通常出現在斑馬線旁、路口及停車場出入口，提醒駕駛行人有優先通行權。' },
+
+  { id:40, cat:'安全駕駛', key:false, text:'發現前方突然有障礙物，最安全的做法是什麼？',
+    ch:['猛打方向盤閃避','先確認後方車況，穩定煞車或在安全情況下變換車道','繼續直行撞上去','立刻全力踩煞車，不管後方車輛'],
+    ans:1, exp:'遇到障礙物應先確認後方狀況，然後穩定煞車；若需閃避，必須先確保旁邊車道安全才能變換。' },
+
+  { id:41, cat:'交通規則', key:false, text:'高速公路上，行駛速度過慢（低於最低速限）會有什麼問題？',
+    ch:['沒有問題，安全第一','違法，且可能造成追撞危險','只能在特定時段慢開','只有大車才有速限規定'],
+    ans:1, exp:'高速公路最低速限 60 公里，低於速限行駛違法，且容易造成後方車輛來不及反應而追撞。' },
+
+  { id:42, cat:'安全駕駛', key:true,  text:'行駛時，與前方車輛應保持多少距離最安全？',
+    ch:['越近越好，可以跟緊','至少1秒的距離','至少2～3秒的車距','距離不重要，隨時可以煞車'],
+    ans:2, exp:'建議保持至少2～3秒的車距（高速時更長）。這樣就算前車突然煞車，你也有足夠時間反應。' },
+
+  { id:43, cat:'交通標誌', key:false, text:'「行人穿越道」（斑馬線）的標線顏色是什麼？',
+    ch:['黃色平行線','白色平行線','紅色斜紋','藍色虛線'],
+    ans:1, exp:'斑馬線（行人穿越道）是白色平行橫線，駕駛人在此處必須讓行人優先通過。' },
+
+  { id:44, cat:'長者安全', key:false, text:'長者駕駛最常見的事故類型是哪一種？',
+    ch:['高速追撞','路口轉彎時未注意行人或來車','夜間行車','下坡煞車失靈'],
+    ans:1, exp:'長者最常見事故是路口轉彎時判斷失誤，因為路口需要同時處理多方向資訊，認知負荷較高。' },
+
+  { id:45, cat:'交通規則', key:false, text:'在台灣，騎乘機車必須戴安全帽嗎？',
+    ch:['只有夜間需要','只有高速公路上需要','所有道路都必須戴，包括駕駛和乘客','只有駕駛需要戴'],
+    ans:2, exp:'台灣規定機車駕駛和乘客都必須配戴安全帽，無論在任何道路上行駛，違者罰款 500 元。' },
+
+  { id:46, cat:'安全駕駛', key:true,  text:'當霧很大、能見度極低時，應該怎麼開車？',
+    ch:['開遠光燈快速通過','打開霧燈或近光燈，大幅降低速度，必要時靠邊等待','繼續正常速度行駛','把頭伸出窗外看路'],
+    ans:1, exp:'大霧時應開近光燈或霧燈（遠光燈反而更模糊），大幅降低速度，若能見度極低應靠邊停車等待。' },
+
+  { id:47, cat:'交通規則', key:false, text:'台灣道路，除法規另有規定外，車輛應靠哪側行駛？',
+    ch:['靠左行駛','靠右行駛','隨意，只要不超速','靠中間行駛'],
+    ans:1, exp:'台灣與大部分國家相同，車輛靠右行駛，超車時才使用左側車道，超車後應回到右側。' },
+
+  { id:48, cat:'安全駕駛', key:false, text:'行車記錄器的主要功用是什麼？',
+    ch:['幫助駕駛找路','提供行車的影像紀錄，有助釐清事故責任','代替後視鏡','讓車子自動駕駛'],
+    ans:1, exp:'行車記錄器記錄駕駛過程的影像，當發生事故或糾紛時，可作為客觀證據釐清責任。' },
+
+  { id:49, cat:'交通規則', key:true,  text:'開車時，有哪些情況是不可以超車的？',
+    ch:['在直線路段超車','在彎道、路口、隧道、橋樑等地方不可超車','在空曠地區不能超車','只有夜間不能超車'],
+    ans:1, exp:'彎道、路口、隧道、鐵路平交道、橋樑、施工路段等地方禁止超車，因為視線不良易發生事故。' },
+
+  { id:50, cat:'安全駕駛', key:false, text:'發生交通事故後，首先應該做什麼？',
+    ch:['立刻逃離現場','先拍照再說','確保現場安全，叫救護車，並在安全距離設置警示','責怪對方'],
+    ans:2, exp:'事故後首要是確保傷者安全，撥打 119 叫救護車，並設置警示標誌防止二次事故，不可棄車逃逸。' },
+
+  { id:51, cat:'交通規則', key:false, text:'進入圓環時，應該禮讓誰先行？',
+    ch:['自己先進','禮讓圓環內已行駛的車輛','按喇叭後進入','停車等所有車都過了再進'],
+    ans:1, exp:'進入圓環時，必須禮讓圓環內已在行駛的車輛先行，待安全時機再進入圓環。' },
+
+  { id:52, cat:'交通標誌', key:false, text:'「限重」標誌上的數字代表什麼？',
+    ch:['最高速度','允許通行的最大車重（公噸）','道路等級','路面寬度'],
+    ans:1, exp:'限重標誌上的數字表示允許通行車輛的最大重量（單位：公噸），超重車輛禁止通行以保護橋樑路面。' },
+
+  { id:53, cat:'安全駕駛', key:true,  text:'開車前，發現輪胎明顯氣不足，應該怎麼做？',
+    ch:['慢慢開去加油站就好','先把輪胎充氣到正確氣壓再出發','快速開完這段路再說','不用理會'],
+    ans:1, exp:'輪胎氣壓不足會增加爆胎風險，且影響操控和煞車距離，出發前應充氣至正確氣壓（車門邊有標示）。' },
+
+  { id:54, cat:'交通規則', key:false, text:'鐵路平交道前，應該怎麼做？',
+    ch:['加速通過，以免被欄截','必須停車，確認左右無火車後再通過','慢速通過即可','等欄木放下再說'],
+    ans:1, exp:'平交道前必須停車觀察，確認左右方向都無火車來臨，且前方有足夠空間時才能通過。' },
+
+  { id:55, cat:'長者安全', key:true,  text:'長者開車最重要的安全建議是什麼？',
+    ch:['每天盡量多開，保持熟練','定期接受視力和反應能力檢查，了解自己的駕駛能力限制','只在假日開車','避免走快速道路'],
+    ans:1, exp:'長者應定期檢查視力、聽力和反應能力，了解自己的限制，並在能力允許範圍內安全駕駛。' },
+
+  { id:56, cat:'交通規則', key:false, text:'行駛於雙向道時，何時可以越過分向線（黃線）？',
+    ch:['任何時候都可以','只有超車時，且確認安全','有急事時','從不能越過'],
+    ans:1, exp:'實線黃線（雙黃線）不得跨越；虛線黃線超車時可短暫跨越，但必須確認對向無來車。' },
+
+  { id:57, cat:'安全駕駛', key:false, text:'車輛煞車系統出現異常聲音，應該怎麼做？',
+    ch:['繼續開，等下次保養時再說','立刻減少駕駛，盡快送廠檢修','加速行駛讓它磨合','只在急煞時才注意'],
+    ans:1, exp:'煞車異常聲音可能是煞車片磨損或系統故障，這直接影響行車安全，必須盡快送廠檢修。' },
+
+  { id:58, cat:'交通標誌', key:false, text:'「注意行人」標誌上通常畫什麼圖案？',
+    ch:['一個奔跑的人形','腳印','禮讓行人文字','人形加上斑馬線'],
+    ans:3, exp:'注意行人標誌通常包含人形及斑馬線圖示，提醒駕駛前方有行人穿越區，需減速禮讓。' },
+
+  { id:59, cat:'交通規則', key:true,  text:'酒精濃度達多少以上，就屬於酒駕？',
+    ch:['吐氣每公升 0.15 毫克以上','吐氣每公升 0.25 毫克以上（酒駕），0.15～0.25 為不能安全駕車','喝兩瓶啤酒以上','血液酒精濃度 0.08%'],
+    ans:1, exp:'吐氣酒精濃度 0.15～0.25 mg/L 為「不能安全駕車」；0.25 mg/L 以上為刑事酒駕，最重判刑。' },
+
+  { id:60, cat:'安全駕駛', key:false, text:'在山路行駛時，下坡路段應該怎麼控制車速？',
+    ch:['完全靠油門控制','利用引擎煞車加上輕踩煞車，不可長時間踩死煞車','只踩煞車','掛空檔滑行'],
+    ans:1, exp:'下坡應利用引擎煞車（降低檔位），輔以間歇踩煞車，避免長時間重踩煞車造成煞車過熱失靈。' },
+
+  { id:61, cat:'交通規則', key:false, text:'停車時，輪胎距離路邊應保持多少距離？',
+    ch:['越遠越好','緊貼路邊','距路邊 30 公分以內，但不能騎上人行道','不用在意距離'],
+    ans:2, exp:'路邊停車時，車輛右側（或左側）應距離路邊 30 公分以內，但不得侵占騎樓或人行道。' },
+
+  { id:62, cat:'長者安全', key:false, text:'當路口或停車場感到方向混亂時，長者應該怎麼做？',
+    ch:['快速判斷然後前進','請旁人協助指引，或找安全地方暫停後再確認','繼續繞圈找方向','隨意決定一個方向'],
+    ans:1, exp:'方向判斷混亂時，應停在安全地方冷靜思考，或請他人指引，不要衝動行事導致事故。' },
+
+  { id:63, cat:'交通規則', key:false, text:'在雙向道路上，要左轉時應提前多少打方向燈？',
+    ch:['轉彎的同時打燈','轉彎前 30 公尺以上','轉彎前 100 公尺以上','不需要打燈'],
+    ans:1, exp:'轉彎前至少 30 公尺（車速快時更早）應打方向燈，提醒後方車輛及行人你的行駛意圖。' },
+
+  { id:64, cat:'安全駕駛', key:false, text:'行車中後視鏡的主要功用是什麼？',
+    ch:['看前方路況','了解車輛後方及側方的交通狀況','照看後座乘客','裝飾用'],
+    ans:1, exp:'後視鏡讓駕駛在不轉頭的情況下掌握後方及側方車況，變換車道前必須確認後視鏡和盲點。' },
+
+  { id:65, cat:'交通規則', key:false, text:'高速公路分道標線（白色實線）代表什麼？',
+    ch:['可以跨越換道','禁止跨越，必須在本車道內行駛','建議行駛路線','僅供特定車輛行駛'],
+    ans:1, exp:'白色實線禁止跨越（如高速公路匝道附近），白色虛線則允許在安全時變換車道。' },
+
+  { id:66, cat:'安全駕駛', key:true,  text:'剛吃完一頓豐盛的大餐後，馬上開車有什麼風險？',
+    ch:['沒有風險，吃飽更有精神','飯後血糖升高，可能出現嗜睡，影響開車安全','可以正常開車','開車可以幫助消化'],
+    ans:1, exp:'飽食後血液流向消化系統，腦部供血相對減少，容易感到嗜睡，開車前宜休息15～30分鐘。' },
+
+  { id:67, cat:'交通標誌', key:false, text:'「道路施工」警告標誌的顏色和形狀是什麼？',
+    ch:['紅色圓形','藍色方形','橙色菱形或三角形','白色長方形'],
+    ans:2, exp:'道路施工警告標誌通常為橙色，提醒駕駛前方有施工路段，需減速慢行並注意工作人員。' },
+
+  { id:68, cat:'交通規則', key:false, text:'禮讓救護車通過後，後面的車輛應該怎麼做？',
+    ch:['繼續跟著救護車走','各自恢復正常行駛','繼續靠邊等待5分鐘','馬上加速補回位置'],
+    ans:1, exp:'救護車通過後，各車輛恢復正常行駛即可，不需要繼續靠邊等待，也不要跟著救護車走。' },
+
+  { id:69, cat:'長者安全', key:false, text:'長者開車時，如果路線不熟悉，最好的做法是什麼？',
+    ch:['邊開邊看地圖','請家人或朋友同行協助導引，或預先規劃熟悉路線','隨意開，到了再說','快速開過不熟悉路段'],
+    ans:1, exp:'路線不熟時最好有人同行協助，或提前規劃並熟記路線，避免邊開車邊看地圖分散注意力。' },
+
+  { id:70, cat:'安全駕駛', key:false, text:'發生小型擦撞，雙方車輛仍可行駛，應該怎麼處理？',
+    ch:['立刻離開不理對方','當場理賠，拍照記錄後移車，不要占用道路','繼續開走，稍後再說','在路中間爭論責任'],
+    ans:1, exp:'小擦撞若無傷亡應拍照記錄、交換資料後將車移至路邊，避免占用車道造成後方追撞的二次事故。' },
+
+  { id:71, cat:'交通規則', key:false, text:'開車時可以讓孩子坐在駕駛座旁、沒有兒童安全座椅嗎？',
+    ch:['只要有繫安全帶就可以','可以，只限市區','不行，12歲以下兒童必須使用兒童安全座椅','坐後座就可以'],
+    ans:2, exp:'12歲以下（或體重未達36公斤）兒童必須使用兒童安全座椅，一般安全帶無法提供足夠保護。' },
+
+  { id:72, cat:'交通標誌', key:false, text:'白色箭頭地面標線代表什麼？',
+    ch:['可以任意變換車道','指示該車道的行進方向','表示限速','停車線的位置'],
+    ans:1, exp:'地面白色箭頭標示該車道的法定行進方向，例如直行、左轉、右轉或複合方向，必須遵守。' },
+
+  { id:73, cat:'安全駕駛', key:false, text:'車輛儀表板上出現「電池」警示燈，通常代表什麼？',
+    ch:['電池需要充電（車輛發電系統出問題）','需要換電池（一般電池）','油量不足','輪胎氣壓不足'],
+    ans:0, exp:'電池警示燈亮表示車輛充電系統（交流發電機）可能有問題，應盡快送廠檢查，否則電池耗盡會拋錨。' },
+
+  { id:74, cat:'交通規則', key:false, text:'哪種情況下可以行駛於路肩（緊急停車道）？',
+    ch:['塞車時，為了快速前進','只有緊急狀況（如拋錨）或警察指揮才可使用','任何時候','趕時間時'],
+    ans:1, exp:'路肩（緊急停車道）只供緊急拋錨停車或救援用途，嚴禁塞車時借道行駛，違者高額罰款。' },
+
+  { id:75, cat:'長者安全', key:true,  text:'長者如何知道自己是否還適合開車？',
+    ch:['感覺還好就繼續開','定期接受駕駛能力評估，聽取家人和醫師的建議','永遠都適合開車','只看視力'],
+    ans:1, exp:'建議長者每年進行駕駛能力評估（視力、聽力、反應能力、認知功能），並認真聽取家人和醫師的意見。' },
+
+  { id:76, cat:'交通規則', key:false, text:'在沒有人行道的鄉村道路上，行人應靠哪側行走？',
+    ch:['靠右側走','靠左側走，面對來車','走路中央','隨便走'],
+    ans:1, exp:'沒有人行道時，行人應靠左側（逆向）行走，能看見迎面而來的車輛，增加安全性。' },
+
+  { id:77, cat:'安全駕駛', key:false, text:'後座乘客未繫安全帶，若發生事故，後果是什麼？',
+    ch:['只有輕微影響','後座乘客可能因慣性衝出，嚴重傷害駕駛或前座乘客，甚至衝出車外','沒有什麼危險','只有後座乘客受傷'],
+    ans:1, exp:'未繫安全帶的後座乘客在事故中會以極大力量衝向前座，可能造成所有乘客嚴重傷亡。' },
+
+  { id:78, cat:'交通標誌', key:false, text:'「禁止鳴喇叭」標誌通常出現在哪些地方？',
+    ch:['高速公路','醫院、學校、住宅區等安靜場所附近','市中心商業區','加油站'],
+    ans:1, exp:'禁止鳴喇叭標誌通常設於醫院、學校、住宅區等需要安靜的場所附近，違者罰款。' },
+
+  { id:79, cat:'交通規則', key:false, text:'進行迴轉（U型轉彎）時，需要注意什麼？',
+    ch:['可以隨時迴轉','只能在標示允許迴轉的路段迴轉，並確保安全','紅燈時可以迴轉','按喇叭後就可以迴轉'],
+    ans:1, exp:'迴轉必須在允許迴轉的地點，確認對向及後方無來車，視線清晰後才能執行，不可在彎道或路口迴轉。' },
+
+  { id:80, cat:'安全駕駛', key:false, text:'行車途中，車燈突然全部熄滅，最正確的做法是什麼？',
+    ch:['繼續開，等天亮','立刻打開危險警示燈，慢慢靠邊停車','加速開到目的地','打電話邊開邊說'],
+    ans:1, exp:'車燈故障應立刻開啟危險警示燈提醒其他車輛，緩慢靠邊停車後打電話叫救援，不可繼續行駛。' },
+
+  { id:81, cat:'交通規則', key:false, text:'在停車場倒車時，最重要的安全步驟是什麼？',
+    ch:['直接快速倒車','仔細確認後方無人及障礙物，緩慢倒車','按喇叭後倒車','只看後視鏡不用回頭'],
+    ans:1, exp:'倒車前必須確認後方和兩側都沒有行人（尤其是兒童）和障礙物，緩慢倒車，並保持警戒。' },
+
+  { id:82, cat:'交通標誌', key:false, text:'路口停車線（白色粗實線）的作用是什麼？',
+    ch:['可以停在線上','車輛等待時，車頭不得超過停車線','只供行人使用','標示車道中心'],
+    ans:1, exp:'停車線是車輛等待時的界線，車頭不得超越。超越停車線可能影響交通流量和行人安全。' },
+
+  { id:83, cat:'安全駕駛', key:true,  text:'開車過程中，最容易讓人分心的行為有哪些？',
+    ch:['聽廣播','使用手機、與同車者爭吵、吃東西，都會造成嚴重分心','看窗外景色','調整冷氣溫度'],
+    ans:1, exp:'使用手機（包括導航）、激烈爭論、吃喝東西都會嚴重分心，事故率大幅提升，應在停車時處理。' },
+
+  { id:84, cat:'交通規則', key:false, text:'台灣道路，機車行駛應靠哪側車道？',
+    ch:['最左側車道','最右側車道（慢車道）','任意車道','中央車道'],
+    ans:1, exp:'機車應行駛最右側的慢車道（除超車或轉彎需要），禁止在快車道長時間行駛。' },
+
+  { id:85, cat:'長者安全', key:false, text:'長者開車最好避免的時段和情況是什麼？',
+    ch:['早晨上班前','尖峰時段、惡劣天氣、長途夜間駕駛等高風險情況','下午時段','假日'],
+    ans:1, exp:'長者應盡量避免尖峰時段（交通複雜）、惡劣天氣（雨霧）和夜間長途駕駛，選擇最安全的時段出行。' },
+
+  { id:86, cat:'交通規則', key:false, text:'發現前方有違規停車的車輛擋住車道，應該怎麼辦？',
+    ch:['按喇叭強行通過','確認安全後繞行，或報警請違停車輛移開','停在後方等待','與對方爭吵'],
+    ans:1, exp:'在確認安全的情況下可繞行，若造成嚴重阻礙可報警（110）請執法人員處理違規停車。' },
+
+  { id:87, cat:'安全駕駛', key:false, text:'行駛於高速公路，感覺前方有落石或障礙物，應該怎麼做？',
+    ch:['立刻急煞車停下','保持鎮定，穩定控制方向盤，在安全前提下減速或避開，不要急打方向盤','立刻下高速公路','按喇叭警告後方車輛'],
+    ans:1, exp:'遇到障礙物切勿急打方向盤或急踩煞車（容易失控），應穩定控制，輕踩煞車，在安全情況下處理。' },
+
+  { id:88, cat:'交通標誌', key:false, text:'黃色菱形中有一個彎曲箭頭，代表什麼意思？',
+    ch:['可以迴轉','前方有急彎，要降低速度','前方是圓環','允許超車'],
+    ans:1, exp:'彎曲箭頭的警告標誌表示前方有急彎，必須提前降低速度，並保持在自己的車道內行駛。' },
+
+  { id:89, cat:'交通規則', key:false, text:'多人共乘時，誰負責確認後座乘客都繫好安全帶？',
+    ch:['乘客自己的責任','駕駛人有最終責任','前座乘客的責任','與駕駛無關'],
+    ans:0, exp:'雖然乘客自行繫安全帶是基本責任，但依法規，若乘客未繫，駕駛人也可能被連帶處罰。' },
+
+  { id:90, cat:'安全駕駛', key:false, text:'車輛在行駛中發現引擎溫度過高（水溫表紅線），應該怎麼做？',
+    ch:['繼續行駛，很快就好了','立刻靠邊停車熄火，等引擎冷卻後再檢查','加速讓引擎散熱','加水繼續開'],
+    ans:1, exp:'引擎過熱繼續行駛可能造成嚴重機械損壞，應靠邊停車熄火，等溫度下降後再補充冷卻水，並送廠檢查。' },
+
+  { id:91, cat:'交通規則', key:false, text:'在台灣，汽車駕照有效期限是多少年？',
+    ch:['一年','三年','六年','終身有效（有年齡限制）'],
+    ans:2, exp:'台灣汽車駕照一般有效期為六年，需定期換照並通過視力、體格檢查，70歲以上需額外認知功能測試。' },
+
+  { id:92, cat:'長者安全', key:false, text:'如果家人擔心長者的駕駛安全，應該如何處理？',
+    ch:['忽視家人的意見繼續開','與長者進行開放性溝通，一起評估駕駛能力，必要時尋求醫師或交通專家的意見','強制沒收鑰匙','減少與家人來往'],
+    ans:1, exp:'家庭應以尊重的態度溝通，一起評估駕駛能力，可尋求醫師或駕駛能力評估機構的客觀意見。' },
+
+  { id:93, cat:'安全駕駛', key:false, text:'路面結冰或非常濕滑時，駕駛應怎麼調整？',
+    ch:['與平常一樣行駛','大幅降低速度，增加車距，避免急加速和急煞車','使用後輪驅動模式快速通過','加速衝過滑路'],
+    ans:1, exp:'濕滑路面煞車距離可增加數倍，應大幅降低速度（不超過30km/h），保持更大車距，動作要溫和柔順。' },
+
+  { id:94, cat:'交通規則', key:false, text:'行駛中，遇到工地交通管制人員指揮，應該怎麼做？',
+    ch:['忽視交管人員的手勢','依照交管人員的指示行駛，優先於一般標誌','按喇叭要求讓路','自行判斷決定'],
+    ans:1, exp:'合法的交通管制人員（警察或工地交管）的指示具有法律效力，優先於一般標誌，必須遵守。' },
+
+  { id:95, cat:'交通標誌', key:false, text:'「殘障專用停車位」標誌代表什麼？',
+    ch:['任何人都可以停','只有持有殘障停車許可證的車輛才能停車','老人可以停','孕婦可以停'],
+    ans:1, exp:'殘障（無障礙）專用停車格只供持有合法殘障停車許可證的車輛使用，未經許可停放將被拖吊並罰款。' },
+
+  { id:96, cat:'安全駕駛', key:false, text:'車輛快速行駛時突然爆胎，方向盤可能出現什麼情況？',
+    ch:['方向盤變得更輕','方向盤可能突然偏向一側，難以控制','方向盤自動回正','沒有感覺'],
+    ans:1, exp:'爆胎時車輛通常會向爆胎側偏移，必須穩握方向盤、不急打不急踩，讓車輛緩慢減速停靠路邊。' },
+
+  { id:97, cat:'長者安全', key:false, text:'長者如果不得不在夜間開車，以下哪個做法最安全？',
+    ch:['開快一點，減少在路上的時間','確保車燈清潔和調整正確，走熟悉路線，速度較平時更慢','戴太陽眼鏡','把所有燈都打開包括危險警示燈'],
+    ans:1, exp:'夜間長者應確保燈光正常，走熟悉路線，大幅降低速度，並盡量減少夜間駕駛的頻率和距離。' },
+
+  { id:98, cat:'交通規則', key:false, text:'「臨時停車」和「停車」有什麼不同？',
+    ch:['沒有區別','臨時停車是指駕駛不離開車輛，為了上下客短暫停留；停車則是駕駛離開車輛','臨時停車時間較長','停車比臨時停車合法'],
+    ans:1, exp:'臨時停車：駕駛不離開，短暫上下客；停車：駕駛離開車輛。兩者在不同地點各有相應的限制規定。' },
+
+  { id:99, cat:'交通規則', key:true,  text:'下列哪種行為屬於「危險駕車」，可能被吊銷駕照？',
+    ch:['在停車場內緩慢倒車','在高速公路上超速競速、蛇行或突然煞車','路口停紅燈等待','打方向燈轉彎'],
+    ans:1, exp:'在道路上超速競速、蛇行、故意急踩煞車等行為屬危險駕車，可被吊銷駕照並依法追究刑事責任。' },
+
+  { id:100, cat:'長者安全', key:true, text:'長者更新駕照時，監理所要求的特殊測驗是什麼？',
+    ch:['只需要視力測試','75歲以上須通過認知功能測試，確認認知和判斷能力正常','不需要任何額外測試','只需要醫師證明'],
+    ans:1, exp:'台灣規定，75歲以上長者更新駕照須通過認知功能測試（含簡短智能評估），確保仍具備安全駕駛的認知能力。' },
+];
+
+/* ─────────────────────────────────────────────────
+   狀態管理
+───────────────────────────────────────────────── */
+let state = {
+  mode: 'quick',
+  queue: [],
+  idx: 0,
+  correctCount: 0,
+  answered: false,
+  speaking: false
+};
+
+function getStats() { return JSON.parse(localStorage.getItem('driverStats') || '{"done":0,"correct":0}'); }
+function saveStats(c, t) {
+  const s = getStats();
+  s.done += t; s.correct += c;
+  localStorage.setItem('driverStats', JSON.stringify(s));
+}
+function getWrongIds() { return JSON.parse(localStorage.getItem('driverWrong') || '[]'); }
+function addWrong(id) {
+  const w = getWrongIds();
+  if (!w.includes(id)) { w.push(id); localStorage.setItem('driverWrong', JSON.stringify(w)); }
+}
+function removeWrong(id) {
+  const w = getWrongIds().filter(x => x !== id);
+  localStorage.setItem('driverWrong', JSON.stringify(w));
+}
+
+function refreshHome() {
+  const s = getStats();
+  const wrongCount = getWrongIds().length;
+  document.getElementById('stat-done').textContent = s.done;
+  document.getElementById('stat-wrong').textContent = wrongCount;
+  document.getElementById('stat-rate').textContent = s.done > 0 ? Math.round(s.correct / s.done * 100) + '%' : '—';
+  const desc = document.getElementById('wrong-desc');
+  desc.textContent = wrongCount > 0 ? `你有 ${wrongCount} 題需要複習` : '先練習後才會出現';
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function goHome() {
+  stopSpeak();
+  refreshHome();
+  showScreen('home');
+}
+
+/* ─────────────────────────────────────────────────
+   語音
+───────────────────────────────────────────────── */
+function speak(text, onend) {
+  if (!window.speechSynthesis) return;
+  stopSpeak();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'zh-TW';
+  u.rate = 0.88;
+  u.pitch = 1.0;
+  const dot = document.getElementById('speaking-dot');
+  if (dot) { dot.classList.add('active'); state.speaking = true; }
+  u.onend = u.onerror = () => {
+    if (dot) dot.classList.remove('active');
+    state.speaking = false;
+    if (onend) onend();
+  };
+  window.speechSynthesis.speak(u);
+}
+function stopSpeak() {
+  window.speechSynthesis && window.speechSynthesis.cancel();
+  const dot = document.getElementById('speaking-dot');
+  if (dot) dot.classList.remove('active');
+  state.speaking = false;
+}
+function speakCurrent() {
+  const q = state.queue[state.idx];
+  if (!q) return;
+  const allText = `${q.text}。選項A：${q.ch[0]}。選項B：${q.ch[1]}。選項C：${q.ch[2]}。選項D：${q.ch[3]}`;
+  speak(allText);
+}
+
+/* ─────────────────────────────────────────────────
+   模式啟動
+───────────────────────────────────────────────── */
+const MODE_LABELS = { quick: '⚡ 快速通關', mock: '📋 模擬考試', wrong: '🔁 錯題複習' };
+const MODE_COUNT  = { quick: 20, mock: 50, wrong: 999 };
+
+function startMode(mode) {
+  stopSpeak();
+  let pool;
+  if (mode === 'quick') {
+    pool = QUESTIONS.filter(q => q.key).sort(() => Math.random() - 0.5).slice(0, Math.min(20, QUESTIONS.filter(q=>q.key).length));
+  } else if (mode === 'mock') {
+    pool = [...QUESTIONS].sort(() => Math.random() - 0.5).slice(0, 50);
+  } else {
+    const ids = getWrongIds();
+    if (!ids.length) { alert('還沒有錯題！\n請先進行「快速通關」或「模擬考試」練習。'); return; }
+    pool = QUESTIONS.filter(q => ids.includes(q.id)).sort(() => Math.random() - 0.5);
+    if (!pool.length) { alert('錯題已全部複習完成！繼續保持！'); return; }
+  }
+  state.mode = mode;
+  state.queue = pool;
+  state.idx = 0;
+  state.correctCount = 0;
+  state.answered = false;
+  document.getElementById('q-mode-label').textContent = MODE_LABELS[mode] || mode;
+  showScreen('question');
+  loadQuestion();
+}
+
+function repeatMode() { startMode(state.mode); }
+
+/* ─────────────────────────────────────────────────
+   題目顯示
+───────────────────────────────────────────────── */
+function loadQuestion() {
+  const q = state.queue[state.idx];
+  const total = state.queue.length;
+  const pct = Math.round((state.idx / total) * 100);
+
+  document.getElementById('q-progress').style.width = pct + '%';
+  document.getElementById('q-counter').textContent = `${state.idx + 1} / ${total}`;
+  document.getElementById('q-progress-label').textContent = `第 ${state.idx + 1} 題，共 ${total} 題`;
+  document.getElementById('q-cat').textContent = q.cat;
+  document.getElementById('q-text').textContent = q.text;
+
+  // image
+  const img = document.getElementById('q-image');
+  if (q.img) { img.src = q.img; img.classList.add('has-image'); }
+  else { img.src = ''; img.classList.remove('has-image'); }
+
+  // choices
+  const choicesEl = document.getElementById('q-choices');
+  choicesEl.innerHTML = '';
+  const labels = ['A', 'B', 'C', 'D'];
+  q.ch.forEach((text, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.setAttribute('aria-label', `選項${labels[i]}：${text}`);
+    btn.innerHTML = `<div class="label-circle">${labels[i]}</div><span class="choice-text">${text}</span>`;
+    btn.addEventListener('click', () => handleAnswer(i));
+    choicesEl.appendChild(btn);
+  });
+
+  document.getElementById('q-result').style.display = 'none';
+  document.getElementById('q-result').className = 'result-banner';
+  document.getElementById('q-explanation').style.display = 'none';
+  document.getElementById('q-next').style.display = 'none';
+  state.answered = false;
+
+  setTimeout(() => speak(q.text), 400);
+}
+
+function handleAnswer(chosen) {
+  if (state.answered) return;
+  state.answered = true;
+  const q = state.queue[state.idx];
+  const isCorrect = chosen === q.ans;
+  if (isCorrect) state.correctCount++;
+
+  const btns = document.querySelectorAll('.choice-btn');
+  btns.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.ans) btn.classList.add('correct');
+    else if (i === chosen && !isCorrect) btn.classList.add('wrong');
+  });
+
+  const resultEl = document.getElementById('q-result');
+  const explEl = document.getElementById('q-explanation');
+  resultEl.style.display = 'block';
+
+  let speakMsg;
+  if (isCorrect) {
+    resultEl.className = 'result-banner ok';
+    resultEl.textContent = '✅ 答對了！很好！';
+    speakMsg = '答對了！很好！' + q.exp;
+    if (state.mode === 'wrong') removeWrong(q.id);
+  } else {
+    resultEl.className = 'result-banner bad';
+    resultEl.textContent = `❌ 答錯了。正確答案是：${['A','B','C','D'][q.ans]}. ${q.ch[q.ans]}`;
+    speakMsg = `答錯了。正確答案是：${q.ch[q.ans]}。${q.exp}`;
+    if (state.mode !== 'wrong') addWrong(q.id);
+  }
+
+  explEl.style.display = 'block';
+  explEl.textContent = '📖 說明：' + q.exp;
+
+  const nextBtn = document.getElementById('q-next');
+  nextBtn.style.display = 'block';
+  const isLast = state.idx === state.queue.length - 1;
+  nextBtn.textContent = isLast ? '查看結果 →' : '下一題 →';
+
+  speak(speakMsg);
+}
+
+function nextQuestion() {
+  stopSpeak();
+  state.idx++;
+  if (state.idx >= state.queue.length) {
+    showFinish();
+  } else {
+    loadQuestion();
+  }
+}
+
+/* ─────────────────────────────────────────────────
+   完成畫面
+───────────────────────────────────────────────── */
+function showFinish() {
+  const total = state.queue.length;
+  const correct = state.correctCount;
+  const score = Math.round(correct / total * 100);
+  saveStats(correct, total);
+
+  document.getElementById('f-score').textContent = score;
+
+  let title, sub, advice, speakText;
+  if (score >= 85) {
+    title = '🎉 太棒了！可以去考試了！';
+    sub = `共 ${total} 題，答對 ${correct} 題`;
+    advice = `您的成績超過 85 分及格標準，非常好！建議再練習一次鞏固記憶，就可以去監理所考試了。`;
+  } else if (score >= 70) {
+    title = '👍 不錯！再加油一下！';
+    sub = `共 ${total} 題，答對 ${correct} 題，還差一點`;
+    advice = `距離 85 分及格還有進步空間。建議用「錯題複習」重點練習答錯的題目，相信你很快就能過關！`;
+  } else {
+    title = '💪 繼續練習，一定可以！';
+    sub = `共 ${total} 題，答對 ${correct} 題`;
+    advice = `不要灰心！多練習幾次就會熟悉。建議從「快速通關」開始，每天練習10分鐘，一週內成績就會進步。`;
+  }
+
+  document.getElementById('f-title').textContent = title;
+  document.getElementById('f-sub').textContent = sub;
+  document.getElementById('f-advice').textContent = advice;
+
+  speakText = `${title}，${sub}。${advice}`;
+  showScreen('finish');
+  setTimeout(() => speak(speakText), 500);
+}
+
+/* ─────────────────────────────────────────────────
+   鍵盤支援（A/B/C/D 鍵作答）
+───────────────────────────────────────────────── */
+document.addEventListener('keydown', (e) => {
+  const k = e.key.toUpperCase();
+  if (['A','B','C','D'].includes(k) && document.getElementById('screen-question').classList.contains('active')) {
+    const i = ['A','B','C','D'].indexOf(k);
+    if (!state.answered) {
+      const btns = document.querySelectorAll('.choice-btn');
+      if (btns[i]) btns[i].click();
+    }
+  }
+  if (e.key === 'Enter' && document.getElementById('screen-question').classList.contains('active')) {
+    const next = document.getElementById('q-next');
+    if (next.style.display !== 'none') nextQuestion();
+  }
+});
+
+/* ─────────────────────────────────────────────────
+   初始化
+───────────────────────────────────────────────── */
+refreshHome();
+</script>
+</body>
+</html>
