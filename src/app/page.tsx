@@ -15,6 +15,12 @@ export default function Home() {
             Open Creator
           </a>
           <a
+            href="https://openai-tw.com/prompt-builder/"
+            className="rounded-2xl border border-cyan-400/30 bg-cyan-400/10 px-5 py-3 font-medium text-cyan-100 transition hover:bg-cyan-400/20"
+          >
+            Prompt Builder
+          </a>
+          <a
             href="/"
             className="rounded-2xl border border-white/15 bg-white/5 px-5 py-3 font-medium text-zinc-100 transition hover:bg-white/10"
           >
