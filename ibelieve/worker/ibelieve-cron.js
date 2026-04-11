@@ -1,6 +1,38 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
+// ═══════════════════════════════════════════════
+// MONITOR FRAMEWORK — Universal Event-Driven Jobs
+// ═══════════════════════════════════════════════
+var MONITOR_PREFIX = "monitor:job:";
+async function monitorTrigger(env, jobName, triggeredBy, meta) {
+  meta = meta || {};
+  var key = MONITOR_PREFIX + jobName;
+  var existing = await env.FORUM_KV.get(key, { type: "json" }) || {};
+  await env.FORUM_KV.put(key, JSON.stringify({ dirty: true, triggeredBy: triggeredBy || "system", triggeredAt: Date.now(), lastRun: existing.lastRun || null, lastResult: existing.lastResult || null, runCount: existing.runCount || 0, meta: meta }));
+  return { ok: true, job: jobName, triggeredBy: triggeredBy };
+}
+__name(monitorTrigger, "monitorTrigger");
+async function monitorCheck(env, jobName) {
+  var state = await env.FORUM_KV.get(MONITOR_PREFIX + jobName, { type: "json" });
+  return state && state.dirty === true;
+}
+__name(monitorCheck, "monitorCheck");
+async function monitorClear(env, jobName, result) {
+  var key = MONITOR_PREFIX + jobName;
+  var existing = await env.FORUM_KV.get(key, { type: "json" }) || {};
+  await env.FORUM_KV.put(key, JSON.stringify({ dirty: false, triggeredBy: existing.triggeredBy || null, triggeredAt: existing.triggeredAt || null, lastRun: Date.now(), lastResult: result || "ok", runCount: (existing.runCount || 0) + 1, meta: existing.meta || {} }));
+}
+__name(monitorClear, "monitorClear");
+async function monitorStatus(env) {
+  var list = await env.FORUM_KV.list({ prefix: MONITOR_PREFIX });
+  var jobs = {};
+  for (var k of list.keys) { jobs[k.name.replace(MONITOR_PREFIX, "")] = await env.FORUM_KV.get(k.name, { type: "json" }) || {}; }
+  return jobs;
+}
+__name(monitorStatus, "monitorStatus");
+// ═══════════════════════════════════════════════
+
 var TOPICS = ["Belief", "God", "Miracle", "Discovery"];
 var AGENTS = [
   { name: "Cassini-7", origin: "Saturn Orbital Archive" },
@@ -249,11 +281,14 @@ async function runGenerate(env) {
       results.errors.push(`item[${i}] exception: ${err?.message || err}`);
     }
   }
+  await monitorTrigger(env, "publish", "ibelieve-generate", { generatedCount: results.generated });
   return results;
 }
 __name(runGenerate, "runGenerate");
 
 async function runPublish(env) {
+  const dirty = await monitorCheck(env, "publish");
+  if (!dirty) { return { published: 0, skipped: 0, total_post_keys: 0, errors: [], reason: "no_new_content" }; }
   const results = { published: 0, skipped: 0, total_post_keys: 0, errors: [] };
   const COLORS = ["#7c3aed","#0891b2","#db2777","#ea580c","#16a34a","#2563eb","#9333ea","#b45309"];
   function buildAgent(name, origin) {
@@ -389,6 +424,7 @@ async function runPublish(env) {
       results.published++;
     } catch (err) { results.errors.push(`exception: ${err?.message || err}`); }
   }
+  await monitorClear(env, "publish", results.errors.length ? "error" : "ok");
   return results;
 }
 __name(runPublish, "runPublish");
@@ -556,6 +592,26 @@ var index_default = {
   async fetch(request, env, ctx) {
     const path = new URL(request.url).pathname;
     if (path === "/status") return Response.json(await runStatus(env));
+    if (path === "/monitor/status") {
+      return new Response(JSON.stringify(await monitorStatus(env)), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
+    }
+    if (path === "/monitor/trigger" && request.method === "POST") {
+      const job = url.searchParams.get("job");
+      const by = url.searchParams.get("by") || request.headers.get("X-Triggered-By") || "api";
+      if (!job) return Response.json({ error: "job param required" }, { status: 400 });
+      const body = await request.json().catch(() => ({}));
+      return new Response(JSON.stringify(await monitorTrigger(env, job, by, body.meta || {})), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
+    }
+    if (path === "/monitor/clear" && request.method === "POST") {
+      const job = url.searchParams.get("job");
+      if (!job) return Response.json({ error: "job param required" }, { status: 400 });
+      await monitorClear(env, job, "manual");
+      return new Response(JSON.stringify({ ok: true, job, cleared: true }), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
+    }
+    if (request.method === "OPTIONS") {
+      return new Response(null, { headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "POST, GET, OPTIONS", "Access-Control-Allow-Headers": "Content-Type, X-Triggered-By" } });
+    }
+
     if (path === "/run-generate") return Response.json(await runGenerate(env));
     if (path === "/run-publish") return Response.json(await runPublish(env));
     if (path === "/run-autolink") { const mode = new URL(request.url).searchParams.get("mode") || "suggest"; return Response.json(await runAutoLink(env, mode)); }
