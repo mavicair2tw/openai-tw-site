@@ -78,7 +78,9 @@ jobs:
             "mp3player/index.html" \
             "mp3player/qr.png" \
             "mp3player/bg.jpg" \
-            "driver/index.html"; do
+            "driver/index.html" \
+            "ibelieve/worker/ibelieve-cron.js" \
+            "ibelieve/worker/wrangler-cron.toml"; do
             if [ ! -f "$F" ]; then
               echo "MISSING: $F"
               restore_file "$F" || true
