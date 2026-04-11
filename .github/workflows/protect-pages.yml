@@ -77,7 +77,8 @@ jobs:
             "ibelieve/index.html" \
             "mp3player/index.html" \
             "mp3player/qr.png" \
-            "mp3player/bg.jpg"; do
+            "mp3player/bg.jpg" \
+            "driver/index.html"; do
             if [ ! -f "$F" ]; then
               echo "MISSING: $F"
               restore_file "$F" || true
