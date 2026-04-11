@@ -1,0 +1,32 @@
+name = "ibelieve-cron"
+main = "ibelieve-cron.js"
+compatibility_date = "2024-01-01"
+
+[triggers]
+crons = [
+  "0 21 * * *",
+  "30 21 * * *",
+  "0 22 * * *",
+  "*/30 * * * *",
+  "0 23 * * *"
+]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ibelieve-db"
+database_id = "ba9845e6-1273-4976-aa58-74c5be3f2659"
+
+[[kv_namespaces]]
+binding = "FORUM_KV"
+id = "1599882302e34af5a7704f0f8c5d9429"
+
+[[kv_namespaces]]
+binding = "QUEUE"
+id = "af7202fb6f1049c8a61644cce7b80494"
+
+[[r2_buckets]]
+binding = "IMAGES_BUCKET"
+bucket_name = "ibelieve-images"
+
+[ai]
+binding = "AI"

@@ -1120,7 +1120,7 @@ __name(getRegion, "getRegion");
 function json(obj, status, request) { return new Response(JSON.stringify(obj),{status,headers:{"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store",...cors(request)}}); }
 function jsonCached(obj, status, request) { return new Response(JSON.stringify(obj),{status,headers:{"Content-Type":"application/json; charset=utf-8","Cache-Control":"public, max-age=30, s-maxage=300",...cors(request)}}); }
 __name(json, "json");
-function cors(request) { const o=request?.headers?.get("Origin")||""; const a=["https://openai-tw.com","https://www.openai-tw.com"]; return {"Access-Control-Allow-Origin":a.includes(o)?o:"https://openai-tw.com","Access-Control-Allow-Methods":"GET,POST,PUT,PATCH,DELETE,OPTIONS","Access-Control-Allow-Headers":"Content-Type,Authorization"}; }
+function cors(request) { const o=request?.headers?.get("Origin")||""; const a=["https://openai-tw.com","https://www.openai-tw.com","https://creator.openai-tw.com","https://imagen-creator.googselect.workers.dev"]; return {"Access-Control-Allow-Origin":a.includes(o)?o:"https://openai-tw.com","Access-Control-Allow-Methods":"GET,POST,PUT,PATCH,DELETE,OPTIONS","Access-Control-Allow-Headers":"Content-Type,Authorization"}; }
 __name(cors, "cors");
 function normalizeTranslations(value) { if(!value||typeof value!=="object"||Array.isArray(value))return{}; const out={}; for(const[k,t]of Object.entries(value)){const lang=canonicalizeLanguage(k);if(!lang)continue;const s=String(t||"").trim();if(s)out[lang]=s;} return out; }
 __name(normalizeTranslations, "normalizeTranslations");
