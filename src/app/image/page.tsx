@@ -19,6 +19,7 @@ export default function ImagenPage() {
 
   const [editingPrompt, setEditingPrompt] = useState(currentPrompt);
   const [aspectRatio, setAspectRatio] = useState('1:1');
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     if (currentPrompt) {
@@ -33,6 +34,7 @@ export default function ImagenPage() {
     }
 
     setIsGenerating(true);
+    setErrorMessage('');
     try {
       setCurrentPrompt(editingPrompt);
       addToHistory(editingPrompt);
@@ -47,18 +49,18 @@ export default function ImagenPage() {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error(`API error: ${response.statusText}`);
-      }
+      const data = await response.json().catch(() => ({}));
 
-      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error || `API error: ${response.statusText}`);
+      }
       setGenerationResult({
         imageUrl: data.imageUrl,
         timestamp: Date.now(),
       });
     } catch (error) {
       console.error('Error generating image:', error);
-      alert('Failed to generate image. Please try again.');
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to generate image.');
     } finally {
       setIsGenerating(false);
     }
@@ -177,6 +179,13 @@ export default function ImagenPage() {
           <div style={{ textAlign: 'center', padding: '40px' }}>
             <p>Generating…</p>
             <p style={{ color: '#999', fontSize: '12px' }}>This usually takes 5–15 seconds</p>
+          </div>
+        )}
+
+        {errorMessage && !isGenerating && (
+          <div style={{ marginBottom: '16px', padding: '14px', background: '#3b0a0a', color: '#fecaca', border: '1px solid #7f1d1d', borderRadius: '12px' }}>
+            <div style={{ fontWeight: 700, marginBottom: '6px' }}>Image generation error</div>
+            <div style={{ fontSize: '13px', lineHeight: 1.5 }}>{errorMessage}</div>
           </div>
         )}
 
