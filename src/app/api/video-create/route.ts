@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { mkdir, writeFile } from 'fs/promises';
-import path from 'path';
 import { addVideoRecord } from '@/lib/media-store';
+import { buildMediaObjectPath, buildPublicMediaUrl, getMediaBucket } from '@/lib/google-cloud';
 
 type AccessTokenResponse = {
   access_token: string;
@@ -209,22 +208,29 @@ export async function POST(req: Request) {
     }
 
     const bytes = Buffer.from(await downloadResponse.arrayBuffer());
-    const outputDir = path.join(process.cwd(), 'public', 'generated-videos');
-    await mkdir(outputDir, { recursive: true });
-
     const filename = `veo-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.mp4`;
-    const outputPath = path.join(outputDir, filename);
-    await writeFile(outputPath, bytes);
+    const objectPath = buildMediaObjectPath('videos', filename);
+    const bucket = getMediaBucket();
+
+    await bucket.file(objectPath).save(bytes, {
+      resumable: false,
+      contentType: 'video/mp4',
+      public: true,
+      metadata: {
+        cacheControl: 'public, max-age=31536000, immutable',
+      },
+    });
 
     const video = {
       id: `vid-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       title: buildTitle(prompt) || 'Generated video',
-      src: `/api/generated-video/${filename}`,
+      src: buildPublicMediaUrl(bucket.name, objectPath),
       duration: `${durationSeconds}s`,
       prompt,
       aspectRatio,
       timestamp: Date.now(),
       demo: false,
+      objectPath,
     };
 
     await addVideoRecord(video);

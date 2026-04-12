@@ -4,6 +4,7 @@ export type GeneratedImage = {
   prompt: string;
   aspectRatio: string;
   timestamp: number;
+  objectPath?: string;
 };
 
 export type GeneratedVideo = {
@@ -15,6 +16,7 @@ export type GeneratedVideo = {
   aspectRatio: string;
   timestamp: number;
   demo?: boolean;
+  objectPath?: string;
 };
 
 export type MediaGalleryData = {
