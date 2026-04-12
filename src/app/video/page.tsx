@@ -499,23 +499,30 @@ export default function CreatorVideoPage() {
                       )}
                     </div>
 
-                    {showThumbnails && (
-                      <div style={{ marginTop: '12px', marginBottom: '10px', borderRadius: '12px', overflow: 'hidden', background: '#020617', border: '1px solid rgba(148,163,184,0.1)' }}>
-                        <video
-                          src={video.src}
-                          muted
-                          playsInline
-                          preload="metadata"
-                          style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block', background: '#000' }}
-                        />
+                    {showThumbnails ? (
+                      <div style={{ marginTop: '12px', marginBottom: '10px', display: 'grid', gridTemplateColumns: '120px minmax(0, 1fr)', gap: '12px', alignItems: 'start' }}>
+                        <div style={{ borderRadius: '12px', overflow: 'hidden', background: '#020617', border: '1px solid rgba(148,163,184,0.1)' }}>
+                          <video
+                            src={video.src}
+                            muted
+                            playsInline
+                            preload="metadata"
+                            style={{ width: '120px', height: '72px', objectFit: 'cover', display: 'block', background: '#000' }}
+                          />
+                        </div>
+                        {video.prompt ? (
+                          <div style={{ fontSize: '12px', color: '#cbd5e1', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                            {video.prompt}
+                          </div>
+                        ) : (
+                          <div style={{ fontSize: '12px', color: '#94a3b8' }}>Small thumbnail preview</div>
+                        )}
                       </div>
-                    )}
-
-                    {video.prompt && (
+                    ) : video.prompt ? (
                       <div style={{ marginTop: '10px', fontSize: '12px', color: '#cbd5e1', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                         {video.prompt}
                       </div>
-                    )}
+                    ) : null}
 
                     <div style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
                       <button
