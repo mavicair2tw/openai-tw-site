@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   const apiKey = process.env.GOOGLE_API_KEY;
+  const projectId = process.env.GOOGLE_CLOUD_PROJECT;
+  const location = process.env.GOOGLE_CLOUD_LOCATION || 'us-central1';
+
   if (!apiKey) {
     return NextResponse.json({ error: 'Missing GOOGLE_API_KEY' }, { status: 500 });
   }
@@ -17,9 +20,13 @@ export async function POST(req: Request) {
   return NextResponse.json(
     {
       error:
-        `Google video generation route is now Google-only, but the exact Veo/Gemini video endpoint is not wired yet. Received aspectRatio=${aspectRatio}.`,
+        'Google video generation requires Vertex AI Veo setup, not just GOOGLE_API_KEY. Configure GOOGLE_CLOUD_PROJECT and Vertex AI auth for real video generation.',
       provider: 'google',
-      needsImplementation: true,
+      modelFamily: 'veo',
+      location,
+      projectId: projectId || null,
+      needsVertexAI: true,
+      aspectRatio,
     },
     { status: 501 },
   );

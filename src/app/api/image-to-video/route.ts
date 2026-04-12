@@ -1,21 +1,25 @@
 import { NextResponse } from 'next/server';
 
-const API_URL = 'https://api.wavespeed.ai/api/v3/alibaba/wan-2.6/image-to-video-flash';
-
 export async function POST(req: Request) {
   const apiKey = process.env.GOOGLE_API_KEY;
+  const projectId = process.env.GOOGLE_CLOUD_PROJECT;
+  const location = process.env.GOOGLE_CLOUD_LOCATION || 'us-central1';
+
   if (!apiKey) {
     return NextResponse.json({ error: 'Missing GOOGLE_API_KEY' }, { status: 500 });
   }
 
-  const body = await req.json();
+  const body = await req.json().catch(() => ({}));
 
   return NextResponse.json(
     {
       error:
-        'Google image-to-video route is selected, but the exact Google endpoint is not wired yet. Remove old WaveSpeed usage before production.',
+        'Google image-to-video requires Vertex AI Veo image-to-video wiring. GOOGLE_API_KEY alone is not enough.',
       provider: 'google',
-      needsImplementation: true,
+      modelFamily: 'veo',
+      location,
+      projectId: projectId || null,
+      needsVertexAI: true,
       received: body,
     },
     { status: 501 },
