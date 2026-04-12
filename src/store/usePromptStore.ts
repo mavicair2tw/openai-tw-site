@@ -28,6 +28,17 @@ interface GeneratedImage {
   timestamp: number;
 }
 
+interface GeneratedVideo {
+  id: string;
+  title: string;
+  src: string;
+  duration: string;
+  prompt: string;
+  aspectRatio: string;
+  timestamp: number;
+  demo?: boolean;
+}
+
 interface PromptState {
   globalParams: GlobalParams;
   scenes: Scene[];
@@ -53,10 +64,13 @@ interface PromptState {
   generatedImages: GeneratedImage[];
   selectedImageId: string | null;
   galleryView: 'thumbnail' | 'original';
-  addGeneratedImage: (image: Omit<GeneratedImage, 'id'>) => void;
+  addGeneratedImage: (image: Omit<GeneratedImage, 'id'>) => GeneratedImage;
   selectGeneratedImage: (id: string) => void;
   deleteGeneratedImage: (id: string) => void;
   setGalleryView: (view: 'thumbnail' | 'original') => void;
+  generatedVideos: GeneratedVideo[];
+  addGeneratedVideo: (video: Omit<GeneratedVideo, 'id'>) => GeneratedVideo;
+  deleteGeneratedVideo: (id: string) => void;
 }
 
 export const usePromptStore = create<PromptState>()(
@@ -77,6 +91,7 @@ export const usePromptStore = create<PromptState>()(
         generatedImages: [],
         selectedImageId: null,
         galleryView: 'thumbnail',
+        generatedVideos: [],
 
         setGlobalParams: (params) => set((state) => ({ globalParams: { ...state.globalParams, ...params } })),
         setScenes: (scenes) => set({ scenes }),
@@ -118,18 +133,20 @@ export const usePromptStore = create<PromptState>()(
         setGenerationType: (type) => set({ generationType: type }),
         setIsGenerating: (generating) => set({ isGenerating: generating }),
         setGenerationResult: (result) => set({ generationResult: result }),
-        addGeneratedImage: (image) => set((state) => {
+        addGeneratedImage: (image) => {
           const entry: GeneratedImage = {
             id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
             ...image,
           };
 
-          return {
+          set((state) => ({
             generatedImages: [entry, ...state.generatedImages].slice(0, 40),
             selectedImageId: entry.id,
             generationResult: { imageUrl: entry.imageUrl, timestamp: entry.timestamp },
-          };
-        }),
+          }));
+
+          return entry;
+        },
         selectGeneratedImage: (id) => set((state) => {
           const selected = state.generatedImages.find((image) => image.id === id);
           return {
@@ -151,6 +168,22 @@ export const usePromptStore = create<PromptState>()(
           };
         }),
         setGalleryView: (view) => set({ galleryView: view }),
+        addGeneratedVideo: (video) => {
+          const entry: GeneratedVideo = {
+            id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            ...video,
+          };
+
+          set((state) => ({
+            generatedVideos: [entry, ...state.generatedVideos].slice(0, 30),
+            generationResult: { videoUrl: entry.src, timestamp: entry.timestamp },
+          }));
+
+          return entry;
+        },
+        deleteGeneratedVideo: (id) => set((state) => ({
+          generatedVideos: state.generatedVideos.filter((video) => video.id !== id),
+        })),
       }),
       { name: 'prompt-builder-store' }
     )

@@ -14,8 +14,12 @@ export default function CreatorPromptPage() {
     addToHistory(finalPrompt);
   };
 
-  const handleConfirmAndGotoCreator = () => {
-    router.push('/image');
+  const handleGoToRoute = (route: '/image' | '/video') => {
+    const finalPrompt = generatePrompt();
+    if (finalPrompt) {
+      addToHistory(finalPrompt);
+    }
+    router.push(route);
   };
 
   const handleCopyPrompt = async () => {
@@ -64,9 +68,14 @@ export default function CreatorPromptPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Scenes</span><strong>{scenes.filter((s) => s.description).length}</strong></div>
           </div>
 
-          <button onClick={handleConfirmAndGotoCreator} style={{ width: '100%', padding: '12px', background: '#22c55e', color: '#04130a', border: 'none', borderRadius: '12px', cursor: 'pointer', fontSize: '14px', fontWeight: '700' }}>
-            Generate Image
-          </button>
+          <div style={{ display: 'grid', gap: '10px' }}>
+            <button onClick={() => handleGoToRoute('/image')} style={{ width: '100%', padding: '12px', background: '#22c55e', color: '#04130a', border: 'none', borderRadius: '12px', cursor: 'pointer', fontSize: '14px', fontWeight: '700' }}>
+              Generate Image
+            </button>
+            <button onClick={() => handleGoToRoute('/video')} style={{ width: '100%', padding: '12px', background: '#8b5cf6', color: '#fff', border: 'none', borderRadius: '12px', cursor: 'pointer', fontSize: '14px', fontWeight: '700' }}>
+              Generate Video
+            </button>
+          </div>
         </div>
       </div>
     </div>

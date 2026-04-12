@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { usePromptStore } from '@/store/usePromptStore';
+import { useRouter } from 'next/navigation';
 
 type VideoItem = {
   id: string;
@@ -8,6 +10,9 @@ type VideoItem = {
   src: string;
   duration: string;
   thumbnail?: string;
+  prompt?: string;
+  aspectRatio?: string;
+  demo?: boolean;
 };
 
 const sampleVideos: VideoItem[] = [
@@ -47,15 +52,49 @@ const buttonBase: React.CSSProperties = {
 };
 
 export default function CreatorVideoPage() {
+  const router = useRouter();
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  const [videos] = useState<VideoItem[]>(sampleVideos);
+  const currentPrompt = usePromptStore((state) => state.currentPrompt);
+  const setCurrentPrompt = usePromptStore((state) => state.setCurrentPrompt);
+  const addToHistory = usePromptStore((state) => state.addToHistory);
+  const generatedVideos = usePromptStore((state) => state.generatedVideos);
+  const addGeneratedVideo = usePromptStore((state) => state.addGeneratedVideo);
+  const deleteGeneratedVideo = usePromptStore((state) => state.deleteGeneratedVideo);
+
+  const [editingPrompt, setEditingPrompt] = useState(currentPrompt);
+  const [aspectRatio, setAspectRatio] = useState('16:9');
   const [playlist, setPlaylist] = useState<string[]>([]);
-  const [activeVideoId, setActiveVideoId] = useState<string>(sampleVideos[0]?.id ?? '');
+  const [activeVideoId, setActiveVideoId] = useState<string>('');
   const [isPlaylistMode, setIsPlaylistMode] = useState(false);
   const [playlistCursor, setPlaylistCursor] = useState(0);
   const [isMerging, setIsMerging] = useState(false);
-  const [mergeProgress, setMergeProgress] = useState('');
+  const [isGeneratingVideo, setIsGeneratingVideo] = useState(false);
+  const [statusMessage, setStatusMessage] = useState('Prompt from Studio can generate a video, add it to the gallery, and play it here.');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const videos = useMemo<VideoItem[]>(() => [...generatedVideos, ...sampleVideos], [generatedVideos]);
+
+  useEffect(() => {
+    if (currentPrompt) {
+      setEditingPrompt(currentPrompt);
+    }
+  }, [currentPrompt]);
+
+  useEffect(() => {
+    if (!videos.length) {
+      setActiveVideoId('');
+      return;
+    }
+
+    if (!activeVideoId || !videos.some((video) => video.id === activeVideoId)) {
+      setActiveVideoId(videos[0].id);
+    }
+  }, [videos, activeVideoId]);
+
+  useEffect(() => {
+    setPlaylist((current) => current.filter((id) => videos.some((video) => video.id === id)));
+  }, [videos]);
 
   const activeVideo = useMemo(
     () => videos.find((video) => video.id === activeVideoId) ?? videos[0],
@@ -133,11 +172,19 @@ export default function CreatorVideoPage() {
     setPlaylistCursor(0);
   };
 
+  const handleDeleteGeneratedVideo = (videoId: string) => {
+    deleteGeneratedVideo(videoId);
+    setPlaylist((current) => current.filter((id) => id !== videoId));
+    setIsPlaylistMode(false);
+    setPlaylistCursor(0);
+    setStatusMessage('Generated video removed from the gallery.');
+  };
+
   const handleClearPlaylist = () => {
     setPlaylist([]);
     setIsPlaylistMode(false);
     setPlaylistCursor(0);
-    setMergeProgress('');
+    setStatusMessage('Playlist cleared.');
   };
 
   const handlePlayPlaylist = () => {
@@ -145,6 +192,7 @@ export default function CreatorVideoPage() {
     setActiveVideoId(playlistVideos[0].id);
     setPlaylistCursor(0);
     setIsPlaylistMode(true);
+    setStatusMessage('Playing selected playlist.');
   };
 
   const handlePrev = () => {
@@ -157,11 +205,59 @@ export default function CreatorVideoPage() {
     setPlaylistCursor((cursor) => cursor + 1);
   };
 
+  const handleGenerateVideo = async () => {
+    if (!editingPrompt.trim()) {
+      setErrorMessage('Please enter a prompt first.');
+      return;
+    }
+
+    setIsGeneratingVideo(true);
+    setErrorMessage('');
+    setStatusMessage('Generating video from your Studio prompt...');
+
+    try {
+      setCurrentPrompt(editingPrompt);
+      addToHistory(editingPrompt);
+
+      const response = await fetch('/api/video-create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: editingPrompt, aspectRatio }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data?.error || `API error: ${response.statusText}`);
+      }
+
+      const entry = addGeneratedVideo({
+        title: data.title || 'Generated video',
+        src: data.videoUrl,
+        duration: data.duration || 'Generated',
+        prompt: editingPrompt,
+        aspectRatio,
+        timestamp: Date.now(),
+        demo: Boolean(data.demo),
+      });
+
+      setActiveVideoId(entry.id);
+      setIsPlaylistMode(false);
+      setPlaylistCursor(0);
+      setStatusMessage(data.warning || 'Video generated, added to the gallery, and loaded into the player.');
+    } catch (error) {
+      console.error('Video generation failed:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'Video generation failed.');
+      setStatusMessage('Video generation failed.');
+    } finally {
+      setIsGeneratingVideo(false);
+    }
+  };
+
   const handleMergeAndDownload = async () => {
     if (playlistVideos.length === 0) return;
 
     setIsMerging(true);
-    setMergeProgress('Sending playlist to merge service...');
+    setStatusMessage('Sending playlist to merge service...');
 
     try {
       const response = await fetch('/api/video-merge', {
@@ -182,10 +278,10 @@ export default function CreatorVideoPage() {
       link.download = `playlist-${Date.now()}.webm`;
       link.click();
       URL.revokeObjectURL(url);
-      setMergeProgress('Merge complete. Download started.');
+      setStatusMessage('Merge complete. Download started.');
     } catch (error) {
       console.error('Merge failed:', error);
-      setMergeProgress(error instanceof Error ? error.message : 'Merge failed');
+      setStatusMessage(error instanceof Error ? error.message : 'Merge failed');
       alert(error instanceof Error ? error.message : 'Merge failed');
     } finally {
       setIsMerging(false);
@@ -194,7 +290,7 @@ export default function CreatorVideoPage() {
 
   return (
     <div style={{ minHeight: 'calc(100vh - 140px)', background: '#020617', color: '#e2e8f0', padding: '20px 20px 100px' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.6fr) minmax(320px, 0.9fr)', gap: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.6fr) minmax(340px, 0.95fr)', gap: '20px' }}>
         <div>
           <div
             style={{
@@ -205,10 +301,11 @@ export default function CreatorVideoPage() {
               boxShadow: '0 12px 40px rgba(15, 23, 42, 0.18)',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', gap: '12px', flexWrap: 'wrap' }}>
               <div>
                 <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>Now Playing</div>
                 <div style={{ fontSize: '20px', fontWeight: 700 }}>{currentQueueItem?.title ?? 'No video selected'}</div>
+                {currentQueueItem?.demo && <div style={{ marginTop: '6px', fontSize: '12px', color: '#c4b5fd' }}>Demo generated clip</div>}
               </div>
               {isPlaylistMode && playlistVideos.length > 0 && (
                 <div style={{ fontSize: '12px', color: '#cbd5e1' }}>
@@ -254,83 +351,177 @@ export default function CreatorVideoPage() {
             )}
           </div>
 
-          <div style={{ marginTop: '18px', color: '#94a3b8', fontSize: '13px' }}>
-            {isMerging ? mergeProgress : 'Select clips on the right to build a playlist.'}
+          <div style={{ marginTop: '18px', color: errorMessage ? '#fecaca' : '#94a3b8', fontSize: '13px' }}>
+            {errorMessage || (isMerging ? 'Merging playlist...' : statusMessage)}
           </div>
         </div>
 
-        <div>
-          <div style={{ marginBottom: '14px' }}>
-            <h2 style={{ margin: 0, fontSize: '20px', color: '#f8fafc' }}>Video Gallery</h2>
-            <p style={{ margin: '6px 0 0', color: '#94a3b8', fontSize: '13px' }}>
-              Click a card to preview. Use Add / Remove to manage the playlist.
+        <div style={{ display: 'grid', gap: '14px', alignContent: 'start' }}>
+          <div style={{ background: 'rgba(15,23,42,0.86)', borderRadius: '18px', border: '1px solid rgba(148,163,184,0.12)', padding: '16px' }}>
+            <div style={{ fontSize: '12px', color: '#93c5fd', textTransform: 'uppercase', letterSpacing: '0.16em', marginBottom: '8px' }}>Generate video</div>
+            <h2 style={{ margin: '0 0 10px 0', fontSize: '20px', color: '#f8fafc' }}>Studio → Video flow</h2>
+            <p style={{ margin: '0 0 14px 0', color: '#94a3b8', fontSize: '13px' }}>
+              Use the current Studio prompt, generate a video, add it to the gallery, and load it into the player automatically.
             </p>
-          </div>
 
-          <div style={{ display: 'grid', gap: '12px' }}>
-            {videos.map((video) => {
-              const badge = getBadgeNumber(video.id);
-              const isActive = activeVideoId === video.id;
-              const inPlaylist = badge !== null;
+            <textarea
+              value={editingPrompt}
+              onChange={(event) => setEditingPrompt(event.target.value)}
+              rows={6}
+              placeholder="Describe the video you want to generate..."
+              style={{ width: '100%', boxSizing: 'border-box', padding: '12px', borderRadius: '14px', border: '1px solid rgba(148,163,184,0.18)', background: 'rgba(2,6,23,0.9)', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '13px', resize: 'vertical' }}
+            />
 
-              return (
-                <div
-                  key={video.id}
-                  onClick={() => handleSelectVideo(video.id)}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginTop: '12px' }}>
+              {['16:9', '9:16', '1:1'].map((ratio) => (
+                <button
+                  key={ratio}
+                  onClick={() => setAspectRatio(ratio)}
                   style={{
-                    border: isActive ? '2px solid #2563eb' : '1px solid #1e293b',
-                    borderRadius: '16px',
-                    padding: '14px',
-                    cursor: 'pointer',
-                    background: isActive ? '#0f172a' : '#111827',
-                    color: '#e2e8f0',
-                    boxShadow: '0 4px 20px rgba(15, 23, 42, 0.25)',
+                    ...buttonBase,
+                    padding: '10px 12px',
+                    background: aspectRatio === ratio ? '#8b5cf6' : 'rgba(30,41,59,0.95)',
+                    color: '#fff',
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
-                    <div>
-                      <div style={{ fontWeight: 700, marginBottom: '6px' }}>{video.title}</div>
-                      <div style={{ fontSize: '12px', color: '#94a3b8' }}>{video.duration}</div>
+                  {ratio}
+                </button>
+              ))}
+            </div>
+
+            <div style={{ display: 'grid', gap: '10px', marginTop: '14px' }}>
+              <button
+                onClick={handleGenerateVideo}
+                disabled={isGeneratingVideo || !editingPrompt.trim()}
+                style={{
+                  ...buttonBase,
+                  width: '100%',
+                  padding: '12px',
+                  background: isGeneratingVideo || !editingPrompt.trim() ? '#475569' : '#8b5cf6',
+                  color: '#fff',
+                  fontWeight: 700,
+                }}
+              >
+                {isGeneratingVideo ? 'Generating Video...' : 'Generate Video'}
+              </button>
+              <button
+                onClick={() => router.push('/')}
+                style={{
+                  ...buttonBase,
+                  width: '100%',
+                  padding: '12px',
+                  background: '#334155',
+                  color: '#fff',
+                  fontWeight: 700,
+                }}
+              >
+                Back to Studio
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <div style={{ marginBottom: '14px' }}>
+              <h2 style={{ margin: 0, fontSize: '20px', color: '#f8fafc' }}>Video Gallery</h2>
+              <p style={{ margin: '6px 0 0', color: '#94a3b8', fontSize: '13px' }}>
+                Generated videos appear first. Click a card to play it on the left panel.
+              </p>
+            </div>
+
+            <div style={{ display: 'grid', gap: '12px' }}>
+              {videos.map((video) => {
+                const badge = getBadgeNumber(video.id);
+                const isActive = activeVideoId === video.id;
+                const inPlaylist = badge !== null;
+                const isGenerated = generatedVideos.some((generated) => generated.id === video.id);
+
+                return (
+                  <div
+                    key={video.id}
+                    onClick={() => handleSelectVideo(video.id)}
+                    style={{
+                      border: isActive ? '2px solid #8b5cf6' : '1px solid #1e293b',
+                      borderRadius: '16px',
+                      padding: '14px',
+                      cursor: 'pointer',
+                      background: isActive ? '#0f172a' : '#111827',
+                      color: '#e2e8f0',
+                      boxShadow: '0 4px 20px rgba(15, 23, 42, 0.25)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
+                      <div>
+                        <div style={{ fontWeight: 700, marginBottom: '6px' }}>{video.title}</div>
+                        <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '6px' }}>{video.duration}</div>
+                        {isGenerated && (
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: video.demo ? '#c4b5fd' : '#67e8f9', background: 'rgba(15,23,42,0.8)', borderRadius: '999px', padding: '4px 8px' }}>
+                            {video.demo ? 'Demo generated' : 'Generated'}
+                          </div>
+                        )}
+                      </div>
+                      {badge && (
+                        <div
+                          style={{
+                            minWidth: '28px',
+                            height: '28px',
+                            borderRadius: '999px',
+                            background: '#2563eb',
+                            color: '#fff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: 700,
+                            fontSize: '12px',
+                          }}
+                        >
+                          {badge}
+                        </div>
+                      )}
                     </div>
-                    {badge && (
-                      <div
-                        style={{
-                          minWidth: '28px',
-                          height: '28px',
-                          borderRadius: '999px',
-                          background: '#2563eb',
-                          color: '#fff',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: 700,
-                          fontSize: '12px',
-                        }}
-                      >
-                        {badge}
+
+                    {video.prompt && (
+                      <div style={{ marginTop: '10px', fontSize: '12px', color: '#cbd5e1', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        {video.prompt}
                       </div>
                     )}
-                  </div>
 
-                  <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                    <button
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        togglePlaylist(video.id);
-                      }}
-                      style={{
-                        ...buttonBase,
-                        background: inPlaylist ? '#3f1d1d' : '#172554',
-                        color: inPlaylist ? '#fecaca' : '#bfdbfe',
-                        padding: '8px 12px',
-                      }}
-                    >
-                      {inPlaylist ? 'Remove from Playlist' : 'Add to Playlist'}
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
+                      <button
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          togglePlaylist(video.id);
+                        }}
+                        style={{
+                          ...buttonBase,
+                          background: inPlaylist ? '#3f1d1d' : '#172554',
+                          color: inPlaylist ? '#fecaca' : '#bfdbfe',
+                          padding: '8px 12px',
+                        }}
+                      >
+                        {inPlaylist ? 'Remove from Playlist' : 'Add to Playlist'}
+                      </button>
+
+                      {isGenerated && (
+                        <button
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleDeleteGeneratedVideo(video.id);
+                          }}
+                          style={{
+                            ...buttonBase,
+                            background: '#7f1d1d',
+                            color: '#fff',
+                            padding: '8px 12px',
+                          }}
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
