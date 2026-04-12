@@ -48,7 +48,6 @@ const buttonBase: React.CSSProperties = {
 
 export default function CreatorVideoPage() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const previewWrapperRef = useRef<HTMLDivElement | null>(null);
 
   const [videos] = useState<VideoItem[]>(sampleVideos);
   const [playlist, setPlaylist] = useState<string[]>([]);
@@ -159,14 +158,15 @@ export default function CreatorVideoPage() {
   };
 
   const handleMergeAndDownload = async () => {
-    if (playlistVideos.length === 0 || !videoRef.current || !previewWrapperRef.current) return;
+    if (playlistVideos.length === 0 || !videoRef.current) return;
 
-    const previewElement = previewWrapperRef.current as HTMLDivElement & {
+    const player = videoRef.current as HTMLVideoElement & {
       captureStream?: () => MediaStream;
+      mozCaptureStream?: () => MediaStream;
     };
-    const previewStream = previewElement.captureStream?.();
+    const previewStream = player.captureStream?.() ?? player.mozCaptureStream?.();
     if (!previewStream) {
-      alert('This browser does not support captureStream for merging.');
+      alert('This browser does not support video capture for merging.');
       return;
     }
 
@@ -211,32 +211,32 @@ export default function CreatorVideoPage() {
       setActiveVideoId(item.id);
 
       await new Promise<void>((resolve) => {
-        const player = videoRef.current;
-        if (!player) {
+        const activePlayer = videoRef.current;
+        if (!activePlayer) {
           resolve();
           return;
         }
 
         const onEnded = () => {
-          player.removeEventListener('ended', onEnded);
+          activePlayer.removeEventListener('ended', onEnded);
           resolve();
         };
 
         const onLoaded = async () => {
-          player.removeEventListener('loadeddata', onLoaded);
+          activePlayer.removeEventListener('loadeddata', onLoaded);
           try {
-            player.currentTime = 0;
-            await player.play();
+            activePlayer.currentTime = 0;
+            await activePlayer.play();
           } catch (error) {
             console.error('Playback failed during merge:', error);
             resolve();
           }
         };
 
-        player.addEventListener('ended', onEnded, { once: true });
-        player.addEventListener('loadeddata', onLoaded, { once: true });
-        player.src = item.src;
-        player.load();
+        activePlayer.addEventListener('ended', onEnded, { once: true });
+        activePlayer.addEventListener('loadeddata', onLoaded, { once: true });
+        activePlayer.src = item.src;
+        activePlayer.load();
       });
     }
 
@@ -249,11 +249,10 @@ export default function CreatorVideoPage() {
   };
 
   return (
-    <div style={{ minHeight: 'calc(100vh - 140px)', background: '#fff', padding: '20px 20px 100px' }}>
+    <div style={{ minHeight: 'calc(100vh - 140px)', background: '#020617', color: '#e2e8f0', padding: '20px 20px 100px' }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.6fr) minmax(320px, 0.9fr)', gap: '20px' }}>
         <div>
           <div
-            ref={previewWrapperRef}
             style={{
               background: '#0f172a',
               borderRadius: '18px',
@@ -311,15 +310,15 @@ export default function CreatorVideoPage() {
             )}
           </div>
 
-          <div style={{ marginTop: '18px', color: '#64748b', fontSize: '13px' }}>
+          <div style={{ marginTop: '18px', color: '#94a3b8', fontSize: '13px' }}>
             {isMerging ? mergeProgress : 'Select clips on the right to build a playlist.'}
           </div>
         </div>
 
         <div>
           <div style={{ marginBottom: '14px' }}>
-            <h2 style={{ margin: 0, fontSize: '20px' }}>Video Gallery</h2>
-            <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: '13px' }}>
+            <h2 style={{ margin: 0, fontSize: '20px', color: '#f8fafc' }}>Video Gallery</h2>
+            <p style={{ margin: '6px 0 0', color: '#94a3b8', fontSize: '13px' }}>
               Click a card to preview. Use Add / Remove to manage the playlist.
             </p>
           </div>
@@ -335,18 +334,19 @@ export default function CreatorVideoPage() {
                   key={video.id}
                   onClick={() => handleSelectVideo(video.id)}
                   style={{
-                    border: isActive ? '2px solid #2563eb' : '1px solid #e2e8f0',
+                    border: isActive ? '2px solid #2563eb' : '1px solid #1e293b',
                     borderRadius: '16px',
                     padding: '14px',
                     cursor: 'pointer',
-                    background: isActive ? '#eff6ff' : '#fff',
-                    boxShadow: '0 4px 20px rgba(15, 23, 42, 0.05)',
+                    background: isActive ? '#0f172a' : '#111827',
+                    color: '#e2e8f0',
+                    boxShadow: '0 4px 20px rgba(15, 23, 42, 0.25)',
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
                     <div>
                       <div style={{ fontWeight: 700, marginBottom: '6px' }}>{video.title}</div>
-                      <div style={{ fontSize: '12px', color: '#64748b' }}>{video.duration}</div>
+                      <div style={{ fontSize: '12px', color: '#94a3b8' }}>{video.duration}</div>
                     </div>
                     {badge && (
                       <div
@@ -376,8 +376,8 @@ export default function CreatorVideoPage() {
                       }}
                       style={{
                         ...buttonBase,
-                        background: inPlaylist ? '#fee2e2' : '#dbeafe',
-                        color: inPlaylist ? '#b91c1c' : '#1d4ed8',
+                        background: inPlaylist ? '#3f1d1d' : '#172554',
+                        color: inPlaylist ? '#fecaca' : '#bfdbfe',
                         padding: '8px 12px',
                       }}
                     >
