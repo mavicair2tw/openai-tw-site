@@ -160,8 +160,36 @@ export default function CreatorVideoPage() {
   const handleMergeAndDownload = async () => {
     if (playlistVideos.length === 0) return;
 
-    setMergeProgress('Merge & Download is not wired to a server-side pipeline yet. Playlist playback works, but true merge/export still needs ffmpeg or backend processing.');
-    alert('Merge & Download is not implemented as a reliable export yet. I recommend server-side ffmpeg merge next.');
+    setIsMerging(true);
+    setMergeProgress('Sending playlist to merge service...');
+
+    try {
+      const response = await fetch('/api/video-merge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videos: playlistVideos }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData?.error || 'Merge failed');
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `playlist-${Date.now()}.webm`;
+      link.click();
+      URL.revokeObjectURL(url);
+      setMergeProgress('Merge complete. Download started.');
+    } catch (error) {
+      console.error('Merge failed:', error);
+      setMergeProgress(error instanceof Error ? error.message : 'Merge failed');
+      alert(error instanceof Error ? error.message : 'Merge failed');
+    } finally {
+      setIsMerging(false);
+    }
   };
 
   return (
