@@ -72,6 +72,7 @@ export default function CreatorVideoPage() {
   const [aspectRatio, setAspectRatio] = useState('16:9');
   const [playlist, setPlaylist] = useState<string[]>([]);
   const [orderedVideoIds, setOrderedVideoIds] = useState<string[]>([]);
+  const [hiddenVideoIds, setHiddenVideoIds] = useState<string[]>([]);
   const [activeVideoId, setActiveVideoId] = useState<string>('');
   const [isPlaylistMode, setIsPlaylistMode] = useState(false);
   const [playlistCursor, setPlaylistCursor] = useState(0);
@@ -83,7 +84,7 @@ export default function CreatorVideoPage() {
   const [statusMessage, setStatusMessage] = useState('Prompt from Studio can generate a video, add it to the gallery, and play it here.');
   const [errorMessage, setErrorMessage] = useState('');
 
-  const allVideos = useMemo<VideoItem[]>(() => [...generatedVideos, ...sampleVideos], [generatedVideos]);
+  const allVideos = useMemo<VideoItem[]>(() => [...generatedVideos, ...sampleVideos].filter((video) => !hiddenVideoIds.includes(video.id)), [generatedVideos, hiddenVideoIds]);
 
   useEffect(() => {
     setOrderedVideoIds((current) => {
@@ -200,12 +201,16 @@ export default function CreatorVideoPage() {
     setPlaylistCursor(0);
   };
 
-  const handleDeleteGeneratedVideo = (videoId: string) => {
-    deleteGeneratedVideo(videoId);
+  const handleDeleteVideo = (videoId: string) => {
+    if (generatedVideos.some((generated) => generated.id === videoId)) {
+      deleteGeneratedVideo(videoId);
+    }
+
+    setHiddenVideoIds((current) => (current.includes(videoId) ? current : [...current, videoId]));
     setPlaylist((current) => current.filter((id) => id !== videoId));
     setIsPlaylistMode(false);
     setPlaylistCursor(0);
-    setStatusMessage('Generated video removed from the gallery.');
+    setStatusMessage('Video removed from the gallery.');
   };
 
   const handleMoveVideo = (videoId: string, direction: 'left' | 'right') => {
@@ -689,22 +694,20 @@ export default function CreatorVideoPage() {
                         {inPlaylist ? 'Remove from Playlist' : 'Add to Playlist'}
                       </button>
 
-                      {isGenerated && (
-                        <button
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            handleDeleteGeneratedVideo(video.id);
-                          }}
-                          style={{
-                            ...buttonBase,
-                            background: '#7f1d1d',
-                            color: '#fff',
-                            padding: '8px 12px',
-                          }}
-                        >
-                          Delete
-                        </button>
-                      )}
+                      <button
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleDeleteVideo(video.id);
+                        }}
+                        style={{
+                          ...buttonBase,
+                          background: '#7f1d1d',
+                          color: '#fff',
+                          padding: '8px 12px',
+                        }}
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
                 );
