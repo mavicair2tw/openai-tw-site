@@ -7,7 +7,38 @@ type AccessTokenResponse = {
   token_type: string;
 };
 
+type GoogleApiErrorPayload = {
+  error?: {
+    code?: number;
+    message?: string;
+    status?: string;
+    details?: Array<{
+      '@type'?: string;
+      reason?: string;
+      domain?: string;
+      metadata?: Record<string, string>;
+    }>;
+  };
+};
+
+class ImageGenerationError extends Error {
+  status: number;
+  provider: string;
+  backend: string;
+  reason?: string;
+
+  constructor(message: string, options: { status?: number; provider: string; backend: string; reason?: string }) {
+    super(message);
+    this.name = 'ImageGenerationError';
+    this.status = options.status ?? 500;
+    this.provider = options.provider;
+    this.backend = options.backend;
+    this.reason = options.reason;
+  }
+}
+
 const GEMINI_IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-3.1-flash-image-preview';
+const VERTEX_IMAGE_MODEL = 'imagen-4.0-generate-001';
 
 function base64Url(input: Buffer | string) {
   return Buffer.from(input)
@@ -28,6 +59,31 @@ function getVertexEnv() {
 
 function getGeminiApiKey() {
   return process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
+}
+
+function extractGoogleReason(data: GoogleApiErrorPayload) {
+  const details = data?.error?.details || [];
+  return details.find((detail) => detail?.reason)?.reason || data?.error?.status;
+}
+
+function serializeFailure(error: unknown) {
+  if (error instanceof ImageGenerationError) {
+    return {
+      provider: error.provider,
+      backend: error.backend,
+      status: error.status,
+      reason: error.reason || null,
+      message: error.message,
+    };
+  }
+
+  return {
+    provider: 'google',
+    backend: 'unknown',
+    status: 500,
+    reason: null,
+    message: error instanceof Error ? error.message : 'Unknown image generation error',
+  };
 }
 
 async function getAccessToken() {
@@ -59,9 +115,14 @@ async function getAccessToken() {
     }),
   });
 
-  const data = (await response.json().catch(() => ({}))) as Partial<AccessTokenResponse> & { error_description?: string };
+  const data = (await response.json().catch(() => ({}))) as Partial<AccessTokenResponse> & GoogleApiErrorPayload & { error_description?: string };
   if (!response.ok || !data.access_token) {
-    throw new Error(data.error_description || 'Failed to obtain Google access token');
+    throw new ImageGenerationError(data.error_description || data.error?.message || 'Failed to obtain Google access token', {
+      status: response.status || 500,
+      provider: 'google',
+      backend: 'vertex-ai-auth',
+      reason: extractGoogleReason(data),
+    });
   }
 
   return data.access_token;
@@ -93,18 +154,31 @@ async function generateWithGemini(prompt: string, aspectRatio: string) {
     }),
   });
 
-  const data = await response.json().catch(() => ({}));
+  const data = (await response.json().catch(() => ({}))) as GoogleApiErrorPayload & {
+    candidates?: Array<{ content?: { parts?: Array<{ inlineData?: { data?: string; mimeType?: string } }> } }>;
+  };
+
   if (!response.ok) {
-    throw new Error(data?.error?.message || 'Gemini image generation failed');
+    throw new ImageGenerationError(data?.error?.message || 'Gemini image generation failed', {
+      status: response.status || 500,
+      provider: 'google',
+      backend: 'gemini-api',
+      reason: extractGoogleReason(data),
+    });
   }
 
   const parts = data?.candidates?.[0]?.content?.parts || [];
-  const imagePart = parts.find((part: any) => part?.inlineData?.data);
+  const imagePart = parts.find((part) => part?.inlineData?.data);
   const imageBase64 = imagePart?.inlineData?.data;
   const mimeType = imagePart?.inlineData?.mimeType || 'image/png';
 
   if (!imageBase64) {
-    throw new Error('Gemini did not return an image');
+    throw new ImageGenerationError('Gemini did not return an image', {
+      status: 502,
+      provider: 'google',
+      backend: 'gemini-api',
+      reason: 'EMPTY_IMAGE_RESPONSE',
+    });
   }
 
   return {
@@ -118,8 +192,7 @@ async function generateWithGemini(prompt: string, aspectRatio: string) {
 async function generateWithVertex(prompt: string, aspectRatio: string) {
   const { projectId, location } = getVertexEnv();
   const accessToken = await getAccessToken();
-  const model = 'imagen-4.0-generate-001';
-  const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${model}:predict`;
+  const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${VERTEX_IMAGE_MODEL}:predict`;
 
   const upstream = await fetch(endpoint, {
     method: 'POST',
@@ -136,20 +209,34 @@ async function generateWithVertex(prompt: string, aspectRatio: string) {
     }),
   });
 
-  const data = await upstream.json().catch(() => ({}));
+  const data = (await upstream.json().catch(() => ({}))) as GoogleApiErrorPayload & {
+    predictions?: Array<{ bytesBase64Encoded?: string }>;
+    generatedImages?: Array<{ bytesBase64Encoded?: string }>;
+  };
+
   if (!upstream.ok) {
-    throw new Error(data?.error?.message || 'Vertex AI Imagen request failed');
+    throw new ImageGenerationError(data?.error?.message || 'Vertex AI Imagen request failed', {
+      status: upstream.status || 500,
+      provider: 'google',
+      backend: 'vertex-ai',
+      reason: extractGoogleReason(data),
+    });
   }
 
   const imageBase64 = data?.predictions?.[0]?.bytesBase64Encoded || data?.generatedImages?.[0]?.bytesBase64Encoded;
   if (!imageBase64) {
-    throw new Error('No image returned from Vertex AI Imagen');
+    throw new ImageGenerationError('No image returned from Vertex AI Imagen', {
+      status: 502,
+      provider: 'google',
+      backend: 'vertex-ai',
+      reason: 'EMPTY_IMAGE_RESPONSE',
+    });
   }
 
   return {
     imageUrl: `data:image/png;base64,${imageBase64}`,
     provider: 'google',
-    model,
+    model: VERTEX_IMAGE_MODEL,
     backend: 'vertex-ai',
   };
 }
@@ -163,30 +250,60 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Prompt is required.' }, { status: 400 });
   }
 
-  try {
-    const geminiApiKey = getGeminiApiKey();
-    if (geminiApiKey) {
-      const result = await generateWithGemini(prompt, aspectRatio);
-      return NextResponse.json(result);
-    }
+  const geminiApiKey = getGeminiApiKey();
+  const { projectId, clientEmail, privateKey } = getVertexEnv();
+  const hasVertexConfig = Boolean(projectId && clientEmail && privateKey);
 
-    const { projectId, clientEmail, privateKey } = getVertexEnv();
-    if (projectId && clientEmail && privateKey) {
-      const result = await generateWithVertex(prompt, aspectRatio);
-      return NextResponse.json(result);
-    }
-
+  if (!geminiApiKey && !hasVertexConfig) {
     return NextResponse.json(
       {
         error:
           'Missing Google image credentials. Set GEMINI_API_KEY (or GOOGLE_API_KEY) for the Gemini image API, or configure Vertex AI with GOOGLE_CLOUD_PROJECT, GOOGLE_CLOUD_LOCATION, GOOGLE_CLIENT_EMAIL, and GOOGLE_PRIVATE_KEY.',
         provider: 'google',
         needsGoogleCredentials: true,
+        backends: {
+          gemini: false,
+          vertex: false,
+        },
       },
       { status: 501 },
     );
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Google image generation failed';
-    return NextResponse.json({ error: message }, { status: 500 });
   }
+
+  const failures: Array<ReturnType<typeof serializeFailure>> = [];
+
+  if (geminiApiKey) {
+    try {
+      const result = await generateWithGemini(prompt, aspectRatio);
+      return NextResponse.json(result);
+    } catch (error) {
+      failures.push(serializeFailure(error));
+    }
+  }
+
+  if (hasVertexConfig) {
+    try {
+      const result = await generateWithVertex(prompt, aspectRatio);
+      return NextResponse.json(result);
+    } catch (error) {
+      failures.push(serializeFailure(error));
+    }
+  }
+
+  const primaryFailure = failures[0];
+  const errorMessage = failures.length === 1
+    ? primaryFailure.message
+    : `All configured Google image backends failed. ${failures.map((failure) => `${failure.backend}: ${failure.message}`).join(' | ')}`;
+
+  return NextResponse.json(
+    {
+      error: errorMessage,
+      provider: 'google',
+      failures,
+      needsGoogleCredentials: failures.every((failure) =>
+        ['API_KEY_INVALID', 'PERMISSION_DENIED', 'UNAUTHENTICATED'].includes(failure.reason || ''),
+      ),
+    },
+    { status: failures.length === 1 ? primaryFailure.status : 502 },
+  );
 }
