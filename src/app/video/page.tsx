@@ -55,6 +55,10 @@ export default function CreatorVideoPage() {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const galleryStripRef = useRef<HTMLDivElement | null>(null);
+  const galleryDraggingRef = useRef(false);
+  const galleryDragStartXRef = useRef(0);
+  const galleryDragStartScrollRef = useRef(0);
+  const suppressGalleryClickRef = useRef(false);
 
   const currentPrompt = usePromptStore((state) => state.currentPrompt);
   const setCurrentPrompt = usePromptStore((state) => state.setCurrentPrompt);
@@ -72,6 +76,7 @@ export default function CreatorVideoPage() {
   const [isMerging, setIsMerging] = useState(false);
   const [isGeneratingVideo, setIsGeneratingVideo] = useState(false);
   const [showThumbnails, setShowThumbnails] = useState(true);
+  const [isDraggingGallery, setIsDraggingGallery] = useState(false);
   const [statusMessage, setStatusMessage] = useState('Prompt from Studio can generate a video, add it to the gallery, and play it here.');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -169,6 +174,11 @@ export default function CreatorVideoPage() {
   };
 
   const handleSelectVideo = (videoId: string) => {
+    if (suppressGalleryClickRef.current) {
+      suppressGalleryClickRef.current = false;
+      return;
+    }
+
     setActiveVideoId(videoId);
     setIsPlaylistMode(false);
     setPlaylistCursor(0);
@@ -188,6 +198,37 @@ export default function CreatorVideoPage() {
 
     const nextLeft = strip.scrollLeft + (direction === 'left' ? -360 : 360);
     strip.scrollTo({ left: nextLeft, behavior: 'smooth' });
+  };
+
+  const handleGalleryPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    const strip = galleryStripRef.current;
+    if (!strip) return;
+
+    galleryDraggingRef.current = true;
+    galleryDragStartXRef.current = event.clientX;
+    galleryDragStartScrollRef.current = strip.scrollLeft;
+    suppressGalleryClickRef.current = false;
+    setIsDraggingGallery(true);
+    strip.setPointerCapture?.(event.pointerId);
+  };
+
+  const handleGalleryPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    const strip = galleryStripRef.current;
+    if (!strip || !galleryDraggingRef.current) return;
+
+    const delta = event.clientX - galleryDragStartXRef.current;
+    if (Math.abs(delta) > 6) {
+      suppressGalleryClickRef.current = true;
+    }
+
+    strip.scrollLeft = galleryDragStartScrollRef.current - delta;
+  };
+
+  const handleGalleryPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+    const strip = galleryStripRef.current;
+    galleryDraggingRef.current = false;
+    setIsDraggingGallery(false);
+    strip?.releasePointerCapture?.(event.pointerId);
   };
 
   const handleClearPlaylist = () => {
@@ -440,7 +481,7 @@ export default function CreatorVideoPage() {
                 <div>
                   <h2 style={{ margin: 0, fontSize: '20px', color: '#f8fafc' }}>Video Gallery</h2>
                   <p style={{ margin: '6px 0 0', color: '#94a3b8', fontSize: '13px' }}>
-                    Generated videos appear first. Click a card to play it on the left panel. Use the scroll buttons if your browser hides the native scrollbar.
+                    Generated videos appear first. Click a card to play it on the left panel. Use the scroll buttons, or hold the left mouse button and drag the strip left or right.
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
@@ -481,7 +522,7 @@ export default function CreatorVideoPage() {
               </div>
             </div>
 
-            <div ref={galleryStripRef} style={{ display: 'flex', gap: '12px', width: '100%', minWidth: 0, overflowX: 'scroll', overflowY: 'hidden', paddingRight: '24px', paddingBottom: '12px', boxSizing: 'border-box', scrollBehavior: 'smooth', scrollSnapType: 'x proximity' }}>
+            <div ref={galleryStripRef} onPointerDown={handleGalleryPointerDown} onPointerMove={handleGalleryPointerMove} onPointerUp={handleGalleryPointerUp} onPointerCancel={handleGalleryPointerUp} style={{ display: 'flex', gap: '12px', width: '100%', minWidth: 0, overflowX: 'scroll', overflowY: 'hidden', paddingRight: '24px', paddingBottom: '12px', boxSizing: 'border-box', scrollBehavior: 'smooth', scrollSnapType: 'x proximity', cursor: isDraggingGallery ? 'grabbing' : 'grab', userSelect: 'none' }}>
               {videos.map((video) => {
                 const badge = getBadgeNumber(video.id);
                 const isActive = activeVideoId === video.id;
