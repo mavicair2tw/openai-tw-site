@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { addVideoRecord } from '@/lib/media-store';
-import { buildMediaObjectPath, buildPublicMediaUrl, getMediaBucket } from '@/lib/google-cloud';
+import { buildMediaObjectPath, buildPublicMediaUrl, getMediaBucket, normalizePrivateKey } from '@/lib/google-cloud';
 
 type AccessTokenResponse = {
   access_token: string;
@@ -40,7 +40,7 @@ function getVertexEnv() {
     projectId: process.env.GOOGLE_CLOUD_PROJECT || '',
     location: process.env.GOOGLE_CLOUD_LOCATION || 'us-central1',
     clientEmail: process.env.GOOGLE_CLIENT_EMAIL || '',
-    privateKey: (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+    privateKey: normalizePrivateKey(process.env.GOOGLE_PRIVATE_KEY || ''),
   };
 }
 

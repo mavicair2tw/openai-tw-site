@@ -11,10 +11,14 @@ class GoogleCloudConfigError extends Error {
 let firestoreInstance: Firestore | null = null;
 let storageInstance: Storage | null = null;
 
+export function normalizePrivateKey(value: string) {
+  return value.replace(/^['"]|['"]$/g, '').replace(/\\n/g, '\n').trim();
+}
+
 export function getGoogleCloudConfig() {
   const projectId = process.env.GOOGLE_CLOUD_PROJECT?.trim() || '';
   const clientEmail = process.env.GOOGLE_CLIENT_EMAIL?.trim() || '';
-  const privateKey = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n').trim();
+  const privateKey = normalizePrivateKey(process.env.GOOGLE_PRIVATE_KEY || '');
   const mediaBucket = process.env.GOOGLE_CLOUD_STORAGE_BUCKET?.trim() || '';
   const mediaPrefix = (process.env.GOOGLE_CLOUD_STORAGE_PREFIX?.trim() || 'media-gallery').replace(/^\/+|\/+$/g, '');
 
