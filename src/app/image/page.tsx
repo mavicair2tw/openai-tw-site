@@ -37,6 +37,7 @@ export default function ImagenPage() {
 
     setIsGenerating(true);
     setErrorMessage('');
+    setGenerationResult(null);
     try {
       setCurrentPrompt(editingPrompt);
       addToHistory(editingPrompt);
@@ -163,6 +164,17 @@ export default function ImagenPage() {
           <div style={{ padding: '14px', background: '#3b0a0a', color: '#fecaca', border: '1px solid #7f1d1d', borderRadius: '14px' }}>
             <div style={{ fontWeight: 700, marginBottom: '6px' }}>Image generation error</div>
             <div style={{ fontSize: '13px', lineHeight: 1.5 }}>{errorMessage}</div>
+            <div style={{ marginTop: '10px' }}>
+              <button
+                onClick={() => {
+                  setErrorMessage('');
+                  setIsGenerating(false);
+                }}
+                style={{ padding: '8px 12px', background: '#7f1d1d', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 700 }}
+              >
+                Dismiss error
+              </button>
+            </div>
           </div>
         ) : (
           <div style={{ padding: '14px', background: 'rgba(2,6,23,0.55)', color: '#94a3b8', border: '1px solid rgba(148,163,184,0.1)', borderRadius: '14px', fontSize: '13px' }}>
