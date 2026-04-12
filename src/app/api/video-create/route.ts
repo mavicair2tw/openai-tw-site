@@ -1,7 +1,15 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { addVideoRecord } from '@/lib/media-store';
-import { buildMediaObjectPath, buildPublicMediaUrl, getMediaBucket, getSignedMediaUrl, normalizeEnvValue, normalizePrivateKey } from '@/lib/google-cloud';
+import {
+  buildMediaObjectPath,
+  buildPublicMediaUrl,
+  getGoogleCloudConfig,
+  getMediaBucket,
+  getSignedMediaUrl,
+  normalizeEnvValue,
+  normalizePrivateKey,
+} from '@/lib/google-cloud';
 
 type AccessTokenResponse = {
   access_token: string;
@@ -93,6 +101,23 @@ function buildTitle(prompt: string) {
   return prompt.length > 48 ? `${prompt.slice(0, 48)}…` : prompt;
 }
 
+function parseGcsUri(uri: string) {
+  if (!uri.startsWith('gs://')) {
+    return null;
+  }
+
+  const withoutScheme = uri.slice('gs://'.length);
+  const firstSlash = withoutScheme.indexOf('/');
+  if (firstSlash === -1) {
+    return null;
+  }
+
+  return {
+    bucketName: withoutScheme.slice(0, firstSlash),
+    objectPath: withoutScheme.slice(firstSlash + 1),
+  };
+}
+
 async function sleep(ms: number) {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -127,7 +152,12 @@ export async function POST(req: Request) {
 
   try {
     const accessToken = await getAccessToken();
-    const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${VERTEX_VIDEO_MODEL}:predictLongRunning`;
+    const modelResource = `projects/${projectId}/locations/${location}/publishers/google/models/${VERTEX_VIDEO_MODEL}`;
+    const endpoint = `https://${location}-aiplatform.googleapis.com/v1/${modelResource}:predictLongRunning`;
+    const bucket = getMediaBucket();
+    const { mediaPrefix } = getGoogleCloudConfig();
+    const outputFolder = `${mediaPrefix}/videos/veo-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const storageUri = `gs://${bucket.name}/${outputFolder}/`;
 
     const startResponse = await fetch(endpoint, {
       method: 'POST',
@@ -141,6 +171,8 @@ export async function POST(req: Request) {
           aspectRatio,
           durationSeconds,
           resolution: '720p',
+          sampleCount: 1,
+          storageUri,
         },
       }),
     });
@@ -154,6 +186,10 @@ export async function POST(req: Request) {
       name?: string;
       done?: boolean;
       response?: {
+        videos?: Array<{
+          gcsUri?: string;
+          mimeType?: string;
+        }>;
         generateVideoResponse?: {
           generatedSamples?: Array<{
             video?: { uri?: string };
@@ -166,8 +202,13 @@ export async function POST(req: Request) {
       if (operation?.done) break;
       await sleep(POLL_INTERVAL_MS);
 
-      const pollResponse = await fetch(`https://${location}-aiplatform.googleapis.com/v1/${startData.name}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
+      const pollResponse = await fetch(`https://${location}-aiplatform.googleapis.com/v1/${modelResource}:fetchPredictOperation`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ operationName: startData.name }),
       });
       operation = await pollResponse.json().catch(() => ({}));
 
@@ -194,39 +235,26 @@ export async function POST(req: Request) {
       throw new Error(operation.error.message);
     }
 
-    const videoUri = operation?.response?.generateVideoResponse?.generatedSamples?.[0]?.video?.uri;
-    if (!videoUri) {
-      throw new Error('Veo completed without returning a downloadable video URI.');
+    const generatedGcsUri = operation?.response?.videos?.[0]?.gcsUri;
+    const parsedGcsUri = generatedGcsUri ? parseGcsUri(generatedGcsUri) : null;
+    const previewVideoUri = operation?.response?.generateVideoResponse?.generatedSamples?.[0]?.video?.uri;
+
+    if (!parsedGcsUri?.objectPath && !previewVideoUri) {
+      throw new Error('Veo completed without returning a usable video location.');
     }
 
-    const downloadResponse = await fetch(videoUri, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
+    const objectPath = parsedGcsUri?.objectPath || buildMediaObjectPath('videos', `veo-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.mp4`);
+    const bucketName = parsedGcsUri?.bucketName || bucket.name;
+    const signedUrl = parsedGcsUri?.objectPath ? await getSignedMediaUrl(parsedGcsUri.objectPath) : previewVideoUri;
 
-    if (!downloadResponse.ok) {
-      const errorText = await downloadResponse.text().catch(() => '');
-      throw new Error(errorText || 'Failed to download generated video from Vertex AI.');
+    if (!signedUrl) {
+      throw new Error('Veo completed but no signed video URL could be created.');
     }
-
-    const bytes = Buffer.from(await downloadResponse.arrayBuffer());
-    const filename = `veo-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.mp4`;
-    const objectPath = buildMediaObjectPath('videos', filename);
-    const bucket = getMediaBucket();
-
-    await bucket.file(objectPath).save(bytes, {
-      resumable: false,
-      contentType: 'video/mp4',
-      metadata: {
-        cacheControl: 'public, max-age=31536000, immutable',
-      },
-    });
-
-    const signedUrl = await getSignedMediaUrl(objectPath);
 
     const video = {
       id: `vid-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       title: buildTitle(prompt) || 'Generated video',
-      src: buildPublicMediaUrl(bucket.name, objectPath),
+      src: buildPublicMediaUrl(bucketName, objectPath),
       duration: `${durationSeconds}s`,
       prompt,
       aspectRatio,
