@@ -54,6 +54,7 @@ const buttonBase: React.CSSProperties = {
 export default function CreatorVideoPage() {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const galleryStripRef = useRef<HTMLDivElement | null>(null);
 
   const currentPrompt = usePromptStore((state) => state.currentPrompt);
   const setCurrentPrompt = usePromptStore((state) => state.setCurrentPrompt);
@@ -179,6 +180,13 @@ export default function CreatorVideoPage() {
     setIsPlaylistMode(false);
     setPlaylistCursor(0);
     setStatusMessage('Generated video removed from the gallery.');
+  };
+
+  const handleScrollGallery = (direction: 'left' | 'right') => {
+    galleryStripRef.current?.scrollBy({
+      left: direction === 'left' ? -360 : 360,
+      behavior: 'smooth',
+    });
   };
 
   const handleClearPlaylist = () => {
@@ -431,24 +439,48 @@ export default function CreatorVideoPage() {
                 <div>
                   <h2 style={{ margin: 0, fontSize: '20px', color: '#f8fafc' }}>Video Gallery</h2>
                   <p style={{ margin: '6px 0 0', color: '#94a3b8', fontSize: '13px' }}>
-                    Generated videos appear first. Click a card to play it on the left panel.
+                    Generated videos appear first. Click a card to play it on the left panel. Use the scroll buttons if your browser hides the native scrollbar.
                   </p>
                 </div>
-                <button
-                  onClick={() => setShowThumbnails((current) => !current)}
-                  style={{
-                    ...buttonBase,
-                    background: showThumbnails ? '#0ea5e9' : '#334155',
-                    color: '#fff',
-                    padding: '10px 12px',
-                  }}
-                >
-                  Thumbnails {showThumbnails ? 'On' : 'Off'}
-                </button>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                  <button
+                    onClick={() => handleScrollGallery('left')}
+                    style={{
+                      ...buttonBase,
+                      background: '#334155',
+                      color: '#fff',
+                      padding: '10px 12px',
+                    }}
+                  >
+                    ← Scroll Left
+                  </button>
+                  <button
+                    onClick={() => handleScrollGallery('right')}
+                    style={{
+                      ...buttonBase,
+                      background: '#334155',
+                      color: '#fff',
+                      padding: '10px 12px',
+                    }}
+                  >
+                    Scroll Right →
+                  </button>
+                  <button
+                    onClick={() => setShowThumbnails((current) => !current)}
+                    style={{
+                      ...buttonBase,
+                      background: showThumbnails ? '#0ea5e9' : '#334155',
+                      color: '#fff',
+                      padding: '10px 12px',
+                    }}
+                  >
+                    Thumbnails {showThumbnails ? 'On' : 'Off'}
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '12px', width: '100%', minWidth: 0, overflowX: 'scroll', overflowY: 'hidden', paddingBottom: '12px', boxSizing: 'border-box' }}>
+            <div ref={galleryStripRef} style={{ display: 'flex', gap: '12px', width: '100%', minWidth: 0, overflowX: 'scroll', overflowY: 'hidden', paddingRight: '24px', paddingBottom: '12px', boxSizing: 'border-box', scrollBehavior: 'smooth' }}>
               {videos.map((video) => {
                 const badge = getBadgeNumber(video.id);
                 const isActive = activeVideoId === video.id;
