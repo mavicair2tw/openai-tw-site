@@ -158,106 +158,10 @@ export default function CreatorVideoPage() {
   };
 
   const handleMergeAndDownload = async () => {
-    if (playlistVideos.length === 0 || !videoRef.current) return;
+    if (playlistVideos.length === 0) return;
 
-    const player = videoRef.current as HTMLVideoElement & {
-      captureStream?: () => MediaStream;
-      mozCaptureStream?: () => MediaStream;
-    };
-    const previewStream = player.captureStream?.() ?? player.mozCaptureStream?.();
-    if (!previewStream) {
-      alert('Merge & Download is not supported in this browser yet. Please try Chrome desktop, or switch to server-side merge.');
-      return;
-    }
-
-    setIsMerging(true);
-    setMergeProgress('Preparing recorder...');
-    setIsPlaylistMode(true);
-    setPlaylistCursor(0);
-    setActiveVideoId(playlistVideos[0].id);
-
-    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
-      ? 'video/webm;codecs=vp9'
-      : MediaRecorder.isTypeSupported('video/webm;codecs=vp8')
-        ? 'video/webm;codecs=vp8'
-        : 'video/webm';
-
-    let recorder: MediaRecorder;
-    try {
-      recorder = new MediaRecorder(previewStream, { mimeType });
-    } catch (error) {
-      console.error('Failed to create MediaRecorder:', error);
-      alert('Merge & Download could not start in this browser.');
-      setIsMerging(false);
-      setIsPlaylistMode(false);
-      setPlaylistCursor(0);
-      return;
-    }
-    const chunks: Blob[] = [];
-
-    recorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        chunks.push(event.data);
-      }
-    };
-
-    const stopPromise = new Promise<void>((resolve) => {
-      recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'video/webm' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `playlist-${Date.now()}.webm`;
-        link.click();
-        URL.revokeObjectURL(url);
-        resolve();
-      };
-    });
-
-    recorder.start();
-
-    for (let index = 0; index < playlistVideos.length; index += 1) {
-      const item = playlistVideos[index];
-      setMergeProgress(`Recording ${index + 1} / ${playlistVideos.length}: ${item.title}`);
-      setPlaylistCursor(index);
-      setActiveVideoId(item.id);
-
-      await new Promise<void>((resolve) => {
-        const activePlayer = videoRef.current;
-        if (!activePlayer) {
-          resolve();
-          return;
-        }
-
-        const onEnded = () => {
-          activePlayer.removeEventListener('ended', onEnded);
-          resolve();
-        };
-
-        const onLoaded = async () => {
-          activePlayer.removeEventListener('loadeddata', onLoaded);
-          try {
-            activePlayer.currentTime = 0;
-            await activePlayer.play();
-          } catch (error) {
-            console.error('Playback failed during merge:', error);
-            resolve();
-          }
-        };
-
-        activePlayer.addEventListener('ended', onEnded, { once: true });
-        activePlayer.addEventListener('loadeddata', onLoaded, { once: true });
-        activePlayer.src = item.src;
-        activePlayer.load();
-      });
-    }
-
-    recorder.stop();
-    await stopPromise;
-    setMergeProgress('Done. Download should start automatically.');
-    setIsMerging(false);
-    setIsPlaylistMode(false);
-    setPlaylistCursor(0);
+    setMergeProgress('Merge & Download is not wired to a server-side pipeline yet. Playlist playback works, but true merge/export still needs ffmpeg or backend processing.');
+    alert('Merge & Download is not implemented as a reliable export yet. I recommend server-side ffmpeg merge next.');
   };
 
   return (
