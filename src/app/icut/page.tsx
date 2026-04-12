@@ -39,20 +39,19 @@ const sampleClips: Clip[] = [
   },
 ];
 
-const cardStyle: React.CSSProperties = {
-  background: 'rgba(15,23,42,0.72)',
-  border: '1px solid rgba(148,163,184,0.16)',
-  borderRadius: '24px',
-  padding: '20px',
+const panelStyle: React.CSSProperties = {
+  background: 'rgba(15,23,42,0.92)',
+  border: '1px solid rgba(148,163,184,0.12)',
+  borderRadius: '18px',
   boxShadow: '0 20px 60px rgba(2,6,23,0.28)',
 };
 
 const fieldStyle: React.CSSProperties = {
   width: '100%',
   padding: '10px 12px',
-  borderRadius: '12px',
+  borderRadius: '10px',
   border: '1px solid rgba(148,163,184,0.18)',
-  background: 'rgba(15,23,42,0.85)',
+  background: 'rgba(2,6,23,0.85)',
   color: '#e2e8f0',
   fontSize: '13px',
   boxSizing: 'border-box',
@@ -165,101 +164,124 @@ export default function ICutPage() {
   };
 
   return (
-    <div style={{ color: '#e5eefb', display: 'grid', gap: '24px' }}>
-      <section style={{ ...cardStyle, background: 'radial-gradient(circle at top left, rgba(59,130,246,0.18), transparent 26%), rgba(15,23,42,0.78)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '20px', flexWrap: 'wrap' }}>
-          <div>
-            <div style={{ fontSize: '12px', letterSpacing: '0.16em', textTransform: 'uppercase', color: '#67e8f9', marginBottom: '8px' }}>Dedicated Video Editor</div>
-            <h1 style={{ margin: 0, fontSize: '32px', lineHeight: 1.05 }}>iCut</h1>
-            <p style={{ margin: '10px 0 0', maxWidth: '760px', fontSize: '15px', color: '#94a3b8' }}>
-              Trim, sequence, merge, fade, zoom, upload, and export clips in one focused workspace.
-            </p>
-          </div>
+    <div style={{ color: '#e5eefb', display: 'grid', gap: '14px', minHeight: 'calc(100vh - 180px)' }}>
+      <section style={{ ...panelStyle, padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+        <div>
+          <div style={{ fontSize: '12px', letterSpacing: '0.16em', textTransform: 'uppercase', color: '#67e8f9', marginBottom: '4px' }}>Professional editor layout</div>
+          <h1 style={{ margin: 0, fontSize: '26px' }}>iCut Editor</h1>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <div style={{ fontSize: '13px', color: '#cbd5e1' }}>{status}</div>
+          <label style={{ display: 'inline-block', borderRadius: '10px', padding: '10px 12px', background: isUploading ? '#475569' : '#2563eb', color: '#fff', cursor: isUploading ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '13px' }}>
+            {isUploading ? 'Uploading...' : 'Import'}
+            <input type="file" accept="video/*" onChange={handleUpload} style={{ display: 'none' }} disabled={isUploading} />
+          </label>
+          <button onClick={handleExport} disabled={isExporting} style={{ border: 'none', borderRadius: '10px', padding: '10px 12px', background: isExporting ? '#475569' : '#22c55e', color: '#04130a', fontWeight: 700, cursor: isExporting ? 'not-allowed' : 'pointer' }}>
+            {isExporting ? 'Exporting...' : 'Export'}
+          </button>
         </div>
       </section>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr 0.9fr', gap: '24px' }}>
-        <section style={cardStyle}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center', marginBottom: '14px' }}>
-            <div>
-              <div style={{ fontSize: '12px', letterSpacing: '0.16em', textTransform: 'uppercase', color: '#93c5fd', marginBottom: '8px' }}>Assets</div>
-              <h2 style={{ margin: 0, fontSize: '22px' }}>Clip bin</h2>
-            </div>
-            <label style={{ display: 'inline-block', borderRadius: '12px', padding: '10px 12px', background: isUploading ? '#475569' : '#2563eb', color: '#fff', cursor: isUploading ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '13px' }}>
-              {isUploading ? 'Uploading...' : 'Upload Video'}
-              <input type="file" accept="video/*" onChange={handleUpload} style={{ display: 'none' }} disabled={isUploading} />
-            </label>
+      <div style={{ display: 'grid', gridTemplateColumns: '300px minmax(0, 1fr) 320px', gap: '14px', flex: 1 }}>
+        <aside style={{ ...panelStyle, padding: '14px', display: 'grid', gridTemplateRows: 'auto 1fr', minHeight: '620px' }}>
+          <div style={{ marginBottom: '12px' }}>
+            <div style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.16em', color: '#93c5fd', marginBottom: '6px' }}>Media</div>
+            <div style={{ fontSize: '18px', fontWeight: 700 }}>Clip Bin</div>
           </div>
-
-          <div style={{ display: 'grid', gap: '12px' }}>
+          <div style={{ display: 'grid', gap: '10px', alignContent: 'start', overflow: 'auto' }}>
             {clips.map((clip) => (
               <button
                 key={clip.id}
                 onClick={() => setActiveId(clip.id)}
                 style={{
                   textAlign: 'left',
-                  borderRadius: '18px',
-                  padding: '16px',
+                  borderRadius: '14px',
+                  padding: '12px',
                   background: activeId === clip.id ? 'rgba(37,99,235,0.18)' : 'rgba(2,6,23,0.42)',
                   border: '1px solid rgba(148,163,184,0.12)',
                   color: '#e5eefb',
                   cursor: 'pointer',
                 }}
               >
-                <div style={{ fontWeight: 700, marginBottom: '6px' }}>{clip.title}</div>
-                <div style={{ fontSize: '13px', color: '#94a3b8' }}>
-                  Trim {clip.trimStart}s → {clip.trimEnd}s · Zoom in {clip.zoomIn} · Zoom out {clip.zoomOut}
-                </div>
+                <div style={{ fontWeight: 700, marginBottom: '4px' }}>{clip.title}</div>
+                <div style={{ fontSize: '12px', color: '#94a3b8' }}>Trim {clip.trimStart}s → {clip.trimEnd}s</div>
               </button>
             ))}
           </div>
-        </section>
+        </aside>
 
-        <section style={cardStyle}>
-          <div style={{ fontSize: '12px', letterSpacing: '0.16em', textTransform: 'uppercase', color: '#c4b5fd', marginBottom: '8px' }}>Timeline</div>
-          <h2 style={{ margin: '0 0 14px 0', fontSize: '22px' }}>Sequence</h2>
-          <div style={{ display: 'grid', gap: '12px' }}>
-            {clips.map((clip, index) => (
-              <div key={clip.id} style={{ borderRadius: '18px', padding: '16px', background: 'rgba(2,6,23,0.42)', border: '1px solid rgba(148,163,184,0.12)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                  <div>
-                    <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.14em', color: '#93c5fd' }}>Clip {index + 1}</div>
-                    <div style={{ fontWeight: 700 }}>{clip.title}</div>
+        <section style={{ display: 'grid', gridTemplateRows: '1fr 220px', gap: '14px', minHeight: '620px' }}>
+          <div style={{ ...panelStyle, padding: '14px', display: 'grid', gridTemplateRows: 'auto 1fr' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <div>
+                <div style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.16em', color: '#c4b5fd', marginBottom: '6px' }}>Preview</div>
+                <div style={{ fontSize: '18px', fontWeight: 700 }}>{activeClip?.title || 'No clip selected'}</div>
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button style={{ border: 'none', borderRadius: '10px', padding: '8px 10px', background: '#1e293b', color: '#fff' }}>⏮</button>
+                <button style={{ border: 'none', borderRadius: '10px', padding: '8px 12px', background: '#2563eb', color: '#fff' }}>▶</button>
+                <button style={{ border: 'none', borderRadius: '10px', padding: '8px 10px', background: '#1e293b', color: '#fff' }}>⏭</button>
+              </div>
+            </div>
+            <div style={{ borderRadius: '18px', background: '#000', border: '1px solid rgba(148,163,184,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '380px' }}>
+              {activeClip ? (
+                <video key={activeClip.src} src={activeClip.src} controls style={{ maxWidth: '100%', maxHeight: '100%', borderRadius: '12px' }} />
+              ) : (
+                <div style={{ color: '#94a3b8' }}>Preview monitor</div>
+              )}
+            </div>
+          </div>
+
+          <div style={{ ...panelStyle, padding: '14px', display: 'grid', gridTemplateRows: 'auto 1fr' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <div>
+                <div style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.16em', color: '#f9a8d4', marginBottom: '6px' }}>Timeline</div>
+                <div style={{ fontSize: '18px', fontWeight: 700 }}>Track view</div>
+              </div>
+              <div style={{ fontSize: '12px', color: '#94a3b8' }}>00:00:00</div>
+            </div>
+            <div style={{ borderRadius: '16px', background: 'rgba(2,6,23,0.55)', border: '1px solid rgba(148,163,184,0.1)', padding: '12px', overflow: 'auto' }}>
+              <div style={{ display: 'grid', gap: '10px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '90px 1fr', gap: '10px', alignItems: 'center' }}>
+                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>Video 1</div>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    {clips.map((clip, index) => (
+                      <div key={clip.id} style={{ minWidth: '140px', padding: '12px', borderRadius: '12px', background: activeId === clip.id ? 'linear-gradient(135deg,#2563eb,#7c3aed)' : '#334155', color: '#fff', position: 'relative' }}>
+                        <div style={{ fontSize: '11px', opacity: 0.75, marginBottom: '4px' }}>Clip {index + 1}</div>
+                        <div style={{ fontWeight: 700, fontSize: '13px', marginBottom: '8px' }}>{clip.title}</div>
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <button onClick={() => moveClip(clip.id, 'up')} style={{ border: 'none', borderRadius: '8px', padding: '4px 8px', background: 'rgba(255,255,255,0.14)', color: '#fff', cursor: 'pointer' }}>←</button>
+                          <button onClick={() => moveClip(clip.id, 'down')} style={{ border: 'none', borderRadius: '8px', padding: '4px 8px', background: 'rgba(255,255,255,0.14)', color: '#fff', cursor: 'pointer' }}>→</button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    <button onClick={() => moveClip(clip.id, 'up')} style={{ border: 'none', borderRadius: '10px', padding: '6px 10px', background: '#334155', color: '#fff', cursor: 'pointer' }}>↑</button>
-                    <button onClick={() => moveClip(clip.id, 'down')} style={{ border: 'none', borderRadius: '10px', padding: '6px 10px', background: '#334155', color: '#fff', cursor: 'pointer' }}>↓</button>
-                  </div>
-                </div>
-                <div style={{ fontSize: '13px', color: '#94a3b8' }}>
-                  Fade in {clip.fadeIn}s · Fade out {clip.fadeOut}s · Zoom in {clip.zoomIn} · Zoom out {clip.zoomOut}
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         </section>
 
-        <section style={cardStyle}>
-          <div style={{ fontSize: '12px', letterSpacing: '0.16em', textTransform: 'uppercase', color: '#f9a8d4', marginBottom: '8px' }}>Inspector</div>
-          <h2 style={{ margin: '0 0 14px 0', fontSize: '22px' }}>Clip controls</h2>
+        <aside style={{ ...panelStyle, padding: '14px', minHeight: '620px' }}>
+          <div style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.16em', color: '#fda4af', marginBottom: '6px' }}>Inspector</div>
+          <div style={{ fontSize: '18px', fontWeight: 700, marginBottom: '14px' }}>Properties</div>
 
           {activeClip ? (
             <div style={{ display: 'grid', gap: '12px' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: '#cbd5e1' }}>Trim Start (s)</label>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: '#cbd5e1' }}>Trim Start</label>
                 <input type="number" value={activeClip.trimStart} onChange={(e) => updateClip(activeClip.id, { trimStart: Number(e.target.value) })} style={fieldStyle} />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: '#cbd5e1' }}>Trim End (s)</label>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: '#cbd5e1' }}>Trim End</label>
                 <input type="number" value={activeClip.trimEnd} onChange={(e) => updateClip(activeClip.id, { trimEnd: Number(e.target.value) })} style={fieldStyle} />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: '#cbd5e1' }}>Fade In (s)</label>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: '#cbd5e1' }}>Fade In</label>
                 <input type="number" step="0.1" value={activeClip.fadeIn} onChange={(e) => updateClip(activeClip.id, { fadeIn: Number(e.target.value) })} style={fieldStyle} />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: '#cbd5e1' }}>Fade Out (s)</label>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: '#cbd5e1' }}>Fade Out</label>
                 <input type="number" step="0.1" value={activeClip.fadeOut} onChange={(e) => updateClip(activeClip.id, { fadeOut: Number(e.target.value) })} style={fieldStyle} />
               </div>
               <div>
@@ -274,11 +296,7 @@ export default function ICutPage() {
           ) : (
             <div style={{ color: '#94a3b8' }}>Select a clip to edit.</div>
           )}
-
-          <button onClick={handleExport} disabled={isExporting} style={{ marginTop: '18px', width: '100%', border: 'none', borderRadius: '14px', padding: '12px 14px', background: isExporting ? '#475569' : '#2563eb', color: '#fff', fontWeight: 700, cursor: isExporting ? 'not-allowed' : 'pointer' }}>
-            {isExporting ? 'Exporting...' : 'Export Sequence'}
-          </button>
-        </section>
+        </aside>
       </div>
     </div>
   );
