@@ -4,18 +4,20 @@ import { useEffect, useState } from 'react';
 import { usePromptStore, useCreatorGeneration } from '@/store/usePromptStore';
 import { useRouter } from 'next/navigation';
 
+const panelStyle: React.CSSProperties = {
+  background: 'rgba(15,23,42,0.86)',
+  border: '1px solid rgba(148,163,184,0.14)',
+  borderRadius: '22px',
+  boxShadow: '0 20px 60px rgba(2,6,23,0.28)',
+};
+
 export default function ImagenPage() {
   const router = useRouter();
   const currentPrompt = usePromptStore((state) => state.currentPrompt);
   const setCurrentPrompt = usePromptStore((state) => state.setCurrentPrompt);
   const addToHistory = usePromptStore((state) => state.addToHistory);
 
-  const {
-    isGenerating,
-    generationResult,
-    setIsGenerating,
-    setGenerationResult,
-  } = useCreatorGeneration();
+  const { isGenerating, generationResult, setIsGenerating, setGenerationResult } = useCreatorGeneration();
 
   const [editingPrompt, setEditingPrompt] = useState(currentPrompt);
   const [aspectRatio, setAspectRatio] = useState('1:1');
@@ -29,7 +31,7 @@ export default function ImagenPage() {
 
   const handleGenerateImage = async () => {
     if (!editingPrompt.trim()) {
-      alert('Please enter a prompt');
+      setErrorMessage('Please enter a prompt.');
       return;
     }
 
@@ -42,22 +44,15 @@ export default function ImagenPage() {
       const response = await fetch('/api/imagen/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: editingPrompt,
-          aspectRatio,
-          mode: 'text-to-image',
-        }),
+        body: JSON.stringify({ prompt: editingPrompt, aspectRatio, mode: 'text-to-image' }),
       });
 
       const data = await response.json().catch(() => ({}));
-
       if (!response.ok) {
         throw new Error(data?.error || `API error: ${response.statusText}`);
       }
-      setGenerationResult({
-        imageUrl: data.imageUrl,
-        timestamp: Date.now(),
-      });
+
+      setGenerationResult({ imageUrl: data.imageUrl, timestamp: Date.now() });
     } catch (error) {
       console.error('Error generating image:', error);
       setErrorMessage(error instanceof Error ? error.message : 'Failed to generate image.');
@@ -66,156 +61,115 @@ export default function ImagenPage() {
     }
   };
 
-  const handleRegenerate = () => {
-    handleGenerateImage();
-  };
-
   const handleDownload = () => {
-    if (generationResult?.imageUrl) {
-      const link = document.createElement('a');
-      link.href = generationResult.imageUrl;
-      link.download = `imagen-${Date.now()}.png`;
-      link.click();
-    }
+    if (!generationResult?.imageUrl) return;
+    const link = document.createElement('a');
+    link.href = generationResult.imageUrl;
+    link.download = `imagen-${Date.now()}.png`;
+    link.click();
   };
 
   return (
-    <div style={{ display: 'flex', gap: '20px', height: '100vh', padding: '20px', background: '#fff' }}>
-      <div style={{ width: '350px', overflow: 'auto', borderRight: '1px solid #e0e0e0', paddingRight: '20px' }}>
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>Prompt</label>
+    <div style={{ display: 'grid', gridTemplateColumns: '360px minmax(0, 1fr)', gap: '18px', minHeight: 'calc(100vh - 180px)' }}>
+      <aside style={{ ...panelStyle, padding: '18px' }}>
+        <div style={{ marginBottom: '18px' }}>
+          <div style={{ fontSize: '12px', letterSpacing: '0.16em', textTransform: 'uppercase', color: '#93c5fd', marginBottom: '8px' }}>Image generation</div>
+          <h2 style={{ margin: 0, fontSize: '24px', color: '#f8fafc' }}>Image Studio</h2>
+          <p style={{ margin: '8px 0 0', fontSize: '14px', color: '#94a3b8' }}>Generate still images from your prompt using the Google-first pipeline.</p>
+        </div>
+
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: 700, color: '#e2e8f0' }}>Prompt</label>
           <textarea
             value={editingPrompt}
             onChange={(e) => setEditingPrompt(e.target.value)}
-            placeholder="Enter your prompt..."
+            placeholder="Describe the image you want to create..."
             maxLength={4000}
-            rows={6}
-            style={{
-              width: '100%',
-              padding: '10px',
-              borderRadius: '6px',
-              border: '1px solid #e0e0e0',
-              fontFamily: 'monospace',
-              fontSize: '12px',
-              resize: 'vertical',
-              boxSizing: 'border-box',
-              color: '#111827',
-              background: '#ffffff',
-            }}
+            rows={8}
+            style={{ width: '100%', padding: '12px', borderRadius: '14px', border: '1px solid rgba(148,163,184,0.18)', background: 'rgba(2,6,23,0.9)', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '13px', resize: 'vertical', boxSizing: 'border-box' }}
           />
-          <div style={{ fontSize: '11px', color: '#999', marginTop: '5px' }}>
-            {editingPrompt.length} / 4000
-          </div>
-
-          {currentPrompt && editingPrompt === currentPrompt && (
-            <div style={{ marginTop: '8px', padding: '8px', background: '#e8f5e9', borderRadius: '4px', fontSize: '12px', color: '#2e7d32' }}>
-              ✓ 提示詞來自 PromptBuilder
-            </div>
-          )}
+          <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '6px' }}>{editingPrompt.length} / 4000</div>
         </div>
 
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>Aspect ratio</label>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div style={{ marginBottom: '18px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: 700, color: '#e2e8f0' }}>Aspect ratio</label>
+          <div style={{ display: 'grid', gap: '8px' }}>
             {['1:1', '16:9', '9:16'].map((ratio) => (
               <button
                 key={ratio}
                 onClick={() => setAspectRatio(ratio)}
                 style={{
-                  padding: '8px',
-                  background: aspectRatio === ratio ? '#007AFF' : '#f0f0f0',
-                  color: aspectRatio === ratio ? '#fff' : '#000',
-                  border: 'none',
-                  borderRadius: '6px',
+                  padding: '10px 12px',
+                  background: aspectRatio === ratio ? '#2563eb' : 'rgba(30,41,59,0.95)',
+                  color: '#fff',
+                  border: '1px solid rgba(148,163,184,0.12)',
+                  borderRadius: '12px',
                   cursor: 'pointer',
-                  fontSize: '12px',
+                  fontSize: '13px',
+                  textAlign: 'left',
+                  fontWeight: 700,
                 }}
               >
-                {ratio === '1:1' && '◻ Square'}
-                {ratio === '16:9' && '▬ Landscape'}
-                {ratio === '9:16' && '▮ Portrait'}
+                {ratio}
               </button>
             ))}
           </div>
         </div>
 
-        <button
-          onClick={handleGenerateImage}
-          disabled={isGenerating || !editingPrompt.trim()}
-          style={{
-            width: '100%',
-            padding: '12px',
-            background: isGenerating || !editingPrompt.trim() ? '#ccc' : '#007AFF',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: isGenerating || !editingPrompt.trim() ? 'not-allowed' : 'pointer',
-            fontWeight: '600',
-            marginBottom: '12px',
-          }}
-        >
-          {isGenerating ? 'Generating...' : 'Generate Image →'}
-        </button>
+        <div style={{ display: 'grid', gap: '10px' }}>
+          <button onClick={handleGenerateImage} disabled={isGenerating || !editingPrompt.trim()} style={{ width: '100%', padding: '12px', background: isGenerating || !editingPrompt.trim() ? '#475569' : '#2563eb', color: '#fff', border: 'none', borderRadius: '14px', cursor: isGenerating || !editingPrompt.trim() ? 'not-allowed' : 'pointer', fontWeight: 700 }}>
+            {isGenerating ? 'Generating...' : 'Generate Image'}
+          </button>
+          <button onClick={() => router.push('/')} style={{ width: '100%', padding: '12px', background: '#334155', color: '#fff', border: 'none', borderRadius: '14px', cursor: 'pointer', fontWeight: 700 }}>
+            Back to Studio
+          </button>
+        </div>
+      </aside>
 
-        <button
-          onClick={() => router.push('/')}
-          style={{
-            width: '100%',
-            padding: '12px',
-            background: '#6c757d',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontWeight: '600',
-          }}
-        >
-          ← Back to Prompt Builder
-        </button>
-      </div>
-
-      <div style={{ flex: 1, overflow: 'auto' }}>
-        {isGenerating && (
-          <div style={{ textAlign: 'center', padding: '40px' }}>
-            <p>Generating…</p>
-            <p style={{ color: '#999', fontSize: '12px' }}>This usually takes 5–15 seconds</p>
+      <section style={{ ...panelStyle, padding: '18px', display: 'grid', gridTemplateRows: 'auto 1fr auto', gap: '14px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+          <div>
+            <div style={{ fontSize: '12px', letterSpacing: '0.16em', textTransform: 'uppercase', color: '#67e8f9', marginBottom: '6px' }}>Output</div>
+            <h2 style={{ margin: 0, fontSize: '24px', color: '#f8fafc' }}>Generated image</h2>
           </div>
-        )}
+          {generationResult?.imageUrl && !isGenerating && (
+            <button onClick={handleDownload} style={{ padding: '10px 14px', background: '#22c55e', color: '#04130a', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 700 }}>
+              Download
+            </button>
+          )}
+        </div>
 
-        {errorMessage && !isGenerating && (
-          <div style={{ marginBottom: '16px', padding: '14px', background: '#3b0a0a', color: '#fecaca', border: '1px solid #7f1d1d', borderRadius: '12px' }}>
+        <div style={{ borderRadius: '18px', background: '#000', border: '1px solid rgba(148,163,184,0.12)', minHeight: '520px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+          {isGenerating && (
+            <div style={{ textAlign: 'center', color: '#cbd5e1' }}>
+              <div style={{ fontSize: '18px', marginBottom: '8px' }}>Generating…</div>
+              <div style={{ fontSize: '13px', color: '#94a3b8' }}>Waiting for the image provider response.</div>
+            </div>
+          )}
+
+          {!isGenerating && generationResult?.imageUrl && (
+            <img src={generationResult.imageUrl} alt="Generated" style={{ maxWidth: '100%', maxHeight: '100%', display: 'block' }} />
+          )}
+
+          {!isGenerating && !generationResult?.imageUrl && (
+            <div style={{ textAlign: 'center', color: '#94a3b8' }}>
+              <div style={{ fontSize: '18px', marginBottom: '8px' }}>Your image will appear here</div>
+              <div style={{ fontSize: '13px' }}>Write a prompt, choose an aspect ratio, and generate.</div>
+            </div>
+          )}
+        </div>
+
+        {errorMessage ? (
+          <div style={{ padding: '14px', background: '#3b0a0a', color: '#fecaca', border: '1px solid #7f1d1d', borderRadius: '14px' }}>
             <div style={{ fontWeight: 700, marginBottom: '6px' }}>Image generation error</div>
             <div style={{ fontSize: '13px', lineHeight: 1.5 }}>{errorMessage}</div>
           </div>
-        )}
-
-        {generationResult?.imageUrl && !isGenerating && (
-          <div>
-            <img src={generationResult.imageUrl} alt="Generated" style={{ maxWidth: '100%', borderRadius: '8px', marginBottom: '16px' }} />
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button
-                onClick={handleDownload}
-                style={{ flex: 1, padding: '12px', background: '#34C759', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
-              >
-                ↓ Download
-              </button>
-              <button
-                onClick={handleRegenerate}
-                style={{ flex: 1, padding: '12px', background: '#FF9500', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
-              >
-                ↺ Regenerate
-              </button>
-            </div>
+        ) : (
+          <div style={{ padding: '14px', background: 'rgba(2,6,23,0.55)', color: '#94a3b8', border: '1px solid rgba(148,163,184,0.1)', borderRadius: '14px', fontSize: '13px' }}>
+            Current route uses Google-only image generation. If it fails, the exact provider error will show here.
           </div>
         )}
-
-        {!generationResult && !isGenerating && (
-          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#999' }}>
-            <p style={{ fontSize: '18px', marginBottom: '10px' }}>Your image will appear here</p>
-            <p style={{ fontSize: '12px' }}>Write a prompt and hit generate</p>
-          </div>
-        )}
-      </div>
+      </section>
     </div>
   );
 }
