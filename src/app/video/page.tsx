@@ -230,6 +230,10 @@ export default function CreatorVideoPage() {
         throw new Error(data?.error || `API error: ${response.statusText}`);
       }
 
+      if (!data?.videoUrl) {
+        throw new Error(data?.error || 'Video generation is still processing. Please try again in a moment.');
+      }
+
       const entry = addGeneratedVideo({
         title: data.title || 'Generated video',
         src: data.videoUrl,
@@ -372,8 +376,8 @@ export default function CreatorVideoPage() {
               style={{ width: '100%', boxSizing: 'border-box', padding: '12px', borderRadius: '14px', border: '1px solid rgba(148,163,184,0.18)', background: 'rgba(2,6,23,0.9)', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '13px', resize: 'vertical' }}
             />
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginTop: '12px' }}>
-              {['16:9', '9:16', '1:1'].map((ratio) => (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginTop: '12px' }}>
+              {['16:9', '9:16'].map((ratio) => (
                 <button
                   key={ratio}
                   onClick={() => setAspectRatio(ratio)}
