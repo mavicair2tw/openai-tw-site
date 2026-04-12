@@ -1,5 +1,5 @@
 import type { CollectionReference, DocumentData } from '@google-cloud/firestore';
-import { getFirestore, getMediaBucket, isGoogleCloudConfigError } from '@/lib/google-cloud';
+import { getFirestore, getMediaBucket, getSignedMediaUrl, isGoogleCloudConfigError } from '@/lib/google-cloud';
 import type { GeneratedImage, GeneratedVideo, MediaGalleryData } from '@/lib/media-types';
 
 const IMAGE_LIMIT = 40;
@@ -32,27 +32,86 @@ function sortByTimestampDesc<T extends { timestamp: number }>(items: T[]) {
   return items.sort((a, b) => b.timestamp - a.timestamp);
 }
 
-export async function getMediaGallery(): Promise<MediaGalleryData> {
-  const [imagesSnapshot, videosSnapshot] = await Promise.all([
-    getImagesCollection().orderBy('timestamp', 'desc').limit(IMAGE_LIMIT).get(),
-    getVideosCollection().orderBy('timestamp', 'desc').limit(VIDEO_LIMIT).get(),
-  ]);
+function isFirestoreUnavailableError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.includes('NOT_FOUND') || message.includes('The database') || message.includes('5 NOT_FOUND');
+}
 
-  return {
-    images: sortByTimestampDesc(imagesSnapshot.docs.map((doc) => doc.data())),
-    videos: sortByTimestampDesc(videosSnapshot.docs.map((doc) => doc.data())),
-  };
+async function hydrateImage(image: GeneratedImage): Promise<GeneratedImage> {
+  if (!image.objectPath) {
+    return image;
+  }
+
+  try {
+    return {
+      ...image,
+      imageUrl: await getSignedMediaUrl(image.objectPath),
+    };
+  } catch {
+    return image;
+  }
+}
+
+async function hydrateVideo(video: GeneratedVideo): Promise<GeneratedVideo> {
+  if (!video.objectPath) {
+    return video;
+  }
+
+  try {
+    return {
+      ...video,
+      src: await getSignedMediaUrl(video.objectPath),
+    };
+  } catch {
+    return video;
+  }
+}
+
+export async function getMediaGallery(): Promise<MediaGalleryData> {
+  try {
+    const [imagesSnapshot, videosSnapshot] = await Promise.all([
+      getImagesCollection().orderBy('timestamp', 'desc').limit(IMAGE_LIMIT).get(),
+      getVideosCollection().orderBy('timestamp', 'desc').limit(VIDEO_LIMIT).get(),
+    ]);
+
+    const [images, videos] = await Promise.all([
+      Promise.all(imagesSnapshot.docs.map((doc) => hydrateImage(doc.data()))),
+      Promise.all(videosSnapshot.docs.map((doc) => hydrateVideo(doc.data()))),
+    ]);
+
+    return {
+      images: sortByTimestampDesc(images),
+      videos: sortByTimestampDesc(videos),
+    };
+  } catch (error) {
+    if (isFirestoreUnavailableError(error)) {
+      return { images: [], videos: [] };
+    }
+    throw error;
+  }
 }
 
 export async function addImageRecord(image: GeneratedImage) {
-  await getImagesCollection().doc(image.id).set(image);
-  await trimCollection(getImagesCollection(), IMAGE_LIMIT);
+  try {
+    await getImagesCollection().doc(image.id).set(image);
+    await trimCollection(getImagesCollection(), IMAGE_LIMIT);
+  } catch (error) {
+    if (!isFirestoreUnavailableError(error)) {
+      throw error;
+    }
+  }
   return image;
 }
 
 export async function addVideoRecord(video: GeneratedVideo) {
-  await getVideosCollection().doc(video.id).set(video);
-  await trimCollection(getVideosCollection(), VIDEO_LIMIT);
+  try {
+    await getVideosCollection().doc(video.id).set(video);
+    await trimCollection(getVideosCollection(), VIDEO_LIMIT);
+  } catch (error) {
+    if (!isFirestoreUnavailableError(error)) {
+      throw error;
+    }
+  }
   return video;
 }
 

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { addVideoRecord } from '@/lib/media-store';
-import { buildMediaObjectPath, buildPublicMediaUrl, getMediaBucket, normalizePrivateKey } from '@/lib/google-cloud';
+import { buildMediaObjectPath, buildPublicMediaUrl, getMediaBucket, getSignedMediaUrl, normalizeEnvValue, normalizePrivateKey } from '@/lib/google-cloud';
 
 type AccessTokenResponse = {
   access_token: string;
@@ -23,7 +23,8 @@ type GoogleApiErrorPayload = {
   };
 };
 
-const VERTEX_VIDEO_MODEL = process.env.VERTEX_VIDEO_MODEL || process.env.GEMINI_VIDEO_MODEL || 'veo-3.1-fast-generate-preview';
+const VERTEX_VIDEO_MODEL =
+  normalizeEnvValue(process.env.VERTEX_VIDEO_MODEL) || normalizeEnvValue(process.env.GEMINI_VIDEO_MODEL) || 'veo-3.1-fast-generate-preview';
 const POLL_INTERVAL_MS = 5000;
 const MAX_POLLS = 24;
 
@@ -38,8 +39,8 @@ function base64Url(input: Buffer | string) {
 function getVertexEnv() {
   return {
     projectId: process.env.GOOGLE_CLOUD_PROJECT || '',
-    location: process.env.GOOGLE_CLOUD_LOCATION || 'us-central1',
-    clientEmail: process.env.GOOGLE_CLIENT_EMAIL || '',
+    location: normalizeEnvValue(process.env.GOOGLE_CLOUD_LOCATION) || 'us-central1',
+    clientEmail: normalizeEnvValue(process.env.GOOGLE_CLIENT_EMAIL),
     privateKey: normalizePrivateKey(process.env.GOOGLE_PRIVATE_KEY || ''),
   };
 }
@@ -215,11 +216,12 @@ export async function POST(req: Request) {
     await bucket.file(objectPath).save(bytes, {
       resumable: false,
       contentType: 'video/mp4',
-      public: true,
       metadata: {
         cacheControl: 'public, max-age=31536000, immutable',
       },
     });
+
+    const signedUrl = await getSignedMediaUrl(objectPath);
 
     const video = {
       id: `vid-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -236,8 +238,11 @@ export async function POST(req: Request) {
     await addVideoRecord(video);
 
     return NextResponse.json({
-      video,
-      videoUrl: video.src,
+      video: {
+        ...video,
+        src: signedUrl,
+      },
+      videoUrl: signedUrl,
       title: video.title,
       duration: video.duration,
       aspectRatio,

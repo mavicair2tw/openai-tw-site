@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { addImageRecord } from '@/lib/media-store';
 import { normalizePrivateKey } from '@/lib/google-cloud';
-import { buildMediaObjectPath, buildPublicMediaUrl, getMediaBucket } from '@/lib/google-cloud';
+import { buildMediaObjectPath, buildPublicMediaUrl, getMediaBucket, getSignedMediaUrl, normalizeEnvValue } from '@/lib/google-cloud';
 
 type AccessTokenResponse = {
   access_token: string;
@@ -40,7 +40,7 @@ class ImageGenerationError extends Error {
   }
 }
 
-const VERTEX_IMAGE_MODEL = process.env.VERTEX_IMAGE_MODEL || 'imagen-4.0-generate-001';
+const VERTEX_IMAGE_MODEL = normalizeEnvValue(process.env.VERTEX_IMAGE_MODEL) || 'imagen-4.0-generate-001';
 
 function base64Url(input: Buffer | string) {
   return Buffer.from(input)
@@ -53,8 +53,8 @@ function base64Url(input: Buffer | string) {
 function getVertexEnv() {
   return {
     projectId: process.env.GOOGLE_CLOUD_PROJECT || '',
-    location: process.env.GOOGLE_CLOUD_LOCATION || 'us-central1',
-    clientEmail: process.env.GOOGLE_CLIENT_EMAIL || '',
+    location: normalizeEnvValue(process.env.GOOGLE_CLOUD_LOCATION) || 'us-central1',
+    clientEmail: normalizeEnvValue(process.env.GOOGLE_CLIENT_EMAIL),
     privateKey: normalizePrivateKey(process.env.GOOGLE_PRIVATE_KEY || ''),
   };
 }
@@ -144,11 +144,12 @@ async function persistGeneratedImage(params: { imageBase64: string; mimeType: st
   await bucket.file(objectPath).save(Buffer.from(imageBase64, 'base64'), {
     resumable: false,
     contentType: mimeType,
-    public: true,
     metadata: {
       cacheControl: 'public, max-age=31536000, immutable',
     },
   });
+
+  const signedUrl = await getSignedMediaUrl(objectPath);
 
   const image = {
     id,
@@ -160,7 +161,10 @@ async function persistGeneratedImage(params: { imageBase64: string; mimeType: st
   };
 
   await addImageRecord(image);
-  return image;
+  return {
+    ...image,
+    imageUrl: signedUrl,
+  };
 }
 
 async function generateWithVertex(prompt: string, aspectRatio: string) {

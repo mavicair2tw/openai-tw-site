@@ -15,6 +15,10 @@ export function normalizePrivateKey(value: string) {
   return value.replace(/^['"]|['"]$/g, '').replace(/\\n/g, '\n').trim();
 }
 
+export function normalizeEnvValue(value?: string | null) {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
 export function getGoogleCloudConfig() {
   const projectId = process.env.GOOGLE_CLOUD_PROJECT?.trim() || '';
   const clientEmail = process.env.GOOGLE_CLIENT_EMAIL?.trim() || '';
@@ -80,6 +84,16 @@ export function buildMediaObjectPath(kind: 'images' | 'videos', filename: string
 
 export function buildPublicMediaUrl(bucketName: string, objectPath: string) {
   return `https://storage.googleapis.com/${bucketName}/${objectPath}`;
+}
+
+export async function getSignedMediaUrl(objectPath: string, expiresInMs = 7 * 24 * 60 * 60 * 1000) {
+  const [url] = await getMediaBucket().file(objectPath).getSignedUrl({
+    version: 'v4',
+    action: 'read',
+    expires: Date.now() + expiresInMs,
+  });
+
+  return url;
 }
 
 export function isGoogleCloudConfigError(error: unknown) {
