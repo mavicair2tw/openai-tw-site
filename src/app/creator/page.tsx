@@ -21,7 +21,7 @@ export default function CreatorPromptPage() {
   };
 
   const handleConfirmAndGotoCreator = () => {
-    router.push('/creator/image');
+    router.push('/image');
   };
 
   const handleCopyPrompt = async () => {
