@@ -70,6 +70,7 @@ export default function CreatorVideoPage() {
   const [playlistCursor, setPlaylistCursor] = useState(0);
   const [isMerging, setIsMerging] = useState(false);
   const [isGeneratingVideo, setIsGeneratingVideo] = useState(false);
+  const [showThumbnails, setShowThumbnails] = useState(true);
   const [statusMessage, setStatusMessage] = useState('Prompt from Studio can generate a video, add it to the gallery, and play it here.');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -426,10 +427,25 @@ export default function CreatorVideoPage() {
 
           <div>
             <div style={{ marginBottom: '14px' }}>
-              <h2 style={{ margin: 0, fontSize: '20px', color: '#f8fafc' }}>Video Gallery</h2>
-              <p style={{ margin: '6px 0 0', color: '#94a3b8', fontSize: '13px' }}>
-                Generated videos appear first. Click a card to play it on the left panel.
-              </p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: '20px', color: '#f8fafc' }}>Video Gallery</h2>
+                  <p style={{ margin: '6px 0 0', color: '#94a3b8', fontSize: '13px' }}>
+                    Generated videos appear first. Click a card to play it on the left panel.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowThumbnails((current) => !current)}
+                  style={{
+                    ...buttonBase,
+                    background: showThumbnails ? '#0ea5e9' : '#334155',
+                    color: '#fff',
+                    padding: '10px 12px',
+                  }}
+                >
+                  Thumbnails {showThumbnails ? 'On' : 'Off'}
+                </button>
+              </div>
             </div>
 
             <div style={{ display: 'grid', gap: '12px' }}>
@@ -482,6 +498,18 @@ export default function CreatorVideoPage() {
                         </div>
                       )}
                     </div>
+
+                    {showThumbnails && (
+                      <div style={{ marginTop: '12px', marginBottom: '10px', borderRadius: '12px', overflow: 'hidden', background: '#020617', border: '1px solid rgba(148,163,184,0.1)' }}>
+                        <video
+                          src={video.src}
+                          muted
+                          playsInline
+                          preload="metadata"
+                          style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block', background: '#000' }}
+                        />
+                      </div>
+                    )}
 
                     {video.prompt && (
                       <div style={{ marginTop: '10px', fontSize: '12px', color: '#cbd5e1', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
