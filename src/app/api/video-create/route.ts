@@ -1,15 +1,92 @@
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { mkdir, writeFile } from 'fs/promises';
 import path from 'path';
 import { addVideoRecord } from '@/lib/media-store';
 
-const GEMINI_VIDEO_MODEL = process.env.GEMINI_VIDEO_MODEL || 'veo-3.1-fast-generate-preview';
-const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta';
+type AccessTokenResponse = {
+  access_token: string;
+  expires_in: number;
+  token_type: string;
+};
+
+type GoogleApiErrorPayload = {
+  error?: {
+    code?: number;
+    message?: string;
+    status?: string;
+    details?: Array<{
+      '@type'?: string;
+      reason?: string;
+      domain?: string;
+      metadata?: Record<string, string>;
+    }>;
+  };
+};
+
+const VERTEX_VIDEO_MODEL = process.env.VERTEX_VIDEO_MODEL || process.env.GEMINI_VIDEO_MODEL || 'veo-3.1-fast-generate-preview';
 const POLL_INTERVAL_MS = 5000;
 const MAX_POLLS = 24;
 
-function getGeminiApiKey() {
-  return process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
+function base64Url(input: Buffer | string) {
+  return Buffer.from(input)
+    .toString('base64')
+    .replace(/=/g, '')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_');
+}
+
+function getVertexEnv() {
+  return {
+    projectId: process.env.GOOGLE_CLOUD_PROJECT || '',
+    location: process.env.GOOGLE_CLOUD_LOCATION || 'us-central1',
+    clientEmail: process.env.GOOGLE_CLIENT_EMAIL || '',
+    privateKey: (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+  };
+}
+
+function extractGoogleErrorMessage(data: GoogleApiErrorPayload, fallback: string) {
+  return data?.error?.message || fallback;
+}
+
+async function getAccessToken() {
+  const { clientEmail, privateKey } = getVertexEnv();
+  const now = Math.floor(Date.now() / 1000);
+
+  const header = { alg: 'RS256', typ: 'JWT' };
+  const payload = {
+    iss: clientEmail,
+    scope: 'https://www.googleapis.com/auth/cloud-platform',
+    aud: 'https://oauth2.googleapis.com/token',
+    exp: now + 3600,
+    iat: now,
+  };
+
+  const unsigned = `${base64Url(JSON.stringify(header))}.${base64Url(JSON.stringify(payload))}`;
+  const signer = crypto.createSign('RSA-SHA256');
+  signer.update(unsigned);
+  signer.end();
+  const signature = signer.sign(privateKey);
+  const assertion = `${unsigned}.${base64Url(signature)}`;
+
+  const response = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+      assertion,
+    }),
+  });
+
+  const data = (await response.json().catch(() => ({}))) as Partial<AccessTokenResponse> & GoogleApiErrorPayload & {
+    error_description?: string;
+  };
+
+  if (!response.ok || !data.access_token) {
+    throw new Error(data.error_description || extractGoogleErrorMessage(data, 'Failed to obtain Google access token.'));
+  }
+
+  return data.access_token;
 }
 
 function buildTitle(prompt: string) {
@@ -21,9 +98,18 @@ async function sleep(ms: number) {
 }
 
 export async function POST(req: Request) {
-  const apiKey = getGeminiApiKey();
-  if (!apiKey) {
-    return NextResponse.json({ error: 'Missing GEMINI_API_KEY or GOOGLE_API_KEY.' }, { status: 500 });
+  const { projectId, location, clientEmail, privateKey } = getVertexEnv();
+  if (!projectId || !clientEmail || !privateKey) {
+    return NextResponse.json(
+      {
+        error:
+          'Missing Vertex AI credentials. Set GOOGLE_CLOUD_PROJECT, GOOGLE_CLOUD_LOCATION, GOOGLE_CLIENT_EMAIL, and GOOGLE_PRIVATE_KEY.',
+        provider: 'google',
+        backend: 'vertex-ai',
+        needsGoogleCredentials: true,
+      },
+      { status: 500 },
+    );
   }
 
   const body = await req.json().catch(() => ({}));
@@ -40,11 +126,14 @@ export async function POST(req: Request) {
   }
 
   try {
-    const startResponse = await fetch(`${GEMINI_API_BASE}/models/${GEMINI_VIDEO_MODEL}:predictLongRunning`, {
+    const accessToken = await getAccessToken();
+    const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${VERTEX_VIDEO_MODEL}:predictLongRunning`;
+
+    const startResponse = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-goog-api-key': apiKey,
+        Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify({
         instances: [{ prompt }],
@@ -56,23 +145,34 @@ export async function POST(req: Request) {
       }),
     });
 
-    const startData = await startResponse.json().catch(() => ({}));
+    const startData = (await startResponse.json().catch(() => ({}))) as GoogleApiErrorPayload & { name?: string; done?: boolean };
     if (!startResponse.ok || !startData?.name) {
-      throw new Error(startData?.error?.message || 'Failed to start Veo video generation.');
+      throw new Error(extractGoogleErrorMessage(startData, 'Failed to start Veo video generation.'));
     }
 
-    let operation = startData;
+    let operation = startData as GoogleApiErrorPayload & {
+      name?: string;
+      done?: boolean;
+      response?: {
+        generateVideoResponse?: {
+          generatedSamples?: Array<{
+            video?: { uri?: string };
+          }>;
+        };
+      };
+    };
+
     for (let poll = 0; poll < MAX_POLLS; poll += 1) {
       if (operation?.done) break;
       await sleep(POLL_INTERVAL_MS);
 
-      const pollResponse = await fetch(`${GEMINI_API_BASE}/${startData.name}`, {
-        headers: { 'x-goog-api-key': apiKey },
+      const pollResponse = await fetch(`https://${location}-aiplatform.googleapis.com/v1/${startData.name}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
       operation = await pollResponse.json().catch(() => ({}));
 
       if (!pollResponse.ok) {
-        throw new Error(operation?.error?.message || 'Failed while polling Veo operation.');
+        throw new Error(extractGoogleErrorMessage(operation, 'Failed while polling Veo operation.'));
       }
     }
 
@@ -82,7 +182,8 @@ export async function POST(req: Request) {
           error: 'Video generation is still running. Try again in a moment, or increase the polling window.',
           operationName: startData.name,
           provider: 'google',
-          model: GEMINI_VIDEO_MODEL,
+          backend: 'vertex-ai',
+          model: VERTEX_VIDEO_MODEL,
           pending: true,
         },
         { status: 202 },
@@ -99,12 +200,12 @@ export async function POST(req: Request) {
     }
 
     const downloadResponse = await fetch(videoUri, {
-      headers: { 'x-goog-api-key': apiKey },
+      headers: { Authorization: `Bearer ${accessToken}` },
     });
 
     if (!downloadResponse.ok) {
       const errorText = await downloadResponse.text().catch(() => '');
-      throw new Error(errorText || 'Failed to download generated video from Google.');
+      throw new Error(errorText || 'Failed to download generated video from Vertex AI.');
     }
 
     const bytes = Buffer.from(await downloadResponse.arrayBuffer());
@@ -135,11 +236,15 @@ export async function POST(req: Request) {
       duration: video.duration,
       aspectRatio,
       provider: 'google',
-      model: GEMINI_VIDEO_MODEL,
+      backend: 'vertex-ai',
+      model: VERTEX_VIDEO_MODEL,
       demo: false,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Video generation failed.';
-    return NextResponse.json({ error: message, provider: 'google', model: GEMINI_VIDEO_MODEL }, { status: 500 });
+    return NextResponse.json(
+      { error: message, provider: 'google', backend: 'vertex-ai', model: VERTEX_VIDEO_MODEL },
+      { status: 500 },
+    );
   }
 }
