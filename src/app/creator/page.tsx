@@ -53,7 +53,6 @@ export default function CreatorPromptPage() {
       <div style={{ flex: 1, overflow: 'auto', borderRight: '1px solid #e0e0e0', paddingRight: '20px' }}>
         <PromptBuilderComponent
           onPromptGenerated={handleGenerateFromBuilder}
-          showSoraGeneration={false}
         />
       </div>
 
