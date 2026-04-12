@@ -8,6 +8,7 @@ const tabs = [
   { label: 'Studio', path: '/creator' },
   { label: 'Image', path: '/creator/image' },
   { label: 'Video', path: '/creator/video' },
+  { label: 'iCut', path: '/icut' },
 ];
 
 export default function CreatorLayout({ children }: { children: ReactNode }) {
