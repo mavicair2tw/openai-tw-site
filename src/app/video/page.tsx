@@ -71,6 +71,7 @@ export default function CreatorVideoPage() {
   const [editingPrompt, setEditingPrompt] = useState(currentPrompt);
   const [aspectRatio, setAspectRatio] = useState('16:9');
   const [playlist, setPlaylist] = useState<string[]>([]);
+  const [orderedVideoIds, setOrderedVideoIds] = useState<string[]>([]);
   const [activeVideoId, setActiveVideoId] = useState<string>('');
   const [isPlaylistMode, setIsPlaylistMode] = useState(false);
   const [playlistCursor, setPlaylistCursor] = useState(0);
@@ -82,7 +83,20 @@ export default function CreatorVideoPage() {
   const [statusMessage, setStatusMessage] = useState('Prompt from Studio can generate a video, add it to the gallery, and play it here.');
   const [errorMessage, setErrorMessage] = useState('');
 
-  const videos = useMemo<VideoItem[]>(() => [...generatedVideos, ...sampleVideos], [generatedVideos]);
+  const allVideos = useMemo<VideoItem[]>(() => [...generatedVideos, ...sampleVideos], [generatedVideos]);
+
+  useEffect(() => {
+    setOrderedVideoIds((current) => {
+      const existing = current.filter((id) => allVideos.some((video) => video.id === id));
+      const additions = allVideos.map((video) => video.id).filter((id) => !existing.includes(id));
+      return [...existing, ...additions];
+    });
+  }, [allVideos]);
+
+  const videos = useMemo<VideoItem[]>(
+    () => orderedVideoIds.map((id) => allVideos.find((video) => video.id === id)).filter(Boolean) as VideoItem[],
+    [allVideos, orderedVideoIds]
+  );
 
   useEffect(() => {
     if (currentPrompt) {
@@ -192,6 +206,22 @@ export default function CreatorVideoPage() {
     setIsPlaylistMode(false);
     setPlaylistCursor(0);
     setStatusMessage('Generated video removed from the gallery.');
+  };
+
+  const handleMoveVideo = (videoId: string, direction: 'left' | 'right') => {
+    setOrderedVideoIds((current) => {
+      const index = current.indexOf(videoId);
+      if (index < 0) return current;
+
+      const nextIndex = direction === 'left' ? index - 1 : index + 1;
+      if (nextIndex < 0 || nextIndex >= current.length) return current;
+
+      const next = [...current];
+      [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
+      return next;
+    });
+
+    setStatusMessage(direction === 'left' ? 'Moved video left in the gallery.' : 'Moved video right in the gallery.');
   };
 
   const clampGalleryOffset = (nextOffset: number) => {
@@ -530,19 +560,21 @@ export default function CreatorVideoPage() {
 
             <div ref={galleryStripRef} style={{ width: '100%', minWidth: 0, overflow: 'hidden', paddingRight: '24px', paddingBottom: '12px', boxSizing: 'border-box' }}>
               <div ref={galleryTrackRef} onPointerDown={handleGalleryPointerDown} onPointerMove={handleGalleryPointerMove} onPointerUp={handleGalleryPointerUp} onPointerCancel={handleGalleryPointerUp} style={{ display: 'flex', gap: '12px', width: 'max-content', transform: `translateX(-${galleryOffset}px)`, transition: isDraggingGallery ? 'none' : 'transform 220ms ease', cursor: isDraggingGallery ? 'grabbing' : 'grab', userSelect: 'none' }}>
-              {videos.map((video) => {
+              {videos.map((video, index) => {
                 const badge = getBadgeNumber(video.id);
                 const isActive = activeVideoId === video.id;
                 const inPlaylist = badge !== null;
                 const isGenerated = generatedVideos.some((generated) => generated.id === video.id);
+                const canMoveLeft = index > 0;
+                const canMoveRight = index < videos.length - 1;
 
                 return (
                   <div
                     key={video.id}
                     onClick={() => handleSelectVideo(video.id)}
                     style={{
-                      minWidth: '320px',
-                      maxWidth: '320px',
+                      minWidth: 'min(280px, calc(100vw - 72px))',
+                      maxWidth: 'min(280px, calc(100vw - 72px))',
                       border: isActive ? '2px solid #8b5cf6' : '1px solid #1e293b',
                       borderRadius: '16px',
                       padding: '14px',
@@ -592,7 +624,7 @@ export default function CreatorVideoPage() {
                             muted
                             playsInline
                             preload="metadata"
-                            style={{ width: '120px', height: '72px', objectFit: 'cover', display: 'block', background: '#000' }}
+                            style={{ width: '104px', height: '62px', objectFit: 'cover', display: 'block', background: '#000' }}
                           />
                         </div>
                         {video.prompt ? (
@@ -610,6 +642,38 @@ export default function CreatorVideoPage() {
                     ) : null}
 
                     <div style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
+                      <button
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleMoveVideo(video.id, 'left');
+                        }}
+                        disabled={!canMoveLeft}
+                        style={{
+                          ...buttonBase,
+                          background: canMoveLeft ? '#1e293b' : '#334155',
+                          color: '#fff',
+                          padding: '8px 12px',
+                          opacity: canMoveLeft ? 1 : 0.5,
+                        }}
+                      >
+                        ← Move
+                      </button>
+                      <button
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleMoveVideo(video.id, 'right');
+                        }}
+                        disabled={!canMoveRight}
+                        style={{
+                          ...buttonBase,
+                          background: canMoveRight ? '#1e293b' : '#334155',
+                          color: '#fff',
+                          padding: '8px 12px',
+                          opacity: canMoveRight ? 1 : 0.5,
+                        }}
+                      >
+                        Move →
+                      </button>
                       <button
                         onClick={(event) => {
                           event.stopPropagation();
