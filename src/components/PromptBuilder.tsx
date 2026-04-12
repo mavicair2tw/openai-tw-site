@@ -1,4 +1,7 @@
-import { useState, useCallback } from 'react';
+'use client';
+
+import { useMemo } from 'react';
+import { usePromptStore } from '@/store/usePromptStore';
 
 interface PromptBuilderProps {
   onPromptGenerated?: (prompt: string) => void;
@@ -7,247 +10,126 @@ interface PromptBuilderProps {
   showSoraGeneration?: boolean;
 }
 
-interface GlobalParams {
-  subject: string;
-  action: string;
-  environment: string;
-  camera: string;
-  style: string;
-  language: string;
-  negativePrompt: string;
-}
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  padding: '10px 12px',
+  borderRadius: '8px',
+  border: '1px solid #d1d5db',
+  fontSize: '13px',
+  boxSizing: 'border-box',
+  color: '#111827',
+  background: '#ffffff',
+};
 
-interface SceneOverride {
-  subject?: string;
-  action?: string;
-  camera?: string;
-}
-
-interface Scene {
-  id: string;
-  name: string;
-  description: string;
-  overrides: SceneOverride;
-}
-
-/**
- * PromptBuilder 組件
- * 用於組合和編輯提示詞，支援全域參數和分鏡編輯
- */
 export default function PromptBuilder({
   onPromptGenerated,
   onBack,
-  initialPrompt = '',
-  showSoraGeneration = false,
 }: PromptBuilderProps) {
-  // 全域參數
-  const [globalParams, setGlobalParams] = useState<GlobalParams>({
-    subject: '',
-    action: '',
-    environment: '',
-    camera: '',
-    style: '',
-    language: 'English',
-    negativePrompt: '',
-  });
+  const {
+    globalParams,
+    scenes,
+    setGlobalParams,
+    updateScene,
+    addScene,
+    deleteScene,
+    moveScene,
+    generatePrompt,
+  } = usePromptStore();
 
-  // 分鏡編輯器
-  const [scenes, setScenes] = useState<Scene[]>([
-    { id: '1', name: 'Scene 1', description: '', overrides: {} },
-    { id: '2', name: 'Scene 2', description: '', overrides: {} },
-    { id: '3', name: 'Scene 3', description: '', overrides: {} },
-  ]);
-
-  const [copiedToClipboard, setCopiedToClipboard] = useState(false);
-
-  /**
-   * 構建最終提示詞
-   */
-  const buildFinalPrompt = useCallback((): string => {
+  const finalPrompt = useMemo(() => {
     const parts: string[] = [];
-
-    // 基本提示詞
     if (globalParams.subject) parts.push(globalParams.subject);
     if (globalParams.action) parts.push(globalParams.action);
     if (globalParams.environment) parts.push(`in ${globalParams.environment}`);
     if (globalParams.camera) parts.push(`${globalParams.camera} shot`);
     if (globalParams.style) parts.push(globalParams.style);
 
-    const basePrompt = parts.join(', ');
-
-    // 分鏡提示詞（如果有非空場景）
+    let prompt = parts.join(', ');
     const scenePrompts = scenes
-      .filter((scene) => scene.description.trim())
-      .map((scene) => {
-        let sceneText = scene.description;
-        // 應用場景特定的覆蓋參數
-        if (scene.overrides.subject) {
-          sceneText = sceneText.replace(globalParams.subject, scene.overrides.subject);
-        }
-        return sceneText;
-      });
+      .map((scene) => scene.description.trim())
+      .filter(Boolean);
 
-    let finalPrompt = basePrompt;
     if (scenePrompts.length > 0) {
-      finalPrompt += ` | ${scenePrompts.join(' | ')}`;
+      prompt += `${prompt ? ' | ' : ''}${scenePrompts.join(' | ')}`;
     }
 
-    // 添加 Negative Prompt
     if (globalParams.negativePrompt) {
-      finalPrompt += ` | Negative: ${globalParams.negativePrompt}`;
+      prompt += `${prompt ? ' | ' : ''}Negative: ${globalParams.negativePrompt}`;
     }
 
-    return finalPrompt.trim();
+    return prompt.trim();
   }, [globalParams, scenes]);
 
-  /**
-   * 處理複製到生成器
-   */
-  const handleCopyToGenerator = () => {
-    const finalPrompt = buildFinalPrompt();
+  const handleCopyToGenerator = async () => {
+    const prompt = generatePrompt();
+    if (!prompt) return;
 
-    // 複製到剪貼板
-    navigator.clipboard.writeText(finalPrompt).then(() => {
-      setCopiedToClipboard(true);
-      setTimeout(() => setCopiedToClipboard(false), 2000);
-    });
-
-    // 觸發回調（導航回 Imagen）
-    if (onPromptGenerated) {
-      onPromptGenerated(finalPrompt);
+    try {
+      await navigator.clipboard.writeText(prompt);
+    } catch (error) {
+      console.error('Failed to copy prompt:', error);
     }
+
+    onPromptGenerated?.(prompt);
   };
 
-  /**
-   * 下載提示詞為 .txt 文件
-   */
   const handleDownloadPrompt = () => {
-    const finalPrompt = buildFinalPrompt();
+    const prompt = generatePrompt();
+    if (!prompt) return;
+
     const element = document.createElement('a');
-    element.setAttribute(
-      'href',
-      `data:text/plain;charset=utf-8,${encodeURIComponent(finalPrompt)}`
-    );
+    element.setAttribute('href', `data:text/plain;charset=utf-8,${encodeURIComponent(prompt)}`);
     element.setAttribute('download', 'prompt.txt');
-    element.style.display = 'none';
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
   };
 
-  /**
-   * 新增場景
-   */
-  const handleAddScene = () => {
-    const newId = String(Math.max(...scenes.map((s) => parseInt(s.id)), 0) + 1);
-    setScenes([
-      ...scenes,
-      { id: newId, name: `Scene ${newId}`, description: '', overrides: {} },
-    ]);
+  const applyExample = (preset: Partial<typeof globalParams>) => {
+    setGlobalParams(preset);
   };
-
-  /**
-   * 刪除場景
-   */
-  const handleDeleteScene = (id: string) => {
-    setScenes(scenes.filter((scene) => scene.id !== id));
-  };
-
-  /**
-   * 上下移動場景
-   */
-  const handleMoveScene = (id: string, direction: 'up' | 'down') => {
-    const index = scenes.findIndex((scene) => scene.id === id);
-    if (
-      (direction === 'up' && index > 0) ||
-      (direction === 'down' && index < scenes.length - 1)
-    ) {
-      const newScenes = [...scenes];
-      const targetIndex = direction === 'up' ? index - 1 : index + 1;
-      [newScenes[index], newScenes[targetIndex]] = [
-        newScenes[targetIndex],
-        newScenes[index],
-      ];
-      setScenes(newScenes);
-    }
-  };
-
-  /**
-   * 更新場景內容
-   */
-  const handleUpdateScene = (id: string, field: string, value: string) => {
-    setScenes(
-      scenes.map((scene) =>
-        scene.id === id ? { ...scene, [field]: value } : scene
-      )
-    );
-  };
-
-  const finalPrompt = buildFinalPrompt();
 
   return (
-    <div style={{ padding: '20px' }}>
-      {/* 標題 */}
-      <div style={{ marginBottom: '30px' }}>
-        <h1 style={{ margin: '0 0 5px 0', fontSize: '24px' }}>Prompt Builder</h1>
-        <p style={{ margin: '0', fontSize: '14px', color: '#666' }}>
-          組合和編輯提示詞，用於圖像和影片生成
+    <div style={{ padding: '20px', color: '#111827' }}>
+      <div style={{ marginBottom: '28px' }}>
+        <h1 style={{ margin: '0 0 6px 0', fontSize: '28px' }}>Prompt Builder</h1>
+        <p style={{ margin: 0, fontSize: '14px', color: '#6b7280' }}>
+          Build one clean prompt for image or video generation.
         </p>
       </div>
 
-      {/* 主容器：左中右三欄 */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
-        {/* 左側：全域參數 */}
-        <div style={{ borderRight: '1px solid #e0e0e0', paddingRight: '20px' }}>
+        <div style={{ borderRight: '1px solid #e5e7eb', paddingRight: '20px' }}>
           <h2 style={{ marginTop: 0, fontSize: '16px' }}>Global Parameters</h2>
 
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', fontWeight: '600' }}>Subject</label>
-            <input
-              type="text"
-              placeholder="e.g., Cyberpunk rider"
-              value={globalParams.subject}
-              onChange={(e) =>
-                setGlobalParams({ ...globalParams, subject: e.target.value })
-              }
-              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #e0e0e0', fontSize: '12px', boxSizing: 'border-box' }}
-            />
-          </div>
+          {[
+            ['subject', 'Subject', 'e.g., Cyberpunk rider'],
+            ['action', 'Action', 'e.g., speeding through streets'],
+            ['environment', 'Environment', 'e.g., neon-lit Tokyo'],
+            ['style', 'Style', 'e.g., cinematic, 4K, high detail'],
+          ].map(([key, label, placeholder]) => (
+            <div key={key} style={{ marginBottom: '14px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: 700 }}>
+                {label}
+              </label>
+              <input
+                type="text"
+                value={globalParams[key as keyof typeof globalParams] as string}
+                placeholder={placeholder}
+                onChange={(e) => setGlobalParams({ [key]: e.target.value })}
+                style={inputStyle}
+              />
+            </div>
+          ))}
 
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', fontWeight: '600' }}>Action</label>
-            <input
-              type="text"
-              placeholder="e.g., speeding through streets"
-              value={globalParams.action}
-              onChange={(e) =>
-                setGlobalParams({ ...globalParams, action: e.target.value })
-              }
-              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #e0e0e0', fontSize: '12px', boxSizing: 'border-box' }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', fontWeight: '600' }}>Environment</label>
-            <input
-              type="text"
-              placeholder="e.g., neon-lit Tokyo"
-              value={globalParams.environment}
-              onChange={(e) =>
-                setGlobalParams({ ...globalParams, environment: e.target.value })
-              }
-              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #e0e0e0', fontSize: '12px', boxSizing: 'border-box' }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', fontWeight: '600' }}>Camera</label>
+          <div style={{ marginBottom: '14px' }}>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: 700 }}>
+              Camera
+            </label>
             <select
               value={globalParams.camera}
-              onChange={(e) =>
-                setGlobalParams({ ...globalParams, camera: e.target.value })
-              }
-              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #e0e0e0', fontSize: '12px', boxSizing: 'border-box' }}
+              onChange={(e) => setGlobalParams({ camera: e.target.value })}
+              style={inputStyle}
             >
               <option value="">Select camera angle...</option>
               <option value="wide">Wide shot</option>
@@ -257,27 +139,14 @@ export default function PromptBuilder({
             </select>
           </div>
 
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', fontWeight: '600' }}>Style</label>
-            <input
-              type="text"
-              placeholder="e.g., cinematic, 4K, high detail"
-              value={globalParams.style}
-              onChange={(e) =>
-                setGlobalParams({ ...globalParams, style: e.target.value })
-              }
-              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #e0e0e0', fontSize: '12px', boxSizing: 'border-box' }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', fontWeight: '600' }}>Language</label>
+          <div style={{ marginBottom: '14px' }}>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: 700 }}>
+              Language
+            </label>
             <select
               value={globalParams.language}
-              onChange={(e) =>
-                setGlobalParams({ ...globalParams, language: e.target.value })
-              }
-              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #e0e0e0', fontSize: '12px', boxSizing: 'border-box' }}
+              onChange={(e) => setGlobalParams({ language: e.target.value })}
+              style={inputStyle}
             >
               <option value="English">English</option>
               <option value="中文">中文</option>
@@ -286,239 +155,84 @@ export default function PromptBuilder({
             </select>
           </div>
 
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', fontWeight: '600' }}>Negative Prompt</label>
+          <div style={{ marginBottom: '14px' }}>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: 700 }}>
+              Negative Prompt
+            </label>
             <textarea
-              placeholder="e.g., blurry, low quality, distorted"
+              rows={4}
               value={globalParams.negativePrompt}
-              onChange={(e) =>
-                setGlobalParams({ ...globalParams, negativePrompt: e.target.value })
-              }
-              rows={3}
-              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #e0e0e0', fontSize: '12px', boxSizing: 'border-box', resize: 'vertical' }}
+              placeholder="e.g., blurry, low quality, distorted"
+              onChange={(e) => setGlobalParams({ negativePrompt: e.target.value })}
+              style={{ ...inputStyle, resize: 'vertical' }}
             />
           </div>
         </div>
 
-        {/* 中間：分鏡編輯器 */}
-        <div style={{ borderRight: '1px solid #e0e0e0', paddingRight: '20px' }}>
-          <h2 style={{ marginTop: 0, fontSize: '16px' }}>Scene Editor</h2>
-
-          {scenes.map((scene, index) => (
-            <div
-              key={scene.id}
-              style={{
-                background: '#f9f9f9',
-                padding: '12px',
-                borderRadius: '6px',
-                marginBottom: '12px',
-                border: '1px solid #e0e0e0',
-              }}
+        <div style={{ borderRight: '1px solid #e5e7eb', paddingRight: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+            <h2 style={{ margin: 0, fontSize: '16px' }}>Scenes</h2>
+            <button
+              onClick={addScene}
+              style={{ border: 'none', borderRadius: '8px', padding: '8px 12px', background: '#2563eb', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: '12px' }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <h3 style={{ margin: 0, fontSize: '13px', fontWeight: '600' }}>{scene.name}</h3>
-                <div style={{ display: 'flex', gap: '5px' }}>
-                  <button
-                    onClick={() => handleMoveScene(scene.id, 'up')}
-                    disabled={index === 0}
-                    style={{
-                      padding: '4px 8px',
-                      fontSize: '11px',
-                      background: index === 0 ? '#ddd' : '#fff',
-                      border: '1px solid #e0e0e0',
-                      borderRadius: '3px',
-                      cursor: index === 0 ? 'not-allowed' : 'pointer',
-                    }}
-                  >
-                    ↑
-                  </button>
-                  <button
-                    onClick={() => handleMoveScene(scene.id, 'down')}
-                    disabled={index === scenes.length - 1}
-                    style={{
-                      padding: '4px 8px',
-                      fontSize: '11px',
-                      background: index === scenes.length - 1 ? '#ddd' : '#fff',
-                      border: '1px solid #e0e0e0',
-                      borderRadius: '3px',
-                      cursor: index === scenes.length - 1 ? 'not-allowed' : 'pointer',
-                    }}
-                  >
-                    ↓
-                  </button>
-                  <button
-                    onClick={() => handleDeleteScene(scene.id)}
-                    style={{
-                      padding: '4px 8px',
-                      fontSize: '11px',
-                      background: '#ff6b6b',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '3px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    ✕
-                  </button>
+              + Add Scene
+            </button>
+          </div>
+
+          <div style={{ display: 'grid', gap: '12px' }}>
+            {scenes.map((scene, index) => (
+              <div key={scene.id} style={{ background: '#f8fafc', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <strong style={{ fontSize: '13px' }}>{scene.name}</strong>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button onClick={() => moveScene(scene.id, 'up')} disabled={index === 0} style={{ border: '1px solid #d1d5db', borderRadius: '6px', background: '#fff', padding: '4px 8px', cursor: index === 0 ? 'not-allowed' : 'pointer' }}>↑</button>
+                    <button onClick={() => moveScene(scene.id, 'down')} disabled={index === scenes.length - 1} style={{ border: '1px solid #d1d5db', borderRadius: '6px', background: '#fff', padding: '4px 8px', cursor: index === scenes.length - 1 ? 'not-allowed' : 'pointer' }}>↓</button>
+                    <button onClick={() => deleteScene(scene.id)} style={{ border: 'none', borderRadius: '6px', background: '#ef4444', color: '#fff', padding: '4px 8px', cursor: 'pointer' }}>✕</button>
+                  </div>
                 </div>
+                <textarea
+                  rows={4}
+                  value={scene.description}
+                  placeholder={`Describe ${scene.name}...`}
+                  onChange={(e) => updateScene(scene.id, { description: e.target.value })}
+                  style={{ ...inputStyle, resize: 'vertical' }}
+                />
               </div>
-
-              <textarea
-                placeholder={`Describe ${scene.name}...`}
-                value={scene.description}
-                onChange={(e) =>
-                  handleUpdateScene(scene.id, 'description', e.target.value)
-                }
-                rows={3}
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  borderRadius: '4px',
-                  border: '1px solid #e0e0e0',
-                  fontSize: '11px',
-                  boxSizing: 'border-box',
-                  marginBottom: '8px',
-                  resize: 'vertical',
-                }}
-              />
-            </div>
-          ))}
-
-          <button
-            onClick={handleAddScene}
-            style={{
-              width: '100%',
-              padding: '10px',
-              background: '#34C759',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '12px',
-              fontWeight: '600',
-            }}
-          >
-            ⊕ Add Scene
-          </button>
+            ))}
+          </div>
         </div>
 
-        {/* 右側：輸出區 */}
         <div>
           <h2 style={{ marginTop: 0, fontSize: '16px' }}>Output</h2>
-
-          <div style={{ background: '#f9f9f9', padding: '12px', borderRadius: '6px', marginBottom: '20px', border: '1px solid #e0e0e0' }}>
-            <h3 style={{ margin: '0 0 10px 0', fontSize: '13px', fontWeight: '600' }}>Final Prompt</h3>
-            <div style={{
-              background: '#fff',
-              padding: '10px',
-              borderRadius: '4px',
-              minHeight: '100px',
-              maxHeight: '200px',
-              overflow: 'auto',
-              fontSize: '11px',
-              fontFamily: 'monospace',
-              border: '1px solid #e0e0e0',
-              marginBottom: '12px',
-              color: '#333',
-            }}>
-              <code>{finalPrompt || '(提示詞將在此顯示)'}</code>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <button
-                onClick={handleCopyToGenerator}
-                style={{
-                  padding: '10px',
-                  background: '#007AFF',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  fontWeight: '600',
-                }}
-              >
-                {copiedToClipboard ? '✓ Copied!' : '📋 Copy to Generator'}
-              </button>
-              <button
-                onClick={handleDownloadPrompt}
-                style={{
-                  padding: '10px',
-                  background: '#6c757d',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                }}
-              >
-                ⬇ Download .txt
-              </button>
-              {onBack && (
-                <button
-                  onClick={onBack}
-                  style={{
-                    padding: '10px',
-                    background: '#6c757d',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                  }}
-                >
-                  ← Back to Image
-                </button>
-              )}
+          <div style={{ background: '#f8fafc', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '14px', marginBottom: '18px' }}>
+            <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '8px' }}>Final Prompt</div>
+            <div style={{ background: '#fff', color: '#111827', minHeight: '160px', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '12px', fontFamily: 'monospace', fontSize: '12px', whiteSpace: 'pre-wrap' }}>
+              {finalPrompt || '(提示詞將在此顯示)'}
             </div>
           </div>
 
-          {/* 快速示例 */}
-          <div style={{ background: '#f9f9f9', padding: '12px', borderRadius: '6px', border: '1px solid #e0e0e0' }}>
-            <h3 style={{ margin: '0 0 10px 0', fontSize: '13px', fontWeight: '600' }}>Quick Examples</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <button
-                onClick={() => {
-                  setGlobalParams({
-                    ...globalParams,
-                    subject: 'Astronaut',
-                    action: 'floating in space',
-                    environment: 'nebula',
-                    camera: 'wide',
-                    style: 'cinematic, 8K',
-                  });
-                }}
-                style={{
-                  padding: '8px',
-                  background: '#f0f0f0',
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '11px',
-                }}
-              >
+          <div style={{ display: 'grid', gap: '10px', marginBottom: '18px' }}>
+            <button onClick={handleCopyToGenerator} style={{ border: 'none', borderRadius: '10px', padding: '12px', background: '#2563eb', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>
+              Copy to Generator
+            </button>
+            <button onClick={handleDownloadPrompt} style={{ border: 'none', borderRadius: '10px', padding: '12px', background: '#475569', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>
+              Download .txt
+            </button>
+            {onBack && (
+              <button onClick={onBack} style={{ border: 'none', borderRadius: '10px', padding: '12px', background: '#64748b', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>
+                Back
+              </button>
+            )}
+          </div>
+
+          <div style={{ background: '#f8fafc', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '14px' }}>
+            <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '10px' }}>Quick Examples</div>
+            <div style={{ display: 'grid', gap: '8px' }}>
+              <button onClick={() => applyExample({ subject: 'Astronaut', action: 'floating in space', environment: 'nebula', camera: 'wide', style: 'cinematic, 8K' })} style={{ ...inputStyle, cursor: 'pointer', textAlign: 'left' }}>
                 Space Explorer
               </button>
-              <button
-                onClick={() => {
-                  setGlobalParams({
-                    ...globalParams,
-                    subject: 'Cyberpunk hacker',
-                    action: 'typing furiously',
-                    environment: 'dark neon-lit room',
-                    camera: 'close-up',
-                    style: 'film noir, 4K',
-                  });
-                }}
-                style={{
-                  padding: '8px',
-                  background: '#f0f0f0',
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '11px',
-                }}
-              >
+              <button onClick={() => applyExample({ subject: 'Cyberpunk hacker', action: 'typing furiously', environment: 'dark neon-lit room', camera: 'close-up', style: 'film noir, 4K' })} style={{ ...inputStyle, cursor: 'pointer', textAlign: 'left' }}>
                 Hacker
               </button>
             </div>
