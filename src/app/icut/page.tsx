@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { ChangeEvent, useMemo, useState } from 'react';
 
 type Clip = {
   id: string;
@@ -10,6 +10,8 @@ type Clip = {
   trimEnd: number;
   fadeIn: number;
   fadeOut: number;
+  zoomIn: number;
+  zoomOut: number;
 };
 
 const sampleClips: Clip[] = [
@@ -21,6 +23,8 @@ const sampleClips: Clip[] = [
     trimEnd: 6,
     fadeIn: 0.4,
     fadeOut: 0.4,
+    zoomIn: 0,
+    zoomOut: 0,
   },
   {
     id: 'clip-2',
@@ -30,6 +34,8 @@ const sampleClips: Clip[] = [
     trimEnd: 5,
     fadeIn: 0,
     fadeOut: 0.4,
+    zoomIn: 0,
+    zoomOut: 0,
   },
 ];
 
@@ -56,6 +62,7 @@ export default function ICutPage() {
   const [clips, setClips] = useState<Clip[]>(sampleClips);
   const [activeId, setActiveId] = useState<string>(sampleClips[0]?.id ?? '');
   const [isExporting, setIsExporting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [status, setStatus] = useState('Ready');
 
   const activeClip = useMemo(() => clips.find((clip) => clip.id === activeId) ?? clips[0], [clips, activeId]);
@@ -74,6 +81,52 @@ export default function ICutPage() {
       [next[index], next[target]] = [next[target], next[index]];
       return next;
     });
+  };
+
+  const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setStatus(`Uploading ${file.name}...`);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/icut-upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData?.error || 'Upload failed');
+      }
+
+      const data = await response.json();
+      const newClip: Clip = {
+        id: `clip-${Date.now()}`,
+        title: data.title,
+        src: data.src,
+        trimStart: 0,
+        trimEnd: 6,
+        fadeIn: 0,
+        fadeOut: 0,
+        zoomIn: 0,
+        zoomOut: 0,
+      };
+
+      setClips((current) => [...current, newClip]);
+      setActiveId(newClip.id);
+      setStatus(`Uploaded ${data.title}`);
+    } catch (error) {
+      console.error(error);
+      setStatus(error instanceof Error ? error.message : 'Upload failed');
+    } finally {
+      setIsUploading(false);
+      event.target.value = '';
+    }
   };
 
   const handleExport = async () => {
@@ -119,7 +172,7 @@ export default function ICutPage() {
             <div style={{ fontSize: '12px', letterSpacing: '0.16em', textTransform: 'uppercase', color: '#67e8f9', marginBottom: '8px' }}>Dedicated Video Editor</div>
             <h1 style={{ margin: 0, fontSize: '32px', lineHeight: 1.05 }}>iCut</h1>
             <p style={{ margin: '10px 0 0', maxWidth: '760px', fontSize: '15px', color: '#94a3b8' }}>
-              Trim, sequence, merge, fade, and export clips in one focused workspace.
+              Trim, sequence, merge, fade, zoom, upload, and export clips in one focused workspace.
             </p>
           </div>
           <div style={{ fontSize: '13px', color: '#cbd5e1' }}>{status}</div>
@@ -128,8 +181,17 @@ export default function ICutPage() {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr 0.9fr', gap: '24px' }}>
         <section style={cardStyle}>
-          <div style={{ fontSize: '12px', letterSpacing: '0.16em', textTransform: 'uppercase', color: '#93c5fd', marginBottom: '8px' }}>Assets</div>
-          <h2 style={{ margin: '0 0 14px 0', fontSize: '22px' }}>Clip bin</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center', marginBottom: '14px' }}>
+            <div>
+              <div style={{ fontSize: '12px', letterSpacing: '0.16em', textTransform: 'uppercase', color: '#93c5fd', marginBottom: '8px' }}>Assets</div>
+              <h2 style={{ margin: 0, fontSize: '22px' }}>Clip bin</h2>
+            </div>
+            <label style={{ display: 'inline-block', borderRadius: '12px', padding: '10px 12px', background: isUploading ? '#475569' : '#2563eb', color: '#fff', cursor: isUploading ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '13px' }}>
+              {isUploading ? 'Uploading...' : 'Upload Video'}
+              <input type="file" accept="video/*" onChange={handleUpload} style={{ display: 'none' }} disabled={isUploading} />
+            </label>
+          </div>
+
           <div style={{ display: 'grid', gap: '12px' }}>
             {clips.map((clip) => (
               <button
@@ -146,7 +208,9 @@ export default function ICutPage() {
                 }}
               >
                 <div style={{ fontWeight: 700, marginBottom: '6px' }}>{clip.title}</div>
-                <div style={{ fontSize: '13px', color: '#94a3b8' }}>Trim {clip.trimStart}s → {clip.trimEnd}s</div>
+                <div style={{ fontSize: '13px', color: '#94a3b8' }}>
+                  Trim {clip.trimStart}s → {clip.trimEnd}s · Zoom in {clip.zoomIn} · Zoom out {clip.zoomOut}
+                </div>
               </button>
             ))}
           </div>
@@ -169,7 +233,7 @@ export default function ICutPage() {
                   </div>
                 </div>
                 <div style={{ fontSize: '13px', color: '#94a3b8' }}>
-                  Fade in {clip.fadeIn}s · Fade out {clip.fadeOut}s
+                  Fade in {clip.fadeIn}s · Fade out {clip.fadeOut}s · Zoom in {clip.zoomIn} · Zoom out {clip.zoomOut}
                 </div>
               </div>
             ))}
@@ -197,6 +261,14 @@ export default function ICutPage() {
               <div>
                 <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: '#cbd5e1' }}>Fade Out (s)</label>
                 <input type="number" step="0.1" value={activeClip.fadeOut} onChange={(e) => updateClip(activeClip.id, { fadeOut: Number(e.target.value) })} style={fieldStyle} />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: '#cbd5e1' }}>Zoom In</label>
+                <input type="number" step="0.05" value={activeClip.zoomIn} onChange={(e) => updateClip(activeClip.id, { zoomIn: Number(e.target.value) })} style={fieldStyle} />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: '#cbd5e1' }}>Zoom Out</label>
+                <input type="number" step="0.05" value={activeClip.zoomOut} onChange={(e) => updateClip(activeClip.id, { zoomOut: Number(e.target.value) })} style={fieldStyle} />
               </div>
             </div>
           ) : (

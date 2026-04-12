@@ -14,11 +14,14 @@ type ClipInput = {
   trimEnd?: number;
   fadeIn?: number;
   fadeOut?: number;
+  zoomIn?: number;
+  zoomOut?: number;
 };
 
-async function downloadFile(url: string, filePath: string) {
+async function downloadFile(src: string, filePath: string, origin: string) {
+  const url = src.startsWith('http://') || src.startsWith('https://') ? src : new URL(src, origin).toString();
   const response = await fetch(url);
-  if (!response.ok) throw new Error(`Failed to download ${url}`);
+  if (!response.ok) throw new Error(`Failed to download ${src}`);
   const buffer = Buffer.from(await response.arrayBuffer());
   await fs.writeFile(filePath, buffer);
 }
@@ -31,6 +34,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'No clips provided.' }, { status: 400 });
   }
 
+  const origin = new URL(req.url).origin;
   const jobId = crypto.randomUUID();
   const tempDir = path.join(os.tmpdir(), `icut-export-${jobId}`);
   await fs.mkdir(tempDir, { recursive: true });
@@ -42,17 +46,21 @@ export async function POST(req: Request) {
       const clip = clips[index];
       const inputPath = path.join(tempDir, `input-${index}.mp4`);
       const outputPath = path.join(tempDir, `processed-${index}.mp4`);
-      await downloadFile(clip.src, inputPath);
+      await downloadFile(clip.src, inputPath, origin);
 
       const videoFilters: string[] = [];
       const fadeIn = Math.max(0, Number(clip.fadeIn || 0));
       const fadeOut = Math.max(0, Number(clip.fadeOut || 0));
+      const zoomIn = Math.max(0, Number(clip.zoomIn || 0));
+      const zoomOut = Math.max(0, Number(clip.zoomOut || 0));
       const trimStart = Math.max(0, Number(clip.trimStart || 0));
       const trimEnd = Math.max(trimStart, Number(clip.trimEnd || 0));
       const duration = trimEnd > trimStart ? trimEnd - trimStart : 0;
 
       if (fadeIn > 0) videoFilters.push(`fade=t=in:st=0:d=${fadeIn}`);
       if (fadeOut > 0 && duration > fadeOut) videoFilters.push(`fade=t=out:st=${duration - fadeOut}:d=${fadeOut}`);
+      if (zoomIn > 0) videoFilters.push(`scale=iw*(1+${zoomIn}):ih*(1+${zoomIn}),crop=iw/(1+${zoomIn}):ih/(1+${zoomIn})`);
+      if (zoomOut > 0) videoFilters.push(`scale=iw*(1+${zoomOut}):ih*(1+${zoomOut}),crop=iw/(1+${zoomOut}):ih/(1+${zoomOut})`);
 
       const args = ['-y'];
       if (trimStart > 0) args.push('-ss', String(trimStart));
