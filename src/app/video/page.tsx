@@ -113,13 +113,15 @@ export default function CreatorVideoPage() {
       try {
         const response = await fetch('/api/media-gallery', { cache: 'no-store' });
         if (!response.ok) {
-          throw new Error('Failed to load video gallery.');
+          const data = await response.json().catch(() => ({}));
+          throw new Error(data?.error || 'Failed to load video gallery.');
         }
 
         const data = await response.json();
         setGeneratedVideos(Array.isArray(data?.videos) ? data.videos : []);
       } catch (error) {
         console.error('Failed to load video gallery:', error);
+        setErrorMessage(error instanceof Error ? error.message : 'Failed to load video gallery.');
       }
     };
 

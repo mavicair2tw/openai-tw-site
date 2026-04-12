@@ -1,9 +1,20 @@
 import { NextResponse } from 'next/server';
-import { getMediaGallery } from '@/lib/media-store';
+import { getMediaGallery, isMediaDatabaseConfigError } from '@/lib/media-store';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const gallery = await getMediaGallery();
-  return NextResponse.json(gallery);
+  try {
+    const gallery = await getMediaGallery();
+    return NextResponse.json(gallery);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to load media gallery.';
+    return NextResponse.json(
+      {
+        error: message,
+        needsDatabaseConfig: isMediaDatabaseConfigError(error),
+      },
+      { status: isMediaDatabaseConfigError(error) ? 500 : 502 },
+    );
+  }
 }

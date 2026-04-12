@@ -1,33 +1,45 @@
-# Gemini AI Image Generator
+# openai-tw-site
 
-## Run locally
+Next.js app with image and video generation flows backed by Google APIs, with generated media files stored under `public/` and gallery metadata stored in Turso/LibSQL.
 
-1. Install dependencies:
-
-```bash
-python3 -m pip install -r requirements.txt
-```
-
-2. Create a `.env` file:
+## Required environment variables
 
 ```bash
-GEMINI_API_KEY=your_key_here
-```
+# Required for gallery metadata persistence
+LIBSQL_URL=libsql://<database>-<org>.turso.io
+LIBSQL_AUTH_TOKEN=<turso-auth-token>
 
-3. Start the app:
+# Or for local development with LibSQL/SQLite semantics
+# LIBSQL_URL=file:./data/media-gallery.db
+# LIBSQL_AUTH_TOKEN=
 
-```bash
-python3 app.py
-```
+# Required for Gemini image and video generation
+GEMINI_API_KEY=<google-api-key>
+GEMINI_IMAGE_MODEL=gemini-3.1-flash-image-preview
+GEMINI_VIDEO_MODEL=veo-3.1-fast-generate-preview
 
-4. Open:
+# Optional Vertex AI fallback for image generation
+GOOGLE_CLOUD_PROJECT=
+GOOGLE_CLOUD_LOCATION=us-central1
+GOOGLE_CLIENT_EMAIL=
+GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 
-```bash
-http://127.0.0.1:5000/
+# Optional delete controls, disabled by default
+NEXT_PUBLIC_ALLOW_MEDIA_DELETE=false
+MEDIA_DELETE_ENABLED=false
 ```
 
 ## Notes
 
-- Click **Show Demo Image** to confirm the page is working.
-- Click **Generate Image** after entering a prompt.
-- Generated files are saved in `saved_images/` with a matching `.txt` file for the prompt, model, and aspect ratio.
+- `LIBSQL_URL` is required. If it is missing, gallery load and persistence fail with a clear server error instead of falling back to local JSON.
+- `LIBSQL_AUTH_TOKEN` is required for remote Turso/LibSQL URLs and can be omitted only for `file:` URLs.
+- Generated image and video files are still written to `public/generated-images` and `public/generated-videos`. Only gallery metadata lives in the database.
+- Deletion stays locked down by default. To fully enable it, set both `NEXT_PUBLIC_ALLOW_MEDIA_DELETE=true` and `MEDIA_DELETE_ENABLED=true`.
+
+## Run locally
+
+```bash
+npm install
+npm run build
+npm run dev
+```

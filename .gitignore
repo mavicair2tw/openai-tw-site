@@ -10,3 +10,4 @@ coverage
 public/generated-videos
 public/generated-images
 data/media-gallery.json
+data/*.db
