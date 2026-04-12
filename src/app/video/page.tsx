@@ -294,7 +294,7 @@ export default function CreatorVideoPage() {
   };
 
   return (
-    <div style={{ minHeight: 'calc(100vh - 140px)', background: '#020617', color: '#e2e8f0', padding: '20px 20px 100px' }}>
+    <div style={{ minHeight: 'calc(100vh - 140px)', background: '#020617', color: '#e2e8f0', padding: '20px 20px 100px', overflowX: 'hidden' }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: '20px' }}>
         <div>
           <div
@@ -448,7 +448,8 @@ export default function CreatorVideoPage() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '6px' }}>
+            <div style={{ maxWidth: '100%', overflowX: 'auto', overflowY: 'hidden', paddingBottom: '6px' }}>
+              <div style={{ display: 'flex', gap: '12px', width: 'max-content' }}>
               {videos.map((video) => {
                 const badge = getBadgeNumber(video.id);
                 const isActive = activeVideoId === video.id;
@@ -563,6 +564,7 @@ export default function CreatorVideoPage() {
                   </div>
                 );
               })}
+              </div>
             </div>
           </div>
         </div>
