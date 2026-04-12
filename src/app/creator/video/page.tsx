@@ -166,7 +166,7 @@ export default function CreatorVideoPage() {
     };
     const previewStream = player.captureStream?.() ?? player.mozCaptureStream?.();
     if (!previewStream) {
-      alert('This browser does not support video capture for merging.');
+      alert('Merge & Download is not supported in this browser yet. Please try Chrome desktop, or switch to server-side merge.');
       return;
     }
 
@@ -178,9 +178,21 @@ export default function CreatorVideoPage() {
 
     const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
       ? 'video/webm;codecs=vp9'
-      : 'video/webm';
+      : MediaRecorder.isTypeSupported('video/webm;codecs=vp8')
+        ? 'video/webm;codecs=vp8'
+        : 'video/webm';
 
-    const recorder = new MediaRecorder(previewStream, { mimeType });
+    let recorder: MediaRecorder;
+    try {
+      recorder = new MediaRecorder(previewStream, { mimeType });
+    } catch (error) {
+      console.error('Failed to create MediaRecorder:', error);
+      alert('Merge & Download could not start in this browser.');
+      setIsMerging(false);
+      setIsPlaylistMode(false);
+      setPlaylistCursor(0);
+      return;
+    }
     const chunks: Blob[] = [];
 
     recorder.ondataavailable = (event) => {

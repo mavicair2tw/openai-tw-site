@@ -97,6 +97,8 @@ export default function ImagenPage() {
               fontSize: '12px',
               resize: 'vertical',
               boxSizing: 'border-box',
+              color: '#111827',
+              background: '#ffffff',
             }}
           />
           <div style={{ fontSize: '11px', color: '#999', marginTop: '5px' }}>
