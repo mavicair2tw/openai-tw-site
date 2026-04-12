@@ -55,6 +55,7 @@ export default function CreatorVideoPage() {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const galleryStripRef = useRef<HTMLDivElement | null>(null);
+  const galleryTrackRef = useRef<HTMLDivElement | null>(null);
   const galleryDraggingRef = useRef(false);
   const galleryDragStartXRef = useRef(0);
   const galleryDragStartScrollRef = useRef(0);
@@ -77,6 +78,7 @@ export default function CreatorVideoPage() {
   const [isGeneratingVideo, setIsGeneratingVideo] = useState(false);
   const [showThumbnails, setShowThumbnails] = useState(true);
   const [isDraggingGallery, setIsDraggingGallery] = useState(false);
+  const [galleryOffset, setGalleryOffset] = useState(0);
   const [statusMessage, setStatusMessage] = useState('Prompt from Studio can generate a video, add it to the gallery, and play it here.');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -192,43 +194,43 @@ export default function CreatorVideoPage() {
     setStatusMessage('Generated video removed from the gallery.');
   };
 
-  const handleScrollGallery = (direction: 'left' | 'right') => {
-    const strip = galleryStripRef.current;
-    if (!strip) return;
+  const clampGalleryOffset = (nextOffset: number) => {
+    const viewport = galleryStripRef.current;
+    const track = galleryTrackRef.current;
+    if (!viewport || !track) return Math.max(0, nextOffset);
 
-    const nextLeft = strip.scrollLeft + (direction === 'left' ? -360 : 360);
-    strip.scrollTo({ left: nextLeft, behavior: 'smooth' });
+    const maxOffset = Math.max(0, track.scrollWidth - viewport.clientWidth);
+    return Math.max(0, Math.min(nextOffset, maxOffset));
+  };
+
+  const handleScrollGallery = (direction: 'left' | 'right') => {
+    setGalleryOffset((current) => clampGalleryOffset(current + (direction === 'left' ? -360 : 360)));
   };
 
   const handleGalleryPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
-    const strip = galleryStripRef.current;
-    if (!strip) return;
-
     galleryDraggingRef.current = true;
     galleryDragStartXRef.current = event.clientX;
-    galleryDragStartScrollRef.current = strip.scrollLeft;
+    galleryDragStartScrollRef.current = galleryOffset;
     suppressGalleryClickRef.current = false;
     setIsDraggingGallery(true);
-    strip.setPointerCapture?.(event.pointerId);
+    event.currentTarget.setPointerCapture?.(event.pointerId);
   };
 
   const handleGalleryPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
-    const strip = galleryStripRef.current;
-    if (!strip || !galleryDraggingRef.current) return;
+    if (!galleryDraggingRef.current) return;
 
     const delta = event.clientX - galleryDragStartXRef.current;
     if (Math.abs(delta) > 6) {
       suppressGalleryClickRef.current = true;
     }
 
-    strip.scrollLeft = galleryDragStartScrollRef.current - delta;
+    setGalleryOffset(clampGalleryOffset(galleryDragStartScrollRef.current - delta));
   };
 
   const handleGalleryPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
-    const strip = galleryStripRef.current;
     galleryDraggingRef.current = false;
     setIsDraggingGallery(false);
-    strip?.releasePointerCapture?.(event.pointerId);
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
   };
 
   const handleClearPlaylist = () => {
@@ -255,6 +257,10 @@ export default function CreatorVideoPage() {
     if (playlistCursor >= currentQueue.length - 1) return;
     setPlaylistCursor((cursor) => cursor + 1);
   };
+
+  useEffect(() => {
+    setGalleryOffset((current) => clampGalleryOffset(current));
+  }, [videos.length, showThumbnails]);
 
   const handleGenerateVideo = async () => {
     if (!editingPrompt.trim()) {
@@ -522,7 +528,8 @@ export default function CreatorVideoPage() {
               </div>
             </div>
 
-            <div ref={galleryStripRef} onPointerDown={handleGalleryPointerDown} onPointerMove={handleGalleryPointerMove} onPointerUp={handleGalleryPointerUp} onPointerCancel={handleGalleryPointerUp} style={{ display: 'flex', gap: '12px', width: '100%', minWidth: 0, overflowX: 'scroll', overflowY: 'hidden', paddingRight: '24px', paddingBottom: '12px', boxSizing: 'border-box', scrollBehavior: 'smooth', scrollSnapType: 'x proximity', cursor: isDraggingGallery ? 'grabbing' : 'grab', userSelect: 'none' }}>
+            <div ref={galleryStripRef} style={{ width: '100%', minWidth: 0, overflow: 'hidden', paddingRight: '24px', paddingBottom: '12px', boxSizing: 'border-box' }}>
+              <div ref={galleryTrackRef} onPointerDown={handleGalleryPointerDown} onPointerMove={handleGalleryPointerMove} onPointerUp={handleGalleryPointerUp} onPointerCancel={handleGalleryPointerUp} style={{ display: 'flex', gap: '12px', width: 'max-content', transform: `translateX(-${galleryOffset}px)`, transition: isDraggingGallery ? 'none' : 'transform 220ms ease', cursor: isDraggingGallery ? 'grabbing' : 'grab', userSelect: 'none' }}>
               {videos.map((video) => {
                 const badge = getBadgeNumber(video.id);
                 const isActive = activeVideoId === video.id;
@@ -638,6 +645,7 @@ export default function CreatorVideoPage() {
                   </div>
                 );
               })}
+              </div>
             </div>
           </div>
         </div>
