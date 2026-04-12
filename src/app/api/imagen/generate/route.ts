@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { mkdir, writeFile } from 'fs/promises';
+import path from 'path';
+import { addImageRecord } from '@/lib/media-store';
 
 type AccessTokenResponse = {
   access_token: string;
@@ -128,6 +131,36 @@ async function getAccessToken() {
   return data.access_token;
 }
 
+function getImageExtension(mimeType: string) {
+  if (mimeType === 'image/jpeg') return 'jpg';
+  if (mimeType === 'image/webp') return 'webp';
+  if (mimeType === 'image/gif') return 'gif';
+  return 'png';
+}
+
+async function persistGeneratedImage(params: { imageBase64: string; mimeType: string; prompt: string; aspectRatio: string }) {
+  const { imageBase64, mimeType, prompt, aspectRatio } = params;
+  const id = `img-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const extension = getImageExtension(mimeType);
+  const outputDir = path.join(process.cwd(), 'public', 'generated-images');
+  await mkdir(outputDir, { recursive: true });
+
+  const filename = `${id}.${extension}`;
+  const outputPath = path.join(outputDir, filename);
+  await writeFile(outputPath, Buffer.from(imageBase64, 'base64'));
+
+  const image = {
+    id,
+    imageUrl: `/generated-images/${filename}`,
+    prompt,
+    aspectRatio,
+    timestamp: Date.now(),
+  };
+
+  await addImageRecord(image);
+  return image;
+}
+
 async function generateWithGemini(prompt: string, aspectRatio: string) {
   const apiKey = getGeminiApiKey();
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_IMAGE_MODEL}:generateContent`;
@@ -181,8 +214,11 @@ async function generateWithGemini(prompt: string, aspectRatio: string) {
     });
   }
 
+  const image = await persistGeneratedImage({ imageBase64, mimeType, prompt, aspectRatio });
+
   return {
-    imageUrl: `data:${mimeType};base64,${imageBase64}`,
+    image,
+    imageUrl: image.imageUrl,
     provider: 'google',
     model: GEMINI_IMAGE_MODEL,
     backend: 'gemini-api',
@@ -233,8 +269,11 @@ async function generateWithVertex(prompt: string, aspectRatio: string) {
     });
   }
 
+  const image = await persistGeneratedImage({ imageBase64, mimeType: 'image/png', prompt, aspectRatio });
+
   return {
-    imageUrl: `data:image/png;base64,${imageBase64}`,
+    image,
+    imageUrl: image.imageUrl,
     provider: 'google',
     model: VERTEX_IMAGE_MODEL,
     backend: 'vertex-ai',

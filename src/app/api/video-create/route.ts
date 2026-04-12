@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { mkdir, writeFile } from 'fs/promises';
 import path from 'path';
+import { addVideoRecord } from '@/lib/media-store';
 
 const GEMINI_VIDEO_MODEL = process.env.GEMINI_VIDEO_MODEL || 'veo-3.1-fast-generate-preview';
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta';
@@ -114,10 +115,24 @@ export async function POST(req: Request) {
     const outputPath = path.join(outputDir, filename);
     await writeFile(outputPath, bytes);
 
-    return NextResponse.json({
-      videoUrl: `/api/generated-video/${filename}`,
+    const video = {
+      id: `vid-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       title: buildTitle(prompt) || 'Generated video',
+      src: `/api/generated-video/${filename}`,
       duration: `${durationSeconds}s`,
+      prompt,
+      aspectRatio,
+      timestamp: Date.now(),
+      demo: false,
+    };
+
+    await addVideoRecord(video);
+
+    return NextResponse.json({
+      video,
+      videoUrl: video.src,
+      title: video.title,
+      duration: video.duration,
       aspectRatio,
       provider: 'google',
       model: GEMINI_VIDEO_MODEL,

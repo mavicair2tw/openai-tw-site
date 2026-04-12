@@ -51,6 +51,8 @@ const buttonBase: React.CSSProperties = {
   fontSize: '13px',
 };
 
+const ALLOW_MEDIA_DELETE = process.env.NEXT_PUBLIC_ALLOW_MEDIA_DELETE === 'true';
+
 export default function CreatorVideoPage() {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -65,6 +67,7 @@ export default function CreatorVideoPage() {
   const setCurrentPrompt = usePromptStore((state) => state.setCurrentPrompt);
   const addToHistory = usePromptStore((state) => state.addToHistory);
   const generatedVideos = usePromptStore((state) => state.generatedVideos);
+  const setGeneratedVideos = usePromptStore((state) => state.setGeneratedVideos);
   const addGeneratedVideo = usePromptStore((state) => state.addGeneratedVideo);
   const deleteGeneratedVideo = usePromptStore((state) => state.deleteGeneratedVideo);
 
@@ -104,6 +107,24 @@ export default function CreatorVideoPage() {
       setEditingPrompt(currentPrompt);
     }
   }, [currentPrompt]);
+
+  useEffect(() => {
+    const loadGallery = async () => {
+      try {
+        const response = await fetch('/api/media-gallery', { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error('Failed to load video gallery.');
+        }
+
+        const data = await response.json();
+        setGeneratedVideos(Array.isArray(data?.videos) ? data.videos : []);
+      } catch (error) {
+        console.error('Failed to load video gallery:', error);
+      }
+    };
+
+    loadGallery();
+  }, [setGeneratedVideos]);
 
   useEffect(() => {
     if (!videos.length) {
@@ -201,16 +222,29 @@ export default function CreatorVideoPage() {
     setPlaylistCursor(0);
   };
 
-  const handleDeleteVideo = (videoId: string) => {
-    if (generatedVideos.some((generated) => generated.id === videoId)) {
-      deleteGeneratedVideo(videoId);
-    }
+  const handleDeleteVideo = async (videoId: string) => {
+    if (!ALLOW_MEDIA_DELETE) return;
 
-    setHiddenVideoIds((current) => (current.includes(videoId) ? current : [...current, videoId]));
-    setPlaylist((current) => current.filter((id) => id !== videoId));
-    setIsPlaylistMode(false);
-    setPlaylistCursor(0);
-    setStatusMessage('Video removed from the gallery.');
+    try {
+      if (generatedVideos.some((generated) => generated.id === videoId)) {
+        const response = await fetch(`/api/media-gallery/videos/${videoId}`, { method: 'DELETE' });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(data?.error || 'Failed to delete video.');
+        }
+
+        deleteGeneratedVideo(videoId);
+      }
+
+      setHiddenVideoIds((current) => (current.includes(videoId) ? current : [...current, videoId]));
+      setPlaylist((current) => current.filter((id) => id !== videoId));
+      setIsPlaylistMode(false);
+      setPlaylistCursor(0);
+      setStatusMessage('Video removed from the gallery.');
+    } catch (error) {
+      console.error('Failed to delete video:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to delete video.');
+    }
   };
 
   const handleMoveVideo = (videoId: string, direction: 'left' | 'right') => {
@@ -326,14 +360,16 @@ export default function CreatorVideoPage() {
         throw new Error(data?.error || 'Video generation is still processing. Please try again in a moment.');
       }
 
+      const video = data?.video;
       const entry = addGeneratedVideo({
-        title: data.title || 'Generated video',
+        id: video?.id,
+        title: data.title || video?.title || 'Generated video',
         src: data.videoUrl,
-        duration: data.duration || 'Generated',
-        prompt: editingPrompt,
-        aspectRatio,
-        timestamp: Date.now(),
-        demo: Boolean(data.demo),
+        duration: data.duration || video?.duration || 'Generated',
+        prompt: video?.prompt || editingPrompt,
+        aspectRatio: video?.aspectRatio || aspectRatio,
+        timestamp: video?.timestamp || Date.now(),
+        demo: Boolean(data.demo ?? video?.demo),
       });
 
       setActiveVideoId(entry.id);
@@ -522,7 +558,7 @@ export default function CreatorVideoPage() {
                 <div>
                   <h2 style={{ margin: 0, fontSize: '20px', color: '#f8fafc' }}>Video Gallery</h2>
                   <p style={{ margin: '6px 0 0', color: '#94a3b8', fontSize: '13px' }}>
-                    Generated videos appear first. Click a card to play it on the left panel. Use the scroll buttons, or hold the left mouse button and drag the strip left or right.
+                    Generated videos appear first. Click a card to play it on the left panel. Use the scroll buttons, or hold the left mouse button and drag the strip left or right.{ALLOW_MEDIA_DELETE ? ' Deletion is enabled in this environment.' : ' Deletion is disabled by default.'}
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
@@ -694,20 +730,22 @@ export default function CreatorVideoPage() {
                         {inPlaylist ? 'Remove from Playlist' : 'Add to Playlist'}
                       </button>
 
-                      <button
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          handleDeleteVideo(video.id);
-                        }}
-                        style={{
-                          ...buttonBase,
-                          background: '#7f1d1d',
-                          color: '#fff',
-                          padding: '8px 12px',
-                        }}
-                      >
-                        Delete
-                      </button>
+                      {ALLOW_MEDIA_DELETE && (
+                        <button
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleDeleteVideo(video.id);
+                          }}
+                          style={{
+                            ...buttonBase,
+                            background: '#7f1d1d',
+                            color: '#fff',
+                            padding: '8px 12px',
+                          }}
+                        >
+                          Delete
+                        </button>
+                      )}
                     </div>
                   </div>
                 );

@@ -11,6 +11,8 @@ const panelStyle: React.CSSProperties = {
   boxShadow: '0 20px 60px rgba(2,6,23,0.28)',
 };
 
+const ALLOW_MEDIA_DELETE = process.env.NEXT_PUBLIC_ALLOW_MEDIA_DELETE === 'true';
+
 export default function ImagenPage() {
   const router = useRouter();
   const currentPrompt = usePromptStore((state) => state.currentPrompt);
@@ -19,6 +21,7 @@ export default function ImagenPage() {
   const generatedImages = usePromptStore((state) => state.generatedImages);
   const selectedImageId = usePromptStore((state) => state.selectedImageId);
   const galleryView = usePromptStore((state) => state.galleryView);
+  const setGeneratedImages = usePromptStore((state) => state.setGeneratedImages);
   const addGeneratedImage = usePromptStore((state) => state.addGeneratedImage);
   const selectGeneratedImage = usePromptStore((state) => state.selectGeneratedImage);
   const deleteGeneratedImage = usePromptStore((state) => state.deleteGeneratedImage);
@@ -40,6 +43,24 @@ export default function ImagenPage() {
       setEditingPrompt(currentPrompt);
     }
   }, [currentPrompt]);
+
+  useEffect(() => {
+    const loadGallery = async () => {
+      try {
+        const response = await fetch('/api/media-gallery', { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error('Failed to load image gallery.');
+        }
+
+        const data = await response.json();
+        setGeneratedImages(Array.isArray(data?.images) ? data.images : []);
+      } catch (error) {
+        console.error('Failed to load image gallery:', error);
+      }
+    };
+
+    loadGallery();
+  }, [setGeneratedImages]);
 
   const handleGenerateImage = async () => {
     if (!editingPrompt.trim()) {
@@ -64,12 +85,14 @@ export default function ImagenPage() {
         throw new Error(data?.error || `API error: ${response.statusText}`);
       }
 
-      const timestamp = Date.now();
+      const image = data?.image;
+      const timestamp = image?.timestamp || Date.now();
       setGenerationResult({ imageUrl: data.imageUrl, timestamp });
       addGeneratedImage({
+        id: image?.id,
         imageUrl: data.imageUrl,
-        prompt: editingPrompt,
-        aspectRatio,
+        prompt: image?.prompt || editingPrompt,
+        aspectRatio: image?.aspectRatio || aspectRatio,
         timestamp,
       });
     } catch (error) {
@@ -86,6 +109,23 @@ export default function ImagenPage() {
     link.href = selectedImage.imageUrl;
     link.download = `imagen-${selectedImage.timestamp}.png`;
     link.click();
+  };
+
+  const handleDeleteImage = async (imageId: string) => {
+    if (!ALLOW_MEDIA_DELETE) return;
+
+    try {
+      const response = await fetch(`/api/media-gallery/images/${imageId}`, { method: 'DELETE' });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to delete image.');
+      }
+
+      deleteGeneratedImage(imageId);
+    } catch (error) {
+      console.error('Failed to delete image:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to delete image.');
+    }
   };
 
   const previewMinHeight = galleryView === 'original' ? '620px' : '520px';
@@ -247,7 +287,7 @@ export default function ImagenPage() {
             </div>
           ) : (
             <div style={{ padding: '14px', background: 'rgba(2,6,23,0.55)', color: '#94a3b8', border: '1px solid rgba(148,163,184,0.1)', borderRadius: '14px', fontSize: '13px' }}>
-              Click any gallery image to select it. Use the delete button on a card to remove it.
+              Click any gallery image to select it.{ALLOW_MEDIA_DELETE ? ' Use the delete button on a card to remove it.' : ' Deletion is disabled by default.'}
             </div>
           )}
 
@@ -313,24 +353,26 @@ export default function ImagenPage() {
                         <div style={{ fontSize: '12px', color: isSelected ? '#67e8f9' : '#cbd5e1', fontWeight: 700 }}>
                           {isSelected ? 'Selected' : 'Select image'}
                         </div>
-                        <button
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            deleteGeneratedImage(image.id);
-                          }}
-                          style={{
-                            border: 'none',
-                            borderRadius: '10px',
-                            background: '#7f1d1d',
-                            color: '#fff',
-                            padding: '6px 8px',
-                            cursor: 'pointer',
-                            fontSize: '12px',
-                            fontWeight: 700,
-                          }}
-                        >
-                          Delete
-                        </button>
+                        {ALLOW_MEDIA_DELETE && (
+                          <button
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              handleDeleteImage(image.id);
+                            }}
+                            style={{
+                              border: 'none',
+                              borderRadius: '10px',
+                              background: '#7f1d1d',
+                              color: '#fff',
+                              padding: '6px 8px',
+                              cursor: 'pointer',
+                              fontSize: '12px',
+                              fontWeight: 700,
+                            }}
+                          >
+                            Delete
+                          </button>
+                        )}
                       </div>
 
                       <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '6px' }}>{image.aspectRatio}</div>

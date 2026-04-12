@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
+import type { GeneratedImage, GeneratedVideo } from '@/lib/media-types';
 
 interface GlobalParams {
   subject: string;
@@ -18,25 +19,6 @@ interface Scene {
   name: string;
   description: string;
   overrides: { subject?: string; action?: string; camera?: string };
-}
-
-interface GeneratedImage {
-  id: string;
-  imageUrl: string;
-  prompt: string;
-  aspectRatio: string;
-  timestamp: number;
-}
-
-interface GeneratedVideo {
-  id: string;
-  title: string;
-  src: string;
-  duration: string;
-  prompt: string;
-  aspectRatio: string;
-  timestamp: number;
-  demo?: boolean;
 }
 
 interface PromptState {
@@ -64,12 +46,14 @@ interface PromptState {
   generatedImages: GeneratedImage[];
   selectedImageId: string | null;
   galleryView: 'thumbnail' | 'original';
-  addGeneratedImage: (image: Omit<GeneratedImage, 'id'>) => GeneratedImage;
+  setGeneratedImages: (images: GeneratedImage[]) => void;
+  addGeneratedImage: (image: Omit<GeneratedImage, 'id'> & { id?: string }) => GeneratedImage;
   selectGeneratedImage: (id: string) => void;
   deleteGeneratedImage: (id: string) => void;
   setGalleryView: (view: 'thumbnail' | 'original') => void;
   generatedVideos: GeneratedVideo[];
-  addGeneratedVideo: (video: Omit<GeneratedVideo, 'id'>) => GeneratedVideo;
+  setGeneratedVideos: (videos: GeneratedVideo[]) => void;
+  addGeneratedVideo: (video: Omit<GeneratedVideo, 'id'> & { id?: string }) => GeneratedVideo;
   deleteGeneratedVideo: (id: string) => void;
 }
 
@@ -133,14 +117,28 @@ export const usePromptStore = create<PromptState>()(
         setGenerationType: (type) => set({ generationType: type }),
         setIsGenerating: (generating) => set({ isGenerating: generating }),
         setGenerationResult: (result) => set({ generationResult: result }),
+        setGeneratedImages: (images) => set((state) => {
+          const nextSelectedId = images.some((image) => image.id === state.selectedImageId) ? state.selectedImageId : images[0]?.id ?? null;
+          const nextSelectedImage = images.find((image) => image.id === nextSelectedId) ?? images[0] ?? null;
+
+          return {
+            generatedImages: images,
+            selectedImageId: nextSelectedId,
+            generationResult: nextSelectedImage
+              ? { imageUrl: nextSelectedImage.imageUrl, timestamp: nextSelectedImage.timestamp }
+              : state.generationResult?.videoUrl
+                ? state.generationResult
+                : null,
+          };
+        }),
         addGeneratedImage: (image) => {
           const entry: GeneratedImage = {
-            id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            id: image.id || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
             ...image,
           };
 
           set((state) => ({
-            generatedImages: [entry, ...state.generatedImages].slice(0, 40),
+            generatedImages: [entry, ...state.generatedImages.filter((existing) => existing.id !== entry.id)].slice(0, 40),
             selectedImageId: entry.id,
             generationResult: { imageUrl: entry.imageUrl, timestamp: entry.timestamp },
           }));
@@ -168,14 +166,15 @@ export const usePromptStore = create<PromptState>()(
           };
         }),
         setGalleryView: (view) => set({ galleryView: view }),
+        setGeneratedVideos: (videos) => set({ generatedVideos: videos }),
         addGeneratedVideo: (video) => {
           const entry: GeneratedVideo = {
-            id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            id: video.id || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
             ...video,
           };
 
           set((state) => ({
-            generatedVideos: [entry, ...state.generatedVideos].slice(0, 30),
+            generatedVideos: [entry, ...state.generatedVideos.filter((existing) => existing.id !== entry.id)].slice(0, 30),
             generationResult: { videoUrl: entry.src, timestamp: entry.timestamp },
           }));
 
