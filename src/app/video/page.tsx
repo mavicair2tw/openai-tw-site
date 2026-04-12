@@ -183,10 +183,11 @@ export default function CreatorVideoPage() {
   };
 
   const handleScrollGallery = (direction: 'left' | 'right') => {
-    galleryStripRef.current?.scrollBy({
-      left: direction === 'left' ? -360 : 360,
-      behavior: 'smooth',
-    });
+    const strip = galleryStripRef.current;
+    if (!strip) return;
+
+    const nextLeft = strip.scrollLeft + (direction === 'left' ? -360 : 360);
+    strip.scrollTo({ left: nextLeft, behavior: 'smooth' });
   };
 
   const handleClearPlaylist = () => {
@@ -480,7 +481,7 @@ export default function CreatorVideoPage() {
               </div>
             </div>
 
-            <div ref={galleryStripRef} style={{ display: 'flex', gap: '12px', width: '100%', minWidth: 0, overflowX: 'scroll', overflowY: 'hidden', paddingRight: '24px', paddingBottom: '12px', boxSizing: 'border-box', scrollBehavior: 'smooth' }}>
+            <div ref={galleryStripRef} style={{ display: 'flex', gap: '12px', width: '100%', minWidth: 0, overflowX: 'scroll', overflowY: 'hidden', paddingRight: '24px', paddingBottom: '12px', boxSizing: 'border-box', scrollBehavior: 'smooth', scrollSnapType: 'x proximity' }}>
               {videos.map((video) => {
                 const badge = getBadgeNumber(video.id);
                 const isActive = activeVideoId === video.id;
@@ -502,6 +503,7 @@ export default function CreatorVideoPage() {
                       color: '#e2e8f0',
                       boxShadow: '0 4px 20px rgba(15, 23, 42, 0.25)',
                       flex: '0 0 auto',
+                      scrollSnapAlign: 'start',
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
