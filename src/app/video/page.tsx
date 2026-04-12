@@ -448,8 +448,7 @@ export default function CreatorVideoPage() {
               </div>
             </div>
 
-            <div style={{ maxWidth: '100%', overflowX: 'auto', overflowY: 'hidden', paddingBottom: '6px' }}>
-              <div style={{ display: 'flex', gap: '12px', width: 'max-content' }}>
+            <div style={{ display: 'flex', gap: '12px', width: '100%', minWidth: 0, overflowX: 'scroll', overflowY: 'hidden', paddingBottom: '12px', boxSizing: 'border-box' }}>
               {videos.map((video) => {
                 const badge = getBadgeNumber(video.id);
                 const isActive = activeVideoId === video.id;
@@ -564,7 +563,6 @@ export default function CreatorVideoPage() {
                   </div>
                 );
               })}
-              </div>
             </div>
           </div>
         </div>
