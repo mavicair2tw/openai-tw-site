@@ -39,7 +39,7 @@ export default function RootLayout({
               <p style={{ margin: '8px 0 0', fontSize: '14px', color: '#94a3b8' }}>A creative workspace for prompts, generation, and editing.</p>
             </div>
             <div style={{ padding: '10px 14px', borderRadius: '14px', background: 'rgba(15,23,42,0.78)', border: '1px solid rgba(148,163,184,0.16)', color: '#cbd5e1', fontSize: '12px' }}>
-              Google-first creative pipeline
+              Cloudflare media pipeline
             </div>
           </div>
           <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '0 24px 18px' }}>
