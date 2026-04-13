@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { normalizeEnvValue, d1Exec, d1Query } from '@/lib/cloudflare';
+import { normalizeEnvValue, d1Exec, d1Query, buildMediaObjectPath, uploadMediaObject } from '@/lib/cloudflare';
 import { addVideoRecord } from '@/lib/media-store';
 
 type JobRow = {
