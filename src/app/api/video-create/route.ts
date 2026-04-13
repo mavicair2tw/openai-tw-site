@@ -6,15 +6,12 @@ const XAI_VIDEO_MODEL = 'grok-imagine-video';
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const prompt = typeof body?.prompt === 'string' ? body.prompt.trim() : '';
-  const aspectRatio = typeof body?.aspectRatio === 'string' ? body.aspectRatio : '16:9';
-  const durationSeconds = body?.durationSeconds === 6 || body?.durationSeconds === 8 ? body.durationSeconds : 4;
+  const validAspectRatios = ['1:1', '16:9', '9:16', '4:3', '3:4', '3:2', '2:3'];
+  const aspectRatio = typeof body?.aspectRatio === 'string' && validAspectRatios.includes(body.aspectRatio) ? body.aspectRatio : '16:9';
+  const durationSeconds = typeof body?.durationSeconds === 'number' && body.durationSeconds >= 6 && body.durationSeconds <= 15 ? body.durationSeconds : 10;
 
   if (!prompt) {
     return NextResponse.json({ error: 'Prompt is required.' }, { status: 400 });
-  }
-
-  if (!['16:9', '9:16'].includes(aspectRatio)) {
-    return NextResponse.json({ error: 'Video generation currently supports only 16:9 and 9:16 in this UI.' }, { status: 400 });
   }
 
   const apiKey = normalizeEnvValue(process.env.XAI_API_KEY);
@@ -42,7 +39,7 @@ export async function POST(req: Request) {
         prompt,
         aspect_ratio: aspectRatio,
         duration: durationSeconds,
-        resolution: '480p',
+        resolution: '720p',
       }),
     });
 
