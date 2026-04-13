@@ -1,27 +1,18 @@
 import { NextResponse } from 'next/server';
-import crypto from 'crypto';
 import { addImageRecord } from '@/lib/media-store';
-import { normalizePrivateKey } from '@/lib/google-cloud';
-import { buildMediaObjectPath, buildPublicMediaUrl, getMediaBucket, getSignedMediaUrl, normalizeEnvValue } from '@/lib/google-cloud';
+import { buildMediaObjectPath, buildPublicMediaUrl, normalizeEnvValue, uploadMediaObject } from '@/lib/cloudflare';
 
-type AccessTokenResponse = {
-  access_token: string;
-  expires_in: number;
-  token_type: string;
-};
-
-type GoogleApiErrorPayload = {
+type OpenAIImageResponse = {
   error?: {
-    code?: number;
     message?: string;
-    status?: string;
-    details?: Array<{
-      '@type'?: string;
-      reason?: string;
-      domain?: string;
-      metadata?: Record<string, string>;
-    }>;
+    type?: string;
+    code?: string;
   };
+  data?: Array<{
+    b64_json?: string;
+    url?: string;
+    revised_prompt?: string;
+  }>;
 };
 
 class ImageGenerationError extends Error {
@@ -40,28 +31,19 @@ class ImageGenerationError extends Error {
   }
 }
 
-const VERTEX_IMAGE_MODEL = normalizeEnvValue(process.env.VERTEX_IMAGE_MODEL) || 'imagen-4.0-generate-001';
+const OPENAI_IMAGE_MODEL = normalizeEnvValue(process.env.OPENAI_IMAGE_MODEL) || 'gpt-image-1';
 
-function base64Url(input: Buffer | string) {
-  return Buffer.from(input)
-    .toString('base64')
-    .replace(/=/g, '')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_');
+function getImageSize(aspectRatio: string) {
+  if (aspectRatio === '16:9') return '1536x1024';
+  if (aspectRatio === '9:16') return '1024x1536';
+  return '1024x1024';
 }
 
-function getVertexEnv() {
-  return {
-    projectId: process.env.GOOGLE_CLOUD_PROJECT || '',
-    location: normalizeEnvValue(process.env.GOOGLE_CLOUD_LOCATION) || 'us-central1',
-    clientEmail: normalizeEnvValue(process.env.GOOGLE_CLIENT_EMAIL),
-    privateKey: normalizePrivateKey(process.env.GOOGLE_PRIVATE_KEY || ''),
-  };
-}
-
-function extractGoogleReason(data: GoogleApiErrorPayload) {
-  const details = data?.error?.details || [];
-  return details.find((detail) => detail?.reason)?.reason || data?.error?.status;
+function getImageExtension(mimeType: string) {
+  if (mimeType === 'image/jpeg') return 'jpg';
+  if (mimeType === 'image/webp') return 'webp';
+  if (mimeType === 'image/gif') return 'gif';
+  return 'png';
 }
 
 function serializeFailure(error: unknown) {
@@ -76,84 +58,71 @@ function serializeFailure(error: unknown) {
   }
 
   return {
-    provider: 'google',
-    backend: 'unknown',
+    provider: 'openai',
+    backend: 'images-api',
     status: 500,
     reason: null,
     message: error instanceof Error ? error.message : 'Unknown image generation error',
   };
 }
 
-async function getAccessToken() {
-  const { clientEmail, privateKey } = getVertexEnv();
-  const now = Math.floor(Date.now() / 1000);
-
-  const header = { alg: 'RS256', typ: 'JWT' };
-  const payload = {
-    iss: clientEmail,
-    scope: 'https://www.googleapis.com/auth/cloud-platform',
-    aud: 'https://oauth2.googleapis.com/token',
-    exp: now + 3600,
-    iat: now,
-  };
-
-  const unsigned = `${base64Url(JSON.stringify(header))}.${base64Url(JSON.stringify(payload))}`;
-  const signer = crypto.createSign('RSA-SHA256');
-  signer.update(unsigned);
-  signer.end();
-  const signature = signer.sign(privateKey);
-  const assertion = `${unsigned}.${base64Url(signature)}`;
-
-  const response = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-      assertion,
-    }),
-  });
-
-  const data = (await response.json().catch(() => ({}))) as Partial<AccessTokenResponse> & GoogleApiErrorPayload & { error_description?: string };
-  if (!response.ok || !data.access_token) {
-    throw new ImageGenerationError(data.error_description || data.error?.message || 'Failed to obtain Google access token', {
-      status: response.status || 500,
-      provider: 'google',
-      backend: 'vertex-ai-auth',
-      reason: extractGoogleReason(data),
+async function resolveGeneratedImageAsset(data: OpenAIImageResponse) {
+  const generated = data.data?.[0];
+  if (!generated) {
+    throw new ImageGenerationError('No image returned from OpenAI Images API.', {
+      status: 502,
+      provider: 'openai',
+      backend: 'images-api',
+      reason: 'EMPTY_IMAGE_RESPONSE',
     });
   }
 
-  return data.access_token;
+  if (generated.b64_json) {
+    return {
+      bytes: Buffer.from(generated.b64_json, 'base64'),
+      mimeType: 'image/png',
+      revisedPrompt: generated.revised_prompt,
+    };
+  }
+
+  if (generated.url) {
+    const upstream = await fetch(generated.url);
+    if (!upstream.ok) {
+      throw new ImageGenerationError('OpenAI returned an image URL that could not be downloaded.', {
+        status: 502,
+        provider: 'openai',
+        backend: 'images-api',
+        reason: 'IMAGE_DOWNLOAD_FAILED',
+      });
+    }
+
+    const arrayBuffer = await upstream.arrayBuffer();
+    return {
+      bytes: Buffer.from(arrayBuffer),
+      mimeType: upstream.headers.get('content-type') || 'image/png',
+      revisedPrompt: generated.revised_prompt,
+    };
+  }
+
+  throw new ImageGenerationError('OpenAI did not return image bytes or a downloadable URL.', {
+    status: 502,
+    provider: 'openai',
+    backend: 'images-api',
+    reason: 'EMPTY_IMAGE_RESPONSE',
+  });
 }
 
-function getImageExtension(mimeType: string) {
-  if (mimeType === 'image/jpeg') return 'jpg';
-  if (mimeType === 'image/webp') return 'webp';
-  if (mimeType === 'image/gif') return 'gif';
-  return 'png';
-}
-
-async function persistGeneratedImage(params: { imageBase64: string; mimeType: string; prompt: string; aspectRatio: string }) {
-  const { imageBase64, mimeType, prompt, aspectRatio } = params;
+async function persistGeneratedImage(params: { bytes: Buffer; mimeType: string; prompt: string; aspectRatio: string }) {
+  const { bytes, mimeType, prompt, aspectRatio } = params;
   const id = `img-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const extension = getImageExtension(mimeType);
   const filename = `${id}.${extension}`;
   const objectPath = buildMediaObjectPath('images', filename);
-  const bucket = getMediaBucket();
-
-  await bucket.file(objectPath).save(Buffer.from(imageBase64, 'base64'), {
-    resumable: false,
-    contentType: mimeType,
-    metadata: {
-      cacheControl: 'public, max-age=31536000, immutable',
-    },
-  });
-
-  const signedUrl = await getSignedMediaUrl(objectPath);
+  const publicUrl = await uploadMediaObject({ objectPath, body: bytes, contentType: mimeType });
 
   const image = {
     id,
-    imageUrl: buildPublicMediaUrl(bucket.name, objectPath),
+    imageUrl: buildPublicMediaUrl(objectPath) || publicUrl,
     prompt,
     aspectRatio,
     timestamp: Date.now(),
@@ -161,68 +130,48 @@ async function persistGeneratedImage(params: { imageBase64: string; mimeType: st
   };
 
   await addImageRecord(image);
-  return {
-    ...image,
-    imageUrl: signedUrl,
-  };
+  return image;
 }
 
-async function generateWithVertex(prompt: string, aspectRatio: string) {
-  const { projectId, location } = getVertexEnv();
-  const accessToken = await getAccessToken();
-  const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${VERTEX_IMAGE_MODEL}:predict`;
-
-  const upstream = await fetch(endpoint, {
+async function generateWithOpenAI(prompt: string, aspectRatio: string) {
+  const apiKey = normalizeEnvValue(process.env.OPENAI_API_KEY);
+  const upstream = await fetch('https://api.openai.com/v1/images/generations', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      instances: [{ prompt }],
-      parameters: {
-        sampleCount: 1,
-        aspectRatio,
-      },
+      model: OPENAI_IMAGE_MODEL,
+      prompt,
+      size: getImageSize(aspectRatio),
     }),
   });
 
-  const data = (await upstream.json().catch(() => ({}))) as GoogleApiErrorPayload & {
-    predictions?: Array<{ bytesBase64Encoded?: string; mimeType?: string }>;
-    generatedImages?: Array<{ bytesBase64Encoded?: string; mimeType?: string }>;
-  };
-
+  const data = (await upstream.json().catch(() => ({}))) as OpenAIImageResponse;
   if (!upstream.ok) {
-    throw new ImageGenerationError(data?.error?.message || 'Vertex AI Imagen request failed', {
+    throw new ImageGenerationError(data.error?.message || 'OpenAI image generation failed.', {
       status: upstream.status || 500,
-      provider: 'google',
-      backend: 'vertex-ai',
-      reason: extractGoogleReason(data),
+      provider: 'openai',
+      backend: 'images-api',
+      reason: data.error?.code || data.error?.type,
     });
   }
 
-  const prediction = data?.predictions?.[0];
-  const generatedImage = data?.generatedImages?.[0];
-  const imageBase64 = prediction?.bytesBase64Encoded || generatedImage?.bytesBase64Encoded;
-  const mimeType = prediction?.mimeType || generatedImage?.mimeType || 'image/png';
-
-  if (!imageBase64) {
-    throw new ImageGenerationError('No image returned from Vertex AI Imagen', {
-      status: 502,
-      provider: 'google',
-      backend: 'vertex-ai',
-      reason: 'EMPTY_IMAGE_RESPONSE',
-    });
-  }
-
-  const image = await persistGeneratedImage({ imageBase64, mimeType, prompt, aspectRatio });
+  const asset = await resolveGeneratedImageAsset(data);
+  const image = await persistGeneratedImage({
+    bytes: asset.bytes,
+    mimeType: asset.mimeType,
+    prompt: asset.revisedPrompt || prompt,
+    aspectRatio,
+  });
 
   return {
     image,
     imageUrl: image.imageUrl,
-    provider: 'google',
-    model: VERTEX_IMAGE_MODEL,
-    backend: 'vertex-ai',
+    provider: 'openai',
+    model: OPENAI_IMAGE_MODEL,
+    backend: 'images-api',
   };
 }
 
@@ -235,34 +184,30 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Prompt is required.' }, { status: 400 });
   }
 
-  const { projectId, clientEmail, privateKey } = getVertexEnv();
-  const hasVertexConfig = Boolean(projectId && clientEmail && privateKey);
-
-  if (!hasVertexConfig) {
+  if (!normalizeEnvValue(process.env.OPENAI_API_KEY)) {
     return NextResponse.json(
       {
-        error:
-          'Missing Vertex AI image credentials. Set GOOGLE_CLOUD_PROJECT, GOOGLE_CLOUD_LOCATION, GOOGLE_CLIENT_EMAIL, and GOOGLE_PRIVATE_KEY.',
-        provider: 'google',
-        backend: 'vertex-ai',
-        needsGoogleCredentials: true,
+        error: 'Missing OPENAI_API_KEY for image generation.',
+        provider: 'openai',
+        backend: 'images-api',
+        needsOpenAICredentials: true,
       },
       { status: 501 },
     );
   }
 
   try {
-    const result = await generateWithVertex(prompt, aspectRatio);
+    const result = await generateWithOpenAI(prompt, aspectRatio);
     return NextResponse.json(result);
   } catch (error) {
     const failure = serializeFailure(error);
     return NextResponse.json(
       {
         error: failure.message,
-        provider: 'google',
-        backend: 'vertex-ai',
+        provider: 'openai',
+        backend: 'images-api',
         failures: [failure],
-        needsGoogleCredentials: ['API_KEY_INVALID', 'PERMISSION_DENIED', 'UNAUTHENTICATED'].includes(failure.reason || ''),
+        needsOpenAICredentials: ['invalid_api_key', 'authentication_error'].includes(failure.reason || ''),
       },
       { status: failure.status },
     );
