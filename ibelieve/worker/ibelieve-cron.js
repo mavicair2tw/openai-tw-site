@@ -5,6 +5,9 @@ var __name = (target, value) => __defProp(target, "name", { value, configurable:
 // MONITOR FRAMEWORK — Universal Event-Driven Jobs
 // ═══════════════════════════════════════════════
 var MONITOR_PREFIX = "monitor:job:";
+var MONITOR_VERSION = "2.14";
+var MONITOR_SIGNATURE = "iBelieve-Monitor-Framework";
+var MONITOR_REQUIRED_FNS = ["monitorTrigger","monitorCheck","monitorClear","monitorStatus"];
 async function monitorTrigger(env, jobName, triggeredBy, meta) {
   meta = meta || {};
   var key = MONITOR_PREFIX + jobName;
@@ -31,6 +34,18 @@ async function monitorStatus(env) {
   return jobs;
 }
 __name(monitorStatus, "monitorStatus");
+async function monitorVerify(env) {
+  var checks = { version: MONITOR_VERSION, signature: MONITOR_SIGNATURE, functions: {}, kvAccessible: false, integrity: true, timestamp: Date.now() };
+  MONITOR_REQUIRED_FNS.forEach(function(fn) {
+    var ok = (fn === "monitorTrigger" ? typeof monitorTrigger === "function" : fn === "monitorCheck" ? typeof monitorCheck === "function" : fn === "monitorClear" ? typeof monitorClear === "function" : typeof monitorStatus === "function");
+    checks.functions[fn] = ok;
+    if (!ok) checks.integrity = false;
+  });
+  try { await env.FORUM_KV.get("monitor:health-check"); checks.kvAccessible = true; } catch(e) { checks.kvAccessible = false; checks.integrity = false; }
+  checks.status = checks.integrity ? "ok" : "compromised";
+  return checks;
+}
+__name(monitorVerify, "monitorVerify");
 // ═══════════════════════════════════════════════
 
 var TOPICS = ["Belief", "God", "Miracle", "Discovery"];
@@ -592,18 +607,23 @@ var index_default = {
   async fetch(request, env, ctx) {
     const path = new URL(request.url).pathname;
     if (path === "/status") return Response.json(await runStatus(env));
+    if (path === "/monitor/verify") {
+      const v = await monitorVerify(env);
+      return new Response(JSON.stringify(v), { status: v.status === "ok" ? 200 : 500, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
+    }
     if (path === "/monitor/status") {
       return new Response(JSON.stringify(await monitorStatus(env)), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
     }
     if (path === "/monitor/trigger" && request.method === "POST") {
-      const job = url.searchParams.get("job");
-      const by = url.searchParams.get("by") || request.headers.get("X-Triggered-By") || "api";
+      const _url = new URL(request.url);
+      const job = _url.searchParams.get("job");
+      const by = _url.searchParams.get("by") || request.headers.get("X-Triggered-By") || "api";
       if (!job) return Response.json({ error: "job param required" }, { status: 400 });
       const body = await request.json().catch(() => ({}));
       return new Response(JSON.stringify(await monitorTrigger(env, job, by, body.meta || {})), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
     }
     if (path === "/monitor/clear" && request.method === "POST") {
-      const job = url.searchParams.get("job");
+      const job = new URL(request.url).searchParams.get("job");
       if (!job) return Response.json({ error: "job param required" }, { status: 400 });
       await monitorClear(env, job, "manual");
       return new Response(JSON.stringify({ ok: true, job, cleared: true }), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
@@ -657,6 +677,7 @@ var index_default = {
     } else {
       ctx.waitUntil(runPublish(env));
     }
+    ctx.waitUntil((async () => { try { const v = await monitorVerify(env); if (v.status !== "ok") { await env.FORUM_KV.put("monitor:alert", JSON.stringify({ alert: "MONITOR_COMPROMISED", details: v, detectedAt: Date.now() })); } } catch(e) {} })());
   }
 };
 export { index_default as default };

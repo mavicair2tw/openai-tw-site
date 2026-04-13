@@ -221,6 +221,21 @@ export async function ensureMediaTables() {
           object_path TEXT
         )
       `);
+      await d1Exec(`
+        CREATE TABLE IF NOT EXISTS media_gallery_jobs (
+          id TEXT PRIMARY KEY,
+          status TEXT NOT NULL,
+          provider TEXT NOT NULL,
+          model TEXT NOT NULL,
+          request_id TEXT,
+          prompt TEXT NOT NULL,
+          aspect_ratio TEXT NOT NULL,
+          duration_seconds INTEGER NOT NULL,
+          timestamp INTEGER NOT NULL,
+          video_id TEXT,
+          error TEXT
+        )
+      `);
     })();
   }
 

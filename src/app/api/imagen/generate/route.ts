@@ -2,12 +2,7 @@ import { NextResponse } from 'next/server';
 import { addImageRecord } from '@/lib/media-store';
 import { buildMediaObjectPath, buildPublicMediaUrl, normalizeEnvValue, uploadMediaObject } from '@/lib/cloudflare';
 
-type OpenAIImageResponse = {
-  error?: {
-    message?: string;
-    type?: string;
-    code?: string;
-  };
+type XaiImageResponse = {
   data?: Array<{
     b64_json?: string;
     url?: string;
@@ -31,13 +26,7 @@ class ImageGenerationError extends Error {
   }
 }
 
-const OPENAI_IMAGE_MODEL = normalizeEnvValue(process.env.OPENAI_IMAGE_MODEL) || 'gpt-image-1';
-
-function getImageSize(aspectRatio: string) {
-  if (aspectRatio === '16:9') return '1536x1024';
-  if (aspectRatio === '9:16') return '1024x1536';
-  return '1024x1024';
-}
+const XAI_IMAGE_MODEL = 'grok-imagine-image';
 
 function getImageExtension(mimeType: string) {
   if (mimeType === 'image/jpeg') return 'jpg';
@@ -58,21 +47,21 @@ function serializeFailure(error: unknown) {
   }
 
   return {
-    provider: 'openai',
-    backend: 'images-api',
+    provider: 'xai',
+    backend: 'imagine-api',
     status: 500,
     reason: null,
     message: error instanceof Error ? error.message : 'Unknown image generation error',
   };
 }
 
-async function resolveGeneratedImageAsset(data: OpenAIImageResponse) {
+async function resolveGeneratedImageAsset(data: XaiImageResponse) {
   const generated = data.data?.[0];
   if (!generated) {
-    throw new ImageGenerationError('No image returned from OpenAI Images API.', {
+    throw new ImageGenerationError('No image returned from xAI Imagine API.', {
       status: 502,
-      provider: 'openai',
-      backend: 'images-api',
+      provider: 'xai',
+      backend: 'imagine-api',
       reason: 'EMPTY_IMAGE_RESPONSE',
     });
   }
@@ -88,10 +77,10 @@ async function resolveGeneratedImageAsset(data: OpenAIImageResponse) {
   if (generated.url) {
     const upstream = await fetch(generated.url);
     if (!upstream.ok) {
-      throw new ImageGenerationError('OpenAI returned an image URL that could not be downloaded.', {
+      throw new ImageGenerationError('xAI returned an image URL that could not be downloaded.', {
         status: 502,
-        provider: 'openai',
-        backend: 'images-api',
+        provider: 'xai',
+        backend: 'imagine-api',
         reason: 'IMAGE_DOWNLOAD_FAILED',
       });
     }
@@ -104,10 +93,10 @@ async function resolveGeneratedImageAsset(data: OpenAIImageResponse) {
     };
   }
 
-  throw new ImageGenerationError('OpenAI did not return image bytes or a downloadable URL.', {
+  throw new ImageGenerationError('xAI did not return image bytes or a downloadable URL.', {
     status: 502,
-    provider: 'openai',
-    backend: 'images-api',
+    provider: 'xai',
+    backend: 'imagine-api',
     reason: 'EMPTY_IMAGE_RESPONSE',
   });
 }
@@ -133,28 +122,28 @@ async function persistGeneratedImage(params: { bytes: Buffer; mimeType: string; 
   return image;
 }
 
-async function generateWithOpenAI(prompt: string, aspectRatio: string) {
-  const apiKey = normalizeEnvValue(process.env.OPENAI_API_KEY);
-  const upstream = await fetch('https://api.openai.com/v1/images/generations', {
+async function generateWithXai(prompt: string, aspectRatio: string) {
+  const apiKey = normalizeEnvValue(process.env.XAI_API_KEY);
+  const upstream = await fetch('https://api.x.ai/v1/images/generations', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: OPENAI_IMAGE_MODEL,
+      model: XAI_IMAGE_MODEL,
       prompt,
-      size: getImageSize(aspectRatio),
+      aspect_ratio: aspectRatio,
     }),
   });
 
-  const data = (await upstream.json().catch(() => ({}))) as OpenAIImageResponse;
+  const data = (await upstream.json().catch(() => ({}))) as XaiImageResponse;
   if (!upstream.ok) {
-    throw new ImageGenerationError(data.error?.message || 'OpenAI image generation failed.', {
+    throw new ImageGenerationError('xAI image generation failed with status ' + upstream.status, {
       status: upstream.status || 500,
-      provider: 'openai',
-      backend: 'images-api',
-      reason: data.error?.code || data.error?.type,
+      provider: 'xai',
+      backend: 'imagine-api',
+      reason: 'API_ERROR',
     });
   }
 
@@ -169,9 +158,9 @@ async function generateWithOpenAI(prompt: string, aspectRatio: string) {
   return {
     image,
     imageUrl: image.imageUrl,
-    provider: 'openai',
-    model: OPENAI_IMAGE_MODEL,
-    backend: 'images-api',
+    provider: 'xai',
+    model: XAI_IMAGE_MODEL,
+    backend: 'imagine-api',
   };
 }
 
@@ -184,30 +173,30 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Prompt is required.' }, { status: 400 });
   }
 
-  if (!normalizeEnvValue(process.env.OPENAI_API_KEY)) {
+  if (!normalizeEnvValue(process.env.XAI_API_KEY)) {
     return NextResponse.json(
       {
-        error: 'Missing OPENAI_API_KEY for image generation.',
-        provider: 'openai',
-        backend: 'images-api',
-        needsOpenAICredentials: true,
+        error: 'Missing XAI_API_KEY for image generation.',
+        provider: 'xai',
+        backend: 'imagine-api',
+        needsXaiCredentials: true,
       },
       { status: 501 },
     );
   }
 
   try {
-    const result = await generateWithOpenAI(prompt, aspectRatio);
+    const result = await generateWithXai(prompt, aspectRatio);
     return NextResponse.json(result);
   } catch (error) {
     const failure = serializeFailure(error);
     return NextResponse.json(
       {
         error: failure.message,
-        provider: 'openai',
-        backend: 'images-api',
+        provider: 'xai',
+        backend: 'imagine-api',
         failures: [failure],
-        needsOpenAICredentials: ['invalid_api_key', 'authentication_error'].includes(failure.reason || ''),
+        needsXaiCredentials: ['invalid_api_key', 'authentication_error'].includes(failure.reason || ''),
       },
       { status: failure.status },
     );
