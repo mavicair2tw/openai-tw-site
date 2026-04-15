@@ -930,6 +930,61 @@ var currentUser=null;
 var accounts=[];
 var selIdx=null;
 var modalMode=null;
+var ACCOUNT_ROLES=['user','operator','admin'];
+var ACCOUNT_STATUS_OPTIONS=['active','inactive'];
+
+function escHtml(v){
+  return String(v==null?'':v)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+function normalizeSiteRoles(siteRoles){
+  var src=(siteRoles&&typeof siteRoles==='object')?siteRoles:{};
+  return {
+    icut: src.icut || '',
+    ibelieve: src.ibelieve || '',
+    admin: src.admin || ''
+  };
+}
+
+function siteRoleOptions(selected){
+  var options=['','user','operator','admin'];
+  return options.map(function(role){
+    var label=role||'No access';
+    return '<option value="'+escHtml(role)+'"'+(selected===role?' selected':'')+'>'+escHtml(label)+'</option>';
+  }).join('');
+}
+
+function renderSiteRoleFields(siteRoles){
+  var roles=normalizeSiteRoles(siteRoles);
+  return ''+
+    '<div class="form-group"><label class="form-label">iCut access role</label><select class="form-select" id="f-site-icut">'+siteRoleOptions(roles.icut)+'</select></div>'+
+    '<div class="form-group"><label class="form-label">iBelieve access role</label><select class="form-select" id="f-site-ibelieve">'+siteRoleOptions(roles.ibelieve)+'</select></div>'+
+    '<div class="form-group"><label class="form-label">Admin page role</label><select class="form-select" id="f-site-admin">'+siteRoleOptions(roles.admin)+'</select></div>';
+}
+
+function readSiteRolesFromForm(){
+  var siteRoles={};
+  ['icut','ibelieve','admin'].forEach(function(site){
+    var el=document.getElementById('f-site-'+site);
+    var val=el?String(el.value||'').trim():'';
+    if(val) siteRoles[site]=val;
+  });
+  return siteRoles;
+}
+
+function siteRolesSummary(account){
+  var roles=normalizeSiteRoles(account.site_roles||account.siteRoles);
+  var bits=[];
+  if(roles.icut) bits.push('icut:'+roles.icut);
+  if(roles.ibelieve) bits.push('ibelieve:'+roles.ibelieve);
+  if(roles.admin) bits.push('admin:'+roles.admin);
+  return bits.length?bits.join(' · '):'No site access';
+}
 
 async function apiFetch(path,opts){
   opts=opts||{};
@@ -955,13 +1010,20 @@ async function loadAccounts(){
   try{
     var data=await apiFetch('/admin/users');
     accounts=(data.users||data||[]).map(function(u){
-      return {id:u.id||u._id,username:u.username||u.name||'-',email:u.email||'-',role:u.role||'user',status:u.status||(u.banned?'banned':'active')};
+      return {
+        id:u.id||u._id,
+        username:u.username||u.name||'-',
+        email:u.email||'-',
+        role:u.role||'user',
+        status:u.status||(u.banned?'banned':'active'),
+        site_roles:normalizeSiteRoles(u.site_roles||u.siteRoles)
+      };
     });
   } catch(e) {
     accounts=[
-      {id:1,username:'admin',email:'admin@ibelieve.app',role:'admin',status:'active'},
-      {id:2,username:'kim',email:'kim@ibelieve.app',role:'user',status:'active'},
-      {id:3,username:'jane',email:'jane@ibelieve.app',role:'user',status:'active'}
+      {id:1,username:'admin',email:'admin@ibelieve.app',role:'admin',status:'active',site_roles:{icut:'admin',ibelieve:'admin',admin:'admin'}},
+      {id:2,username:'kim',email:'kim@ibelieve.app',role:'user',status:'active',site_roles:{ibelieve:'user'}},
+      {id:3,username:'jane',email:'jane@ibelieve.app',role:'user',status:'active',site_roles:{icut:'user'}}
     ];
   }
   renderAccounts();
@@ -979,7 +1041,7 @@ function renderAccounts(){
         +'<td><div class="ava">'+ini(a.username)+'</div></td>'
         +'<td style="font-weight:500;">'+a.username+'</td>'
         +'<td style="color:var(--text-muted);font-size:12px;font-family:var(--mono)">'+a.email+'</td>'
-        +'<td style="font-size:12px;color:var(--text-dim);">'+a.role+'</td>'
+        +'<td style="font-size:12px;color:var(--text-dim);"><div>'+escHtml(a.role)+'</div><div style="font-size:10px;color:var(--text-muted);margin-top:4px;line-height:1.4;">'+escHtml(siteRolesSummary(a))+'</div></td>'
         +'<td>'+sbadge(a.status)+'</td>'
         +'</tr>';
     }).join('');
@@ -1001,7 +1063,6 @@ function selectRow(i){
 function openModal(mode){
   modalMode=mode;
   var sel=(selIdx!==null)?accounts[selIdx]:{};
-  var ROLES=['user','operator','admin'];
   var title=document.getElementById('m-title');
   var body=document.getElementById('m-body');
   var btn=document.getElementById('m-confirm');
@@ -1012,16 +1073,19 @@ function openModal(mode){
       '<div class="form-group"><label class="form-label">Username</label><input class="form-input" id="f-user" placeholder="username"></div>'+
       '<div class="form-group"><label class="form-label">Email</label><input class="form-input" id="f-email" type="email" placeholder="user@example.com"></div>'+
       '<div class="form-group"><label class="form-label">Password</label><input class="form-input" id="f-pass" type="password" placeholder="Min 6 characters"></div>'+
-      '<div class="form-group"><label class="form-label">Role</label><select class="form-select" id="f-role">'+ROLES.map(function(r){return '<option>'+r+'</option>';}).join('')+'</select></div>';
+      '<div class="form-group"><label class="form-label">Role</label><select class="form-select" id="f-role">'+ACCOUNT_ROLES.map(function(r){return '<option>'+escHtml(r)+'</option>';}).join('')+'</select></div>'+
+      '<div class="form-group"><label class="form-label">Status</label><select class="form-select" id="f-status">'+ACCOUNT_STATUS_OPTIONS.map(function(s){return '<option value="'+escHtml(s)+'">'+escHtml(s.charAt(0).toUpperCase()+s.slice(1))+'</option>';}).join('')+'</select></div>'+
+      renderSiteRoleFields({icut:'user',ibelieve:'user',admin:''});
   } else if(mode==='modify'){
     title.textContent='Modify account';
     btn.textContent='Save changes'; btn.className='bconfirm blue';
     body.innerHTML=
-      '<div class="form-group"><label class="form-label">Username</label><input class="form-input" id="f-user" value="'+(sel.username||'')+'"></div>'+
-      '<div class="form-group"><label class="form-label">Email</label><input class="form-input" id="f-email" type="email" value="'+(sel.email||'')+'"></div>'+
+      '<div class="form-group"><label class="form-label">Username</label><input class="form-input" id="f-user" value="'+escHtml(sel.username||'')+'"></div>'+
+      '<div class="form-group"><label class="form-label">Email</label><input class="form-input" id="f-email" type="email" value="'+escHtml(sel.email||'')+'"></div>'+
       '<div class="form-group"><label class="form-label">New password <span style="color:var(--text-muted);font-size:10px;">(leave blank to keep)</span></label><input class="form-input" id="f-pass" type="password" placeholder="........"></div>'+
-      '<div class="form-group"><label class="form-label">Role</label><select class="form-select" id="f-role">'+ROLES.map(function(r){return '<option'+(sel.role===r?' selected':'')+'>'+r+'</option>';}).join('')+'</select></div>'+
-      '<div class="form-group"><label class="form-label">Status</label><select class="form-select" id="f-status"><option value="active"'+(sel.status==='active'?' selected':'')+'>Active</option><option value="inactive"'+(sel.status==='inactive'?' selected':'')+'>Inactive</option><option value="banned"'+(sel.status==='banned'?' selected':'')+'>Banned</option></select></div>';
+      '<div class="form-group"><label class="form-label">Role</label><select class="form-select" id="f-role">'+ACCOUNT_ROLES.map(function(r){return '<option'+(sel.role===r?' selected':'')+'>'+escHtml(r)+'</option>';}).join('')+'</select></div>'+
+      '<div class="form-group"><label class="form-label">Status</label><select class="form-select" id="f-status">'+ACCOUNT_STATUS_OPTIONS.map(function(s){return '<option value="'+escHtml(s)+'"'+(sel.status===s?' selected':'')+'>'+escHtml(s.charAt(0).toUpperCase()+s.slice(1))+'</option>';}).join('')+'</select></div>'+
+      renderSiteRoleFields(sel.site_roles||sel.siteRoles||{});
   } else {
     title.textContent='Delete account';
     btn.textContent='Delete'; btn.className='bconfirm red';
@@ -1062,8 +1126,10 @@ async function confirmModal(){
       var pw=document.getElementById('f-pass').value;
       var e=document.getElementById('f-email').value.trim();
       var role=document.getElementById('f-role').value;
+      var status=document.getElementById('f-status').value;
+      var siteRoles=readSiteRolesFromForm();
       if(!u||!pw){showInlineErr('Username and password are required.');btn.disabled=false;btn.textContent=origText;return;}
-      await apiFetch('/auth/register',{method:'POST',body:JSON.stringify({username:u,password:pw,email:e,role:role})});
+      await apiFetch('/auth/register',{method:'POST',body:JSON.stringify({username:u,password:pw,email:e,role:role,status:status,site_roles:siteRoles})});
       showToast('Account "'+u+'" created','green');
       closeModal(); await loadAccounts();
 
@@ -1073,15 +1139,16 @@ async function confirmModal(){
       var pw=document.getElementById('f-pass').value;
       var role=document.getElementById('f-role').value;
       var status=document.getElementById('f-status').value;
+      var siteRoles=readSiteRolesFromForm();
       if(!u){showInlineErr('Username is required.');btn.disabled=false;btn.textContent=origText;return;}
       var sel=accounts[selIdx];
-      var body={username:u,email:e,role:role,status:status};
+      var body={username:u,email:e,role:role,status:status,site_roles:siteRoles};
       if(pw) body.password=pw;
       try{
         await apiFetch('/admin/users/'+sel.id,{method:'PATCH',body:JSON.stringify(body)});
       } catch(e2){
         /* fallback: update locally */
-        accounts[selIdx]=Object.assign({},sel,{username:u,email:e,role:role,status:status});
+        accounts[selIdx]=Object.assign({},sel,{username:u,email:e,role:role,status:status,site_roles:siteRoles});
       }
       showToast('Account "'+u+'" updated','blue');
       closeModal(); selIdx=null; await loadAccounts();
