@@ -986,8 +986,9 @@ var tokenUsageCache=null;
 var tokenActivePeriod='daily';
 
 async function fetchTokenUsageSummary(){
+  var token = adminToken || localStorage.getItem(DEVICE_TOKEN_KEY) || '';
   var headers={};
-  if(adminToken) headers.Authorization='Bearer '+adminToken;
+  if(token) headers.Authorization='Bearer '+token;
   var res=await fetch(TOKEN_API+'/admin/token-usage?t='+(Date.now()), { headers: headers });
   if(!res.ok){
     var msg='Failed to load token usage';
@@ -995,8 +996,15 @@ async function fetchTokenUsageSummary(){
       var data=await res.json();
       if(data && data.error) msg=data.error;
     }catch(err){}
+    if(res.status===401 || res.status===403){
+      adminToken = null;
+      localStorage.removeItem(DEVICE_TOKEN_KEY);
+      localStorage.removeItem(DEVICE_USER_KEY);
+      msg = 'Admin session expired. Please sign in again.';
+    }
     throw new Error(msg);
   }
+  if(token && !adminToken) adminToken = token;
   return await res.json();
 }
 
