@@ -788,6 +788,24 @@ function getDeviceName(){
   return 'Unknown device';
 }
 
+function canAccessAdminPage(user){
+  var role=String((user&&user.role)||'user').toLowerCase();
+  var siteRoles=(user&&user.site_roles&&typeof user.site_roles==='object')?user.site_roles:{};
+  var adminSiteRole=String(siteRoles.admin||'').toLowerCase();
+  if(role==='user') return false;
+  return adminSiteRole==='operator' || adminSiteRole==='admin' || adminSiteRole==='owner' || adminSiteRole==='super admin';
+}
+
+async function fetchSharedAdminUser(token){
+  var headers={};
+  if(token) headers.Authorization='Bearer '+token;
+  var res=await fetch(TOKEN_API+'/auth/me', { headers: headers });
+  var data=await res.json().catch(function(){ return {}; });
+  if(!res.ok || !data || !data.user) throw new Error((data&&data.error)||'Failed to verify admin access');
+  if(!canAccessAdminPage(data.user)) throw new Error('This account cannot access Admin page');
+  return data.user;
+}
+
 async function tryAutoLogin(){
   var token = localStorage.getItem(DEVICE_TOKEN_KEY);
   if(!token) return false;
@@ -799,19 +817,26 @@ async function tryAutoLogin(){
     if(!res.ok){ localStorage.removeItem(DEVICE_TOKEN_KEY); return false; }
     var data = await res.json();
     if(!data.ok){ localStorage.removeItem(DEVICE_TOKEN_KEY); return false; }
+    var sharedUser = await fetchSharedAdminUser(token);
     // Auto login success
     adminToken = token;
-    currentUser = data.username;
+    currentUser = sharedUser.username || data.username;
     document.getElementById('login-wrap').style.display = 'none';
     document.getElementById('shell').classList.add('visible');
     var avatar = document.querySelector('.avatar');
-    if(avatar) avatar.textContent = data.username.slice(0,2).toUpperCase();
+    if(avatar) avatar.textContent = (currentUser||'??').slice(0,2).toUpperCase();
     var agentInp = document.getElementById('inp-agent-name');
-    if(agentInp) agentInp.value = data.username;
+    if(agentInp) agentInp.value = currentUser;
     initAll();
-    showToast('Welcome back, '+data.username+' ✦ ('+data.device_name+')','green');
+    showToast('Welcome back, '+currentUser+' ✦ ('+data.device_name+')','green');
     return true;
-  }catch(e){ return false; }
+  }catch(e){
+    localStorage.removeItem(DEVICE_TOKEN_KEY);
+    localStorage.removeItem(DEVICE_USER_KEY);
+    adminToken = null;
+    currentUser = null;
+    return false;
+  }
 }
 
 async function doLogin() {
@@ -844,8 +869,9 @@ async function doLogin() {
       }
       localStorage.setItem(DEVICE_TOKEN_KEY, data.token);
       localStorage.setItem(DEVICE_USER_KEY, u);
+      var sharedUser = await fetchSharedAdminUser(data.token);
       adminToken = data.token;
-      currentUser = u;
+      currentUser = sharedUser.username || u;
       showToast('Device trusted for 90 days ✦','green');
     } else {
       // Normal login without trust — keep token in memory for this tab only
@@ -861,25 +887,27 @@ async function doLogin() {
         if(btn){ btn.disabled=false; btn.textContent='Sign in'; }
         return;
       }
+      var sharedUser = await fetchSharedAdminUser(data2.token);
       adminToken = data2.token;
-      currentUser = u;
+      currentUser = sharedUser.username || u;
     }
   } catch(e) {
-    // Fallback: try local credential check
-    if(u !== 'admin'){
-      err.textContent = 'Login failed. Check connection.';
-      err.style.display = 'block';
-      if(btn){ btn.disabled=false; btn.textContent='Sign in'; }
-      return;
-    }
+    localStorage.removeItem(DEVICE_TOKEN_KEY);
+    localStorage.removeItem(DEVICE_USER_KEY);
+    adminToken = null;
+    currentUser = null;
+    err.textContent = e && e.message ? e.message : 'Login failed. Check connection.';
+    err.style.display = 'block';
+    if(btn){ btn.disabled=false; btn.textContent='Sign in'; }
+    return;
   }
   if(btn){ btn.disabled=false; btn.textContent='Sign in'; }
   document.getElementById('login-wrap').style.display = 'none';
   document.getElementById('shell').classList.add('visible');
   var avatar = document.querySelector('.avatar');
-  if(avatar) avatar.textContent = u.slice(0,2).toUpperCase();
+  if(avatar) avatar.textContent = (currentUser||u).slice(0,2).toUpperCase();
   var agentInp = document.getElementById('inp-agent-name');
-  if(agentInp) agentInp.value = u;
+  if(agentInp) agentInp.value = currentUser||u;
   initAll();
 }
 async function doLogout(revokeDevice) {
