@@ -731,6 +731,7 @@ async function tryAutoLogin(){
     var data = await res.json();
     if(!data.ok){ localStorage.removeItem(DEVICE_TOKEN_KEY); return false; }
     // Auto login success
+    adminToken = token;
     currentUser = data.username;
     document.getElementById('login-wrap').style.display = 'none';
     document.getElementById('shell').classList.add('visible');
@@ -774,10 +775,11 @@ async function doLogin() {
       }
       localStorage.setItem(DEVICE_TOKEN_KEY, data.token);
       localStorage.setItem(DEVICE_USER_KEY, u);
+      adminToken = data.token;
       currentUser = u;
       showToast('Device trusted for 90 days ✦','green');
     } else {
-      // Normal login without trust — verify via trust endpoint but don't store
+      // Normal login without trust — keep token in memory for this tab only
       var res2 = await fetch(WORKER_API+'/auth/trust-device',{
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({username:u, password:p, device_name:'no-trust'})
@@ -790,11 +792,7 @@ async function doLogin() {
         if(btn){ btn.disabled=false; btn.textContent='Sign in'; }
         return;
       }
-      // Issue token but immediately delete it (one-time login)
-      await fetch(WORKER_API+'/auth/trust-device',{
-        method:'DELETE', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({token: data2.token})
-      });
+      adminToken = data2.token;
       currentUser = u;
     }
   } catch(e) {
@@ -816,8 +814,8 @@ async function doLogin() {
   initAll();
 }
 async function doLogout(revokeDevice) {
+  var token = localStorage.getItem(DEVICE_TOKEN_KEY) || adminToken;
   if(revokeDevice !== false){
-    var token = localStorage.getItem(DEVICE_TOKEN_KEY);
     if(token){
       try{
         await fetch(WORKER_API+'/auth/trust-device',{
@@ -1020,11 +1018,14 @@ async function loadAccounts(){
       };
     });
   } catch(e) {
-    accounts=[
-      {id:1,username:'admin',email:'admin@ibelieve.app',role:'admin',status:'active',site_roles:{icut:'admin',ibelieve:'admin',admin:'admin'}},
-      {id:2,username:'kim',email:'kim@ibelieve.app',role:'user',status:'active',site_roles:{ibelieve:'user'}},
-      {id:3,username:'jane',email:'jane@ibelieve.app',role:'user',status:'active',site_roles:{icut:'user'}}
-    ];
+    accounts=[];
+    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--danger);font-size:13px;">Failed to load users: '+escHtml(e.message||'Unknown error')+'</td></tr>';
+    document.getElementById('btn-mod').disabled=true;
+    document.getElementById('btn-del').disabled=true;
+    document.getElementById('sel-hint').textContent='';
+    document.getElementById('acct-count').textContent='0';
+    showToast('Failed to load users: '+(e.message||'Unknown error'),'red');
+    return;
   }
   renderAccounts();
 }
