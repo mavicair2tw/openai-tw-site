@@ -1144,12 +1144,7 @@ async function confirmModal(){
       var sel=accounts[selIdx];
       var body={username:u,email:e,role:role,status:status,site_roles:siteRoles};
       if(pw) body.password=pw;
-      try{
-        await apiFetch('/admin/users/'+sel.id,{method:'PATCH',body:JSON.stringify(body)});
-      } catch(e2){
-        /* fallback: update locally */
-        accounts[selIdx]=Object.assign({},sel,{username:u,email:e,role:role,status:status,site_roles:siteRoles});
-      }
+      await apiFetch('/admin/users/'+sel.id,{method:'PATCH',body:JSON.stringify(body)});
       showToast('Account "'+u+'" updated','blue');
       closeModal(); selIdx=null; await loadAccounts();
 
@@ -1166,14 +1161,7 @@ async function confirmModal(){
           await apiFetch('/users/'+sel.id,{method:'DELETE'});
           deleted=true;
         } catch(e2){
-          /* remove locally so UI reflects the intent */
-          accounts.splice(selIdx,1);
-          selIdx=null;
-          renderAccounts();
-          showToast('"'+sel.username+'" removed from view (API: '+apiErr.message+')','warn');
-          closeModal();
-          btn.disabled=false; btn.textContent=origText;
-          return;
+          throw apiErr;
         }
       }
       if(deleted){
