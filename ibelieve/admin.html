@@ -154,6 +154,11 @@ td{padding:10px 14px;vertical-align:middle;}
 .cost-token{background:rgba(16,185,129,.1);color:#6ee7b7;border-color:rgba(16,185,129,.35);}
 .cost-api{background:rgba(249,115,22,.1);color:#fdba74;border-color:rgba(249,115,22,.35);}
 .cost-mixed{background:rgba(59,130,246,.1);color:#93c5fd;border-color:rgba(59,130,246,.35);}
+.usage-badge{display:inline-flex;align-items:center;justify-content:center;min-width:104px;padding:3px 8px;border-radius:999px;border:1px solid var(--border2);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;}
+.usage-llm{background:rgba(16,185,129,.1);color:#6ee7b7;border-color:rgba(16,185,129,.35);}
+.usage-generation{background:rgba(168,85,247,.1);color:#d8b4fe;border-color:rgba(168,85,247,.35);}
+.usage-speech{background:rgba(59,130,246,.1);color:#93c5fd;border-color:rgba(59,130,246,.35);}
+.usage-other{background:rgba(148,163,184,.1);color:#cbd5e1;border-color:rgba(148,163,184,.35);}
 @media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr);}.dash-grid{grid-template-columns:1fr;}.content{padding:14px;}.nav{padding:0 14px;}}
 @media(max-width:980px){.token-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
 .cm-link-row{display:flex;align-items:flex-start;gap:8px;padding:6px 10px;cursor:pointer;border-bottom:0.5px solid var(--border);font-size:12px;}
@@ -384,17 +389,18 @@ System info</div>
             <thead>
               <tr>
                 <th style="width:14%">Provider</th>
-                <th style="width:24%">Model</th>
-                <th style="width:12%">Cost Basis</th>
-                <th style="width:10%">Events</th>
-                <th style="width:10%">Input</th>
-                <th style="width:10%">Output</th>
-                <th style="width:10%">Total</th>
+                <th style="width:20%">Model</th>
+                <th style="width:11%">Cost Basis</th>
+                <th style="width:13%">Usage Type</th>
+                <th style="width:8%">Events</th>
+                <th style="width:8%">Input</th>
+                <th style="width:8%">Output</th>
+                <th style="width:8%">Total</th>
                 <th style="width:10%">Cost</th>
               </tr>
             </thead>
             <tbody id="token-body">
-              <tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">Loading token data...</td></tr>
+              <tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">Loading token data...</td></tr>
             </tbody>
           </table>
         </div>
@@ -1093,6 +1099,18 @@ function getCostBasis(row){
   return { label:'Unknown', className:'cost-mixed' };
 }
 
+function getUsageType(row){
+  var operation=String(row&&row.operation||'').toLowerCase();
+  var model=String(row&&row.model||'').toLowerCase();
+  if(operation==='chat' || operation==='completion' || operation==='responses') return { label:'LLM', className:'usage-llm' };
+  if(operation==='image' || operation==='image-edit' || operation==='video') return { label:'Generation API', className:'usage-generation' };
+  if(operation==='speech' || operation==='tts' || operation==='stt' || operation==='transcribe' || operation==='transcription') return { label:'Speech API', className:'usage-speech' };
+  if(model.includes('whisper') || model.includes('tts') || model.includes('speech') || model.includes('transcribe') || model.includes('audio')) return { label:'Speech API', className:'usage-speech' };
+  if(model.includes('gpt') || model.includes('grok') || model.includes('gemini') || model.includes('claude') || model.includes('codex')) return { label:'LLM', className:'usage-llm' };
+  if(model.includes('imagen') || model.includes('veo') || model.includes('sora') || model.includes('dall') || model.includes('imagine')) return { label:'Generation API', className:'usage-generation' };
+  return { label:'Other API', className:'usage-other' };
+}
+
 function getTokenProviderLabel(){
   var found=TOKEN_PROVIDER_FILTERS.find(function(item){ return item.key===tokenProviderFilter; });
   return found ? found.label : 'All';
@@ -1269,15 +1287,17 @@ function renderTokenTable(summary){
   document.getElementById('token-current-period').textContent='Period: '+summary.spec.label+' • Provider: '+getTokenProviderLabel();
   document.getElementById('token-updated-at').textContent='Updated: '+(tokenUsageCache && tokenUsageCache.anchor_at?new Date(tokenUsageCache.anchor_at).toLocaleString():'—');
   if(!summary.rows.length){
-    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">No token usage found for this period.</td></tr>';
+    tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">No token usage found for this period.</td></tr>';
     return;
   }
   tbody.innerHTML=summary.rows.map(function(row){
     var basis=getCostBasis(row);
+    var usageType=getUsageType(row);
     return '<tr>'
       +'<td>'+providerBadge(row.provider)+'</td>'
       +'<td style="font-weight:500;word-break:break-word;">'+escHtml(row.model)+'</td>'
       +'<td><span class="cost-badge '+basis.className+'">'+basis.label+'</span></td>'
+      +'<td><span class="usage-badge '+usageType.className+'">'+usageType.label+'</span></td>'
       +'<td class="mono">'+formatter.format(row.events||0)+'</td>'
       +'<td class="mono">'+formatTokenMetric(row,'input_tokens')+'</td>'
       +'<td class="mono">'+formatTokenMetric(row,'output_tokens')+'</td>'
