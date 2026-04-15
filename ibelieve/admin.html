@@ -364,7 +364,7 @@ System info</div>
     <div id="panel-token" class="panel">
       <div class="card">
         <div class="card-title">Token & model spend</div>
-        <div class="token-note">Usage and cost are loaded from the live iCut ledger. Grok image and video generation costs now come from the worker’s recorded API spend.</div>
+        <div class="token-note">Usage and cost are loaded from the live iCut ledger. Grok image and video generation costs now come from the worker’s recorded API spend. Some generation APIs return cost without token counts, so those rows show dashes for Input, Output, and Total.</div>
         <div id="token-period-grid" class="token-grid"></div>
         <div id="token-provider-filters" class="token-filters"></div>
         <div class="token-meta">
@@ -1072,6 +1072,14 @@ function formatMoney(v){
   return '$'+v.toFixed(v<1?4:2);
 }
 
+function formatTokenMetric(row, key){
+  var value=Number(row&&row[key]||0);
+  var hasAnyTokens=Number(row&&row.input_tokens||0)>0 || Number(row&&row.output_tokens||0)>0 || Number(row&&row.total_tokens||0)>0;
+  var hasCostOnly=Number(row&&row.total_cost_usd||0)>0 && !hasAnyTokens;
+  if(hasCostOnly) return '—';
+  return formatter.format(value);
+}
+
 function getTokenProviderLabel(){
   var found=TOKEN_PROVIDER_FILTERS.find(function(item){ return item.key===tokenProviderFilter; });
   return found ? found.label : 'All';
@@ -1256,9 +1264,9 @@ function renderTokenTable(summary){
       +'<td>'+providerBadge(row.provider)+'</td>'
       +'<td style="font-weight:500;word-break:break-word;">'+escHtml(row.model)+'</td>'
       +'<td class="mono">'+formatter.format(row.events||0)+'</td>'
-      +'<td class="mono">'+formatter.format(row.input_tokens)+'</td>'
-      +'<td class="mono">'+formatter.format(row.output_tokens)+'</td>'
-      +'<td class="mono">'+formatter.format(row.total_tokens)+'</td>'
+      +'<td class="mono">'+formatTokenMetric(row,'input_tokens')+'</td>'
+      +'<td class="mono">'+formatTokenMetric(row,'output_tokens')+'</td>'
+      +'<td class="mono">'+formatTokenMetric(row,'total_tokens')+'</td>'
       +'<td class="mono">'+formatMoney(row.total_cost_usd)+'</td>'
       +'</tr>';
   }).join('');
