@@ -360,7 +360,7 @@ System info</div>
     <div id="panel-token" class="panel">
       <div class="card">
         <div class="card-title">Token & model spend</div>
-        <div class="token-note">Usage is aggregated from the existing token dashboard dataset. Cost is estimated from per-model token rates when pricing is configured. If cached-token detail is missing from the dataset, the estimate uses standard input/output rates.</div>
+        <div class="token-note">Usage and cost are loaded from the live iCut ledger. Grok image and video generation costs now come from the worker’s recorded API spend.</div>
         <div id="token-period-grid" class="token-grid"></div>
         <div class="token-meta">
           <span id="token-current-period">Period: Daily</span>
@@ -376,11 +376,11 @@ System info</div>
               <tr>
                 <th style="width:14%">Provider</th>
                 <th style="width:26%">Model</th>
-                <th style="width:14%">Sessions</th>
+                <th style="width:14%">Events</th>
                 <th style="width:14%">Input</th>
                 <th style="width:14%">Output</th>
                 <th style="width:14%">Total</th>
-                <th style="width:14%">Est. Cost</th>
+                <th style="width:14%">Cost</th>
               </tr>
             </thead>
             <tbody id="token-body">
@@ -975,7 +975,6 @@ function buildHealth(){
 
 /* TOKEN USAGE */
 var formatter=new Intl.NumberFormat('en-US');
-var TOKEN_DATA_PATHS=['../token-dashboard/data','/token-dashboard/data'];
 var TOKEN_PERIODS=[
   {key:'daily',label:'Daily',days:1},
   {key:'weekly',label:'Weekly',days:7},
@@ -985,27 +984,20 @@ var TOKEN_PERIODS=[
 ];
 var tokenUsageCache=null;
 var tokenActivePeriod='daily';
-var TOKEN_PRICING_USD_PER_1M={
-  // Rates are USD per 1M tokens.
-  'gpt-5.1-codex': { input: 1.25, output: 10.0 },
-  'gpt-5.4': { input: 2.5, output: 15.0 },
-  'openai/gpt-5.4': { input: 2.5, output: 15.0 },
-  'gpt-5.4-mini': { input: 0.75, output: 4.5 },
-  'openai/gpt-5.4-mini': { input: 0.75, output: 4.5 },
-  'gpt-5.4-nano': { input: 0.2, output: 1.25 },
-  'openai/gpt-5.4-nano': { input: 0.2, output: 1.25 }
-};
 
-async function fetchTokenJson(file){
-  for(var i=0;i<TOKEN_DATA_PATHS.length;i++){
-    var base=TOKEN_DATA_PATHS[i];
+async function fetchTokenUsageSummary(){
+  var headers={};
+  if(adminToken) headers.Authorization='Bearer '+adminToken;
+  var res=await fetch(TOKEN_API+'/admin/token-usage?t='+(Date.now()), { headers: headers });
+  if(!res.ok){
+    var msg='Failed to load token usage';
     try{
-      var res=await fetch(base+'/'+file+'?t='+(Date.now()));
-      if(!res.ok) continue;
-      return await res.json();
+      var data=await res.json();
+      if(data && data.error) msg=data.error;
     }catch(err){}
+    throw new Error(msg);
   }
-  throw new Error('Failed to load token data file: '+file);
+  return await res.json();
 }
 
 function inferProviderFromModel(model){
@@ -1022,80 +1014,26 @@ function providerBadge(provider){
   return '<span class="provider-badge provider-'+key+'">'+escHtml(provider||'OTHER')+'</span>';
 }
 
-function getModelPricing(model){
-  return TOKEN_PRICING_USD_PER_1M[model] || null;
-}
-
-function estimateModelCost(model,inputTokens,outputTokens){
-  var pricing=getModelPricing(model);
-  if(!pricing) return null;
-  return ((inputTokens||0)/1000000)*(pricing.input||0) + ((outputTokens||0)/1000000)*(pricing.output||0);
-}
-
 function formatMoney(v){
   if(v===null || v===undefined) return '—';
   if(v===0) return '$0.00';
   return '$'+v.toFixed(v<1?4:2);
 }
 
-function aggregateTokenPeriodRows(sessions,periodKey){
-  var spec=TOKEN_PERIODS.find(function(p){return p.key===periodKey;}) || TOKEN_PERIODS[0];
-  var latestMs=sessions.reduce(function(max,s){
-    var ts=Date.parse(s.started_at||0);
-    return isFinite(ts) && ts>max ? ts : max;
-  },0);
-  var cutoff=spec.days?latestMs-(spec.days*24*60*60*1000):null;
-  var rowsMap={};
-  var totals={input:0,output:0,total:0,cost:null};
-
-  sessions.forEach(function(session){
-    var ts=Date.parse(session.started_at||0);
-    if(cutoff!==null && (!isFinite(ts) || ts<cutoff)) return;
-    var perModel=session.per_model||{};
-    Object.keys(perModel).forEach(function(model){
-      var stats=perModel[model]||{};
-      if(!rowsMap[model]){
-        rowsMap[model]={
-          provider:inferProviderFromModel(model),
-          model:model,
-          sessions:0,
-          input_tokens:0,
-          output_tokens:0,
-          total_tokens:0,
-          cost:0,
-          hasCost:false
-        };
-      }
-      var row=rowsMap[model];
-      row.sessions += 1;
-      row.input_tokens += Number(stats.input_tokens||0);
-      row.output_tokens += Number(stats.output_tokens||0);
-      row.total_tokens += Number(stats.total_tokens||0);
-      var est=estimateModelCost(model, Number(stats.input_tokens||0), Number(stats.output_tokens||0));
-      if(est!==null){ row.cost += est; row.hasCost=true; }
-    });
-  });
-
-  var rows=Object.keys(rowsMap).map(function(model){ return rowsMap[model]; }).sort(function(a,b){ return b.total_tokens-a.total_tokens; });
-  rows.forEach(function(row){
-    totals.input += row.input_tokens;
-    totals.output += row.output_tokens;
-    totals.total += row.total_tokens;
-    if(row.hasCost){ totals.cost = (totals.cost||0) + row.cost; }
-  });
-
-  return { spec:spec, rows:rows, totals:totals, latestMs:latestMs };
+function getTokenPeriodSummary(periodKey){
+  if(!tokenUsageCache || !tokenUsageCache.periods) return null;
+  return tokenUsageCache.periods[periodKey] || null;
 }
 
-function renderTokenPeriodCards(sessions){
+function renderTokenPeriodCards(){
   var grid=document.getElementById('token-period-grid');
   grid.innerHTML=TOKEN_PERIODS.map(function(period){
-    var data=aggregateTokenPeriodRows(sessions,period.key);
+    var data=getTokenPeriodSummary(period.key) || { totals:{ total_tokens:0, total_cost_usd:null } };
     var active=(tokenActivePeriod===period.key)?' active':'';
     return '<button type="button" class="token-period'+active+'" onclick="selectTokenPeriod(\''+period.key+'\')">'
       +'<div class="token-period-label">'+period.label+'</div>'
-      +'<div class="token-period-val">'+formatter.format(data.totals.total)+'</div>'
-      +'<div class="token-period-sub">'+formatMoney(data.totals.cost)+'</div>'
+      +'<div class="token-period-val">'+formatter.format(Number((data.totals&&data.totals.total_tokens)||0))+'</div>'
+      +'<div class="token-period-sub">'+formatMoney(data.totals?data.totals.total_cost_usd:null)+'</div>'
       +'</button>';
   }).join('');
 }
@@ -1103,7 +1041,7 @@ function renderTokenPeriodCards(sessions){
 function renderTokenTable(summary){
   var tbody=document.getElementById('token-body');
   document.getElementById('token-current-period').textContent='Period: '+summary.spec.label;
-  document.getElementById('token-updated-at').textContent='Dataset anchor: '+(summary.latestMs?new Date(summary.latestMs).toLocaleString():'—');
+  document.getElementById('token-updated-at').textContent='Updated: '+(tokenUsageCache && tokenUsageCache.anchor_at?new Date(tokenUsageCache.anchor_at).toLocaleString():'—');
   if(!summary.rows.length){
     tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">No token usage found for this period.</td></tr>';
     return;
@@ -1112,30 +1050,31 @@ function renderTokenTable(summary){
     return '<tr>'
       +'<td>'+providerBadge(row.provider)+'</td>'
       +'<td style="font-weight:500;word-break:break-word;">'+escHtml(row.model)+'</td>'
-      +'<td class="mono">'+formatter.format(row.sessions)+'</td>'
+      +'<td class="mono">'+formatter.format(row.events||0)+'</td>'
       +'<td class="mono">'+formatter.format(row.input_tokens)+'</td>'
       +'<td class="mono">'+formatter.format(row.output_tokens)+'</td>'
       +'<td class="mono">'+formatter.format(row.total_tokens)+'</td>'
-      +'<td class="mono">'+formatMoney(row.hasCost?row.cost:null)+'</td>'
+      +'<td class="mono">'+formatMoney(row.total_cost_usd)+'</td>'
       +'</tr>';
   }).join('');
 }
 
 function selectTokenPeriod(periodKey){
   tokenActivePeriod=periodKey;
-  if(!tokenUsageCache || !tokenUsageCache.sessions) return;
-  renderTokenPeriodCards(tokenUsageCache.sessions);
-  renderTokenTable(aggregateTokenPeriodRows(tokenUsageCache.sessions, tokenActivePeriod));
+  if(!tokenUsageCache || !tokenUsageCache.periods) return;
+  renderTokenPeriodCards();
+  var period=getTokenPeriodSummary(tokenActivePeriod) || { rows:[], totals:{}, key:tokenActivePeriod };
+  var spec=TOKEN_PERIODS.find(function(p){ return p.key===tokenActivePeriod; }) || TOKEN_PERIODS[0];
+  renderTokenTable({ spec:spec, rows:period.rows||[], totals:period.totals||{} });
 }
 
 async function loadTokenUsage(){
   var tbody=document.getElementById('token-body');
   tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">Loading token usage...</td></tr>';
   try{
-    var sessions=await fetchTokenJson('sessions_summary.json');
-    tokenUsageCache={sessions:sessions||[]};
-    renderTokenPeriodCards(tokenUsageCache.sessions);
-    renderTokenTable(aggregateTokenPeriodRows(tokenUsageCache.sessions, tokenActivePeriod));
+    tokenUsageCache=await fetchTokenUsageSummary();
+    renderTokenPeriodCards();
+    selectTokenPeriod(tokenActivePeriod);
   }catch(e){
     tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--danger);font-size:13px;">Failed to load token data: '+escHtml(e.message||'Unknown error')+'</td></tr>';
     document.getElementById('token-updated-at').textContent='Load failed';
@@ -1145,6 +1084,7 @@ async function loadTokenUsage(){
 /* ACCOUNTS */
 var API='https://openai-tw-forum.googselect.workers.dev/api/ibelieve';
 var POSTS_API='https://openai-tw-forum.googselect.workers.dev/api/ibelieve';
+var TOKEN_API='https://icut2.openai-tw.com/api/ibelieve';
 var adminToken=null;
 var currentUser=null;
 var accounts=[];
