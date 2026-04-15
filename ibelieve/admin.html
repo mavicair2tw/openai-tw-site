@@ -141,6 +141,10 @@ td{padding:10px 14px;vertical-align:middle;}
 .token-period-sub{font-size:11px;color:var(--text-muted);margin-top:6px;}
 .token-meta{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--text-muted);margin-bottom:12px;}
 .token-note{font-size:12px;color:var(--text-muted);margin-bottom:12px;}
+.token-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.token-filter-btn{background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:7px 12px;font-size:12px;color:var(--text-dim);cursor:pointer;transition:border-color .15s,color .15s,transform .15s;}
+.token-filter-btn:hover{border-color:var(--border2);color:var(--text);transform:translateY(-1px);}
+.token-filter-btn.active{border-color:var(--accent);color:#bfdbfe;box-shadow:0 0 0 1px rgba(59,130,246,.25) inset;}
 .provider-badge{display:inline-flex;align-items:center;justify-content:center;min-width:76px;padding:3px 8px;border-radius:999px;border:1px solid var(--border2);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;}
 .provider-openai{background:rgba(16,185,129,.1);color:#6ee7b7;border-color:rgba(16,185,129,.35);}
 .provider-google{background:rgba(59,130,246,.1);color:#93c5fd;border-color:rgba(59,130,246,.35);}
@@ -362,6 +366,7 @@ System info</div>
         <div class="card-title">Token & model spend</div>
         <div class="token-note">Usage and cost are loaded from the live iCut ledger. Grok image and video generation costs now come from the worker’s recorded API spend.</div>
         <div id="token-period-grid" class="token-grid"></div>
+        <div id="token-provider-filters" class="token-filters"></div>
         <div class="token-meta">
           <span id="token-current-period">Period: Daily</span>
           <span id="token-updated-at">Loading…</span>
@@ -983,8 +988,15 @@ var TOKEN_PERIODS=[
   {key:'annual',label:'Annual',days:365},
   {key:'all',label:'All',days:null}
 ];
+var TOKEN_PROVIDER_FILTERS=[
+  {key:'ALL',label:'All'},
+  {key:'GROK',label:'Grok'},
+  {key:'OPENAI',label:'OpenAI'},
+  {key:'GOOGLE',label:'Google'}
+];
 var tokenUsageCache=null;
 var tokenActivePeriod='daily';
+var tokenProviderFilter='ALL';
 var TOKEN_PRICING_USD_PER_1M={
   'gpt-5.1-codex': { input: 1.25, output: 10.0 },
   'gpt-5.4': { input: 2.5, output: 15.0 },
@@ -1058,6 +1070,27 @@ function formatMoney(v){
   if(v===null || v===undefined) return '—';
   if(v===0) return '$0.00';
   return '$'+v.toFixed(v<1?4:2);
+}
+
+function getTokenProviderLabel(){
+  var found=TOKEN_PROVIDER_FILTERS.find(function(item){ return item.key===tokenProviderFilter; });
+  return found ? found.label : 'All';
+}
+
+function filterTokenPeriodSummary(summary){
+  if(!summary) return { totals:{input_tokens:0,output_tokens:0,cached_tokens:0,total_tokens:0,total_cost_usd:0}, rows:[] };
+  var rows=(summary.rows||[]).filter(function(row){
+    return tokenProviderFilter==='ALL' || String(row.provider||'OTHER').toUpperCase()===tokenProviderFilter;
+  });
+  var totals={input_tokens:0,output_tokens:0,cached_tokens:0,total_tokens:0,total_cost_usd:0};
+  rows.forEach(function(row){
+    totals.input_tokens += Number(row.input_tokens||0);
+    totals.output_tokens += Number(row.output_tokens||0);
+    totals.cached_tokens += Number(row.cached_tokens||0);
+    totals.total_tokens += Number(row.total_tokens||0);
+    totals.total_cost_usd += Number(row.total_cost_usd||0);
+  });
+  return { key:summary.key, totals:totals, rows:rows };
 }
 
 function buildLegacyTokenSummary(sessions){
@@ -1189,10 +1222,18 @@ function getTokenPeriodSummary(periodKey){
   return tokenUsageCache.periods[periodKey] || null;
 }
 
+function renderTokenProviderFilters(){
+  var root=document.getElementById('token-provider-filters');
+  root.innerHTML=TOKEN_PROVIDER_FILTERS.map(function(item){
+    var active=tokenProviderFilter===item.key?' active':'';
+    return '<button type="button" class="token-filter-btn'+active+'" onclick="selectTokenProvider(\''+item.key+'\')">'+item.label+'</button>';
+  }).join('');
+}
+
 function renderTokenPeriodCards(){
   var grid=document.getElementById('token-period-grid');
   grid.innerHTML=TOKEN_PERIODS.map(function(period){
-    var data=getTokenPeriodSummary(period.key) || { totals:{ total_tokens:0, total_cost_usd:null } };
+    var data=filterTokenPeriodSummary(getTokenPeriodSummary(period.key));
     var active=(tokenActivePeriod===period.key)?' active':'';
     return '<button type="button" class="token-period'+active+'" onclick="selectTokenPeriod(\''+period.key+'\')">'
       +'<div class="token-period-label">'+period.label+'</div>'
@@ -1204,7 +1245,7 @@ function renderTokenPeriodCards(){
 
 function renderTokenTable(summary){
   var tbody=document.getElementById('token-body');
-  document.getElementById('token-current-period').textContent='Period: '+summary.spec.label;
+  document.getElementById('token-current-period').textContent='Period: '+summary.spec.label+' • Provider: '+getTokenProviderLabel();
   document.getElementById('token-updated-at').textContent='Updated: '+(tokenUsageCache && tokenUsageCache.anchor_at?new Date(tokenUsageCache.anchor_at).toLocaleString():'—');
   if(!summary.rows.length){
     tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">No token usage found for this period.</td></tr>';
@@ -1223,11 +1264,19 @@ function renderTokenTable(summary){
   }).join('');
 }
 
+function selectTokenProvider(filterKey){
+  tokenProviderFilter=filterKey;
+  if(!tokenUsageCache || !tokenUsageCache.periods) return;
+  renderTokenProviderFilters();
+  renderTokenPeriodCards();
+  selectTokenPeriod(tokenActivePeriod);
+}
+
 function selectTokenPeriod(periodKey){
   tokenActivePeriod=periodKey;
   if(!tokenUsageCache || !tokenUsageCache.periods) return;
   renderTokenPeriodCards();
-  var period=getTokenPeriodSummary(tokenActivePeriod) || { rows:[], totals:{}, key:tokenActivePeriod };
+  var period=filterTokenPeriodSummary(getTokenPeriodSummary(tokenActivePeriod));
   var spec=TOKEN_PERIODS.find(function(p){ return p.key===tokenActivePeriod; }) || TOKEN_PERIODS[0];
   renderTokenTable({ spec:spec, rows:period.rows||[], totals:period.totals||{} });
 }
@@ -1244,6 +1293,7 @@ async function loadTokenUsage(){
     var legacySummary=results[1].status==='fulfilled' ? buildLegacyTokenSummary(results[1].value||[]) : null;
     tokenUsageCache=mergeTokenSummaries(liveSummary, legacySummary);
     if(!tokenUsageCache) throw new Error('Failed to load token data');
+    renderTokenProviderFilters();
     renderTokenPeriodCards();
     selectTokenPeriod(tokenActivePeriod);
   }catch(e){
