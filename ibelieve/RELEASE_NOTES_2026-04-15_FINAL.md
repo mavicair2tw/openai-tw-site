@@ -30,6 +30,7 @@ Main outcomes:
 - Can manage username, email, password, role, status, and site roles
 - Site-role dropdowns now change based on the selected global role
 - Invalid combinations are no longer offered in the UI
+- Admin page shell now verifies shared admin permission before opening, so plain `user` accounts can no longer enter the admin UI and tabs
 
 ## Token Dashboard
 
