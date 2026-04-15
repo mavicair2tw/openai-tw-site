@@ -132,7 +132,22 @@ td{padding:10px 14px;vertical-align:middle;}
 .toast.red{background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-border);}
 .toast.warn{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-border);}
 .toast.blue{background:var(--info-bg);color:var(--info);border:1px solid var(--info-border);}
+.token-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:14px;}
+.token-period{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 14px;cursor:pointer;transition:border-color .15s,transform .15s;}
+.token-period:hover{border-color:var(--border2);transform:translateY(-1px);}
+.token-period.active{border-color:var(--accent);box-shadow:0 0 0 1px rgba(59,130,246,.25) inset;}
+.token-period-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
+.token-period-val{font-size:18px;font-weight:600;font-family:var(--mono);}
+.token-period-sub{font-size:11px;color:var(--text-muted);margin-top:6px;}
+.token-meta{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--text-muted);margin-bottom:12px;}
+.token-note{font-size:12px;color:var(--text-muted);margin-bottom:12px;}
+.provider-badge{display:inline-flex;align-items:center;justify-content:center;min-width:76px;padding:3px 8px;border-radius:999px;border:1px solid var(--border2);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;}
+.provider-openai{background:rgba(16,185,129,.1);color:#6ee7b7;border-color:rgba(16,185,129,.35);}
+.provider-google{background:rgba(59,130,246,.1);color:#93c5fd;border-color:rgba(59,130,246,.35);}
+.provider-grok{background:rgba(168,85,247,.1);color:#d8b4fe;border-color:rgba(168,85,247,.35);}
+.provider-other{background:rgba(148,163,184,.1);color:#cbd5e1;border-color:rgba(148,163,184,.35);}
 @media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr);}.dash-grid{grid-template-columns:1fr;}.content{padding:14px;}.nav{padding:0 14px;}}
+@media(max-width:980px){.token-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
 .cm-link-row{display:flex;align-items:flex-start;gap:8px;padding:6px 10px;cursor:pointer;border-bottom:0.5px solid var(--border);font-size:12px;}
 .cm-link-row:hover{background:var(--surface2);}
 </style>
@@ -187,6 +202,10 @@ td{padding:10px 14px;vertical-align:middle;}
     <div class="tab" onclick="switchTab('account',this)">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5"/></svg>
       Account
+    </div>
+    <div class="tab" onclick="switchTab('token',this)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 4h12v8H2z"/><path d="M5 7h6M5 10h3"/></svg>
+      Token
     </div>
     <div class="tab" onclick="switchTab('posts',this)">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="9" height="3" rx="1"/></svg>
@@ -335,6 +354,40 @@ System info</div>
         <div class="field-row"><span class="field-label">Host</span><span class="field-val mono">ibelieve-backend.vercel.app</span></div>
         <div class="field-row"><span class="field-label">Environment</span><span class="field-val">Production</span></div>
         <div class="field-row"><span class="field-label">Total accounts</span><span class="field-val" id="acct-count">-</span></div>
+      </div>
+    </div>
+
+    <div id="panel-token" class="panel">
+      <div class="card">
+        <div class="card-title">Token & model spend</div>
+        <div class="token-note">Usage is aggregated from the existing token dashboard dataset. Cost is shown as an estimate only when pricing is configured for a model.</div>
+        <div id="token-period-grid" class="token-grid"></div>
+        <div class="token-meta">
+          <span id="token-current-period">Period: Daily</span>
+          <span id="token-updated-at">Loading…</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Model breakdown</div>
+        <div class="atbl-wrap" style="margin-bottom:0;">
+          <table class="atbl">
+            <thead>
+              <tr>
+                <th style="width:14%">Provider</th>
+                <th style="width:26%">Model</th>
+                <th style="width:14%">Sessions</th>
+                <th style="width:14%">Input</th>
+                <th style="width:14%">Output</th>
+                <th style="width:14%">Total</th>
+                <th style="width:14%">Est. Cost</th>
+              </tr>
+            </thead>
+            <tbody id="token-body">
+              <tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">Loading token data...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -920,6 +973,168 @@ function buildHealth(){
   }).join('');
 }
 
+/* TOKEN USAGE */
+var TOKEN_DATA_PATHS=['../token-dashboard/data','/token-dashboard/data'];
+var TOKEN_PERIODS=[
+  {key:'daily',label:'Daily',days:1},
+  {key:'weekly',label:'Weekly',days:7},
+  {key:'monthly',label:'Monthly',days:30},
+  {key:'annual',label:'Annual',days:365},
+  {key:'all',label:'All',days:null}
+];
+var tokenUsageCache=null;
+var tokenActivePeriod='daily';
+var TOKEN_PRICING_USD_PER_1M={
+  // Fill this table with exact provider pricing when available.
+  // Example shape: 'gpt-5.1-codex': { input: 1.5, output: 6.0 }
+};
+
+async function fetchTokenJson(file){
+  for(var i=0;i<TOKEN_DATA_PATHS.length;i++){
+    var base=TOKEN_DATA_PATHS[i];
+    try{
+      var res=await fetch(base+'/'+file+'?t='+(Date.now()));
+      if(!res.ok) continue;
+      return await res.json();
+    }catch(err){}
+  }
+  throw new Error('Failed to load token data file: '+file);
+}
+
+function inferProviderFromModel(model){
+  var s=String(model||'').toLowerCase();
+  if(!s) return 'OTHER';
+  if(s.includes('grok') || s.includes('xai')) return 'GROK';
+  if(s.includes('gemini') || s.includes('google') || s.includes('veo') || s.includes('imagen')) return 'GOOGLE';
+  if(s.includes('gpt') || s.includes('openai') || s.includes('codex') || s.includes('o1') || s.includes('o3') || s.includes('o4') || s.includes('sora') || s.includes('dall')) return 'OPENAI';
+  return 'OTHER';
+}
+
+function providerBadge(provider){
+  var key=String(provider||'OTHER').toLowerCase();
+  return '<span class="provider-badge provider-'+key+'">'+escHtml(provider||'OTHER')+'</span>';
+}
+
+function getModelPricing(model){
+  return TOKEN_PRICING_USD_PER_1M[model] || null;
+}
+
+function estimateModelCost(model,inputTokens,outputTokens){
+  var pricing=getModelPricing(model);
+  if(!pricing) return null;
+  return ((inputTokens||0)/1000000)*(pricing.input||0) + ((outputTokens||0)/1000000)*(pricing.output||0);
+}
+
+function formatMoney(v){
+  if(v===null || v===undefined) return '—';
+  if(v===0) return '$0.00';
+  return '$'+v.toFixed(v<1?4:2);
+}
+
+function aggregateTokenPeriodRows(sessions,periodKey){
+  var spec=TOKEN_PERIODS.find(function(p){return p.key===periodKey;}) || TOKEN_PERIODS[0];
+  var latestMs=sessions.reduce(function(max,s){
+    var ts=Date.parse(s.started_at||0);
+    return isFinite(ts) && ts>max ? ts : max;
+  },0);
+  var cutoff=spec.days?latestMs-(spec.days*24*60*60*1000):null;
+  var rowsMap={};
+  var totals={input:0,output:0,total:0,cost:null};
+
+  sessions.forEach(function(session){
+    var ts=Date.parse(session.started_at||0);
+    if(cutoff!==null && (!isFinite(ts) || ts<cutoff)) return;
+    var perModel=session.per_model||{};
+    Object.keys(perModel).forEach(function(model){
+      var stats=perModel[model]||{};
+      if(!rowsMap[model]){
+        rowsMap[model]={
+          provider:inferProviderFromModel(model),
+          model:model,
+          sessions:0,
+          input_tokens:0,
+          output_tokens:0,
+          total_tokens:0,
+          cost:0,
+          hasCost:false
+        };
+      }
+      var row=rowsMap[model];
+      row.sessions += 1;
+      row.input_tokens += Number(stats.input_tokens||0);
+      row.output_tokens += Number(stats.output_tokens||0);
+      row.total_tokens += Number(stats.total_tokens||0);
+      var est=estimateModelCost(model, Number(stats.input_tokens||0), Number(stats.output_tokens||0));
+      if(est!==null){ row.cost += est; row.hasCost=true; }
+    });
+  });
+
+  var rows=Object.keys(rowsMap).map(function(model){ return rowsMap[model]; }).sort(function(a,b){ return b.total_tokens-a.total_tokens; });
+  rows.forEach(function(row){
+    totals.input += row.input_tokens;
+    totals.output += row.output_tokens;
+    totals.total += row.total_tokens;
+    if(row.hasCost){ totals.cost = (totals.cost||0) + row.cost; }
+  });
+
+  return { spec:spec, rows:rows, totals:totals, latestMs:latestMs };
+}
+
+function renderTokenPeriodCards(sessions){
+  var grid=document.getElementById('token-period-grid');
+  grid.innerHTML=TOKEN_PERIODS.map(function(period){
+    var data=aggregateTokenPeriodRows(sessions,period.key);
+    var active=(tokenActivePeriod===period.key)?' active':'';
+    return '<button type="button" class="token-period'+active+'" onclick="selectTokenPeriod(\''+period.key+'\')">'
+      +'<div class="token-period-label">'+period.label+'</div>'
+      +'<div class="token-period-val">'+formatter.format(data.totals.total)+'</div>'
+      +'<div class="token-period-sub">'+formatMoney(data.totals.cost)+'</div>'
+      +'</button>';
+  }).join('');
+}
+
+function renderTokenTable(summary){
+  var tbody=document.getElementById('token-body');
+  document.getElementById('token-current-period').textContent='Period: '+summary.spec.label;
+  document.getElementById('token-updated-at').textContent='Dataset anchor: '+(summary.latestMs?new Date(summary.latestMs).toLocaleString():'—');
+  if(!summary.rows.length){
+    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">No token usage found for this period.</td></tr>';
+    return;
+  }
+  tbody.innerHTML=summary.rows.map(function(row){
+    return '<tr>'
+      +'<td>'+providerBadge(row.provider)+'</td>'
+      +'<td style="font-weight:500;word-break:break-word;">'+escHtml(row.model)+'</td>'
+      +'<td class="mono">'+formatter.format(row.sessions)+'</td>'
+      +'<td class="mono">'+formatter.format(row.input_tokens)+'</td>'
+      +'<td class="mono">'+formatter.format(row.output_tokens)+'</td>'
+      +'<td class="mono">'+formatter.format(row.total_tokens)+'</td>'
+      +'<td class="mono">'+formatMoney(row.hasCost?row.cost:null)+'</td>'
+      +'</tr>';
+  }).join('');
+}
+
+function selectTokenPeriod(periodKey){
+  tokenActivePeriod=periodKey;
+  if(!tokenUsageCache || !tokenUsageCache.sessions) return;
+  renderTokenPeriodCards(tokenUsageCache.sessions);
+  renderTokenTable(aggregateTokenPeriodRows(tokenUsageCache.sessions, tokenActivePeriod));
+}
+
+async function loadTokenUsage(){
+  var tbody=document.getElementById('token-body');
+  tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">Loading token usage...</td></tr>';
+  try{
+    var sessions=await fetchTokenJson('sessions_summary.json');
+    tokenUsageCache={sessions:sessions||[]};
+    renderTokenPeriodCards(tokenUsageCache.sessions);
+    renderTokenTable(aggregateTokenPeriodRows(tokenUsageCache.sessions, tokenActivePeriod));
+  }catch(e){
+    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--danger);font-size:13px;">Failed to load token data: '+escHtml(e.message||'Unknown error')+'</td></tr>';
+    document.getElementById('token-updated-at').textContent='Load failed';
+  }
+}
+
 /* ACCOUNTS */
 var API='https://openai-tw-forum.googselect.workers.dev/api/ibelieve';
 var POSTS_API='https://openai-tw-forum.googselect.workers.dev/api/ibelieve';
@@ -1194,6 +1409,7 @@ function switchTab(name,el){
   el.classList.add('active');
   document.getElementById('panel-'+name).classList.add('active');
   if(name==='account') loadAccounts();
+  if(name==='token') loadTokenUsage();
   if(name==='posts') loadPosts();
   if(name==='cloudmap'){ cmInit(); cmInitMode(); cmLoadSuggestions(); }
   if(name==='dashboard') dashLoadSummaryHero();
