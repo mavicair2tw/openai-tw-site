@@ -975,6 +975,7 @@ function buildHealth(){
 
 /* TOKEN USAGE */
 var formatter=new Intl.NumberFormat('en-US');
+var TOKEN_DATA_PATHS=['../token-dashboard/data','/token-dashboard/data'];
 var TOKEN_PERIODS=[
   {key:'daily',label:'Daily',days:1},
   {key:'weekly',label:'Weekly',days:7},
@@ -984,6 +985,27 @@ var TOKEN_PERIODS=[
 ];
 var tokenUsageCache=null;
 var tokenActivePeriod='daily';
+var TOKEN_PRICING_USD_PER_1M={
+  'gpt-5.1-codex': { input: 1.25, output: 10.0 },
+  'gpt-5.4': { input: 2.5, output: 15.0 },
+  'openai/gpt-5.4': { input: 2.5, output: 15.0 },
+  'gpt-5.4-mini': { input: 0.75, output: 4.5 },
+  'openai/gpt-5.4-mini': { input: 0.75, output: 4.5 },
+  'gpt-5.4-nano': { input: 0.2, output: 1.25 },
+  'openai/gpt-5.4-nano': { input: 0.2, output: 1.25 }
+};
+
+async function fetchLegacyTokenJson(file){
+  for(var i=0;i<TOKEN_DATA_PATHS.length;i++){
+    var base=TOKEN_DATA_PATHS[i];
+    try{
+      var res=await fetch(base+'/'+file+'?t='+(Date.now()));
+      if(!res.ok) continue;
+      return await res.json();
+    }catch(err){}
+  }
+  throw new Error('Failed to load token data file: '+file);
+}
 
 async function fetchTokenUsageSummary(){
   var token = adminToken || localStorage.getItem(DEVICE_TOKEN_KEY) || '';
@@ -1022,10 +1044,144 @@ function providerBadge(provider){
   return '<span class="provider-badge provider-'+key+'">'+escHtml(provider||'OTHER')+'</span>';
 }
 
+function getModelPricing(model){
+  return TOKEN_PRICING_USD_PER_1M[model] || null;
+}
+
+function estimateModelCost(model,inputTokens,outputTokens){
+  var pricing=getModelPricing(model);
+  if(!pricing) return null;
+  return ((inputTokens||0)/1000000)*(pricing.input||0) + ((outputTokens||0)/1000000)*(pricing.output||0);
+}
+
 function formatMoney(v){
   if(v===null || v===undefined) return '—';
   if(v===0) return '$0.00';
   return '$'+v.toFixed(v<1?4:2);
+}
+
+function buildLegacyTokenSummary(sessions){
+  var latestMs=(sessions||[]).reduce(function(max,s){
+    var ts=Date.parse(s.started_at||0);
+    return isFinite(ts) && ts>max ? ts : max;
+  },0);
+  var periods={};
+
+  TOKEN_PERIODS.forEach(function(spec){
+    var cutoff=spec.days?latestMs-(spec.days*24*60*60*1000):null;
+    var rowsMap={};
+    var totals={input_tokens:0,output_tokens:0,cached_tokens:0,total_tokens:0,total_cost_usd:0};
+
+    (sessions||[]).forEach(function(session){
+      var ts=Date.parse(session.started_at||0);
+      if(cutoff!==null && (!isFinite(ts) || ts<cutoff)) return;
+      var perModel=session.per_model||{};
+      Object.keys(perModel).forEach(function(model){
+        var stats=perModel[model]||{};
+        var key=inferProviderFromModel(model)+'::'+model+'::chat';
+        if(!rowsMap[key]){
+          rowsMap[key]={
+            provider:inferProviderFromModel(model),
+            model:model,
+            operation:'chat',
+            events:0,
+            input_tokens:0,
+            output_tokens:0,
+            cached_tokens:0,
+            total_tokens:0,
+            total_cost_usd:0
+          };
+        }
+        var row=rowsMap[key];
+        var input=Number(stats.input_tokens||0);
+        var output=Number(stats.output_tokens||0);
+        var total=Number(stats.total_tokens||0);
+        var est=estimateModelCost(model,input,output);
+        row.events += 1;
+        row.input_tokens += input;
+        row.output_tokens += output;
+        row.total_tokens += total;
+        row.total_cost_usd += Number(est||0);
+      });
+    });
+
+    var rows=Object.keys(rowsMap).map(function(key){ return rowsMap[key]; }).sort(function(a,b){
+      var costDiff=Number(b.total_cost_usd||0)-Number(a.total_cost_usd||0);
+      if(costDiff!==0) return costDiff;
+      return Number(b.total_tokens||0)-Number(a.total_tokens||0);
+    });
+
+    rows.forEach(function(row){
+      totals.input_tokens += Number(row.input_tokens||0);
+      totals.output_tokens += Number(row.output_tokens||0);
+      totals.cached_tokens += Number(row.cached_tokens||0);
+      totals.total_tokens += Number(row.total_tokens||0);
+      totals.total_cost_usd += Number(row.total_cost_usd||0);
+    });
+
+    periods[spec.key]={ key:spec.key, totals:totals, rows:rows };
+  });
+
+  return { ok:true, anchor_at: latestMs?new Date(latestMs).toISOString():null, periods:periods };
+}
+
+function mergeTokenSummaries(a,b){
+  if(!a) return b;
+  if(!b) return a;
+  var merged={ ok:true, anchor_at:a.anchor_at||b.anchor_at, periods:{} };
+  if(a.anchor_at && b.anchor_at){
+    merged.anchor_at = (Date.parse(a.anchor_at) >= Date.parse(b.anchor_at)) ? a.anchor_at : b.anchor_at;
+  }
+
+  TOKEN_PERIODS.forEach(function(spec){
+    var pa=(a.periods&&a.periods[spec.key]) || { totals:{}, rows:[] };
+    var pb=(b.periods&&b.periods[spec.key]) || { totals:{}, rows:[] };
+    var rowsMap={};
+
+    [pa.rows||[], pb.rows||[]].forEach(function(list){
+      list.forEach(function(row){
+        var key=[row.provider||'OTHER', row.model||'unknown', row.operation||'chat'].join('::');
+        if(!rowsMap[key]){
+          rowsMap[key]={
+            provider:row.provider||'OTHER',
+            model:row.model||'unknown',
+            operation:row.operation||'chat',
+            events:0,
+            input_tokens:0,
+            output_tokens:0,
+            cached_tokens:0,
+            total_tokens:0,
+            total_cost_usd:0
+          };
+        }
+        var target=rowsMap[key];
+        target.events += Number(row.events||0);
+        target.input_tokens += Number(row.input_tokens||0);
+        target.output_tokens += Number(row.output_tokens||0);
+        target.cached_tokens += Number(row.cached_tokens||0);
+        target.total_tokens += Number(row.total_tokens||0);
+        target.total_cost_usd += Number(row.total_cost_usd||0);
+      });
+    });
+
+    merged.periods[spec.key]={
+      key:spec.key,
+      totals:{
+        input_tokens:Number((pa.totals&&pa.totals.input_tokens)||0)+Number((pb.totals&&pb.totals.input_tokens)||0),
+        output_tokens:Number((pa.totals&&pa.totals.output_tokens)||0)+Number((pb.totals&&pb.totals.output_tokens)||0),
+        cached_tokens:Number((pa.totals&&pa.totals.cached_tokens)||0)+Number((pb.totals&&pb.totals.cached_tokens)||0),
+        total_tokens:Number((pa.totals&&pa.totals.total_tokens)||0)+Number((pb.totals&&pb.totals.total_tokens)||0),
+        total_cost_usd:Number((pa.totals&&pa.totals.total_cost_usd)||0)+Number((pb.totals&&pb.totals.total_cost_usd)||0)
+      },
+      rows:Object.keys(rowsMap).map(function(key){ return rowsMap[key]; }).sort(function(a,b){
+        var costDiff=Number(b.total_cost_usd||0)-Number(a.total_cost_usd||0);
+        if(costDiff!==0) return costDiff;
+        return Number(b.total_tokens||0)-Number(a.total_tokens||0);
+      })
+    };
+  });
+
+  return merged;
 }
 
 function getTokenPeriodSummary(periodKey){
@@ -1080,7 +1236,14 @@ async function loadTokenUsage(){
   var tbody=document.getElementById('token-body');
   tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">Loading token usage...</td></tr>';
   try{
-    tokenUsageCache=await fetchTokenUsageSummary();
+    var results=await Promise.allSettled([
+      fetchTokenUsageSummary(),
+      fetchLegacyTokenJson('sessions_summary.json')
+    ]);
+    var liveSummary=results[0].status==='fulfilled' ? results[0].value : null;
+    var legacySummary=results[1].status==='fulfilled' ? buildLegacyTokenSummary(results[1].value||[]) : null;
+    tokenUsageCache=mergeTokenSummaries(liveSummary, legacySummary);
+    if(!tokenUsageCache) throw new Error('Failed to load token data');
     renderTokenPeriodCards();
     selectTokenPeriod(tokenActivePeriod);
   }catch(e){
