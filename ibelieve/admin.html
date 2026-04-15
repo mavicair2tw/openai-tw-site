@@ -1346,7 +1346,7 @@ async function loadTokenUsage(){
 }
 
 /* ACCOUNTS */
-var API='https://openai-tw-forum.googselect.workers.dev/api/ibelieve';
+var API='https://icut2.openai-tw.com/api/ibelieve';
 var POSTS_API='https://openai-tw-forum.googselect.workers.dev/api/ibelieve';
 var TOKEN_API='https://icut2.openai-tw.com/api/ibelieve';
 var adminToken=null;
@@ -1375,20 +1375,33 @@ function normalizeSiteRoles(siteRoles){
   };
 }
 
-function siteRoleOptions(selected){
-  var options=['','user','operator','admin'];
+function allowedSiteRoleOptions(globalRole, site){
+  var role=String(globalRole||'user').toLowerCase();
+  if(role==='user') return site==='admin' ? [''] : ['','user'];
+  return site==='admin' ? ['','operator','admin'] : ['','user','operator','admin'];
+}
+
+function siteRoleOptions(selected, globalRole, site){
+  var options=allowedSiteRoleOptions(globalRole, site);
   return options.map(function(role){
     var label=role||'No access';
     return '<option value="'+escHtml(role)+'"'+(selected===role?' selected':'')+'>'+escHtml(label)+'</option>';
   }).join('');
 }
 
-function renderSiteRoleFields(siteRoles){
+function renderSiteRoleFields(siteRoles, globalRole){
   var roles=normalizeSiteRoles(siteRoles);
   return ''+
-    '<div class="form-group"><label class="form-label">iCut access role</label><select class="form-select" id="f-site-icut">'+siteRoleOptions(roles.icut)+'</select></div>'+
-    '<div class="form-group"><label class="form-label">iBelieve access role</label><select class="form-select" id="f-site-ibelieve">'+siteRoleOptions(roles.ibelieve)+'</select></div>'+
-    '<div class="form-group"><label class="form-label">Admin page role</label><select class="form-select" id="f-site-admin">'+siteRoleOptions(roles.admin)+'</select></div>';
+    '<div class="form-group"><label class="form-label">iCut access role</label><select class="form-select" id="f-site-icut">'+siteRoleOptions(roles.icut, globalRole, 'icut')+'</select></div>'+
+    '<div class="form-group"><label class="form-label">iBelieve access role</label><select class="form-select" id="f-site-ibelieve">'+siteRoleOptions(roles.ibelieve, globalRole, 'ibelieve')+'</select></div>'+
+    '<div class="form-group"><label class="form-label">Admin page role</label><select class="form-select" id="f-site-admin">'+siteRoleOptions(roles.admin, globalRole, 'admin')+'</select></div>';
+}
+
+function rerenderSiteRoleFields(){
+  var roleEl=document.getElementById('f-role');
+  var wrap=document.getElementById('site-role-wrap');
+  if(!roleEl || !wrap) return;
+  wrap.innerHTML=renderSiteRoleFields(readSiteRolesFromForm(), roleEl.value);
 }
 
 function readSiteRolesFromForm(){
@@ -1500,9 +1513,9 @@ function openModal(mode){
       '<div class="form-group"><label class="form-label">Username</label><input class="form-input" id="f-user" placeholder="username"></div>'+
       '<div class="form-group"><label class="form-label">Email</label><input class="form-input" id="f-email" type="email" placeholder="user@example.com"></div>'+
       '<div class="form-group"><label class="form-label">Password</label><input class="form-input" id="f-pass" type="password" placeholder="Min 6 characters"></div>'+
-      '<div class="form-group"><label class="form-label">Role</label><select class="form-select" id="f-role">'+ACCOUNT_ROLES.map(function(r){return '<option>'+escHtml(r)+'</option>';}).join('')+'</select></div>'+
+      '<div class="form-group"><label class="form-label">Role</label><select class="form-select" id="f-role" onchange="rerenderSiteRoleFields()">'+ACCOUNT_ROLES.map(function(r){return '<option>'+escHtml(r)+'</option>';}).join('')+'</select></div>'+
       '<div class="form-group"><label class="form-label">Status</label><select class="form-select" id="f-status">'+ACCOUNT_STATUS_OPTIONS.map(function(s){return '<option value="'+escHtml(s)+'">'+escHtml(s.charAt(0).toUpperCase()+s.slice(1))+'</option>';}).join('')+'</select></div>'+
-      renderSiteRoleFields({icut:'user',ibelieve:'user',admin:''});
+      '<div id="site-role-wrap">'+renderSiteRoleFields({icut:'user',ibelieve:'user',admin:''}, 'user')+'</div>';
   } else if(mode==='modify'){
     title.textContent='Modify account';
     btn.textContent='Save changes'; btn.className='bconfirm blue';
@@ -1510,9 +1523,9 @@ function openModal(mode){
       '<div class="form-group"><label class="form-label">Username</label><input class="form-input" id="f-user" value="'+escHtml(sel.username||'')+'"></div>'+
       '<div class="form-group"><label class="form-label">Email</label><input class="form-input" id="f-email" type="email" value="'+escHtml(sel.email||'')+'"></div>'+
       '<div class="form-group"><label class="form-label">New password <span style="color:var(--text-muted);font-size:10px;">(leave blank to keep)</span></label><input class="form-input" id="f-pass" type="password" placeholder="........"></div>'+
-      '<div class="form-group"><label class="form-label">Role</label><select class="form-select" id="f-role">'+ACCOUNT_ROLES.map(function(r){return '<option'+(sel.role===r?' selected':'')+'>'+escHtml(r)+'</option>';}).join('')+'</select></div>'+
+      '<div class="form-group"><label class="form-label">Role</label><select class="form-select" id="f-role" onchange="rerenderSiteRoleFields()">'+ACCOUNT_ROLES.map(function(r){return '<option'+(sel.role===r?' selected':'')+'>'+escHtml(r)+'</option>';}).join('')+'</select></div>'+
       '<div class="form-group"><label class="form-label">Status</label><select class="form-select" id="f-status">'+ACCOUNT_STATUS_OPTIONS.map(function(s){return '<option value="'+escHtml(s)+'"'+(sel.status===s?' selected':'')+'>'+escHtml(s.charAt(0).toUpperCase()+s.slice(1))+'</option>';}).join('')+'</select></div>'+
-      renderSiteRoleFields(sel.site_roles||sel.siteRoles||{});
+      '<div id="site-role-wrap">'+renderSiteRoleFields(sel.site_roles||sel.siteRoles||{}, sel.role||'user')+'</div>';
   } else {
     title.textContent='Delete account';
     btn.textContent='Delete'; btn.className='bconfirm red';
