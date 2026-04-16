@@ -1,6 +1,7 @@
 'use client';
 
 import { ChangeEvent, CSSProperties, useMemo, useState } from 'react';
+import VideoPromptBuilder from '@/components/VideoPromptBuilder';
 
 type Clip = {
   id: string;
@@ -98,6 +99,7 @@ export default function ICutPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [status, setStatus] = useState('Sequence ready');
   const [zoomLevel, setZoomLevel] = useState(125);
+  const [mode, setMode] = useState('Editor');
 
   const activeClip = useMemo(() => clips.find((clip) => clip.id === activeId) ?? clips[0], [clips, activeId]);
   const totalDuration = useMemo(
@@ -215,6 +217,11 @@ export default function ICutPage() {
         gap: '16px',
       }}
     >
+      <select value={mode} onChange={(e) => setMode(e.target.value)}>
+        <option>Editor</option>
+        <option>Prompt Builder</option>
+      </select>
+      {mode === 'Prompt Builder' ? <VideoPromptBuilder /> : (
       <section
         style={{
           ...panelStyle,
@@ -668,6 +675,7 @@ export default function ICutPage() {
           )}
         </aside>
       </section>
+      )}
     </div>
   );
 }
