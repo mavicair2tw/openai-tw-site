@@ -132,7 +132,35 @@ td{padding:10px 14px;vertical-align:middle;}
 .toast.red{background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-border);}
 .toast.warn{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-border);}
 .toast.blue{background:var(--info-bg);color:var(--info);border:1px solid var(--info-border);}
+.token-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:14px;}
+.token-period{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 14px;cursor:pointer;transition:border-color .15s,transform .15s;}
+.token-period:hover{border-color:var(--border2);transform:translateY(-1px);}
+.token-period.active{border-color:var(--accent);box-shadow:0 0 0 1px rgba(59,130,246,.25) inset;}
+.token-period-label{font-size:11px;color:#93c5fd;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
+.token-period-val{font-size:18px;font-weight:600;font-family:var(--mono);color:var(--danger);}
+.token-period-sub{font-size:11px;color:var(--text-muted);margin-top:6px;}
+.token-meta{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--text-muted);margin-bottom:12px;}
+.token-note{font-size:12px;color:var(--text-muted);margin-bottom:12px;}
+.token-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.token-filter-btn{background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:7px 12px;font-size:12px;color:var(--text-dim);cursor:pointer;transition:border-color .15s,color .15s,transform .15s;}
+.token-filter-btn:hover{border-color:var(--border2);color:var(--text);transform:translateY(-1px);}
+.token-filter-btn.active{border-color:var(--accent);color:#bfdbfe;box-shadow:0 0 0 1px rgba(59,130,246,.25) inset;}
+.provider-badge{display:inline-flex;align-items:center;justify-content:center;min-width:76px;padding:3px 8px;border-radius:999px;border:1px solid var(--border2);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;}
+.provider-openai{background:rgba(16,185,129,.1);color:#6ee7b7;border-color:rgba(16,185,129,.35);}
+.provider-google{background:rgba(59,130,246,.1);color:#93c5fd;border-color:rgba(59,130,246,.35);}
+.provider-grok{background:rgba(168,85,247,.1);color:#d8b4fe;border-color:rgba(168,85,247,.35);}
+.provider-other{background:rgba(148,163,184,.1);color:#cbd5e1;border-color:rgba(148,163,184,.35);}
+.cost-badge{display:inline-flex;align-items:center;justify-content:center;min-width:84px;padding:3px 8px;border-radius:999px;border:1px solid var(--border2);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;}
+.cost-token{background:rgba(16,185,129,.1);color:#6ee7b7;border-color:rgba(16,185,129,.35);}
+.cost-api{background:rgba(249,115,22,.1);color:#fdba74;border-color:rgba(249,115,22,.35);}
+.cost-mixed{background:rgba(59,130,246,.1);color:#93c5fd;border-color:rgba(59,130,246,.35);}
+.usage-badge{display:inline-flex;align-items:center;justify-content:center;min-width:104px;padding:3px 8px;border-radius:999px;border:1px solid var(--border2);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;}
+.usage-llm{background:rgba(16,185,129,.1);color:#6ee7b7;border-color:rgba(16,185,129,.35);}
+.usage-generation{background:rgba(168,85,247,.1);color:#d8b4fe;border-color:rgba(168,85,247,.35);}
+.usage-speech{background:rgba(59,130,246,.1);color:#93c5fd;border-color:rgba(59,130,246,.35);}
+.usage-other{background:rgba(148,163,184,.1);color:#cbd5e1;border-color:rgba(148,163,184,.35);}
 @media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr);}.dash-grid{grid-template-columns:1fr;}.content{padding:14px;}.nav{padding:0 14px;}}
+@media(max-width:980px){.token-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
 .cm-link-row{display:flex;align-items:flex-start;gap:8px;padding:6px 10px;cursor:pointer;border-bottom:0.5px solid var(--border);font-size:12px;}
 .cm-link-row:hover{background:var(--surface2);}
 </style>
@@ -187,6 +215,10 @@ td{padding:10px 14px;vertical-align:middle;}
     <div class="tab" onclick="switchTab('account',this)">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5"/></svg>
       Account
+    </div>
+    <div class="tab" onclick="switchTab('token',this)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 4h12v8H2z"/><path d="M5 7h6M5 10h3"/></svg>
+      Token
     </div>
     <div class="tab" onclick="switchTab('posts',this)">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="9" height="3" rx="1"/></svg>
@@ -335,6 +367,43 @@ System info</div>
         <div class="field-row"><span class="field-label">Host</span><span class="field-val mono">ibelieve-backend.vercel.app</span></div>
         <div class="field-row"><span class="field-label">Environment</span><span class="field-val">Production</span></div>
         <div class="field-row"><span class="field-label">Total accounts</span><span class="field-val" id="acct-count">-</span></div>
+      </div>
+    </div>
+
+    <div id="panel-token" class="panel">
+      <div class="card">
+        <div class="card-title">Token & model spend</div>
+        <div class="token-note">Usage and cost are loaded from the live iCut ledger. Grok image and video generation costs now come from the worker’s recorded API spend. Some generation APIs return cost without token counts, so those rows show dashes for Input, Output, and Total.</div>
+        <div id="token-period-grid" class="token-grid"></div>
+        <div id="token-provider-filters" class="token-filters"></div>
+        <div class="token-meta">
+          <span id="token-current-period">Period: Daily</span>
+          <span id="token-updated-at">Loading…</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Model breakdown</div>
+        <div class="atbl-wrap" style="margin-bottom:0;">
+          <table class="atbl">
+            <thead>
+              <tr>
+                <th style="width:14%">Provider</th>
+                <th style="width:20%">Model</th>
+                <th style="width:11%">Cost Basis</th>
+                <th style="width:13%">Usage Type</th>
+                <th style="width:8%">Events</th>
+                <th style="width:8%">Input</th>
+                <th style="width:8%">Output</th>
+                <th style="width:8%">Total</th>
+                <th style="width:10%">Cost</th>
+              </tr>
+            </thead>
+            <tbody id="token-body">
+              <tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">Loading token data...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -719,6 +788,24 @@ function getDeviceName(){
   return 'Unknown device';
 }
 
+function canAccessAdminPage(user){
+  var role=String((user&&user.role)||'user').toLowerCase();
+  var siteRoles=(user&&user.site_roles&&typeof user.site_roles==='object')?user.site_roles:{};
+  var adminSiteRole=String(siteRoles.admin||'').toLowerCase();
+  if(role==='user') return false;
+  return adminSiteRole==='operator' || adminSiteRole==='admin' || adminSiteRole==='owner' || adminSiteRole==='super admin';
+}
+
+async function fetchSharedAdminUser(token){
+  var headers={};
+  if(token) headers.Authorization='Bearer '+token;
+  var res=await fetch(TOKEN_API+'/auth/me', { headers: headers });
+  var data=await res.json().catch(function(){ return {}; });
+  if(!res.ok || !data || !data.user) throw new Error((data&&data.error)||'Failed to verify admin access');
+  if(!canAccessAdminPage(data.user)) throw new Error('This account cannot access Admin page');
+  return data.user;
+}
+
 async function tryAutoLogin(){
   var token = localStorage.getItem(DEVICE_TOKEN_KEY);
   if(!token) return false;
@@ -730,18 +817,26 @@ async function tryAutoLogin(){
     if(!res.ok){ localStorage.removeItem(DEVICE_TOKEN_KEY); return false; }
     var data = await res.json();
     if(!data.ok){ localStorage.removeItem(DEVICE_TOKEN_KEY); return false; }
+    var sharedUser = await fetchSharedAdminUser(token);
     // Auto login success
-    currentUser = data.username;
+    adminToken = token;
+    currentUser = sharedUser.username || data.username;
     document.getElementById('login-wrap').style.display = 'none';
     document.getElementById('shell').classList.add('visible');
     var avatar = document.querySelector('.avatar');
-    if(avatar) avatar.textContent = data.username.slice(0,2).toUpperCase();
+    if(avatar) avatar.textContent = (currentUser||'??').slice(0,2).toUpperCase();
     var agentInp = document.getElementById('inp-agent-name');
-    if(agentInp) agentInp.value = data.username;
+    if(agentInp) agentInp.value = currentUser;
     initAll();
-    showToast('Welcome back, '+data.username+' ✦ ('+data.device_name+')','green');
+    showToast('Welcome back, '+currentUser+' ✦ ('+data.device_name+')','green');
     return true;
-  }catch(e){ return false; }
+  }catch(e){
+    localStorage.removeItem(DEVICE_TOKEN_KEY);
+    localStorage.removeItem(DEVICE_USER_KEY);
+    adminToken = null;
+    currentUser = null;
+    return false;
+  }
 }
 
 async function doLogin() {
@@ -774,10 +869,12 @@ async function doLogin() {
       }
       localStorage.setItem(DEVICE_TOKEN_KEY, data.token);
       localStorage.setItem(DEVICE_USER_KEY, u);
-      currentUser = u;
+      var sharedUser = await fetchSharedAdminUser(data.token);
+      adminToken = data.token;
+      currentUser = sharedUser.username || u;
       showToast('Device trusted for 90 days ✦','green');
     } else {
-      // Normal login without trust — verify via trust endpoint but don't store
+      // Normal login without trust — keep token in memory for this tab only
       var res2 = await fetch(WORKER_API+'/auth/trust-device',{
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({username:u, password:p, device_name:'no-trust'})
@@ -790,34 +887,32 @@ async function doLogin() {
         if(btn){ btn.disabled=false; btn.textContent='Sign in'; }
         return;
       }
-      // Issue token but immediately delete it (one-time login)
-      await fetch(WORKER_API+'/auth/trust-device',{
-        method:'DELETE', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({token: data2.token})
-      });
-      currentUser = u;
+      var sharedUser = await fetchSharedAdminUser(data2.token);
+      adminToken = data2.token;
+      currentUser = sharedUser.username || u;
     }
   } catch(e) {
-    // Fallback: try local credential check
-    if(u !== 'admin'){
-      err.textContent = 'Login failed. Check connection.';
-      err.style.display = 'block';
-      if(btn){ btn.disabled=false; btn.textContent='Sign in'; }
-      return;
-    }
+    localStorage.removeItem(DEVICE_TOKEN_KEY);
+    localStorage.removeItem(DEVICE_USER_KEY);
+    adminToken = null;
+    currentUser = null;
+    err.textContent = e && e.message ? e.message : 'Login failed. Check connection.';
+    err.style.display = 'block';
+    if(btn){ btn.disabled=false; btn.textContent='Sign in'; }
+    return;
   }
   if(btn){ btn.disabled=false; btn.textContent='Sign in'; }
   document.getElementById('login-wrap').style.display = 'none';
   document.getElementById('shell').classList.add('visible');
   var avatar = document.querySelector('.avatar');
-  if(avatar) avatar.textContent = u.slice(0,2).toUpperCase();
+  if(avatar) avatar.textContent = (currentUser||u).slice(0,2).toUpperCase();
   var agentInp = document.getElementById('inp-agent-name');
-  if(agentInp) agentInp.value = u;
+  if(agentInp) agentInp.value = currentUser||u;
   initAll();
 }
 async function doLogout(revokeDevice) {
+  var token = localStorage.getItem(DEVICE_TOKEN_KEY) || adminToken;
   if(revokeDevice !== false){
-    var token = localStorage.getItem(DEVICE_TOKEN_KEY);
     if(token){
       try{
         await fetch(WORKER_API+'/auth/trust-device',{
@@ -922,14 +1017,439 @@ function buildHealth(){
   }).join('');
 }
 
+/* TOKEN USAGE */
+var formatter=new Intl.NumberFormat('en-US');
+var TOKEN_DATA_PATHS=['../token-dashboard/data','/token-dashboard/data'];
+var TOKEN_PERIODS=[
+  {key:'daily',label:'Daily',days:1},
+  {key:'weekly',label:'Weekly',days:7},
+  {key:'monthly',label:'Monthly',days:30},
+  {key:'annual',label:'Annual',days:365},
+  {key:'all',label:'All',days:null}
+];
+var TOKEN_PROVIDER_FILTERS=[
+  {key:'ALL',label:'All'},
+  {key:'GROK',label:'Grok'},
+  {key:'OPENAI',label:'OpenAI'},
+  {key:'GOOGLE',label:'Google'}
+];
+var tokenUsageCache=null;
+var tokenActivePeriod='daily';
+var tokenProviderFilter='ALL';
+var TOKEN_PRICING_USD_PER_1M={
+  'gpt-5.1-codex': { input: 1.25, output: 10.0 },
+  'gpt-5.4': { input: 2.5, output: 15.0 },
+  'openai/gpt-5.4': { input: 2.5, output: 15.0 },
+  'gpt-5.4-mini': { input: 0.75, output: 4.5 },
+  'openai/gpt-5.4-mini': { input: 0.75, output: 4.5 },
+  'gpt-5.4-nano': { input: 0.2, output: 1.25 },
+  'openai/gpt-5.4-nano': { input: 0.2, output: 1.25 }
+};
+
+async function fetchLegacyTokenJson(file){
+  for(var i=0;i<TOKEN_DATA_PATHS.length;i++){
+    var base=TOKEN_DATA_PATHS[i];
+    try{
+      var res=await fetch(base+'/'+file+'?t='+(Date.now()));
+      if(!res.ok) continue;
+      return await res.json();
+    }catch(err){}
+  }
+  throw new Error('Failed to load token data file: '+file);
+}
+
+async function fetchTokenUsageSummary(){
+  var token = adminToken || localStorage.getItem(DEVICE_TOKEN_KEY) || '';
+  var headers={};
+  if(token) headers.Authorization='Bearer '+token;
+  var res=await fetch(TOKEN_API+'/admin/token-usage?t='+(Date.now()), { headers: headers });
+  if(!res.ok){
+    var msg='Failed to load token usage';
+    try{
+      var data=await res.json();
+      if(data && data.error) msg=data.error;
+    }catch(err){}
+    if(res.status===401 || res.status===403){
+      adminToken = null;
+      localStorage.removeItem(DEVICE_TOKEN_KEY);
+      localStorage.removeItem(DEVICE_USER_KEY);
+      msg = 'Admin session expired. Please sign in again.';
+    }
+    throw new Error(msg);
+  }
+  if(token && !adminToken) adminToken = token;
+  return await res.json();
+}
+
+function inferProviderFromModel(model){
+  var s=String(model||'').toLowerCase();
+  if(!s) return 'OTHER';
+  if(s.includes('grok') || s.includes('xai')) return 'GROK';
+  if(s.includes('gemini') || s.includes('google') || s.includes('veo') || s.includes('imagen')) return 'GOOGLE';
+  if(s.includes('gpt') || s.includes('openai') || s.includes('codex') || s.includes('o1') || s.includes('o3') || s.includes('o4') || s.includes('sora') || s.includes('dall')) return 'OPENAI';
+  return 'OTHER';
+}
+
+function providerBadge(provider){
+  var key=String(provider||'OTHER').toLowerCase();
+  return '<span class="provider-badge provider-'+key+'">'+escHtml(provider||'OTHER')+'</span>';
+}
+
+function getModelPricing(model){
+  return TOKEN_PRICING_USD_PER_1M[model] || null;
+}
+
+function estimateModelCost(model,inputTokens,outputTokens){
+  var pricing=getModelPricing(model);
+  if(!pricing) return null;
+  return ((inputTokens||0)/1000000)*(pricing.input||0) + ((outputTokens||0)/1000000)*(pricing.output||0);
+}
+
+function formatMoney(v){
+  if(v===null || v===undefined) return '—';
+  if(v===0) return '$0.00';
+  return '$'+v.toFixed(v<1?4:2);
+}
+
+function formatTokenMetric(row, key){
+  var value=Number(row&&row[key]||0);
+  var hasAnyTokens=Number(row&&row.input_tokens||0)>0 || Number(row&&row.output_tokens||0)>0 || Number(row&&row.total_tokens||0)>0;
+  var hasCostOnly=Number(row&&row.total_cost_usd||0)>0 && !hasAnyTokens;
+  if(hasCostOnly) return '—';
+  return formatter.format(value);
+}
+
+function getCostBasis(row){
+  var hasAnyTokens=Number(row&&row.input_tokens||0)>0 || Number(row&&row.output_tokens||0)>0 || Number(row&&row.total_tokens||0)>0;
+  var hasCost=Number(row&&row.total_cost_usd||0)>0;
+  if(hasAnyTokens) return { label:'Token', className:'cost-token' };
+  if(hasCost && !hasAnyTokens) return { label:'API', className:'cost-api' };
+  return { label:'Unknown', className:'cost-mixed' };
+}
+
+function getUsageType(row){
+  var operation=String(row&&row.operation||'').toLowerCase();
+  var model=String(row&&row.model||'').toLowerCase();
+  if(operation==='chat' || operation==='completion' || operation==='responses') return { label:'LLM', className:'usage-llm' };
+  if(operation==='image' || operation==='image-edit' || operation==='video') return { label:'Generation API', className:'usage-generation' };
+  if(operation==='speech' || operation==='tts' || operation==='stt' || operation==='transcribe' || operation==='transcription') return { label:'Speech API', className:'usage-speech' };
+  if(model.includes('whisper') || model.includes('tts') || model.includes('speech') || model.includes('transcribe') || model.includes('audio')) return { label:'Speech API', className:'usage-speech' };
+  if(model.includes('gpt') || model.includes('grok') || model.includes('gemini') || model.includes('claude') || model.includes('codex')) return { label:'LLM', className:'usage-llm' };
+  if(model.includes('imagen') || model.includes('veo') || model.includes('sora') || model.includes('dall') || model.includes('imagine')) return { label:'Generation API', className:'usage-generation' };
+  return { label:'Other API', className:'usage-other' };
+}
+
+function getTokenProviderLabel(){
+  var found=TOKEN_PROVIDER_FILTERS.find(function(item){ return item.key===tokenProviderFilter; });
+  return found ? found.label : 'All';
+}
+
+function filterTokenPeriodSummary(summary){
+  if(!summary) return { totals:{input_tokens:0,output_tokens:0,cached_tokens:0,total_tokens:0,total_cost_usd:0}, rows:[] };
+  var rows=(summary.rows||[]).filter(function(row){
+    return tokenProviderFilter==='ALL' || String(row.provider||'OTHER').toUpperCase()===tokenProviderFilter;
+  });
+  var totals={input_tokens:0,output_tokens:0,cached_tokens:0,total_tokens:0,total_cost_usd:0};
+  rows.forEach(function(row){
+    totals.input_tokens += Number(row.input_tokens||0);
+    totals.output_tokens += Number(row.output_tokens||0);
+    totals.cached_tokens += Number(row.cached_tokens||0);
+    totals.total_tokens += Number(row.total_tokens||0);
+    totals.total_cost_usd += Number(row.total_cost_usd||0);
+  });
+  return { key:summary.key, totals:totals, rows:rows };
+}
+
+function buildLegacyTokenSummary(sessions){
+  var latestMs=(sessions||[]).reduce(function(max,s){
+    var ts=Date.parse(s.started_at||0);
+    return isFinite(ts) && ts>max ? ts : max;
+  },0);
+  var periods={};
+
+  TOKEN_PERIODS.forEach(function(spec){
+    var cutoff=spec.days?latestMs-(spec.days*24*60*60*1000):null;
+    var rowsMap={};
+    var totals={input_tokens:0,output_tokens:0,cached_tokens:0,total_tokens:0,total_cost_usd:0};
+
+    (sessions||[]).forEach(function(session){
+      var ts=Date.parse(session.started_at||0);
+      if(cutoff!==null && (!isFinite(ts) || ts<cutoff)) return;
+      var perModel=session.per_model||{};
+      Object.keys(perModel).forEach(function(model){
+        var stats=perModel[model]||{};
+        var key=inferProviderFromModel(model)+'::'+model+'::chat';
+        if(!rowsMap[key]){
+          rowsMap[key]={
+            provider:inferProviderFromModel(model),
+            model:model,
+            operation:'chat',
+            events:0,
+            input_tokens:0,
+            output_tokens:0,
+            cached_tokens:0,
+            total_tokens:0,
+            total_cost_usd:0
+          };
+        }
+        var row=rowsMap[key];
+        var input=Number(stats.input_tokens||0);
+        var output=Number(stats.output_tokens||0);
+        var total=Number(stats.total_tokens||0);
+        var est=estimateModelCost(model,input,output);
+        row.events += 1;
+        row.input_tokens += input;
+        row.output_tokens += output;
+        row.total_tokens += total;
+        row.total_cost_usd += Number(est||0);
+      });
+    });
+
+    var rows=Object.keys(rowsMap).map(function(key){ return rowsMap[key]; }).sort(function(a,b){
+      var costDiff=Number(b.total_cost_usd||0)-Number(a.total_cost_usd||0);
+      if(costDiff!==0) return costDiff;
+      return Number(b.total_tokens||0)-Number(a.total_tokens||0);
+    });
+
+    rows.forEach(function(row){
+      totals.input_tokens += Number(row.input_tokens||0);
+      totals.output_tokens += Number(row.output_tokens||0);
+      totals.cached_tokens += Number(row.cached_tokens||0);
+      totals.total_tokens += Number(row.total_tokens||0);
+      totals.total_cost_usd += Number(row.total_cost_usd||0);
+    });
+
+    periods[spec.key]={ key:spec.key, totals:totals, rows:rows };
+  });
+
+  return { ok:true, anchor_at: latestMs?new Date(latestMs).toISOString():null, periods:periods };
+}
+
+function mergeTokenSummaries(a,b){
+  if(!a) return b;
+  if(!b) return a;
+  var merged={ ok:true, anchor_at:a.anchor_at||b.anchor_at, periods:{} };
+  if(a.anchor_at && b.anchor_at){
+    merged.anchor_at = (Date.parse(a.anchor_at) >= Date.parse(b.anchor_at)) ? a.anchor_at : b.anchor_at;
+  }
+
+  TOKEN_PERIODS.forEach(function(spec){
+    var pa=(a.periods&&a.periods[spec.key]) || { totals:{}, rows:[] };
+    var pb=(b.periods&&b.periods[spec.key]) || { totals:{}, rows:[] };
+    var rowsMap={};
+
+    [pa.rows||[], pb.rows||[]].forEach(function(list){
+      list.forEach(function(row){
+        var key=[row.provider||'OTHER', row.model||'unknown', row.operation||'chat'].join('::');
+        if(!rowsMap[key]){
+          rowsMap[key]={
+            provider:row.provider||'OTHER',
+            model:row.model||'unknown',
+            operation:row.operation||'chat',
+            events:0,
+            input_tokens:0,
+            output_tokens:0,
+            cached_tokens:0,
+            total_tokens:0,
+            total_cost_usd:0
+          };
+        }
+        var target=rowsMap[key];
+        target.events += Number(row.events||0);
+        target.input_tokens += Number(row.input_tokens||0);
+        target.output_tokens += Number(row.output_tokens||0);
+        target.cached_tokens += Number(row.cached_tokens||0);
+        target.total_tokens += Number(row.total_tokens||0);
+        target.total_cost_usd += Number(row.total_cost_usd||0);
+      });
+    });
+
+    merged.periods[spec.key]={
+      key:spec.key,
+      totals:{
+        input_tokens:Number((pa.totals&&pa.totals.input_tokens)||0)+Number((pb.totals&&pb.totals.input_tokens)||0),
+        output_tokens:Number((pa.totals&&pa.totals.output_tokens)||0)+Number((pb.totals&&pb.totals.output_tokens)||0),
+        cached_tokens:Number((pa.totals&&pa.totals.cached_tokens)||0)+Number((pb.totals&&pb.totals.cached_tokens)||0),
+        total_tokens:Number((pa.totals&&pa.totals.total_tokens)||0)+Number((pb.totals&&pb.totals.total_tokens)||0),
+        total_cost_usd:Number((pa.totals&&pa.totals.total_cost_usd)||0)+Number((pb.totals&&pb.totals.total_cost_usd)||0)
+      },
+      rows:Object.keys(rowsMap).map(function(key){ return rowsMap[key]; }).sort(function(a,b){
+        var costDiff=Number(b.total_cost_usd||0)-Number(a.total_cost_usd||0);
+        if(costDiff!==0) return costDiff;
+        return Number(b.total_tokens||0)-Number(a.total_tokens||0);
+      })
+    };
+  });
+
+  return merged;
+}
+
+function getTokenPeriodSummary(periodKey){
+  if(!tokenUsageCache || !tokenUsageCache.periods) return null;
+  return tokenUsageCache.periods[periodKey] || null;
+}
+
+function renderTokenProviderFilters(){
+  var root=document.getElementById('token-provider-filters');
+  root.innerHTML=TOKEN_PROVIDER_FILTERS.map(function(item){
+    var active=tokenProviderFilter===item.key?' active':'';
+    return '<button type="button" class="token-filter-btn'+active+'" onclick="selectTokenProvider(\''+item.key+'\')">'+item.label+'</button>';
+  }).join('');
+}
+
+function renderTokenPeriodCards(){
+  var grid=document.getElementById('token-period-grid');
+  grid.innerHTML=TOKEN_PERIODS.map(function(period){
+    var data=filterTokenPeriodSummary(getTokenPeriodSummary(period.key));
+    var active=(tokenActivePeriod===period.key)?' active':'';
+    return '<button type="button" class="token-period'+active+'" onclick="selectTokenPeriod(\''+period.key+'\')">'
+      +'<div class="token-period-label">'+period.label+'</div>'
+      +'<div class="token-period-val">'+formatter.format(Number((data.totals&&data.totals.total_tokens)||0))+'</div>'
+      +'<div class="token-period-sub">'+formatMoney(data.totals?data.totals.total_cost_usd:null)+'</div>'
+      +'</button>';
+  }).join('');
+}
+
+function renderTokenTable(summary){
+  var tbody=document.getElementById('token-body');
+  document.getElementById('token-current-period').textContent='Period: '+summary.spec.label+' • Provider: '+getTokenProviderLabel();
+  document.getElementById('token-updated-at').textContent='Updated: '+(tokenUsageCache && tokenUsageCache.anchor_at?new Date(tokenUsageCache.anchor_at).toLocaleString():'—');
+  if(!summary.rows.length){
+    tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">No token usage found for this period.</td></tr>';
+    return;
+  }
+  tbody.innerHTML=summary.rows.map(function(row){
+    var basis=getCostBasis(row);
+    var usageType=getUsageType(row);
+    return '<tr>'
+      +'<td>'+providerBadge(row.provider)+'</td>'
+      +'<td style="font-weight:500;word-break:break-word;">'+escHtml(row.model)+'</td>'
+      +'<td><span class="cost-badge '+basis.className+'">'+basis.label+'</span></td>'
+      +'<td><span class="usage-badge '+usageType.className+'">'+usageType.label+'</span></td>'
+      +'<td class="mono">'+formatter.format(row.events||0)+'</td>'
+      +'<td class="mono">'+formatTokenMetric(row,'input_tokens')+'</td>'
+      +'<td class="mono">'+formatTokenMetric(row,'output_tokens')+'</td>'
+      +'<td class="mono">'+formatTokenMetric(row,'total_tokens')+'</td>'
+      +'<td class="mono">'+formatMoney(row.total_cost_usd)+'</td>'
+      +'</tr>';
+  }).join('');
+}
+
+function selectTokenProvider(filterKey){
+  tokenProviderFilter=filterKey;
+  if(!tokenUsageCache || !tokenUsageCache.periods) return;
+  renderTokenProviderFilters();
+  renderTokenPeriodCards();
+  selectTokenPeriod(tokenActivePeriod);
+}
+
+function selectTokenPeriod(periodKey){
+  tokenActivePeriod=periodKey;
+  if(!tokenUsageCache || !tokenUsageCache.periods) return;
+  renderTokenPeriodCards();
+  var period=filterTokenPeriodSummary(getTokenPeriodSummary(tokenActivePeriod));
+  var spec=TOKEN_PERIODS.find(function(p){ return p.key===tokenActivePeriod; }) || TOKEN_PERIODS[0];
+  renderTokenTable({ spec:spec, rows:period.rows||[], totals:period.totals||{} });
+}
+
+async function loadTokenUsage(){
+  var tbody=document.getElementById('token-body');
+  tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">Loading token usage...</td></tr>';
+  try{
+    var results=await Promise.allSettled([
+      fetchTokenUsageSummary(),
+      fetchLegacyTokenJson('sessions_summary.json')
+    ]);
+    var liveSummary=results[0].status==='fulfilled' ? results[0].value : null;
+    var legacySummary=results[1].status==='fulfilled' ? buildLegacyTokenSummary(results[1].value||[]) : null;
+    tokenUsageCache=mergeTokenSummaries(liveSummary, legacySummary);
+    if(!tokenUsageCache) throw new Error('Failed to load token data');
+    renderTokenProviderFilters();
+    renderTokenPeriodCards();
+    selectTokenPeriod(tokenActivePeriod);
+  }catch(e){
+    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--danger);font-size:13px;">Failed to load token data: '+escHtml(e.message||'Unknown error')+'</td></tr>';
+    document.getElementById('token-updated-at').textContent='Load failed';
+  }
+}
+
 /* ACCOUNTS */
-var API='https://openai-tw-forum.googselect.workers.dev/api/ibelieve';
+var API='https://icut2.openai-tw.com/api/ibelieve';
 var POSTS_API='https://openai-tw-forum.googselect.workers.dev/api/ibelieve';
+var TOKEN_API='https://icut2.openai-tw.com/api/ibelieve';
 var adminToken=null;
 var currentUser=null;
 var accounts=[];
 var selIdx=null;
 var modalMode=null;
+var ACCOUNT_ROLES=['user','operator','admin'];
+var ACCOUNT_STATUS_OPTIONS=['active','inactive'];
+
+function escHtml(v){
+  return String(v==null?'':v)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+function normalizeSiteRoles(siteRoles){
+  var src=(siteRoles&&typeof siteRoles==='object')?siteRoles:{};
+  return {
+    icut: src.icut || '',
+    ibelieve: src.ibelieve || '',
+    admin: src.admin || ''
+  };
+}
+
+function allowedSiteRoleOptions(globalRole, site){
+  var role=String(globalRole||'user').toLowerCase();
+  if(role==='user') return site==='admin' ? [''] : ['','user'];
+  return site==='admin' ? ['','operator','admin'] : ['','user','operator','admin'];
+}
+
+function siteRoleOptions(selected, globalRole, site){
+  var options=allowedSiteRoleOptions(globalRole, site);
+  return options.map(function(role){
+    var label=role||'No access';
+    return '<option value="'+escHtml(role)+'"'+(selected===role?' selected':'')+'>'+escHtml(label)+'</option>';
+  }).join('');
+}
+
+function renderSiteRoleFields(siteRoles, globalRole){
+  var roles=normalizeSiteRoles(siteRoles);
+  return ''+
+    '<div class="form-group"><label class="form-label">iCut access role</label><select class="form-select" id="f-site-icut">'+siteRoleOptions(roles.icut, globalRole, 'icut')+'</select></div>'+
+    '<div class="form-group"><label class="form-label">iBelieve access role</label><select class="form-select" id="f-site-ibelieve">'+siteRoleOptions(roles.ibelieve, globalRole, 'ibelieve')+'</select></div>'+
+    '<div class="form-group"><label class="form-label">Admin page role</label><select class="form-select" id="f-site-admin">'+siteRoleOptions(roles.admin, globalRole, 'admin')+'</select></div>';
+}
+
+function rerenderSiteRoleFields(){
+  var roleEl=document.getElementById('f-role');
+  var wrap=document.getElementById('site-role-wrap');
+  if(!roleEl || !wrap) return;
+  wrap.innerHTML=renderSiteRoleFields(readSiteRolesFromForm(), roleEl.value);
+}
+
+function readSiteRolesFromForm(){
+  var siteRoles={};
+  ['icut','ibelieve','admin'].forEach(function(site){
+    var el=document.getElementById('f-site-'+site);
+    var val=el?String(el.value||'').trim():'';
+    if(val) siteRoles[site]=val;
+  });
+  return siteRoles;
+}
+
+function siteRolesSummary(account){
+  var roles=normalizeSiteRoles(account.site_roles||account.siteRoles);
+  var bits=[];
+  if(roles.icut) bits.push('icut:'+roles.icut);
+  if(roles.ibelieve) bits.push('ibelieve:'+roles.ibelieve);
+  if(roles.admin) bits.push('admin:'+roles.admin);
+  return bits.length?bits.join(' · '):'No site access';
+}
 
 async function apiFetch(path,opts){
   opts=opts||{};
@@ -955,14 +1475,24 @@ async function loadAccounts(){
   try{
     var data=await apiFetch('/admin/users');
     accounts=(data.users||data||[]).map(function(u){
-      return {id:u.id||u._id,username:u.username||u.name||'-',email:u.email||'-',role:u.role||'user',status:u.status||(u.banned?'banned':'active')};
+      return {
+        id:u.id||u._id,
+        username:u.username||u.name||'-',
+        email:u.email||'-',
+        role:u.role||'user',
+        status:u.status||(u.banned?'banned':'active'),
+        site_roles:normalizeSiteRoles(u.site_roles||u.siteRoles)
+      };
     });
   } catch(e) {
-    accounts=[
-      {id:1,username:'admin',email:'admin@ibelieve.app',role:'admin',status:'active'},
-      {id:2,username:'kim',email:'kim@ibelieve.app',role:'user',status:'active'},
-      {id:3,username:'jane',email:'jane@ibelieve.app',role:'user',status:'active'}
-    ];
+    accounts=[];
+    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--danger);font-size:13px;">Failed to load users: '+escHtml(e.message||'Unknown error')+'</td></tr>';
+    document.getElementById('btn-mod').disabled=true;
+    document.getElementById('btn-del').disabled=true;
+    document.getElementById('sel-hint').textContent='';
+    document.getElementById('acct-count').textContent='0';
+    showToast('Failed to load users: '+(e.message||'Unknown error'),'red');
+    return;
   }
   renderAccounts();
 }
@@ -979,7 +1509,7 @@ function renderAccounts(){
         +'<td><div class="ava">'+ini(a.username)+'</div></td>'
         +'<td style="font-weight:500;">'+a.username+'</td>'
         +'<td style="color:var(--text-muted);font-size:12px;font-family:var(--mono)">'+a.email+'</td>'
-        +'<td style="font-size:12px;color:var(--text-dim);">'+a.role+'</td>'
+        +'<td style="font-size:12px;color:var(--text-dim);"><div>'+escHtml(a.role)+'</div><div style="font-size:10px;color:var(--text-muted);margin-top:4px;line-height:1.4;">'+escHtml(siteRolesSummary(a))+'</div></td>'
         +'<td>'+sbadge(a.status)+'</td>'
         +'</tr>';
     }).join('');
@@ -1001,7 +1531,6 @@ function selectRow(i){
 function openModal(mode){
   modalMode=mode;
   var sel=(selIdx!==null)?accounts[selIdx]:{};
-  var ROLES=['user','operator','admin'];
   var title=document.getElementById('m-title');
   var body=document.getElementById('m-body');
   var btn=document.getElementById('m-confirm');
@@ -1012,16 +1541,19 @@ function openModal(mode){
       '<div class="form-group"><label class="form-label">Username</label><input class="form-input" id="f-user" placeholder="username"></div>'+
       '<div class="form-group"><label class="form-label">Email</label><input class="form-input" id="f-email" type="email" placeholder="user@example.com"></div>'+
       '<div class="form-group"><label class="form-label">Password</label><input class="form-input" id="f-pass" type="password" placeholder="Min 6 characters"></div>'+
-      '<div class="form-group"><label class="form-label">Role</label><select class="form-select" id="f-role">'+ROLES.map(function(r){return '<option>'+r+'</option>';}).join('')+'</select></div>';
+      '<div class="form-group"><label class="form-label">Role</label><select class="form-select" id="f-role" onchange="rerenderSiteRoleFields()">'+ACCOUNT_ROLES.map(function(r){return '<option>'+escHtml(r)+'</option>';}).join('')+'</select></div>'+
+      '<div class="form-group"><label class="form-label">Status</label><select class="form-select" id="f-status">'+ACCOUNT_STATUS_OPTIONS.map(function(s){return '<option value="'+escHtml(s)+'">'+escHtml(s.charAt(0).toUpperCase()+s.slice(1))+'</option>';}).join('')+'</select></div>'+
+      '<div id="site-role-wrap">'+renderSiteRoleFields({icut:'user',ibelieve:'user',admin:''}, 'user')+'</div>';
   } else if(mode==='modify'){
     title.textContent='Modify account';
     btn.textContent='Save changes'; btn.className='bconfirm blue';
     body.innerHTML=
-      '<div class="form-group"><label class="form-label">Username</label><input class="form-input" id="f-user" value="'+(sel.username||'')+'"></div>'+
-      '<div class="form-group"><label class="form-label">Email</label><input class="form-input" id="f-email" type="email" value="'+(sel.email||'')+'"></div>'+
+      '<div class="form-group"><label class="form-label">Username</label><input class="form-input" id="f-user" value="'+escHtml(sel.username||'')+'"></div>'+
+      '<div class="form-group"><label class="form-label">Email</label><input class="form-input" id="f-email" type="email" value="'+escHtml(sel.email||'')+'"></div>'+
       '<div class="form-group"><label class="form-label">New password <span style="color:var(--text-muted);font-size:10px;">(leave blank to keep)</span></label><input class="form-input" id="f-pass" type="password" placeholder="........"></div>'+
-      '<div class="form-group"><label class="form-label">Role</label><select class="form-select" id="f-role">'+ROLES.map(function(r){return '<option'+(sel.role===r?' selected':'')+'>'+r+'</option>';}).join('')+'</select></div>'+
-      '<div class="form-group"><label class="form-label">Status</label><select class="form-select" id="f-status"><option value="active"'+(sel.status==='active'?' selected':'')+'>Active</option><option value="inactive"'+(sel.status==='inactive'?' selected':'')+'>Inactive</option><option value="banned"'+(sel.status==='banned'?' selected':'')+'>Banned</option></select></div>';
+      '<div class="form-group"><label class="form-label">Role</label><select class="form-select" id="f-role" onchange="rerenderSiteRoleFields()">'+ACCOUNT_ROLES.map(function(r){return '<option'+(sel.role===r?' selected':'')+'>'+escHtml(r)+'</option>';}).join('')+'</select></div>'+
+      '<div class="form-group"><label class="form-label">Status</label><select class="form-select" id="f-status">'+ACCOUNT_STATUS_OPTIONS.map(function(s){return '<option value="'+escHtml(s)+'"'+(sel.status===s?' selected':'')+'>'+escHtml(s.charAt(0).toUpperCase()+s.slice(1))+'</option>';}).join('')+'</select></div>'+
+      '<div id="site-role-wrap">'+renderSiteRoleFields(sel.site_roles||sel.siteRoles||{}, sel.role||'user')+'</div>';
   } else {
     title.textContent='Delete account';
     btn.textContent='Delete'; btn.className='bconfirm red';
@@ -1062,8 +1594,10 @@ async function confirmModal(){
       var pw=document.getElementById('f-pass').value;
       var e=document.getElementById('f-email').value.trim();
       var role=document.getElementById('f-role').value;
+      var status=document.getElementById('f-status').value;
+      var siteRoles=readSiteRolesFromForm();
       if(!u||!pw){showInlineErr('Username and password are required.');btn.disabled=false;btn.textContent=origText;return;}
-      await apiFetch('/auth/register',{method:'POST',body:JSON.stringify({username:u,password:pw,email:e,role:role})});
+      await apiFetch('/auth/register',{method:'POST',body:JSON.stringify({username:u,password:pw,email:e,role:role,status:status,site_roles:siteRoles})});
       showToast('Account "'+u+'" created','green');
       closeModal(); await loadAccounts();
 
@@ -1073,16 +1607,12 @@ async function confirmModal(){
       var pw=document.getElementById('f-pass').value;
       var role=document.getElementById('f-role').value;
       var status=document.getElementById('f-status').value;
+      var siteRoles=readSiteRolesFromForm();
       if(!u){showInlineErr('Username is required.');btn.disabled=false;btn.textContent=origText;return;}
       var sel=accounts[selIdx];
-      var body={username:u,email:e,role:role,status:status};
+      var body={username:u,email:e,role:role,status:status,site_roles:siteRoles};
       if(pw) body.password=pw;
-      try{
-        await apiFetch('/admin/users/'+sel.id,{method:'PATCH',body:JSON.stringify(body)});
-      } catch(e2){
-        /* fallback: update locally */
-        accounts[selIdx]=Object.assign({},sel,{username:u,email:e,role:role,status:status});
-      }
+      await apiFetch('/admin/users/'+sel.id,{method:'PATCH',body:JSON.stringify(body)});
       showToast('Account "'+u+'" updated','blue');
       closeModal(); selIdx=null; await loadAccounts();
 
@@ -1099,14 +1629,7 @@ async function confirmModal(){
           await apiFetch('/users/'+sel.id,{method:'DELETE'});
           deleted=true;
         } catch(e2){
-          /* remove locally so UI reflects the intent */
-          accounts.splice(selIdx,1);
-          selIdx=null;
-          renderAccounts();
-          showToast('"'+sel.username+'" removed from view (API: '+apiErr.message+')','warn');
-          closeModal();
-          btn.disabled=false; btn.textContent=origText;
-          return;
+          throw apiErr;
         }
       }
       if(deleted){
@@ -1138,6 +1661,7 @@ function switchTab(name,el){
   el.classList.add('active');
   document.getElementById('panel-'+name).classList.add('active');
   if(name==='account') loadAccounts();
+  if(name==='token') loadTokenUsage();
   if(name==='posts') loadPosts();
   if(name==='cloudmap'){ cmInit(); cmInitMode(); cmLoadSuggestions(); }
   if(name==='dashboard') dashLoadSummaryHero();
