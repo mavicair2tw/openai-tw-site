@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-25T07:55:02.566024+08:00",
+  "updatedAt": "2026-05-25T18:02:39.488841+08:00",
   "timezone": "Asia/Taipei",
   "dataDate": "2026-05-25",
   "source": {
@@ -19,113 +19,141 @@
       "label": "加權指數",
       "symbol": "^TWII",
       "type": "Index",
-      "price": null,
-      "change": null,
-      "changePercent": null,
+      "price": 43644.4,
+      "change": 1376.43,
+      "changePercent": 3.26,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
           "close": 42267.97
+        },
+        {
+          "time": "13:33",
+          "close": 43644.4
         }
       ],
-      "timestamp": "2026-05-25T07:50:00+08:00"
+      "timestamp": "2026-05-25T13:33:00+08:00"
     },
     {
       "label": "台積電",
       "symbol": "2330.TW",
       "type": "Stock",
-      "price": null,
-      "change": null,
-      "changePercent": null,
+      "price": 2310.0,
+      "change": 55.0,
+      "changePercent": 2.44,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
           "close": 2255.0
+        },
+        {
+          "time": "13:30",
+          "close": 2310.0
         }
       ],
-      "timestamp": "2026-05-25T07:50:00+08:00"
+      "timestamp": "2026-05-25T13:30:00+08:00"
     },
     {
       "label": "富邦科技",
       "symbol": "0052.TW",
       "type": "ETF",
-      "price": null,
-      "change": null,
-      "changePercent": null,
+      "price": 59.6,
+      "change": 1.95,
+      "changePercent": 3.38,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
           "close": 57.65
+        },
+        {
+          "time": "13:30",
+          "close": 59.6
         }
       ],
-      "timestamp": "2026-05-25T07:50:00+08:00"
+      "timestamp": "2026-05-25T13:30:00+08:00"
     },
     {
       "label": "元大台灣50",
       "symbol": "0050.TW",
       "type": "ETF",
-      "price": null,
-      "change": null,
-      "changePercent": null,
+      "price": 100.8,
+      "change": 3.5,
+      "changePercent": 3.6,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
           "close": 97.3
+        },
+        {
+          "time": "13:30",
+          "close": 100.8
         }
       ],
-      "timestamp": "2026-05-25T07:50:00+08:00"
+      "timestamp": "2026-05-25T13:30:00+08:00"
     },
     {
       "label": "凱基台灣TOP50",
       "symbol": "009816.TW",
       "type": "ETF",
-      "price": null,
-      "change": null,
-      "changePercent": null,
+      "price": 14.76,
+      "change": 0.57,
+      "changePercent": 4.02,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
           "close": 14.19
+        },
+        {
+          "time": "13:30",
+          "close": 14.76
         }
       ],
-      "timestamp": "2026-05-25T07:50:00+08:00"
+      "timestamp": "2026-05-25T13:30:00+08:00"
     },
     {
       "label": "群益台灣精選高息",
       "symbol": "00919.TW",
       "type": "ETF",
-      "price": null,
-      "change": null,
-      "changePercent": null,
+      "price": 27.47,
+      "change": 0.74,
+      "changePercent": 2.77,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
           "close": 26.73
+        },
+        {
+          "time": "13:30",
+          "close": 27.47
         }
       ],
-      "timestamp": "2026-05-25T07:50:00+08:00"
+      "timestamp": "2026-05-25T13:30:00+08:00"
     },
     {
       "label": "國泰數位支付服務",
       "symbol": "00909.TW",
       "type": "ETF",
-      "price": null,
-      "change": null,
-      "changePercent": null,
+      "price": 49.78,
+      "change": 0.79,
+      "changePercent": 1.61,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
           "close": 48.99
+        },
+        {
+          "time": "13:30",
+          "close": 49.78
         }
       ],
-      "timestamp": "2026-05-25T07:50:00+08:00"
+      "timestamp": "2026-05-25T13:30:00+08:00"
     }
   ]
 }
