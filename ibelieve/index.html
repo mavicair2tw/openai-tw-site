@@ -743,6 +743,11 @@ select.input{cursor:pointer;appearance:none;
           <div style="display:flex;justify-content:space-between;">Isolated <span id="ctx-isolated" style="color:var(--text);">—</span></div>
           <div style="display:flex;justify-content:space-between;">Snapshot <span id="ctx-snapshot-time" style="color:var(--text-muted);font-size:11px;">—</span></div>
         </div>
+        <div id="ctx-summary-img-wrap" style="display:none;margin-top:10px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;">Latest Summary</div>
+          <img id="ctx-summary-img" src="" alt="Cloud Map Summary" style="width:100%;border-radius:8px;cursor:pointer;" onclick="openLightbox(this.src)"/>
+        </div>
+      </div>
       </div>
 
       <!-- Quick filter by link type -->
@@ -2130,6 +2135,19 @@ async function loadSnapshot(){
     }
     const ctxLinks=document.getElementById('ctx-link-count');
     if(ctxLinks) ctxLinks.textContent=data.linkCount||0;
+    // Load latest summary hero image
+    try{
+      const snRes=await fetch(WORKER_API+'/release-notes?version=summary&limit=1');
+      if(snRes.ok){
+        const snData=await snRes.json();
+        const note=(snData.notes||[])[0];
+        if(note&&note.image_url){
+          const imgWrap=document.getElementById('ctx-summary-img-wrap');
+          const img=document.getElementById('ctx-summary-img');
+          if(imgWrap&&img){img.src=note.image_url;imgWrap.style.display='block';}
+        }
+      }
+    }catch(e2){}
   }catch(e){}
 }
 
