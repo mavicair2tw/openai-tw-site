@@ -2783,6 +2783,7 @@ Generate a comprehensive Cloud Map Summary Report.`
 
 // ── Summary Tab ──────────────────────────────────────────────────────────────
 var sumReports = [];
+var sumImageJobs = {};
 
 // ── Dashboard Summary Hero ───────────────────────────────────────────────────
 async function dashLoadSummaryHero(){
@@ -2846,6 +2847,14 @@ function sumMakeCard(n){
     imgBtn.textContent = '🖼';
     (function(id){ imgBtn.addEventListener('click', function(){ sumImgToggle(id); }); })(cardId);
     btnWrap.appendChild(imgBtn);
+  } else {
+    var genBtn = document.createElement('button');
+    genBtn.className = 'bmod'; genBtn.id = 'sum-img-gen-'+cardId;
+    genBtn.style.cssText = 'padding:2px 8px;font-size:11px;';
+    genBtn.title = 'Generate hero image';
+    genBtn.textContent = 'Image';
+    (function(note){ genBtn.addEventListener('click', function(){ sumGenerateImageForNote(note, {silent:false}); }); })(n);
+    btnWrap.appendChild(genBtn);
   }
   // View/Hide button
   var viewBtn = document.createElement('button');
@@ -2878,6 +2887,12 @@ function sumMakeCard(n){
     thumb.title = 'Click to toggle';
     (function(id){ thumb.addEventListener('click', function(){ sumImgToggle(id); }); })(cardId);
     bodyRow.appendChild(thumb);
+  } else {
+    var ph = document.createElement('div');
+    ph.id = 'sum-img-status-'+cardId;
+    ph.style.cssText = 'width:120px;min-height:88px;border-radius:8px;border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;text-align:center;font-size:11px;color:var(--text-muted);flex-shrink:0;padding:10px;';
+    ph.textContent = 'No image yet';
+    bodyRow.appendChild(ph);
   }
   // Preview text
   var previewEl = document.createElement('div');
@@ -2919,9 +2934,76 @@ async function sumLoad(){
     all.forEach(function(n){
       listEl.appendChild(sumMakeCard(n));
     });
+    sumEnsureTodayImage(all);
   } catch(e) {
     listEl.innerHTML = '<div style="text-align:center;color:#e74c3c;font-size:13px;padding:30px 0;">Failed to load: '+esc(e.message)+'</div>';
   }
+}
+
+function sumTodayDate(){
+  var tw = new Date(Date.now() + 8*3600000);
+  var pad = function(n){ return String(n).padStart(2,'0'); };
+  return tw.getUTCFullYear()+'-'+pad(tw.getUTCMonth()+1)+'-'+pad(tw.getUTCDate());
+}
+
+function sumSetStatus(id, text){
+  var el = document.getElementById('sum-img-status-'+id);
+  if(el) el.textContent = text;
+  var btn = document.getElementById('sum-img-gen-'+id);
+  if(btn) btn.textContent = text === 'Generating...' ? 'Working' : 'Image';
+  if(btn) btn.disabled = text === 'Generating...';
+}
+
+function sumReplaceCard(note){
+  var oldCard = document.getElementById('sum-card-'+note.id);
+  if(!oldCard || !oldCard.parentNode) return;
+  oldCard.parentNode.replaceChild(sumMakeCard(note), oldCard);
+}
+
+function sumUpdateDashboardHero(note){
+  if(!note || !note.image_url) return;
+  var hero = document.getElementById('dash-summary-hero');
+  var heroImg = document.getElementById('dash-summary-img');
+  var heroTitle = document.getElementById('dash-summary-title');
+  var heroDate = document.getElementById('dash-summary-date');
+  if(heroImg) heroImg.src = note.image_url;
+  if(heroTitle) heroTitle.textContent = note.title || '';
+  if(heroDate) heroDate.textContent = note.release_date || '';
+  if(hero) hero.style.display = 'block';
+}
+
+async function sumGenerateImageForNote(note, opts){
+  opts = opts || {};
+  if(!note || !note.id || note.image_url || sumImageJobs[note.id]) return;
+  sumImageJobs[note.id] = true;
+  sumSetStatus(note.id, 'Generating...');
+  try {
+    var imgData = await postsFetch('/generate-summary-image', {
+      method: 'POST',
+      body: JSON.stringify({ text: String(note.content || note.title || '').slice(0, 600) })
+    });
+    if(!imgData.ok || !imgData.image_url) throw new Error(imgData.error || 'Image generation failed');
+    await postsFetch('/release-notes/'+note.id+'/image', {
+      method: 'PATCH',
+      body: JSON.stringify({ image_url: imgData.image_url })
+    });
+    note.image_url = imgData.image_url;
+    sumReports = sumReports.map(function(n){ return n.id === note.id ? Object.assign({}, n, { image_url: imgData.image_url }) : n; });
+    sumReplaceCard(note);
+    sumUpdateDashboardHero(note);
+    if(!opts.silent) showToast('Summary hero image created','green');
+  } catch(e) {
+    sumSetStatus(note.id, 'Image failed');
+    if(!opts.silent) showToast('Image failed: '+e.message,'red');
+  } finally {
+    delete sumImageJobs[note.id];
+  }
+}
+
+function sumEnsureTodayImage(all){
+  var today = sumTodayDate();
+  var latestToday = (all || []).find(function(n){ return n.version === 'summary' && n.release_date === today; });
+  if(latestToday && !latestToday.image_url) sumGenerateImageForNote(latestToday, {silent:true});
 }
 
 function sumToggle(id){
@@ -3003,33 +3085,7 @@ async function cmSaveReportAsNote(reportText){
       var dateStr2 = tw2.getUTCFullYear()+'-'+pad2(tw2.getUTCMonth()+1)+'-'+pad2(tw2.getUTCDate());
       var noteObj = { id: noteId, title: title, content: content, release_date: dateStr2, image_url: null };
       sumAppend(noteObj);
-      // Generate summary image asynchronously via ibelieve-cron
-      // Use forum worker (has CORS) instead of cron worker
-      postsFetch('/generate-summary-image', {
-        method: 'POST',
-        body: JSON.stringify({ text: reportText.slice(0, 600) })
-      }).then(function(imgData){
-        if(imgData.ok && imgData.image_url) {
-          // Update D1 with image_url
-          postsFetch('/release-notes/'+noteId+'/image', {
-            method: 'PATCH',
-            body: JSON.stringify({ image_url: imgData.image_url })
-          }).catch(function(){});
-          // Update Summary tab card
-          var sumImg = document.getElementById('sum-img-'+noteId);
-          if(sumImg){ sumImg.src = imgData.image_url; sumImg.style.display = 'block'; }
-          // Update Dashboard hero
-          noteObj.image_url = imgData.image_url;
-          var hero = document.getElementById('dash-summary-hero');
-          var heroImg = document.getElementById('dash-summary-img');
-          var heroTitle = document.getElementById('dash-summary-title');
-          var heroDate = document.getElementById('dash-summary-date');
-          if(heroImg) heroImg.src = imgData.image_url;
-          if(heroTitle) heroTitle.textContent = title;
-          if(heroDate) heroDate.textContent = dateStr2;
-          if(hero) hero.style.display = 'block';
-        }
-      }).catch(function(){});
+      sumGenerateImageForNote(noteObj, {silent:true});
     }
     return data.ok || false;
   } catch(e) {
