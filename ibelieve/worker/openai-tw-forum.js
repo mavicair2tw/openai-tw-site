@@ -651,7 +651,7 @@ async function handleIBelieve(request, env, url) {
     if (version) { conditions.push("version = ?"); bindings.push(version); }
     if (hasImage) { conditions.push("image_url IS NOT NULL AND image_url != ''"); }
     const where = conditions.length ? "WHERE " + conditions.join(" AND ") : "";
-    const sql = "SELECT id,version,title,content,tags,author,release_date,created_at,image_url FROM release_notes " + where + " ORDER BY created_at DESC LIMIT ?";
+    const sql = "SELECT id,version,title,content,tags,author,release_date,created_at,image_url FROM release_notes " + where + " ORDER BY release_date DESC, CASE WHEN created_at > 100000000000 THEN created_at / 1000 ELSE created_at END DESC LIMIT ?";
     bindings.push(limit);
     const rows = await env.DB.prepare(sql).bind(...bindings).all();
     return json({ notes: rows.results || [], total: (rows.results || []).length }, 200, request);

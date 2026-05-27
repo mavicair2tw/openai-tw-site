@@ -3138,6 +3138,16 @@ async function rnLoad(){
     params.set('limit','50');
     var data=await postsFetch('/release-notes?'+params.toString());
     var notes=data.notes||[];
+    notes.sort(function(a,b){
+      var da = String(a.release_date || '');
+      var db = String(b.release_date || '');
+      if(da !== db) return db.localeCompare(da);
+      var ta = Number(a.created_at) || 0;
+      var tb = Number(b.created_at) || 0;
+      if(ta > 100000000000) ta = Math.floor(ta / 1000);
+      if(tb > 100000000000) tb = Math.floor(tb / 1000);
+      return tb - ta;
+    });
     if(status) status.textContent=notes.length+' release note'+(notes.length!==1?'s':'')+(q||date?' found':'');
     if(!notes.length){
       list.innerHTML='<div style="color:var(--text-muted);font-size:13px;padding:20px 0;text-align:center;">No release notes found. Click + New to create one.</div>';
