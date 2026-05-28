@@ -3182,6 +3182,7 @@ async function rnLoad(){
         +'</div>'
         +'</div>';
     }).join('');
+    rnOpenRequestedNote();
   }catch(e){
     if(status) status.textContent='Error: '+esc(e.message);
     showToast('Error loading release notes: '+e.message,'red');
@@ -3189,6 +3190,18 @@ async function rnLoad(){
 }
 
 function rnSearch(){ rnLoad(); }
+
+function rnOpenRequestedNote(){
+  var params = new URLSearchParams(location.search || '');
+  var id = params.get('note') || (location.hash || '').replace(/^#note-/, '');
+  if(!id) return;
+  var card = document.getElementById('rn-card-'+id);
+  if(!card) return;
+  rnExpand(id);
+  card.scrollIntoView({ behavior:'smooth', block:'center' });
+  card.style.boxShadow = '0 0 0 2px var(--accent), 0 18px 40px rgba(0,0,0,.35)';
+  setTimeout(function(){ card.style.boxShadow = ''; }, 3000);
+}
 
 function rnExpand(id){
   var preview=document.getElementById('rn-preview-'+id);
@@ -3336,7 +3349,15 @@ function initAll(){refreshData(); loadAccounts();}
 // Try auto login on page load
 window.addEventListener('DOMContentLoaded', async ()=>{
   var autoLoggedIn = await tryAutoLogin();
-  if(autoLoggedIn) dashLoadSummaryHero();
+  if(autoLoggedIn) {
+    dashLoadSummaryHero();
+    var params = new URLSearchParams(location.search || '');
+    var tab = params.get('tab');
+    if(tab === 'releasenotes') {
+      var rnTab = Array.from(document.querySelectorAll('.tab')).find(function(el){ return el.getAttribute('onclick') && el.getAttribute('onclick').includes("releasenotes"); });
+      if(rnTab) switchTab('releasenotes', rnTab);
+    }
+  }
   // If not auto-logged in, show login form (already visible by default)
 });
 </script>
