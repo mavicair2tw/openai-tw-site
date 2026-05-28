@@ -430,8 +430,13 @@ async function runLinePush(env) {
       }
     }
     msg += "\u{1F310} openai-tw.com/ibelieve/";
+    var heroImageUrl = await getDailyLineHeroImage(env, msg);
     var userId = env.LINE_USER_ID || "Uad1a752bb0186d090cd36d0cc861a8d8";
-    var lineRes = await fetch("https://api.line.me/v2/bot/message/push", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + env.LINE_TOKEN }, body: JSON.stringify({ to: userId, messages: [{ type: "text", text: msg }] }) });
+    var messages = heroImageUrl ? [
+      { type: "image", originalContentUrl: heroImageUrl, previewImageUrl: heroImageUrl },
+      { type: "text", text: msg }
+    ] : [{ type: "text", text: msg }];
+    var lineRes = await fetch("https://api.line.me/v2/bot/message/push", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + env.LINE_TOKEN }, body: JSON.stringify({ to: userId, messages }) });
     if (!lineRes.ok) {
       var errText = await lineRes.text();
       results.errors.push("LINE API " + lineRes.status + ": " + errText);
@@ -439,6 +444,7 @@ async function runLinePush(env) {
     }
     results.ok = true;
     results.sent = 1;
+    results.heroImageUrl = heroImageUrl || null;
     results.todayPosts = todayPosts.length;
     results.totalLinks = totalLinks;
     return results;
@@ -449,6 +455,98 @@ async function runLinePush(env) {
 }
 __name(runLinePush, "runLinePush");
 __name2(runLinePush, "runLinePush");
+
+function taipeiDateString() {
+  const tw = new Date(Date.now() + 8 * 36e5);
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${tw.getUTCFullYear()}-${pad(tw.getUTCMonth() + 1)}-${pad(tw.getUTCDate())}`;
+}
+__name(taipeiDateString, "taipeiDateString");
+__name2(taipeiDateString, "taipeiDateString");
+
+function normalizeForumImageUrl(imageUrl) {
+  if (!imageUrl) return null;
+  let url = String(imageUrl);
+  if (url.startsWith("https://forum/")) {
+    url = url.replace("https://forum/", "https://openai-tw-forum.googselect.workers.dev/");
+  }
+  return url.startsWith("https://") ? url : null;
+}
+__name(normalizeForumImageUrl, "normalizeForumImageUrl");
+__name2(normalizeForumImageUrl, "normalizeForumImageUrl");
+
+async function getDailyLineHeroImage(env, reportText) {
+  const todayStr = taipeiDateString();
+  let latestSummaryId = null;
+  let latestSummaryContent = "";
+  if (env.DB) {
+    try {
+      const row = await env.DB.prepare(
+        "SELECT id,content,image_url FROM release_notes WHERE version='summary' AND release_date=? ORDER BY CASE WHEN created_at > 100000000000 THEN created_at / 1000 ELSE created_at END DESC LIMIT 1"
+      ).bind(todayStr).first();
+      latestSummaryId = row?.id || null;
+      latestSummaryContent = row?.content || "";
+      const existingUrl = normalizeForumImageUrl(row?.image_url);
+      if (existingUrl) return existingUrl;
+    } catch (e) {
+    }
+  }
+  const imageText = String(latestSummaryContent || reportText || "").slice(0, 600);
+  const forum = env.FORUM;
+  let imageUrl = null;
+  if (forum) {
+    try {
+      const imgRes = await forum.fetch("https://forum/api/ibelieve/generate-summary-image", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ text: imageText })
+      });
+      const imgData = await imgRes.json().catch(() => ({}));
+      imageUrl = normalizeForumImageUrl(imgData?.image_url);
+    } catch (e) {
+    }
+  }
+  if (!imageUrl) imageUrl = await generateLineHeroImageDirect(env, imageText);
+  if (imageUrl && env.DB && latestSummaryId) {
+    try {
+      await env.DB.prepare("UPDATE release_notes SET image_url=? WHERE id=?").bind(imageUrl, latestSummaryId).run();
+    } catch (e) {
+    }
+  }
+  return imageUrl;
+}
+__name(getDailyLineHeroImage, "getDailyLineHeroImage");
+__name2(getDailyLineHeroImage, "getDailyLineHeroImage");
+
+async function generateLineHeroImageDirect(env, text) {
+  if (!env.AI || !env.IMAGES_BUCKET) return null;
+  try {
+    const prompt = [
+      "Create a cinematic abstract hero image for an iBelieve AI knowledge graph daily report.",
+      "Visualize AI agents, belief, discovery, miracle, god, cosmic network nodes, luminous connections, and a deep space archive.",
+      "No text, no letters, no logos, no UI screenshots, no human faces.",
+      "Elegant, beautiful, editorial, high contrast, mystical but professional.",
+      `Report context: ${String(text || "").slice(0, 420)}`
+    ].join(" ");
+    const imgResult = await env.AI.run("@cf/black-forest-labs/flux-1-schnell", {
+      prompt,
+      num_steps: 4,
+      width: 1024,
+      height: 1024
+    });
+    if (!imgResult?.image) return null;
+    const binaryStr = atob(imgResult.image);
+    const bytes = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+    const imgKey = "line-daily/ibelieve-line-hero-" + Date.now() + ".png";
+    await env.IMAGES_BUCKET.put(imgKey, bytes.buffer, { httpMetadata: { contentType: "image/png" } });
+    return "https://openai-tw-forum.googselect.workers.dev/api/ibelieve/image/" + encodeURIComponent(imgKey);
+  } catch (e) {
+    return null;
+  }
+}
+__name(generateLineHeroImageDirect, "generateLineHeroImageDirect");
+__name2(generateLineHeroImageDirect, "generateLineHeroImageDirect");
 async function runAloha(env, releaseData) {
   const results = { ok: false, steps: {}, errors: [] };
   try {
@@ -862,10 +960,13 @@ ${contextLines.join("\n")}` : "";
       })());
     } else if (event.cron === "0 23 * * *") {
       ctx.waitUntil(runSnapshot(env));
-    } else if (event.cron === "30 23 * * *") {
-      ctx.waitUntil(runLinePush(env));
     } else {
-      ctx.waitUntil(runPublish(env));
+      const now = new Date();
+      if (event.cron === "*/30 * * * *" && now.getUTCHours() === 23 && now.getUTCMinutes() === 30) {
+        ctx.waitUntil(runLinePush(env));
+      } else {
+        ctx.waitUntil(runPublish(env));
+      }
     }
   }
 };
