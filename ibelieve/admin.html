@@ -909,6 +909,7 @@ async function doLogin() {
   var agentInp = document.getElementById('inp-agent-name');
   if(agentInp) agentInp.value = currentUser||u;
   initAll();
+  applyInitialAdminRoute();
 }
 async function doLogout(revokeDevice) {
   var token = localStorage.getItem(DEVICE_TOKEN_KEY) || adminToken;
@@ -1354,7 +1355,7 @@ function selectTokenPeriod(periodKey){
 
 async function loadTokenUsage(){
   var tbody=document.getElementById('token-body');
-  tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">Loading token usage...</td></tr>';
+  tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">Loading token usage...</td></tr>';
   try{
     var results=await Promise.allSettled([
       fetchTokenUsageSummary(),
@@ -1368,7 +1369,7 @@ async function loadTokenUsage(){
     renderTokenPeriodCards();
     selectTokenPeriod(tokenActivePeriod);
   }catch(e){
-    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--danger);font-size:13px;">Failed to load token data: '+escHtml(e.message||'Unknown error')+'</td></tr>';
+    tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--danger);font-size:13px;">Failed to load token data: '+escHtml(e.message||'Unknown error')+'</td></tr>';
     document.getElementById('token-updated-at').textContent='Load failed';
   }
 }
@@ -1658,8 +1659,9 @@ function showToast(msg,color){
 function switchTab(name,el){
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
   document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
-  el.classList.add('active');
-  document.getElementById('panel-'+name).classList.add('active');
+  if(el) el.classList.add('active');
+  var panel=document.getElementById('panel-'+name);
+  if(panel) panel.classList.add('active');
   if(name==='account') loadAccounts();
   if(name==='token') loadTokenUsage();
   if(name==='posts') loadPosts();
@@ -1669,6 +1671,16 @@ function switchTab(name,el){
   if(name==='summary') sumLoad();
   if(name==='notification'){ notifLoad().catch(function(e){ console.warn('notifLoad error:',e); }); }
   if(name==='decisiontree') dtInit();
+}
+
+function switchTabByName(name){
+  var panel=document.getElementById('panel-'+name);
+  if(!panel) return false;
+  var tabEl=Array.from(document.querySelectorAll('.tab')).find(function(el){
+    return el.getAttribute('onclick') && el.getAttribute('onclick').includes("'"+name+"'");
+  });
+  switchTab(name, tabEl);
+  return true;
 }
 
 /* REFRESH */
@@ -3346,17 +3358,23 @@ function rnCancelForm(){
 /* INIT */
 function initAll(){refreshData(); loadAccounts();}
 
+function applyInitialAdminRoute(){
+  var params = new URLSearchParams(location.search || '');
+  var tab = params.get('tab');
+  if(tab && switchTabByName(tab)){
+    return;
+  }
+  if(params.get('note') || (location.hash || '').indexOf('#note-')===0){
+    switchTabByName('releasenotes');
+  }
+}
+
 // Try auto login on page load
 window.addEventListener('DOMContentLoaded', async ()=>{
   var autoLoggedIn = await tryAutoLogin();
   if(autoLoggedIn) {
     dashLoadSummaryHero();
-    var params = new URLSearchParams(location.search || '');
-    var tab = params.get('tab');
-    if(tab === 'releasenotes') {
-      var rnTab = Array.from(document.querySelectorAll('.tab')).find(function(el){ return el.getAttribute('onclick') && el.getAttribute('onclick').includes("releasenotes"); });
-      if(rnTab) switchTab('releasenotes', rnTab);
-    }
+    applyInitialAdminRoute();
   }
   // If not auto-logged in, show login form (already visible by default)
 });
