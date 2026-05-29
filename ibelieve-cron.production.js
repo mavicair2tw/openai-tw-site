@@ -414,22 +414,6 @@ async function runLinePush(env) {
       });
       msg += NL;
     }
-    if (env.DB) {
-      try {
-        var todayStr = new Date(Date.now() + 8 * 36e5).toISOString().slice(0, 10);
-        var rnRows = await env.DB.prepare("SELECT id,version,title FROM release_notes WHERE release_date=? ORDER BY CASE WHEN created_at > 100000000000 THEN created_at / 1000 ELSE created_at END DESC LIMIT 5").bind(todayStr).all();
-        var rns = rnRows.results || [];
-        if (rns.length) {
-          msg += "\u300A\u4ECA\u65E5 Release\u300B" + NL;
-          rns.forEach((n) => {
-            const noteUrl = "https://openai-tw.com/ibelieve/admin.html?tab=releasenotes&note=" + encodeURIComponent(n.id);
-            msg += "\u2022 " + n.version + " \u2014 " + (n.title || "").slice(0, 40) + NL + "  " + noteUrl + NL;
-          });
-          msg += NL;
-        }
-      } catch (e) {
-      }
-    }
     msg += "\u{1F310} openai-tw.com/ibelieve/";
     var heroImageUrl = await getDailyLineHeroImage(env, msg);
     var userId = env.LINE_USER_ID || "Uad1a752bb0186d090cd36d0cc861a8d8";
