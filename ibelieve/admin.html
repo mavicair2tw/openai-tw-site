@@ -373,7 +373,7 @@ System info</div>
     <div id="panel-token" class="panel">
       <div class="card">
         <div class="card-title">Token & model spend</div>
-        <div class="token-note">Usage and cost are loaded from the live iCut ledger. Grok image and video generation costs now come from the worker’s recorded API spend. Some generation APIs return cost without token counts, so those rows show dashes for Input, Output, and Total.</div>
+        <div class="token-note">Usage and cost are loaded from the live iCut ledger. Grok, OpenAI, and Google/Gemini API usage appear here when source apps record spend into the ledger. Some generation APIs return cost without token counts, so those rows show dashes for Input, Output, and Total.</div>
         <div id="token-period-grid" class="token-grid"></div>
         <div id="token-provider-filters" class="token-filters"></div>
         <div class="token-meta">
@@ -1292,9 +1292,20 @@ function getTokenPeriodSummary(periodKey){
 
 function renderTokenProviderFilters(){
   var root=document.getElementById('token-provider-filters');
+  var activeSummary=getTokenPeriodSummary(tokenActivePeriod);
+  var stats={ALL:{events:0,cost:0}};
+  (activeSummary&&activeSummary.rows||[]).forEach(function(row){
+    var key=String(row.provider||'OTHER').toUpperCase();
+    if(!stats[key]) stats[key]={events:0,cost:0};
+    stats[key].events += Number(row.events||0);
+    stats[key].cost += Number(row.total_cost_usd||0);
+    stats.ALL.events += Number(row.events||0);
+    stats.ALL.cost += Number(row.total_cost_usd||0);
+  });
   root.innerHTML=TOKEN_PROVIDER_FILTERS.map(function(item){
     var active=tokenProviderFilter===item.key?' active':'';
-    return '<button type="button" class="token-filter-btn'+active+'" onclick="selectTokenProvider(\''+item.key+'\')">'+item.label+'</button>';
+    var itemStats=stats[item.key]||{events:0,cost:0};
+    return '<button type="button" class="token-filter-btn'+active+'" onclick="selectTokenProvider(\''+item.key+'\')">'+item.label+' <span class="mono">'+formatter.format(itemStats.events)+'</span></button>';
   }).join('');
 }
 
