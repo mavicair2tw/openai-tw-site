@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-01T19:30:51.386248+08:00",
+  "updatedAt": "2026-06-02T08:09:14.143298+08:00",
   "timezone": "Asia/Taipei",
   "market": "US",
   "items": [
@@ -7,105 +7,105 @@
       "label": "台積電ADR",
       "symbol": "TSM",
       "type": "Stock",
-      "price": 418.61,
-      "change": -6.25,
-      "changePercent": -1.47,
+      "price": 436.01,
+      "change": 17.55,
+      "changePercent": 4.2,
       "trend": [
         {
           "time": "22:00",
-          "close": 425.82
+          "close": 434.92
         },
         {
           "time": "22:15",
-          "close": 423.35
+          "close": 438.89
         },
         {
           "time": "22:30",
-          "close": 418.76
+          "close": 439.72
         },
         {
           "time": "22:45",
-          "close": 420.72
+          "close": 437.79
         },
         {
           "time": "23:00",
-          "close": 421.09
+          "close": 438.89
         },
         {
           "time": "23:15",
-          "close": 418.88
+          "close": 440.67
         },
         {
           "time": "23:30",
-          "close": 418.8
+          "close": 441.35
         },
         {
           "time": "23:45",
-          "close": 418.42
+          "close": 440.0
         },
         {
           "time": "00:00",
-          "close": 419.06
+          "close": 441.54
         },
         {
           "time": "00:15",
-          "close": 418.2
+          "close": 441.98
         },
         {
           "time": "00:30",
-          "close": 420.28
+          "close": 442.77
         },
         {
           "time": "00:45",
-          "close": 420.58
+          "close": 448.38
         },
         {
           "time": "01:00",
-          "close": 419.7
+          "close": 446.32
         },
         {
           "time": "01:15",
-          "close": 418.98
+          "close": 445.91
         },
         {
           "time": "01:30",
-          "close": 417.98
+          "close": 445.79
         },
         {
           "time": "01:45",
-          "close": 417.68
+          "close": 445.04
         },
         {
           "time": "02:00",
-          "close": 418.38
+          "close": 443.19
         },
         {
           "time": "02:15",
-          "close": 419.32
+          "close": 442.64
         },
         {
           "time": "02:30",
-          "close": 419.3
+          "close": 441.88
         },
         {
           "time": "02:45",
-          "close": 417.98
+          "close": 441.0
         },
         {
           "time": "03:00",
-          "close": 418.61
+          "close": 439.65
         },
         {
           "time": "03:15",
-          "close": 418.42
+          "close": 438.64
         },
         {
           "time": "03:30",
-          "close": 418.58
+          "close": 437.61
         },
         {
           "time": "03:45",
-          "close": 418.61
+          "close": 436.01
         }
       ]
     },
@@ -113,105 +113,105 @@
       "label": "Google",
       "symbol": "GOOG",
       "type": "Stock",
-      "price": 376.38,
-      "change": -9.74,
-      "changePercent": -2.52,
+      "price": 372.58,
+      "change": -3.85,
+      "changePercent": -1.02,
       "trend": [
         {
           "time": "22:00",
-          "close": 379.71
+          "close": 370.82
         },
         {
           "time": "22:15",
-          "close": 379.92
+          "close": 372.06
         },
         {
           "time": "22:30",
-          "close": 377.45
+          "close": 372.44
         },
         {
           "time": "22:45",
-          "close": 379.04
+          "close": 372.67
         },
         {
           "time": "23:00",
-          "close": 379.83
+          "close": 372.18
         },
         {
           "time": "23:15",
-          "close": 379.8
+          "close": 371.82
         },
         {
           "time": "23:30",
-          "close": 379.56
+          "close": 371.33
         },
         {
           "time": "23:45",
-          "close": 379.14
+          "close": 371.44
         },
         {
           "time": "00:00",
-          "close": 379.74
+          "close": 371.07
         },
         {
           "time": "00:15",
-          "close": 379.7
+          "close": 371.09
         },
         {
           "time": "00:30",
-          "close": 379.72
+          "close": 371.15
         },
         {
           "time": "00:45",
-          "close": 379.22
+          "close": 372.1
         },
         {
           "time": "01:00",
-          "close": 378.83
+          "close": 372.37
         },
         {
           "time": "01:15",
-          "close": 379.06
+          "close": 374.02
         },
         {
           "time": "01:30",
-          "close": 379.3
+          "close": 373.94
         },
         {
           "time": "01:45",
-          "close": 378.92
+          "close": 372.39
         },
         {
           "time": "02:00",
-          "close": 379.32
+          "close": 372.2
         },
         {
           "time": "02:15",
-          "close": 379.46
+          "close": 373.35
         },
         {
           "time": "02:30",
-          "close": 379.0
+          "close": 373.5
         },
         {
           "time": "02:45",
-          "close": 378.24
+          "close": 373.84
         },
         {
           "time": "03:00",
-          "close": 378.65
+          "close": 373.71
         },
         {
           "time": "03:15",
-          "close": 378.97
+          "close": 374.39
         },
         {
           "time": "03:30",
-          "close": 378.44
+          "close": 373.48
         },
         {
           "time": "03:45",
-          "close": 376.38
+          "close": 372.58
         }
       ]
     },
@@ -219,105 +219,105 @@
       "label": "AMD",
       "symbol": "AMD",
       "type": "Stock",
-      "price": 516.4,
-      "change": -1.69,
-      "changePercent": -0.33,
+      "price": 510.02,
+      "change": -6.08,
+      "changePercent": -1.18,
       "trend": [
         {
           "time": "22:00",
-          "close": 518.26
+          "close": 492.27
         },
         {
           "time": "22:15",
-          "close": 512.5
+          "close": 501.63
         },
         {
           "time": "22:30",
-          "close": 508.35
+          "close": 506.11
         },
         {
           "time": "22:45",
-          "close": 514.5
+          "close": 508.99
         },
         {
           "time": "23:00",
-          "close": 514.3
+          "close": 512.93
         },
         {
           "time": "23:15",
-          "close": 512.79
+          "close": 513.38
         },
         {
           "time": "23:30",
-          "close": 511.77
+          "close": 513.11
         },
         {
           "time": "23:45",
-          "close": 510.84
+          "close": 509.97
         },
         {
           "time": "00:00",
-          "close": 512.64
+          "close": 508.04
         },
         {
           "time": "00:15",
-          "close": 511.51
+          "close": 507.06
         },
         {
           "time": "00:30",
-          "close": 511.17
+          "close": 507.91
         },
         {
           "time": "00:45",
-          "close": 509.05
+          "close": 509.44
         },
         {
           "time": "01:00",
-          "close": 506.9
+          "close": 509.17
         },
         {
           "time": "01:15",
-          "close": 504.42
+          "close": 512.19
         },
         {
           "time": "01:30",
-          "close": 504.34
+          "close": 511.83
         },
         {
           "time": "01:45",
-          "close": 503.6
+          "close": 513.4
         },
         {
           "time": "02:00",
-          "close": 505.11
+          "close": 513.67
         },
         {
           "time": "02:15",
-          "close": 506.25
+          "close": 513.55
         },
         {
           "time": "02:30",
-          "close": 506.92
+          "close": 511.83
         },
         {
           "time": "02:45",
-          "close": 505.01
+          "close": 512.24
         },
         {
           "time": "03:00",
-          "close": 504.68
+          "close": 512.66
         },
         {
           "time": "03:15",
-          "close": 506.34
+          "close": 512.32
         },
         {
           "time": "03:30",
-          "close": 508.79
+          "close": 510.54
         },
         {
           "time": "03:45",
-          "close": 516.4
+          "close": 510.02
         }
       ]
     },
@@ -325,105 +325,105 @@
       "label": "NVIDIA",
       "symbol": "NVDA",
       "type": "Stock",
-      "price": 211.15,
-      "change": -3.1,
-      "changePercent": -1.45,
+      "price": 224.42,
+      "change": 13.28,
+      "changePercent": 6.29,
       "trend": [
         {
           "time": "22:00",
-          "close": 216.29
+          "close": 220.62
         },
         {
           "time": "22:15",
-          "close": 215.92
+          "close": 221.37
         },
         {
           "time": "22:30",
-          "close": 214.51
+          "close": 220.45
         },
         {
           "time": "22:45",
-          "close": 215.14
+          "close": 219.62
         },
         {
           "time": "23:00",
-          "close": 216.93
+          "close": 219.09
         },
         {
           "time": "23:15",
-          "close": 215.39
+          "close": 219.4
         },
         {
           "time": "23:30",
-          "close": 215.05
+          "close": 220.09
         },
         {
           "time": "23:45",
-          "close": 215.02
+          "close": 219.66
         },
         {
           "time": "00:00",
-          "close": 216.65
+          "close": 220.42
         },
         {
           "time": "00:15",
-          "close": 215.99
+          "close": 221.95
         },
         {
           "time": "00:30",
-          "close": 217.08
+          "close": 221.46
         },
         {
           "time": "00:45",
-          "close": 216.59
+          "close": 222.1
         },
         {
           "time": "01:00",
-          "close": 216.79
+          "close": 221.71
         },
         {
           "time": "01:15",
-          "close": 216.28
+          "close": 221.96
         },
         {
           "time": "01:30",
-          "close": 216.13
+          "close": 223.1
         },
         {
           "time": "01:45",
-          "close": 215.5
+          "close": 223.53
         },
         {
           "time": "02:00",
-          "close": 215.59
+          "close": 223.22
         },
         {
           "time": "02:15",
-          "close": 216.97
+          "close": 224.62
         },
         {
           "time": "02:30",
-          "close": 217.29
+          "close": 224.55
         },
         {
           "time": "02:45",
-          "close": 216.7
+          "close": 223.99
         },
         {
           "time": "03:00",
-          "close": 217.6
+          "close": 224.71
         },
         {
           "time": "03:15",
-          "close": 216.99
+          "close": 224.0
         },
         {
           "time": "03:30",
-          "close": 217.11
+          "close": 223.58
         },
         {
           "time": "03:45",
-          "close": 211.15
+          "close": 224.42
         }
       ]
     },
@@ -431,105 +431,105 @@
       "label": "Tesla",
       "symbol": "TSLA",
       "type": "Stock",
-      "price": 435.56,
-      "change": -6.54,
-      "changePercent": -1.48,
+      "price": 415.71,
+      "change": -20.08,
+      "changePercent": -4.61,
       "trend": [
         {
           "time": "22:00",
-          "close": 432.35
+          "close": 422.09
         },
         {
           "time": "22:15",
-          "close": 430.69
+          "close": 421.67
         },
         {
           "time": "22:30",
-          "close": 428.95
+          "close": 422.01
         },
         {
           "time": "22:45",
-          "close": 431.8
+          "close": 419.45
         },
         {
           "time": "23:00",
-          "close": 433.7
+          "close": 421.02
         },
         {
           "time": "23:15",
-          "close": 433.64
+          "close": 421.91
         },
         {
           "time": "23:30",
-          "close": 434.05
+          "close": 422.89
         },
         {
           "time": "23:45",
-          "close": 434.78
+          "close": 421.03
         },
         {
           "time": "00:00",
-          "close": 438.31
+          "close": 419.46
         },
         {
           "time": "00:15",
-          "close": 438.25
+          "close": 418.8
         },
         {
           "time": "00:30",
-          "close": 437.99
+          "close": 420.06
         },
         {
           "time": "00:45",
-          "close": 437.6
+          "close": 420.91
         },
         {
           "time": "01:00",
-          "close": 438.01
+          "close": 420.27
         },
         {
           "time": "01:15",
-          "close": 438.2
+          "close": 420.92
         },
         {
           "time": "01:30",
-          "close": 438.26
+          "close": 420.97
         },
         {
           "time": "01:45",
-          "close": 437.18
+          "close": 420.45
         },
         {
           "time": "02:00",
-          "close": 437.52
+          "close": 420.12
         },
         {
           "time": "02:15",
-          "close": 437.72
+          "close": 420.15
         },
         {
           "time": "02:30",
-          "close": 437.16
+          "close": 419.62
         },
         {
           "time": "02:45",
-          "close": 435.08
+          "close": 419.12
         },
         {
           "time": "03:00",
-          "close": 434.89
+          "close": 418.17
         },
         {
           "time": "03:15",
-          "close": 434.41
+          "close": 418.27
         },
         {
           "time": "03:30",
-          "close": 436.05
+          "close": 416.75
         },
         {
           "time": "03:45",
-          "close": 435.56
+          "close": 415.71
         }
       ]
     },
@@ -537,105 +537,105 @@
       "label": "S&P 500",
       "symbol": "^GSPC",
       "type": "Index",
-      "price": 7581.25,
-      "change": 17.62,
-      "changePercent": 0.23,
+      "price": 7600.25,
+      "change": 20.19,
+      "changePercent": 0.27,
       "trend": [
         {
           "time": "22:00",
-          "close": 7590.35
+          "close": 7576.58
         },
         {
           "time": "22:15",
-          "close": 7583.74
+          "close": 7575.56
         },
         {
           "time": "22:30",
-          "close": 7568.53
+          "close": 7575.3
         },
         {
           "time": "22:45",
-          "close": 7577.66
+          "close": 7573.58
         },
         {
           "time": "23:00",
-          "close": 7591.03
+          "close": 7576.38
         },
         {
           "time": "23:15",
-          "close": 7587.16
+          "close": 7579.04
         },
         {
           "time": "23:30",
-          "close": 7584.38
+          "close": 7589.83
         },
         {
           "time": "23:45",
-          "close": 7581.2
+          "close": 7583.9
         },
         {
           "time": "00:00",
-          "close": 7590.7
+          "close": 7582.37
         },
         {
           "time": "00:15",
-          "close": 7584.36
+          "close": 7585.04
         },
         {
           "time": "00:30",
-          "close": 7591.95
+          "close": 7587.9
         },
         {
           "time": "00:45",
-          "close": 7585.62
+          "close": 7597.27
         },
         {
           "time": "01:00",
-          "close": 7584.43
+          "close": 7590.34
         },
         {
           "time": "01:15",
-          "close": 7583.32
+          "close": 7600.36
         },
         {
           "time": "01:30",
-          "close": 7577.67
+          "close": 7611.5
         },
         {
           "time": "01:45",
-          "close": 7569.92
+          "close": 7612.9
         },
         {
           "time": "02:00",
-          "close": 7574.39
+          "close": 7610.52
         },
         {
           "time": "02:15",
-          "close": 7580.61
+          "close": 7615.7
         },
         {
           "time": "02:30",
-          "close": 7581.64
+          "close": 7615.74
         },
         {
           "time": "02:45",
-          "close": 7572.0
+          "close": 7612.48
         },
         {
           "time": "03:00",
-          "close": 7581.27
+          "close": 7611.83
         },
         {
           "time": "03:15",
-          "close": 7586.05
+          "close": 7613.55
         },
         {
           "time": "03:30",
-          "close": 7589.95
+          "close": 7606.95
         },
         {
           "time": "03:45",
-          "close": 7581.25
+          "close": 7600.25
         }
       ]
     },
@@ -643,105 +643,105 @@
       "label": "美國費城半導體指數",
       "symbol": "^SOX",
       "type": "Index",
-      "price": 12833.66,
-      "change": 4.52,
-      "changePercent": 0.04,
+      "price": 12966.82,
+      "change": 137.44,
+      "changePercent": 1.07,
       "trend": [
         {
           "time": "22:00",
-          "close": 13019.1
+          "close": 12709.06
         },
         {
           "time": "22:15",
-          "close": 12901.41
+          "close": 12824.74
         },
         {
           "time": "22:30",
-          "close": 12748.73
+          "close": 12857.4
         },
         {
           "time": "22:45",
-          "close": 12847.03
+          "close": 12865.14
         },
         {
           "time": "23:00",
-          "close": 12880.41
+          "close": 12908.31
         },
         {
           "time": "23:15",
-          "close": 12855.37
+          "close": 12958.52
         },
         {
           "time": "23:30",
-          "close": 12830.07
+          "close": 12994.75
         },
         {
           "time": "23:45",
-          "close": 12803.16
+          "close": 12925.28
         },
         {
           "time": "00:00",
-          "close": 12852.2
+          "close": 12935.52
         },
         {
           "time": "00:15",
-          "close": 12834.01
+          "close": 12961.44
         },
         {
           "time": "00:30",
-          "close": 12823.98
+          "close": 12961.05
         },
         {
           "time": "00:45",
-          "close": 12844.14
+          "close": 13020.54
         },
         {
           "time": "01:00",
-          "close": 12831.07
+          "close": 13004.56
         },
         {
           "time": "01:15",
-          "close": 12805.88
+          "close": 13023.58
         },
         {
           "time": "01:30",
-          "close": 12771.35
+          "close": 13049.17
         },
         {
           "time": "01:45",
-          "close": 12742.27
+          "close": 13073.93
         },
         {
           "time": "02:00",
-          "close": 12781.31
+          "close": 13017.38
         },
         {
           "time": "02:15",
-          "close": 12813.25
+          "close": 13027.5
         },
         {
           "time": "02:30",
-          "close": 12818.16
+          "close": 13022.59
         },
         {
           "time": "02:45",
-          "close": 12771.82
+          "close": 13008.57
         },
         {
           "time": "03:00",
-          "close": 12785.82
+          "close": 12993.52
         },
         {
           "time": "03:15",
-          "close": 12786.48
+          "close": 12978.11
         },
         {
           "time": "03:30",
-          "close": 12850.63
+          "close": 12947.25
         },
         {
           "time": "03:45",
-          "close": 12833.66
+          "close": 12966.82
         }
       ]
     },
@@ -749,105 +749,13 @@
       "label": "比特幣",
       "symbol": "BTC-USD",
       "type": "Crypto",
-      "price": 72550.28,
-      "change": -1029.41,
-      "changePercent": -1.4,
+      "price": 71233.12,
+      "change": -2346.57,
+      "changePercent": -3.19,
       "trend": [
         {
-          "time": "13:45",
-          "close": 73249.74
-        },
-        {
-          "time": "14:00",
-          "close": 73193.94
-        },
-        {
-          "time": "14:15",
-          "close": 73089.98
-        },
-        {
-          "time": "14:30",
-          "close": 72914.28
-        },
-        {
-          "time": "14:45",
-          "close": 73035.99
-        },
-        {
-          "time": "15:00",
-          "close": 73015.62
-        },
-        {
-          "time": "15:15",
-          "close": 72877.84
-        },
-        {
-          "time": "15:30",
-          "close": 72840.68
-        },
-        {
-          "time": "15:45",
-          "close": 72701.97
-        },
-        {
-          "time": "16:00",
-          "close": 72716.89
-        },
-        {
-          "time": "16:15",
-          "close": 72630.0
-        },
-        {
-          "time": "16:30",
-          "close": 72656.94
-        },
-        {
-          "time": "16:45",
-          "close": 72800.76
-        },
-        {
-          "time": "17:00",
-          "close": 72863.86
-        },
-        {
-          "time": "17:15",
-          "close": 72904.41
-        },
-        {
-          "time": "17:30",
-          "close": 72845.66
-        },
-        {
-          "time": "17:45",
-          "close": 72786.08
-        },
-        {
-          "time": "18:00",
-          "close": 72697.75
-        },
-        {
-          "time": "18:15",
-          "close": 72616.0
-        },
-        {
-          "time": "18:30",
-          "close": 72590.36
-        },
-        {
-          "time": "18:45",
-          "close": 72652.01
-        },
-        {
-          "time": "19:00",
-          "close": 72585.17
-        },
-        {
-          "time": "19:15",
-          "close": 72570.89
-        },
-        {
-          "time": "19:30",
-          "close": 72550.28
+          "time": "08:00",
+          "close": 71233.12
         }
       ]
     },
@@ -855,105 +763,105 @@
       "label": "黃金期貨",
       "symbol": "GC=F",
       "type": "Commodity",
-      "price": 4539.8,
-      "change": -20.7,
-      "changePercent": -0.45,
+      "price": 4515.0,
+      "change": -45.5,
+      "changePercent": -1.0,
       "trend": [
         {
-          "time": "13:30",
-          "close": 4549.7
+          "time": "01:00",
+          "close": 4505.3
         },
         {
-          "time": "13:45",
-          "close": 4548.2
+          "time": "01:15",
+          "close": 4512.8
         },
         {
-          "time": "14:00",
-          "close": 4544.3
+          "time": "01:30",
+          "close": 4521.3
         },
         {
-          "time": "14:15",
-          "close": 4544.3
+          "time": "01:45",
+          "close": 4517.5
         },
         {
-          "time": "14:30",
-          "close": 4535.0
+          "time": "02:00",
+          "close": 4518.5
         },
         {
-          "time": "14:45",
-          "close": 4531.7
+          "time": "02:15",
+          "close": 4516.4
         },
         {
-          "time": "15:00",
-          "close": 4537.4
+          "time": "02:30",
+          "close": 4518.0
         },
         {
-          "time": "15:15",
-          "close": 4533.6
+          "time": "02:45",
+          "close": 4516.8
         },
         {
-          "time": "15:30",
-          "close": 4527.9
+          "time": "03:00",
+          "close": 4515.1
         },
         {
-          "time": "15:45",
-          "close": 4532.7
+          "time": "03:15",
+          "close": 4514.7
         },
         {
-          "time": "16:00",
-          "close": 4525.5
+          "time": "03:30",
+          "close": 4513.1
         },
         {
-          "time": "16:15",
-          "close": 4525.6
+          "time": "03:45",
+          "close": 4511.1
         },
         {
-          "time": "16:30",
-          "close": 4529.9
+          "time": "04:00",
+          "close": 4513.4
         },
         {
-          "time": "16:45",
-          "close": 4527.4
+          "time": "04:15",
+          "close": 4513.2
         },
         {
-          "time": "17:00",
-          "close": 4529.5
+          "time": "04:30",
+          "close": 4512.6
         },
         {
-          "time": "17:15",
-          "close": 4526.0
+          "time": "04:45",
+          "close": 4514.8
         },
         {
-          "time": "17:30",
-          "close": 4528.2
+          "time": "06:00",
+          "close": 4514.1
         },
         {
-          "time": "17:45",
-          "close": 4525.6
+          "time": "06:15",
+          "close": 4511.2
         },
         {
-          "time": "18:00",
-          "close": 4531.3
+          "time": "06:30",
+          "close": 4511.1
         },
         {
-          "time": "18:15",
-          "close": 4530.8
+          "time": "06:45",
+          "close": 4515.3
         },
         {
-          "time": "18:30",
-          "close": 4535.8
+          "time": "07:00",
+          "close": 4515.7
         },
         {
-          "time": "18:45",
-          "close": 4534.1
+          "time": "07:15",
+          "close": 4517.2
         },
         {
-          "time": "19:00",
-          "close": 4534.8
+          "time": "07:30",
+          "close": 4513.6
         },
         {
-          "time": "19:15",
-          "close": 4539.8
+          "time": "07:45",
+          "close": 4515.0
         }
       ]
     }
