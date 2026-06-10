@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-06-09T17:40:18.855520+08:00",
+  "updatedAt": "2026-06-10T08:06:38.976127+08:00",
   "timezone": "Asia/Taipei",
-  "dataDate": "2026-06-09",
+  "dataDate": "2026-06-10",
   "source": {
     "name": "臺灣證券交易所 MIS",
     "provider": "TWSE",
@@ -19,141 +19,113 @@
       "label": "加權指數",
       "symbol": "^TWII",
       "type": "Index",
-      "price": 44704.44,
-      "change": 1201.66,
-      "changePercent": 2.76,
+      "price": null,
+      "change": null,
+      "changePercent": null,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
-          "close": 43502.78
-        },
-        {
-          "time": "13:33",
           "close": 44704.44
         }
       ],
-      "timestamp": "2026-06-09T13:33:00+08:00"
+      "timestamp": "2026-06-10T07:50:00+08:00"
     },
     {
       "label": "台積電",
       "symbol": "2330.TW",
       "type": "Stock",
-      "price": 2305.0,
-      "change": 10.0,
-      "changePercent": 0.44,
+      "price": null,
+      "change": null,
+      "changePercent": null,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
-          "close": 2295.0
-        },
-        {
-          "time": "13:30",
           "close": 2305.0
         }
       ],
-      "timestamp": "2026-06-09T13:30:00+08:00"
+      "timestamp": "2026-06-10T07:50:00+08:00"
     },
     {
       "label": "富邦科技",
       "symbol": "0052.TW",
       "type": "ETF",
-      "price": 60.15,
-      "change": 1.3,
-      "changePercent": 2.21,
+      "price": null,
+      "change": null,
+      "changePercent": null,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
-          "close": 58.85
-        },
-        {
-          "time": "13:30",
           "close": 60.15
         }
       ],
-      "timestamp": "2026-06-09T13:30:00+08:00"
+      "timestamp": "2026-06-10T07:50:00+08:00"
     },
     {
       "label": "元大台灣50",
       "symbol": "0050.TW",
       "type": "ETF",
-      "price": 103.5,
-      "change": 2.55,
-      "changePercent": 2.53,
+      "price": null,
+      "change": null,
+      "changePercent": null,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
-          "close": 100.95
-        },
-        {
-          "time": "13:30",
           "close": 103.5
         }
       ],
-      "timestamp": "2026-06-09T13:30:00+08:00"
+      "timestamp": "2026-06-10T07:50:00+08:00"
     },
     {
       "label": "凱基台灣TOP50",
       "symbol": "009816.TW",
       "type": "ETF",
-      "price": 15.16,
-      "change": 0.48,
-      "changePercent": 3.27,
+      "price": null,
+      "change": null,
+      "changePercent": null,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
-          "close": 14.68
-        },
-        {
-          "time": "13:30",
           "close": 15.16
         }
       ],
-      "timestamp": "2026-06-09T13:30:00+08:00"
+      "timestamp": "2026-06-10T07:50:00+08:00"
     },
     {
       "label": "群益台灣精選高息",
       "symbol": "00919.TW",
       "type": "ETF",
-      "price": 30.72,
-      "change": 1.24,
-      "changePercent": 4.21,
+      "price": null,
+      "change": null,
+      "changePercent": null,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
-          "close": 29.48
-        },
-        {
-          "time": "13:30",
           "close": 30.72
         }
       ],
-      "timestamp": "2026-06-09T13:30:00+08:00"
+      "timestamp": "2026-06-10T07:50:00+08:00"
     },
     {
       "label": "國泰數位支付服務",
       "symbol": "00909.TW",
       "type": "ETF",
-      "price": 49.18,
-      "change": 1.86,
-      "changePercent": 3.93,
+      "price": null,
+      "change": null,
+      "changePercent": null,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
-          "close": 47.32
-        },
-        {
-          "time": "13:30",
           "close": 49.18
         }
       ],
-      "timestamp": "2026-06-09T13:30:00+08:00"
+      "timestamp": "2026-06-10T07:50:00+08:00"
     }
   ]
 }
