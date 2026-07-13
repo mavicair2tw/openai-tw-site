@@ -558,6 +558,7 @@ __name2(generateLineHeroImageDirect, "generateLineHeroImageDirect");
 __name22(generateLineHeroImageDirect, "generateLineHeroImageDirect");
 async function runAloha(env, releaseData) {
   const results = { ok: false, steps: {}, errors: [] };
+  let notificationId = null;
   try {
     if (!env.DB) throw new Error("DB binding not available");
     const version = releaseData && releaseData.version || "v?";
@@ -573,6 +574,20 @@ async function runAloha(env, releaseData) {
   } catch (e) {
     results.errors.push("d1: " + e.message);
     results.steps.d1 = { ok: false, error: e.message };
+  }
+  try {
+    if (!env.DB) throw new Error("DB binding not available");
+    const title = releaseData && releaseData.title || "Creator Studio Release";
+    const content = releaseData && releaseData.content || "";
+    notificationId = "notif-" + crypto.randomUUID().slice(0, 8);
+    const now = Math.floor(Date.now() / 1e3);
+    await env.DB.prepare(
+      "INSERT INTO notifications (id,title,content,status,created_at,updated_at) VALUES (?,?,?,'draft',?,?)"
+    ).bind(notificationId, title, content, now, now).run();
+    results.steps.notification = { ok: true, id: notificationId, status: "draft" };
+  } catch (e) {
+    results.errors.push("notification: " + e.message);
+    results.steps.notification = { ok: false, error: e.message };
   }
   try {
     if (!env.LINE_TOKEN) throw new Error("LINE_TOKEN not set");
@@ -591,6 +606,11 @@ async function runAloha(env, releaseData) {
     if (!lineRes.ok) {
       const e = await lineRes.text();
       throw new Error("LINE " + lineRes.status + ": " + e);
+    }
+    if (notificationId && env.DB) {
+      const sentAt = Math.floor(Date.now() / 1e3);
+      await env.DB.prepare("UPDATE notifications SET status='sent',sent_at=?,updated_at=? WHERE id=?").bind(sentAt, sentAt, notificationId).run();
+      results.steps.notification.status = "sent";
     }
     results.steps.line = { ok: true, sent: 1 };
   } catch (e) {
