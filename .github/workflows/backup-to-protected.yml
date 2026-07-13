@@ -79,7 +79,7 @@ jobs:
             fi
           done
 
-          if [ "$NEED_COMMIT" = true ]; then
+          if ! git diff --cached --quiet; then
             git commit -m "backup: sync protected pages from main"
             git push origin protected-pages
             echo "Backup complete"
