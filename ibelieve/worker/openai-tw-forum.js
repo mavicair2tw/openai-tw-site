@@ -440,7 +440,7 @@ async function handleIBelieve(request, env, url) {
 
   // Claude proxy: POST /api/ibelieve/claude-proxy
   if (request.method === "POST" && path === "/api/ibelieve/claude-proxy") {
-    if (!env.ANTHROPIC_API_KEY) return json({ error: "ANTHROPIC_API_KEY not configured" }, 500, request);
+    if (!env.OPENAI_API_KEY && !env.GROQ_API_KEY) return json({ error: "No text generation API configured" }, 500, request);
     const body = await request.json().catch(() => ({}));
     try {
       const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -903,25 +903,32 @@ async function handleIBelieve(request, env, url) {
       const body = await request.json().catch(() => ({}));
       const summaryText = String(body.text || "").slice(0, 600);
       if (!summaryText) return json({ error: "text required" }, 400, request);
-      // Step 1: Generate image prompt via Claude
-      const promptRes = await fetch("https://api.anthropic.com/v1/messages", {
+      // Step 1: Generate image prompt via OpenAI, with Groq fallback
+      const systemPrompt = "You are a visual artist. Given an AI knowledge graph summary report, write a vivid image generation prompt for a 1024x1024 abstract visualization. No text, no human faces. Abstract, cosmic, data-visualization aesthetic. Format: [subject], [environment], [mood/lighting], [style], [color palette]. Max 60 words. Output ONLY the prompt.";
+      const messages = [{ role: "system", content: systemPrompt }, { role: "user", content: `Summary: "${summaryText}"\n\nWrite image prompt:` }];
+      let promptRes = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": env.ANTHROPIC_API_KEY,
-          "anthropic-version": "2023-06-01"
+          "Authorization": "Bearer " + env.OPENAI_API_KEY
         },
         body: JSON.stringify({
-          model: "claude-haiku-4-5-20251001",
+          model: "gpt-4.1-mini",
           max_tokens: 150,
-          system: "You are a visual artist. Given an AI knowledge graph summary report, write a vivid image generation prompt for a 1024x1024 abstract visualization. No text, no human faces. Abstract, cosmic, data-visualization aesthetic. Format: [subject], [environment], [mood/lighting], [style], [color palette]. Max 60 words. Output ONLY the prompt.",
-          messages: [{ role: "user", content: `Summary: "${summaryText}"
-
-Write image prompt:` }]
+          messages
         })
       });
-      const promptData = await promptRes.json();
-      const imagePromptText = promptData?.content?.[0]?.text?.trim() || "";
+      let promptData = await promptRes.json();
+      if (!promptRes.ok && env.GROQ_API_KEY) {
+        promptRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": "Bearer " + env.GROQ_API_KEY },
+          body: JSON.stringify({ model: "qwen/qwen3.6-27b", max_completion_tokens: 300, reasoning_effort: "none", messages })
+        });
+        promptData = await promptRes.json();
+      }
+      if (!promptRes.ok) return json({ ok: false, error: promptData?.error?.message || "prompt generation failed" }, promptRes.status, request);
+      const imagePromptText = promptData?.choices?.[0]?.message?.content?.trim() || "";
       if (!imagePromptText) return json({ ok: false, error: "prompt generation failed" }, 500, request);
       // Step 2: Generate image via Flux
       const imgResult = await env.AI.run(
