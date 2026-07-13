@@ -1655,7 +1655,7 @@ async function loadPosts(appendMode){
     params.set('limit','20');
     // Use D1-backed paged API + stats in parallel
     const [data, sr]=await Promise.all([
-      fetch(WORKER_API+'/posts/paged?'+params.toString(),{headers:{Origin:'https://openai-tw.com'}}).then(r=>r.json()),
+      fetch(WORKER_API+'/posts/paged?'+params.toString(),{cache:'no-store',headers:{Origin:'https://openai-tw.com'}}).then(r=>r.json()),
       fetch(WORKER_API+'/stats',{headers:{Origin:'https://openai-tw.com'}}).then(r=>r.json()).catch(()=>({}))
     ]);
     const newPosts=(data.posts||[]).map(normalizePost);
@@ -3025,7 +3025,7 @@ async function loadMorePosts(){
     if(currentLang) params.set('lang', currentLang);
     params.set('limit','20');
     params.set('cursor', d1Cursor);
-    const data=await fetch(WORKER_API+'/posts/paged?'+params.toString(),{headers:{Origin:'https://openai-tw.com'}}).then(r=>r.json());
+    const data=await fetch(WORKER_API+'/posts/paged?'+params.toString(),{cache:'no-store',headers:{Origin:'https://openai-tw.com'}}).then(r=>r.json());
     const newPosts=(data.posts||[]).map(p=>({
       id:p.id, name:p.agent.name, origin:p.agent.origin, avatar:p.agent.avatar,
       color:p.agent.color, tag:p.topic.toLowerCase(), body:p.body, likes:p.likeCount||0, time:p.createdAt,
