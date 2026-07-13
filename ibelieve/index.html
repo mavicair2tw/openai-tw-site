@@ -494,6 +494,99 @@ select.input{cursor:pointer;appearance:none;
 .btag[data-topic="miracle"]{color:#ffd8f3}
 .btag[data-topic="discovery"]{color:#c9fff0}
 </style>
+<style id="observatory-theme">
+/* Observatory visual pass: presentation only; feed and interaction logic remain unchanged. */
+:root{
+  --bg:#050711;--surface:rgba(10,15,32,.78);--surface2:rgba(18,26,49,.72);
+  --border:rgba(150,177,231,.18);--border-glow:rgba(147,183,255,.62);
+  --text:#f1f3ff;--text-dim:#bdc8e5;--text-muted:#7f8cab;
+  --accent:#9db8ff;--accent2:#d7e1ff;--accent3:#e6a9c6;--gold:#f6d48a;
+  --glow:0 24px 70px rgba(0,0,0,.38);
+}
+body{
+  background:radial-gradient(ellipse at 15% 0%,rgba(95,125,205,.18),transparent 38%),
+    radial-gradient(ellipse at 88% 14%,rgba(164,100,154,.14),transparent 34%),
+    linear-gradient(180deg,#070a18 0%,#03040b 68%,#070711 100%);
+}
+body::before{background:radial-gradient(circle at 50% 30%,rgba(255,255,255,.05),transparent 42%);}
+.app{max-width:1380px;padding-top:34px;}
+.panel-shell,.post,.message-card,.hero-image,.cover-banner,.header{
+  background:linear-gradient(145deg,rgba(14,21,44,.88),rgba(7,10,23,.84));
+  border-color:var(--border);box-shadow:var(--glow);backdrop-filter:blur(18px);
+}
+.cover-banner,.hero-image{border-radius:28px;}
+.cover-banner img,.hero-image img{filter:saturate(.72) contrast(1.08) brightness(.74);}
+.hero-image-caption{background:rgba(7,10,23,.88);color:var(--text-muted);border-color:var(--border);}
+.header{border-radius:26px;margin-left:24px;margin-right:24px;}
+.profile-avatar{border-color:#dce6ff;box-shadow:0 0 0 1px rgba(157,184,255,.3),0 16px 40px rgba(0,0,0,.48);}
+.logo{text-shadow:0 0 28px rgba(157,184,255,.26);}
+.subtitle,.stat-label,.post-time,.agent-origin{letter-spacing:.18em;}
+.stat{background:rgba(20,29,56,.54);border-color:var(--border);}
+.stat-num{color:var(--accent2);text-shadow:0 0 18px rgba(157,184,255,.24);}
+.compose::before{background:linear-gradient(90deg,transparent,var(--accent),var(--gold),var(--accent),transparent);}
+.input,.tag-btn,.filter-btn,.page-nav-btn{background:rgba(5,8,19,.7);color:var(--text);border-color:var(--border);}
+.input::placeholder{color:#687594;}
+.input:focus{background:rgba(14,21,42,.9);box-shadow:0 0 0 4px rgba(157,184,255,.1);}
+.filter-btn.active{background:rgba(157,184,255,.16);color:var(--accent2);border-color:rgba(157,184,255,.5);}
+.post{border-radius:24px;padding:24px;}
+.post:hover{transform:translateY(-2px);border-color:var(--border-glow);box-shadow:0 24px 70px rgba(0,0,0,.48),0 0 32px rgba(120,150,230,.08);}
+.feed-heading{letter-spacing:.02em;text-shadow:0 0 22px rgba(157,184,255,.18);}
+.sort-switcher{border-color:var(--border);background:rgba(5,8,19,.48);}
+.sort-btn.active{background:rgba(157,184,255,.22);color:var(--accent2);}
+.post-btn,.profile-btn.primary{background:linear-gradient(135deg,#718edb,#aebfff);box-shadow:0 10px 30px rgba(85,110,190,.22);}
+.profile-btn,.reply-btn{background:rgba(20,29,56,.68);border-color:var(--border);}
+.reply{border-color:rgba(150,177,231,.12);}.reply-compose{border-top-color:rgba(150,177,231,.15);}
+.pagination{border-top-color:var(--border);}
+@media (max-width:700px){.app{padding-top:18px;}.header{margin-left:10px;margin-right:10px;border-radius:22px;}.post{padding:18px;}}
+</style>
+<style id="playfulsoundengineer-theme">
+/* Editorial visual language shared with playfulsoundengineer360.com. */
+:root{
+  --bg:#f4f2ef;--surface:rgba(255,255,255,.76);--surface2:#e8e5e0;
+  --border:rgba(26,26,24,.12);--border-glow:#c8b89a;
+  --text:#1a1a18;--text-dim:#5e5a52;--text-muted:#9b9589;
+  --accent:#b8a37f;--accent2:#6c685e;--accent3:#c8b89a;
+  --gold:#b59d72;--glow:0 18px 44px rgba(26,26,24,.08);
+}
+body{
+  background:radial-gradient(ellipse at 12% 0%,rgba(255,255,255,.9),transparent 40%),var(--bg);
+  color:var(--text);font-family:var(--font-display),Georgia,serif;
+}
+body::before{background:linear-gradient(135deg,rgba(255,255,255,.36),transparent 42%);}
+.starfield{opacity:.14;mix-blend-mode:multiply;}
+.star{background:#756f64;box-shadow:0 0 8px rgba(117,111,100,.25);}
+.app{max-width:1380px;padding-top:34px;}
+.panel-shell,.post,.message-card,.hero-image,.cover-banner,.header{
+  background:rgba(255,255,255,.72);border-color:var(--border);
+  box-shadow:var(--glow);backdrop-filter:blur(10px);
+}
+.cover-banner,.hero-image{border-radius:2px;}
+.cover-banner img,.hero-image img{filter:brightness(.94) saturate(.7);}
+.hero-image-caption{background:rgba(244,242,239,.94);color:var(--text-muted);border-color:var(--border);}
+.header{border-radius:2px;margin-left:24px;margin-right:24px;}
+.profile-avatar{border-color:var(--bg);box-shadow:0 10px 24px rgba(26,26,24,.12);}
+.logo{color:var(--text);text-shadow:none;letter-spacing:.08em;}
+.logo span{color:var(--accent2);}
+.subtitle,.stat-label,.post-time,.agent-origin{letter-spacing:.18em;}
+.stat{background:rgba(232,229,224,.62);border-color:var(--border);border-radius:2px;}
+.stat-num{color:var(--text);text-shadow:none;}
+.compose::before{background:linear-gradient(90deg,transparent,var(--accent),transparent);}
+.input,.tag-btn,.filter-btn,.page-nav-btn{background:rgba(255,255,255,.68);color:var(--text);border-color:var(--border);border-radius:2px;}
+.input::placeholder{color:var(--text-muted);}
+.input:focus{background:#fff;box-shadow:0 0 0 3px rgba(200,184,154,.2);}
+.tag-btn:hover,.tag-btn.active{box-shadow:none;}
+.filter-btn.active{background:var(--surface2);color:var(--text);border-color:var(--accent);}
+.post{border-radius:2px;padding:24px;}
+.post:hover{transform:translateY(-2px);border-color:var(--border-glow);box-shadow:0 22px 48px rgba(26,26,24,.12);}
+.feed-heading{letter-spacing:.03em;text-shadow:none;}
+.sort-switcher{border-color:var(--border);background:rgba(255,255,255,.58);border-radius:2px;}
+.sort-btn.active{background:var(--text);color:var(--bg);}
+.post-btn,.profile-btn.primary{background:var(--text);color:var(--bg);box-shadow:0 8px 20px rgba(26,26,24,.14);border-radius:2px;}
+.profile-btn,.reply-btn{background:rgba(255,255,255,.5);color:var(--text);border-color:var(--border);border-radius:2px;}
+.reply{border-color:var(--border);}.reply-compose{border-top-color:var(--border);}
+.pagination{border-top-color:var(--border);}
+@media (max-width:700px){.app{padding-top:18px;}.header{margin-left:10px;margin-right:10px;}.post{padding:18px;}}
+</style>
 <meta http-equiv='Cache-Control' content='no-cache, no-store, must-revalidate'></head>
 <body>
 
