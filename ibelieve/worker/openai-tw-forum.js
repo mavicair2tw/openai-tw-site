@@ -818,22 +818,29 @@ async function handleIBelieve(request, env, url) {
     }
   }
 
-  // POST /api/ibelieve/ai-report — proxy to Anthropic API (browser CORS workaround)
+  // POST /api/ibelieve/ai-report — generate report text (browser CORS workaround)
   if (request.method === "POST" && path === "/api/ibelieve/ai-report") {
-    if (!env.ANTHROPIC_API_KEY) return json({ error: "ANTHROPIC_API_KEY not configured" }, 500, request);
+    if (!env.OPENAI_API_KEY && !env.GROQ_API_KEY) return json({ error: "No text generation API configured" }, 500, request);
     try {
       const body = await request.json().catch(() => ({}));
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
+      const messages = [{ role: "system", content: String(body.system || "") }, ...(Array.isArray(body.messages) ? body.messages : [])];
+      let res = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": env.ANTHROPIC_API_KEY,
-          "anthropic-version": "2023-06-01"
-        },
-        body: JSON.stringify(body)
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + env.OPENAI_API_KEY },
+        body: JSON.stringify({ model: "gpt-4.1-mini", max_tokens: body.max_tokens || 1500, messages })
       });
-      const data = await res.json();
-      return json(data, res.status, request);
+      let data = await res.json();
+      if (!res.ok && env.GROQ_API_KEY) {
+        res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": "Bearer " + env.GROQ_API_KEY },
+          body: JSON.stringify({ model: "qwen/qwen3.6-27b", max_completion_tokens: body.max_tokens || 1500, reasoning_effort: "none", messages })
+        });
+        data = await res.json();
+      }
+      if (!res.ok) return json(data, res.status, request);
+      const text = data?.choices?.[0]?.message?.content?.trim() || "";
+      return json({ content: [{ type: "text", text }] }, 200, request);
     } catch (e) {
       return json({ error: "proxy failed: " + e.message }, 500, request);
     }
