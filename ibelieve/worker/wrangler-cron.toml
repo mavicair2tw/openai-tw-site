@@ -15,5 +15,17 @@ binding = "DB"
 database_name = "ibelieve-db"
 database_id = "ba9845e6-1273-4976-aa58-74c5be3f2659"
 
+[[services]]
+binding = "FORUM"
+service = "openai-tw-forum"
+environment = "production"
+
+[ai]
+binding = "AI"
+
+[[r2_buckets]]
+binding = "IMAGES_BUCKET"
+bucket_name = "ibelieve-images"
+
 [triggers]
 crons = ["0 21 * * *", "0 22 * * *", "0 23 * * *", "*/30 * * * *"]
