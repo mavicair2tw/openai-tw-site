@@ -2728,7 +2728,7 @@ async function cmGenerateReport(){
   const output=document.getElementById('cm-report-output');
   const copyBtn=document.getElementById('cm-report-copy');
   btn.disabled=true; btn.textContent='⟳ Analyzing...';
-  status.style.display='block'; status.textContent='Claude is analyzing the knowledge graph...';
+  status.style.display='block'; status.textContent='AI is analyzing the knowledge graph...';
   output.style.display='none'; copyBtn.style.display='none';
 
   // Build graph statistics
@@ -2768,7 +2768,7 @@ async function cmGenerateReport(){
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        model:'claude-sonnet-4-6',
+        model:'gpt-4.1-mini',
         max_tokens:1500,
         system:`You are a knowledge graph analyst. Analyze a belief/philosophy discussion network called "iBelieve Cloud Map" and write a clear, insightful summary report.
 
