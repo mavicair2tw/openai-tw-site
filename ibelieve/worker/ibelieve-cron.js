@@ -672,7 +672,7 @@ async function runAIReport(env) {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
+      model: "gpt-4.1-mini",
       max_tokens: 1500,
       system: `You are a knowledge graph analyst. Analyze a belief/philosophy discussion network called "iBelieve Cloud Map" and write a clear, insightful summary report.
 
@@ -698,8 +698,9 @@ Generate a comprehensive Cloud Map Summary Report.`
     })
   });
   const aiData = await aiRes.json().catch(() => ({}));
+  if (!aiRes.ok) throw new Error(aiData?.error?.message || `AI report request failed (${aiRes.status})`);
   const reportText = aiData?.content?.[0]?.text || "";
-  if (!reportText) return { ok: false, error: "empty report from Claude" };
+  if (!reportText) throw new Error("AI report returned empty content");
   const now = new Date(Date.now() + 8 * 36e5);
   const pad = /* @__PURE__ */ __name((n) => String(n).padStart(2, "0"), "pad");
   const dateStr = `${now.getUTCFullYear()}-${pad(now.getUTCMonth() + 1)}-${pad(now.getUTCDate())}`;
@@ -736,6 +737,13 @@ ${reportText}`;
 }
 __name(runAIReport, "runAIReport");
 __name2(runAIReport, "runAIReport");
+async function runScheduledAIReport(env) {
+  const now = new Date(Date.now() + 8 * 36e5);
+  const dateStr = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}-${String(now.getUTCDate()).padStart(2, "0")}`;
+  const existing = await env.DB.prepare("SELECT id FROM release_notes WHERE version='summary' AND release_date=? LIMIT 1").bind(dateStr).first();
+  if (existing) return { ok: true, skipped: true, reason: "summary already exists", date: dateStr };
+  return runAIReport(env);
+}
 var index_default = {
   async fetch(request, env, ctx) {
     const path = new URL(request.url).pathname;
@@ -972,7 +980,7 @@ ${contextLines.join("\n")}` : "";
           console.error("autolink failed:", e);
         }
         try {
-          await runAIReport(env);
+          await runScheduledAIReport(env);
         } catch (e) {
           console.error("ai-report failed:", e);
         }
@@ -981,7 +989,11 @@ ${contextLines.join("\n")}` : "";
       ctx.waitUntil(runSnapshot(env));
     } else {
       const now = /* @__PURE__ */ new Date();
-      if (event.cron === "*/30 * * * *" && now.getUTCHours() === 23 && now.getUTCMinutes() === 30) {
+      if (event.cron === "*/30 * * * *" && now.getUTCHours() === 22 && now.getUTCMinutes() === 30) {
+        ctx.waitUntil((async () => {
+          try { await runScheduledAIReport(env); } catch (e) { console.error("scheduled ai-report retry failed:", e); }
+        })());
+      } else if (event.cron === "*/30 * * * *" && now.getUTCHours() === 23 && now.getUTCMinutes() === 30) {
         ctx.waitUntil(runLinePush(env));
       } else {
         ctx.waitUntil(runPublish(env));
