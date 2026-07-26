@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-07-25T07:58:04.234640+08:00",
+  "updatedAt": "2026-07-27T07:54:46.767629+08:00",
   "timezone": "Asia/Taipei",
-  "dataDate": "2026-07-24",
+  "dataDate": "2026-07-27",
   "source": {
     "name": "臺灣證券交易所 MIS",
     "provider": "TWSE",
@@ -19,141 +19,113 @@
       "label": "加權指數",
       "symbol": "^TWII",
       "type": "Index",
-      "price": 43654.84,
-      "change": -1195.97,
-      "changePercent": -2.67,
+      "price": null,
+      "change": null,
+      "changePercent": null,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
-          "close": 44850.81
-        },
-        {
-          "time": "13:33",
           "close": 43654.84
         }
       ],
-      "timestamp": "2026-07-24T13:33:00+08:00"
+      "timestamp": "2026-07-27T07:50:00+08:00"
     },
     {
       "label": "台積電",
       "symbol": "2330.TW",
       "type": "Stock",
-      "price": 2350.0,
-      "change": -55.0,
-      "changePercent": -2.29,
+      "price": null,
+      "change": null,
+      "changePercent": null,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
-          "close": 2405.0
-        },
-        {
-          "time": "13:30",
           "close": 2350.0
         }
       ],
-      "timestamp": "2026-07-24T13:30:00+08:00"
+      "timestamp": "2026-07-27T07:50:00+08:00"
     },
     {
       "label": "富邦科技",
       "symbol": "0052.TW",
       "type": "ETF",
-      "price": 59.5,
-      "change": -1.4,
-      "changePercent": -2.3,
+      "price": null,
+      "change": null,
+      "changePercent": null,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
-          "close": 60.9
-        },
-        {
-          "time": "13:30",
           "close": 59.5
         }
       ],
-      "timestamp": "2026-07-24T13:30:00+08:00"
+      "timestamp": "2026-07-27T07:50:00+08:00"
     },
     {
       "label": "元大台灣50",
       "symbol": "0050.TW",
       "type": "ETF",
-      "price": 101.7,
-      "change": -2.2,
-      "changePercent": -2.12,
+      "price": null,
+      "change": null,
+      "changePercent": null,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
-          "close": 103.9
-        },
-        {
-          "time": "13:30",
           "close": 101.7
         }
       ],
-      "timestamp": "2026-07-24T13:30:00+08:00"
+      "timestamp": "2026-07-27T07:50:00+08:00"
     },
     {
       "label": "凱基台灣TOP50",
       "symbol": "009816.TW",
       "type": "ETF",
-      "price": 14.72,
-      "change": -0.36,
-      "changePercent": -2.39,
+      "price": null,
+      "change": null,
+      "changePercent": null,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
-          "close": 15.08
-        },
-        {
-          "time": "13:30",
           "close": 14.72
         }
       ],
-      "timestamp": "2026-07-24T13:30:00+08:00"
+      "timestamp": "2026-07-27T07:50:00+08:00"
     },
     {
       "label": "群益台灣精選高息",
       "symbol": "00919.TW",
       "type": "ETF",
-      "price": 29.49,
-      "change": -0.01,
-      "changePercent": -0.03,
+      "price": null,
+      "change": null,
+      "changePercent": null,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
-          "close": 29.5
-        },
-        {
-          "time": "13:30",
           "close": 29.49
         }
       ],
-      "timestamp": "2026-07-24T13:30:00+08:00"
+      "timestamp": "2026-07-27T07:50:00+08:00"
     },
     {
       "label": "國泰數位支付服務",
       "symbol": "00909.TW",
       "type": "ETF",
-      "price": 47.21,
-      "change": -0.23,
-      "changePercent": -0.48,
+      "price": null,
+      "change": null,
+      "changePercent": null,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
-          "close": 47.44
-        },
-        {
-          "time": "13:30",
           "close": 47.21
         }
       ],
-      "timestamp": "2026-07-24T13:30:00+08:00"
+      "timestamp": "2026-07-27T07:50:00+08:00"
     }
   ]
 }
