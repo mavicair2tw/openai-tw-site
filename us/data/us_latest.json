@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-28T07:57:30.246063+08:00",
+  "updatedAt": "2026-07-28T16:30:44.091215+08:00",
   "timezone": "Asia/Taipei",
   "market": "US",
   "items": [
@@ -220,8 +220,8 @@
       "symbol": "AMD",
       "type": "Stock",
       "price": 495.07,
-      "change": -44.62,
-      "changePercent": -8.27,
+      "change": -26.88,
+      "changePercent": -5.15,
       "trend": [
         {
           "time": "22:00",
@@ -326,8 +326,8 @@
       "symbol": "NVDA",
       "type": "Stock",
       "price": 196.52,
-      "change": -12.24,
-      "changePercent": -5.86,
+      "change": -10.32,
+      "changePercent": -4.99,
       "trend": [
         {
           "time": "22:00",
@@ -432,8 +432,8 @@
       "symbol": "TSLA",
       "type": "Stock",
       "price": 309.24,
-      "change": -10.45,
-      "changePercent": -3.27,
+      "change": -3.79,
+      "changePercent": -1.21,
       "trend": [
         {
           "time": "22:00",
@@ -538,8 +538,8 @@
       "symbol": "^GSPC",
       "type": "Index",
       "price": 7413.43,
-      "change": 1.45,
-      "changePercent": 0.02,
+      "change": 5.13,
+      "changePercent": 0.07,
       "trend": [
         {
           "time": "22:00",
@@ -644,8 +644,8 @@
       "symbol": "^SOX",
       "type": "Index",
       "price": 11556.5,
-      "change": -262.38,
-      "changePercent": -2.22,
+      "change": -787.34,
+      "changePercent": -6.38,
       "trend": [
         {
           "time": "22:00",
@@ -749,105 +749,105 @@
       "label": "比特幣",
       "symbol": "BTC-USD",
       "type": "Crypto",
-      "price": 63719.2,
-      "change": -1621.1,
-      "changePercent": -2.48,
+      "price": 63385.49,
+      "change": -339.41,
+      "changePercent": -0.53,
       "trend": [
         {
-          "time": "02:00",
-          "close": 64893.78
+          "time": "10:45",
+          "close": 63115.56
         },
         {
-          "time": "02:15",
-          "close": 64839.88
+          "time": "11:00",
+          "close": 63207.68
         },
         {
-          "time": "02:30",
-          "close": 64765.61
+          "time": "11:15",
+          "close": 63227.97
         },
         {
-          "time": "02:45",
-          "close": 64801.3
+          "time": "11:30",
+          "close": 63289.72
         },
         {
-          "time": "03:00",
-          "close": 64903.72
+          "time": "11:45",
+          "close": 63279.32
         },
         {
-          "time": "03:15",
-          "close": 64914.11
+          "time": "12:00",
+          "close": 63266.63
         },
         {
-          "time": "03:30",
-          "close": 64910.79
+          "time": "12:15",
+          "close": 63223.86
         },
         {
-          "time": "03:45",
-          "close": 64919.31
+          "time": "12:30",
+          "close": 63220.81
         },
         {
-          "time": "04:00",
-          "close": 64885.62
+          "time": "12:45",
+          "close": 63282.8
         },
         {
-          "time": "04:15",
-          "close": 64948.5
+          "time": "13:00",
+          "close": 63381.14
         },
         {
-          "time": "04:30",
-          "close": 64881.98
+          "time": "13:15",
+          "close": 63474.99
         },
         {
-          "time": "04:45",
-          "close": 64903.49
+          "time": "13:30",
+          "close": 63481.37
         },
         {
-          "time": "05:00",
-          "close": 64843.45
+          "time": "13:45",
+          "close": 63385.51
         },
         {
-          "time": "05:15",
-          "close": 64767.4
+          "time": "14:00",
+          "close": 63351.21
         },
         {
-          "time": "05:30",
-          "close": 64761.52
+          "time": "14:15",
+          "close": 63451.53
         },
         {
-          "time": "05:45",
-          "close": 64760.65
+          "time": "14:30",
+          "close": 63502.51
         },
         {
-          "time": "06:00",
-          "close": 64669.8
+          "time": "14:45",
+          "close": 63564.29
         },
         {
-          "time": "06:15",
-          "close": 64542.99
+          "time": "15:00",
+          "close": 63506.81
         },
         {
-          "time": "06:30",
-          "close": 64152.23
+          "time": "15:15",
+          "close": 63500.9
         },
         {
-          "time": "06:45",
-          "close": 63746.24
+          "time": "15:30",
+          "close": 63417.05
         },
         {
-          "time": "07:00",
-          "close": 63741.29
+          "time": "15:45",
+          "close": 63435.8
         },
         {
-          "time": "07:15",
-          "close": 63825.92
+          "time": "16:00",
+          "close": 63361.5
         },
         {
-          "time": "07:30",
-          "close": 63630.87
+          "time": "16:15",
+          "close": 63397.76
         },
         {
-          "time": "07:45",
-          "close": 63719.2
+          "time": "16:30",
+          "close": 63385.49
         }
       ]
     },
@@ -855,105 +855,81 @@
       "label": "黃金期貨",
       "symbol": "GC=F",
       "type": "Commodity",
-      "price": 4072.0,
-      "change": 4.4,
-      "changePercent": 0.11,
+      "price": 4048.8,
+      "change": -25.7,
+      "changePercent": -0.63,
       "trend": [
         {
-          "time": "01:00",
-          "close": 4075.3
+          "time": "12:00",
+          "close": 4044.3
         },
         {
-          "time": "01:15",
-          "close": 4076.4
+          "time": "12:15",
+          "close": 4045.6
         },
         {
-          "time": "01:30",
-          "close": 4076.3
+          "time": "12:30",
+          "close": 4047.6
         },
         {
-          "time": "01:45",
-          "close": 4078.2
+          "time": "12:45",
+          "close": 4042.1
         },
         {
-          "time": "02:00",
-          "close": 4078.4
+          "time": "13:00",
+          "close": 4042.7
         },
         {
-          "time": "02:15",
-          "close": 4078.6
+          "time": "13:15",
+          "close": 4043.3
         },
         {
-          "time": "02:30",
-          "close": 4078.0
+          "time": "13:30",
+          "close": 4041.9
         },
         {
-          "time": "02:45",
-          "close": 4079.8
+          "time": "13:45",
+          "close": 4045.2
         },
         {
-          "time": "03:00",
-          "close": 4082.4
+          "time": "14:00",
+          "close": 4044.7
         },
         {
-          "time": "03:15",
-          "close": 4087.8
+          "time": "14:15",
+          "close": 4048.1
         },
         {
-          "time": "03:30",
-          "close": 4089.2
+          "time": "14:30",
+          "close": 4050.2
         },
         {
-          "time": "03:45",
-          "close": 4085.5
+          "time": "14:45",
+          "close": 4048.7
         },
         {
-          "time": "04:00",
-          "close": 4084.4
+          "time": "15:00",
+          "close": 4049.4
         },
         {
-          "time": "04:15",
-          "close": 4081.0
+          "time": "15:15",
+          "close": 4050.4
         },
         {
-          "time": "04:30",
-          "close": 4079.0
+          "time": "15:30",
+          "close": 4049.7
         },
         {
-          "time": "04:45",
-          "close": 4078.6
+          "time": "15:45",
+          "close": 4047.3
         },
         {
-          "time": "06:00",
-          "close": 4079.1
+          "time": "16:00",
+          "close": 4044.5
         },
         {
-          "time": "06:15",
-          "close": 4073.9
-        },
-        {
-          "time": "06:30",
-          "close": 4076.3
-        },
-        {
-          "time": "06:45",
-          "close": 4075.1
-        },
-        {
-          "time": "07:00",
-          "close": 4075.5
-        },
-        {
-          "time": "07:15",
-          "close": 4074.5
-        },
-        {
-          "time": "07:30",
-          "close": 4073.2
-        },
-        {
-          "time": "07:45",
-          "close": 4072.0
+          "time": "16:15",
+          "close": 4048.8
         }
       ]
     }
