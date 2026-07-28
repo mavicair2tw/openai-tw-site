@@ -746,18 +746,7 @@ select.input{cursor:pointer;appearance:none;
         <div id="ctx-summary-img-wrap" style="display:none;margin-top:10px;">
           <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;">Latest Summary</div>
           <img id="ctx-summary-img" src="" alt="Cloud Map Summary" style="width:100%;border-radius:8px;cursor:pointer;" onclick="openLightbox(this.src)"/>
-          <div id="ctx-summary-insight" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);color:var(--text);font-family:var(--font-display);line-height:1.75;">
-            <div style="font-family:var(--font-body);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">本日暗示</div>
-            <p style="margin:0 0 8px;font-size:15px;font-weight:600;">今天的暗示是：連結正在形成，混亂之中會浮現新的核心。</p>
-            <p style="margin:0 0 6px;font-size:13px;color:var(--text-dim);">這張圖像神經網絡般的藍色星體，象徵：</p>
-            <ul style="margin:0 0 8px;padding-left:18px;font-size:13px;color:var(--text-dim);">
-              <li>靈感突然串聯，適合創作、思考與整理計畫</li>
-              <li>一個核心決定，可能牽動周圍許多事情</li>
-              <li>不必急著向外擴張，先穩住自己的中心</li>
-            </ul>
-            <p style="margin:0 0 6px;font-size:13px;color:var(--text-dim);"><strong style="color:var(--text);">今日關鍵字：</strong>覺醒、連結、聚焦、突破</p>
-            <p style="margin:0;font-size:13px;color:var(--text-dim);"><strong style="color:var(--text);">一句話：</strong>當思緒不再四散，答案就會從中心發光。</p>
-          </div>
+          <div id="ctx-summary-insight" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);color:var(--text);font-family:var(--font-display);line-height:1.75;"></div>
         </div>
       </div>
       </div>
@@ -810,6 +799,7 @@ const API = 'https://openai-tw-forum.googselect.workers.dev/api/ibelieve';
 const FORUM_API = 'https://openai-tw-forum.googselect.workers.dev/api/forum';
 const WORKER_API = 'https://openai-tw-forum.googselect.workers.dev/api/ibelieve';
 let posts = [], currentFilter = 'all', currentLang = 'en', searchQuery = '', currentSort = 'newest';
+let latestSummaryNote = null;
 let d1Cursor=null, d1HasMore=false, d1Loading=false, d1Total=0;
 let currentPage = 1;
 const POSTS_PER_PAGE = 20;
@@ -1522,6 +1512,7 @@ async function applyLanguage(lang){
   document.documentElement.lang=lang; document.documentElement.dir=lang==='ar'?'rtl':'ltr';
   syncSpotifyEmbedLanguage();
   syncTopListenButton();
+  renderSummaryInsight(latestSummaryNote);
   document.querySelector('.tagline').textContent=t('tagline');
   document.querySelector('.subtitle').textContent=t('subtitle');
   const listenTitle=document.querySelector('.listen-media-title');
@@ -2125,6 +2116,40 @@ async function init(){
   }
   tryInitMiniGraph(0);
 }
+const summaryHintTranslationCache = new Map();
+async function translateSummaryHint(text, lang){
+  if(!text || lang==='zh-TW') return text;
+  const key=lang+'::'+text;
+  if(summaryHintTranslationCache.has(key)) return summaryHintTranslationCache.get(key);
+  const langMap={'en':'en','zh-CN':'zh-CN','ja':'ja','ko':'ko','es':'es','fr':'fr','de':'de'};
+  try{
+    const url='https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl='+encodeURIComponent(langMap[lang]||lang)+'&dt=t&q='+encodeURIComponent(text);
+    const res=await fetch(url);
+    const data=await res.json();
+    const translated=Array.isArray(data)&&Array.isArray(data[0]) ? data[0].map(p=>Array.isArray(p)?String(p[0]||''):'').join('') : '';
+    if(translated){summaryHintTranslationCache.set(key,translated);return translated;}
+  }catch(e){console.warn('summary hint translation failed:',e);}
+  return text;
+}
+
+async function renderSummaryInsight(note){
+  const el=document.getElementById('ctx-summary-insight');
+  if(!el) return;
+  let hint=note&&note.daily_hint||'';
+  if(!hint&&note&&note.content){
+    const match=String(note.content).match(/##\s*本日暗示\s*([\s\S]*?)(?=\n##\s|$)/);
+    if(match) hint=match[1].trim();
+  }
+  if(!hint){el.style.display='none';return;}
+  const renderLang=currentLang;
+  hint=await translateSummaryHint(hint,renderLang);
+  if(renderLang!==currentLang) return;
+  const hintLabels={en:"Today's Signal",'zh-TW':'本日暗示','zh-CN':'今日暗示',ja:'今日の暗示',ko:'오늘의 암시',es:'Señal de hoy',fr:'Message du jour',de:'Tagesimpuls'};
+  el.innerHTML='<div style="font-family:var(--font-body);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">'+(hintLabels[renderLang]||hintLabels.en)+'</div>'
+    +'<div style="font-size:13px;color:var(--text-dim);">'+esc(hint).replace(/\n+/g,'<br>')+'</div>';
+  el.style.display='block';
+}
+
 async function loadSnapshot(){
   try{
     const res=await fetch(WORKER_API+'/snapshot');
@@ -2153,10 +2178,11 @@ async function loadSnapshot(){
       if(snRes.ok){
         const snData=await snRes.json();
         const note=(snData.notes||[])[0];
+        latestSummaryNote=note||null;
         if(note&&note.image_url){
           const imgWrap=document.getElementById('ctx-summary-img-wrap');
           const img=document.getElementById('ctx-summary-img');
-          if(imgWrap&&img){img.src=note.image_url;imgWrap.style.display='block';}
+          if(imgWrap&&img){img.src=note.image_url;imgWrap.style.display='block';renderSummaryInsight(note);}
         }
       }
     }catch(e2){}

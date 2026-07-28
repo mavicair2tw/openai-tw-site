@@ -657,6 +657,24 @@ Generate a comprehensive Cloud Map Summary Report.`
   if (!aiRes.ok) throw new Error(aiData?.error?.message || `AI report request failed (${aiRes.status})`);
   const reportText = aiData?.content?.[0]?.text || "";
   if (!reportText) throw new Error("AI report returned empty content");
+  let dailyHint = "今日的暗示是：先穩住自己的中心，讓新的連結自然浮現。";
+  try {
+    const hintRes = await FORUM.fetch("https://forum/api/ibelieve/ai-report", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        model: "gpt-4.1-mini",
+        max_tokens: 500,
+        system: "你是 iBelieve 的每日暗示編輯。請根據 Cloud Map 報告，寫一段繁體中文的本日暗示，呼應同一份報告將生成的抽象神經網絡／星體圖像。只輸出 4 到 7 行純文字，不要標題、Markdown、編號或免責聲明。內容要包含：一句核心暗示、兩到三句象徵解讀、今日關鍵字、最後一句收束語。語氣詩意但具體，不要捏造報告沒有支持的事件。",
+        messages: [{ role: "user", content: `Cloud Map Summary Report:\n${reportText.slice(0, 3500)}` }]
+      })
+    });
+    const hintData = await hintRes.json().catch(() => ({}));
+    const generatedHint = hintData?.content?.[0]?.text?.trim();
+    if (hintRes.ok && generatedHint) dailyHint = generatedHint;
+  } catch (e) {
+    console.error("daily hint generation failed (fallback used):", e);
+  }
   const now = new Date(Date.now() + 8 * 36e5);
   const pad = (n) => String(n).padStart(2, "0");
   const dateStr = `${now.getUTCFullYear()}-${pad(now.getUTCMonth() + 1)}-${pad(now.getUTCDate())}`;
@@ -667,11 +685,12 @@ Generate a comprehensive Cloud Map Summary Report.`
 **Posts:** ${totalPosts}  **Links:** ${totalLinks}
 
 ${reportText}`;
+  const contentWithHint = `${content}\n\n## 本日暗示\n\n${dailyHint}`;
   const noteId = crypto.randomUUID().replace(/-/g, "");
   await env.DB.prepare(
     `INSERT INTO release_notes (id, version, title, content, tags, author, release_date)
      VALUES (?, 'summary', ?, ?, ?, 'cron', ?)`
-  ).bind(noteId, title, content, JSON.stringify(["summary", "cloud-map", "ai-report"]), dateStr).run();
+  ).bind(noteId, title, contentWithHint, JSON.stringify(["summary", "cloud-map", "ai-report"]), dateStr).run();
   try {
     const imgRes = await FORUM.fetch("https://forum/api/ibelieve/generate-summary-image", {
       method: "POST",
