@@ -2779,7 +2779,16 @@ async function ctxFilterLink(btn,type){
   if(type!=='all' && d1HasMore){
     const originalLabel=btn.textContent;
     btn.textContent='Loading links…';
-    while(d1HasMore && d1Cursor) await loadMorePosts();
+    let previousCursor=d1Cursor;
+    let pageGuard=0;
+    while(d1HasMore && d1Cursor && pageGuard<100){
+      await loadMorePosts();
+      pageGuard++;
+      // Stop safely if the API/cache returns the same page cursor again.
+      if(d1Cursor===previousCursor){ d1HasMore=false; break; }
+      previousCursor=d1Cursor;
+    }
+    if(pageGuard>=100) d1HasMore=false;
     btn.textContent=originalLabel;
   }
   filterAndRender();
