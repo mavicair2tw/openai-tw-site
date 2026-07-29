@@ -1779,6 +1779,7 @@ const FONT_SCALES=[0.9,1,1.1,1.2,1.3,1.4];
 function applyFontScale(scale){
   const safeScale=FONT_SCALES.includes(Number(scale))?Number(scale):1;
   document.documentElement.style.setProperty('--font-scale',String(safeScale));
+  document.documentElement.style.fontSize=(safeScale*100)+'%';
   localStorage.setItem(FONT_SCALE_KEY,String(safeScale));
   const down=document.getElementById('font-size-decrease');
   const up=document.getElementById('font-size-increase');
