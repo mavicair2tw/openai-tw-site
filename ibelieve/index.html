@@ -667,7 +667,7 @@ body{font-size:calc(18px * var(--font-scale));}
 .dark-theme .font-size-btn{background:transparent;color:var(--text);}
 </style>
 <meta http-equiv='Cache-Control' content='no-cache, no-store, must-revalidate'></head>
-<body>
+<body class="dark-theme">
 
 <!-- LANGUAGE SWITCHER -->
 <nav class="lang-bar">
@@ -1773,7 +1773,7 @@ function applyTheme(theme){
 }
 const themeToggle=document.getElementById('theme-toggle');
 if(themeToggle) themeToggle.addEventListener('click',()=>applyTheme(document.body.classList.contains('dark-theme')?'light':'dark'));
-applyTheme(localStorage.getItem('ibelieve-theme')||'light');
+applyTheme(localStorage.getItem('ibelieve-theme')||'dark');
 
 // ===== FONT SIZE CONTROLS =====
 const FONT_SCALE_KEY='ibelieve-font-scale';
