@@ -624,6 +624,34 @@ body{font-size:18px;line-height:1.75;font-weight:400;}
   .left-panel .intro-pillar .pillar-desc{font-size:.86rem;}
 }
 </style>
+<style id="theme-toggle-style">
+.theme-toggle{
+  display:inline-flex;align-items:center;gap:6px;padding:6px 11px;
+  border:1px solid var(--border);border-radius:2px;background:transparent;
+  color:var(--text);font:inherit;font-size:.88rem;cursor:pointer;
+  transition:background .2s,color .2s,border-color .2s;
+}
+.theme-toggle:hover,.theme-toggle:focus-visible{border-color:var(--accent);background:var(--surface2);outline:none;}
+.dark-theme{
+  --bg:#111214;--surface:rgba(31,32,35,.86);--surface2:#292a2e;
+  --border:rgba(244,242,239,.18);--border-glow:#b9a582;
+  --text:#f4f2ef;--text-dim:#d1cdc4;--text-muted:#aaa398;
+  --accent:#d0b98e;--accent2:#e2d2b3;--accent3:#d39baa;--gold:#e2c486;
+}
+body.dark-theme{background:var(--bg);color:var(--text);}
+.dark-theme .lang-bar{background:rgba(17,18,20,.9);}
+.dark-theme .panel-shell,.dark-theme .header{background:var(--surface);border-color:var(--border);}
+.dark-theme .post{background:rgba(31,32,35,.78);border-color:var(--border);}
+.dark-theme .daily-summary{background:rgba(31,32,35,.9)!important;border-color:var(--border)!important;}
+.dark-theme .context-sidebar .panel-shell{background:rgba(31,32,35,.7);}
+.dark-theme .input{background:#202125;color:var(--text);}
+.dark-theme .input::placeholder{color:var(--text-muted);}
+.dark-theme .filter-btn,.dark-theme .tag-btn{background:transparent;color:var(--text-dim);}
+.dark-theme .filter-btn.active{background:var(--surface2);color:var(--text);}
+.dark-theme .profile-btn,.dark-theme .reply-btn{color:var(--text);}
+.dark-theme .profile-btn.primary,.dark-theme .post-btn,.dark-theme .sort-btn.active{background:var(--text);color:var(--bg);}
+.dark-theme .theme-toggle{background:var(--surface2);}
+</style>
 <meta http-equiv='Cache-Control' content='no-cache, no-store, must-revalidate'></head>
 <body>
 
@@ -631,6 +659,7 @@ body{font-size:18px;line-height:1.75;font-weight:400;}
 <nav class="lang-bar">
   <div class="lang-bar-inner">
     <div class="lang-select-wrap">
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode" title="Switch to dark mode">◐ Dark</button>
       <span class="lang-select-globe">🌐</span>
       <select id="lang-select" class="lang-select" aria-label="Choose language">
         <option value="en">🇺🇸 English</option>
@@ -1709,6 +1738,23 @@ async function applyLanguage(lang){
 }
 
 document.getElementById('lang-select').addEventListener('change',async e=>{ if(!_applyingLanguage) await applyLanguage(e.target.value); });
+
+// ===== THEME TOGGLE =====
+function applyTheme(theme){
+  const dark=theme==='dark';
+  document.body.classList.toggle('dark-theme',dark);
+  localStorage.setItem('ibelieve-theme',dark?'dark':'light');
+  const btn=document.getElementById('theme-toggle');
+  if(btn){
+    btn.textContent=dark?'☼ Light':'◐ Dark';
+    btn.setAttribute('aria-pressed',String(dark));
+    btn.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');
+    btn.title=dark?'Switch to light mode':'Switch to dark mode';
+  }
+}
+const themeToggle=document.getElementById('theme-toggle');
+if(themeToggle) themeToggle.addEventListener('click',()=>applyTheme(document.body.classList.contains('dark-theme')?'light':'dark'));
+applyTheme(localStorage.getItem('ibelieve-theme')||'light');
 
 // ===== API =====
 async function apiFetch(path,opts={}){const token=localStorage.getItem("ibelieve_token");const h={"Content-Type":"application/json"};if(token)h["Authorization"]="Bearer "+token;
