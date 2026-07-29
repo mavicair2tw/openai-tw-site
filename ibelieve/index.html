@@ -942,6 +942,7 @@ body{font-size:calc(18px * var(--font-scale));}
           <button class="ctx-filter-btn" data-link="contradicts" onclick="ctxFilterLink(this,'contradicts')">⚡ Has contradicts</button>
           <button class="ctx-filter-btn" data-link="expands" onclick="ctxFilterLink(this,'expands')">↗ Has expands</button>
           <button class="ctx-filter-btn" data-link="inspires" onclick="ctxFilterLink(this,'inspires')">✦ Has inspires</button>
+          <button class="ctx-filter-btn" data-link="related" onclick="ctxFilterLink(this,'related')">↔ Has related</button>
           <button class="ctx-filter-btn" data-link="isolated" onclick="ctxFilterLink(this,'isolated')">○ No links</button>
         </div>
       </div>
@@ -2769,10 +2770,18 @@ function renderContextSidebar(){
   if(el3) el3.textContent=isolated;
 }
 
-function ctxFilterLink(btn,type){
+async function ctxFilterLink(btn,type){
   document.querySelectorAll('.ctx-filter-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   ctxLinkFilter=type;
+  // Link metadata is distributed across paged results. Load the remaining
+  // pages before filtering so the sidebar reflects the full forum dataset.
+  if(type!=='all' && d1HasMore){
+    const originalLabel=btn.textContent;
+    btn.textContent='Loading links…';
+    while(d1HasMore && d1Cursor) await loadMorePosts();
+    btn.textContent=originalLabel;
+  }
   filterAndRender();
 }
 
@@ -2785,7 +2794,7 @@ function filterAndRender(){
   if(q) filtered=filtered.filter(p=>matchesSearch(p,q));
   if(topicF!=='all') filtered=filtered.filter(p=>(p.tag||p.topic||'belief')===topicF);
   if(ctxLinkFilter==='isolated') filtered=filtered.filter(p=>!(p.links||[]).length&&!(p.backlinks||[]).length);
-  else filtered=filtered.filter(p=>(p.links||[]).some(l=>l.type===ctxLinkFilter));
+  else filtered=filtered.filter(p=>[...(p.links||[]),...(p.backlinks||[])].some(l=>String(l.type||'').toLowerCase()===ctxLinkFilter));
   const feed=document.getElementById('feed');
   if(feed){
     const paged=filtered.slice(0,20);
