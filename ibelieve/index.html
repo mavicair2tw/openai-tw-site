@@ -496,7 +496,7 @@ select.input{cursor:pointer;appearance:none;
 </style>
 <style id="main-page-enhancement">
 /* Main-page hierarchy: the daily Cloud Map becomes the reading anchor. */
-.right-panel .daily-summary{min-height:0;padding:0;overflow:hidden;border-color:rgba(147,183,255,.34);background:linear-gradient(145deg,rgba(12,24,54,.96),rgba(5,9,25,.94));box-shadow:0 24px 70px rgba(0,0,0,.42),0 0 42px rgba(107,141,245,.12);}
+.context-sidebar .daily-summary{min-height:0;padding:0;overflow:hidden;border-color:rgba(147,183,255,.34);background:linear-gradient(145deg,rgba(12,24,54,.96),rgba(5,9,25,.94));box-shadow:0 24px 70px rgba(0,0,0,.42),0 0 42px rgba(107,141,245,.12);}
 .daily-summary-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:22px 24px 16px;}
 .daily-summary-kicker{font-family:var(--font-body);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent2);opacity:.78;margin-bottom:5px;}
 .daily-summary-heading h2{font-family:var(--font-display);font-size:clamp(1.45rem,2.3vw,2rem);font-weight:600;line-height:1.1;color:var(--text);margin:0;}
@@ -508,7 +508,7 @@ select.input{cursor:pointer;appearance:none;
 .context-sidebar .panel-shell{box-shadow:0 10px 28px rgba(0,0,0,.2);background:rgba(8,18,40,.72);}
 .context-sidebar{gap:12px;}
 @media(max-width:980px){
-  .right-panel .daily-summary{display:block;}
+  .context-sidebar .daily-summary{display:block;}
   .daily-summary-heading{padding:20px 20px 14px;}
   .daily-summary-insight{padding:16px 20px 20px;}
 }
@@ -721,17 +721,6 @@ select.input{cursor:pointer;appearance:none;
       </section>
     </aside>
     <section class="right-panel" id="right-panel">
-      <section class="daily-summary panel-shell" id="daily-summary" aria-labelledby="daily-summary-title" style="display:none;">
-        <div class="daily-summary-heading">
-          <div>
-            <div class="daily-summary-kicker">Cloud Map</div>
-            <h2 id="daily-summary-title">Latest Summary</h2>
-          </div>
-          <span class="daily-summary-mark" aria-hidden="true">✦</span>
-        </div>
-        <img id="ctx-summary-img" src="" alt="Latest Cloud Map Summary" onclick="openLightbox(this.src)"/>
-        <div id="ctx-summary-insight" class="daily-summary-insight" aria-live="polite"></div>
-      </section>
       <div class="panel-shell">
         <!-- SORT SWITCHER -->
         <div class="feed-header" style="margin-bottom:12px;">
@@ -758,6 +747,17 @@ select.input{cursor:pointer;appearance:none;
 
     <!-- Zone 3: Context Sidebar -->
     <aside class="context-sidebar" id="context-sidebar">
+      <section class="daily-summary panel-shell" id="daily-summary" aria-labelledby="daily-summary-title" style="display:none;">
+        <div class="daily-summary-heading">
+          <div>
+            <div class="daily-summary-kicker">Cloud Map</div>
+            <h2 id="daily-summary-title">Latest Summary</h2>
+          </div>
+          <span class="daily-summary-mark" aria-hidden="true">✦</span>
+        </div>
+        <img id="ctx-summary-img" src="" alt="Latest Cloud Map Summary" onclick="openLightbox(this.src)"/>
+        <div id="ctx-summary-insight" class="daily-summary-insight" aria-live="polite"></div>
+      </section>
       <!-- Topic distribution -->
       <div class="panel-shell" style="padding:14px;margin-bottom:0;">
         <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;">Topics</div>
