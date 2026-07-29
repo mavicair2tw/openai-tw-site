@@ -494,6 +494,31 @@ select.input{cursor:pointer;appearance:none;
 .btag[data-topic="miracle"]{color:#ffd8f3}
 .btag[data-topic="discovery"]{color:#c9fff0}
 </style>
+<style id="main-page-enhancement">
+/* Main-page hierarchy: the daily Cloud Map becomes the reading anchor. */
+.right-panel .daily-summary{min-height:0;padding:0;overflow:hidden;border-color:rgba(147,183,255,.34);background:linear-gradient(145deg,rgba(12,24,54,.96),rgba(5,9,25,.94));box-shadow:0 24px 70px rgba(0,0,0,.42),0 0 42px rgba(107,141,245,.12);}
+.daily-summary-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:22px 24px 16px;}
+.daily-summary-kicker{font-family:var(--font-body);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent2);opacity:.78;margin-bottom:5px;}
+.daily-summary-heading h2{font-family:var(--font-display);font-size:clamp(1.45rem,2.3vw,2rem);font-weight:600;line-height:1.1;color:var(--text);margin:0;}
+.daily-summary-mark{font-family:var(--font-display);font-size:1.5rem;color:var(--gold);text-shadow:0 0 18px rgba(255,214,112,.42);}
+#ctx-summary-img{display:block;width:100%;max-height:390px;object-fit:cover;cursor:zoom-in;filter:saturate(.9) contrast(1.04);transition:filter .35s ease,transform .35s ease;}
+#ctx-summary-img:hover{filter:saturate(1.05) contrast(1.06);}
+.daily-summary-insight{padding:18px 24px 24px;color:var(--text-dim);font-family:var(--font-display);font-size:1.03rem;line-height:1.78;}
+.daily-summary-insight>div:first-child{font-family:var(--font-body);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+.context-sidebar .panel-shell{box-shadow:0 10px 28px rgba(0,0,0,.2);background:rgba(8,18,40,.72);}
+.context-sidebar{gap:12px;}
+@media(max-width:980px){
+  .right-panel .daily-summary{display:block;}
+  .daily-summary-heading{padding:20px 20px 14px;}
+  .daily-summary-insight{padding:16px 20px 20px;}
+}
+@media(max-width:600px){
+  .daily-summary-heading h2{font-size:1.55rem;}
+  #ctx-summary-img{max-height:300px;}
+  .daily-summary-insight{font-size:1rem;}
+}
+@media(prefers-reduced-motion:reduce){#ctx-summary-img{transition:none}.post{animation:none!important;transition:none!important}}
+</style>
 <meta http-equiv='Cache-Control' content='no-cache, no-store, must-revalidate'></head>
 <body>
 
@@ -696,6 +721,17 @@ select.input{cursor:pointer;appearance:none;
       </section>
     </aside>
     <section class="right-panel" id="right-panel">
+      <section class="daily-summary panel-shell" id="daily-summary" aria-labelledby="daily-summary-title" style="display:none;">
+        <div class="daily-summary-heading">
+          <div>
+            <div class="daily-summary-kicker">Cloud Map</div>
+            <h2 id="daily-summary-title">Latest Summary</h2>
+          </div>
+          <span class="daily-summary-mark" aria-hidden="true">✦</span>
+        </div>
+        <img id="ctx-summary-img" src="" alt="Latest Cloud Map Summary" onclick="openLightbox(this.src)"/>
+        <div id="ctx-summary-insight" class="daily-summary-insight" aria-live="polite"></div>
+      </section>
       <div class="panel-shell">
         <!-- SORT SWITCHER -->
         <div class="feed-header" style="margin-bottom:12px;">
@@ -742,11 +778,6 @@ select.input{cursor:pointer;appearance:none;
           <div style="display:flex;justify-content:space-between;">Connected <span id="ctx-connected" style="color:var(--text);">—</span></div>
           <div style="display:flex;justify-content:space-between;">Isolated <span id="ctx-isolated" style="color:var(--text);">—</span></div>
           <div style="display:flex;justify-content:space-between;">Snapshot <span id="ctx-snapshot-time" style="color:var(--text-muted);font-size:11px;">—</span></div>
-        </div>
-        <div id="ctx-summary-img-wrap" style="display:none;margin-top:10px;">
-          <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;">Latest Summary</div>
-          <img id="ctx-summary-img" src="" alt="Cloud Map Summary" style="width:100%;border-radius:8px;cursor:pointer;" onclick="openLightbox(this.src)"/>
-          <div id="ctx-summary-insight" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);color:var(--text);font-family:var(--font-display);line-height:1.75;"></div>
         </div>
       </div>
       </div>
@@ -2180,9 +2211,10 @@ async function loadSnapshot(){
         const note=(snData.notes||[])[0];
         latestSummaryNote=note||null;
         if(note&&note.image_url){
-          const imgWrap=document.getElementById('ctx-summary-img-wrap');
+          const imgWrap=document.getElementById('daily-summary');
           const img=document.getElementById('ctx-summary-img');
-          if(imgWrap&&img){img.src=note.image_url;imgWrap.style.display='block';renderSummaryInsight(note);}
+          const title=document.getElementById('daily-summary-title');
+          if(imgWrap&&img){img.src=note.image_url;if(title) title.textContent=note.title||'Latest Summary';imgWrap.style.display='block';renderSummaryInsight(note);}
         }
       }
     }catch(e2){}
