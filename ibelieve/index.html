@@ -619,6 +619,7 @@ body{font-size:18px;line-height:1.75;font-weight:400;}
 .context-sidebar #ctx-stats{font-size:1rem!important;}
 .context-sidebar #ctx-stats > div{font-size:1rem!important;}
 .context-sidebar .ctx-filter-btn{font-size:.92rem!important;}
+.context-sidebar .link-filter-panel{display:none!important;}
 @media(max-width:600px){
   .left-panel,.context-sidebar{font-size:1rem;}
   .left-panel .intro-pillar .pillar-desc{font-size:.86rem;}
@@ -934,7 +935,7 @@ body{font-size:calc(18px * var(--font-scale));}
       </div>
 
       <!-- Quick filter by link type -->
-      <div class="panel-shell" style="padding:14px;">
+      <div class="panel-shell link-filter-panel" style="padding:14px;">
         <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;">Filter by link</div>
         <div style="display:flex;flex-direction:column;gap:4px;" id="ctx-link-filters">
           <button class="ctx-filter-btn active" data-link="all" onclick="ctxFilterLink(this,'all')">All posts</button>
