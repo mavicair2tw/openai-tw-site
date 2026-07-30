@@ -2366,7 +2366,9 @@ async function renderSummaryInsight(note){
     const match=String(note.content).match(/##\s*本日暗示\s*([\s\S]*?)(?=\n##\s|$)/);
     if(match) hint=match[1].trim();
   }
-  if(!hint){el.style.display='none';return;}
+  // Older/admin-created summaries may predate the daily-hint field. Keep the
+  // Cloud Map signal visible until the next generated summary supplies it.
+  if(!hint) hint='今日的暗示是：先穩住自己的中心，讓新的連結自然浮現。';
   const renderLang=currentLang;
   hint=await translateSummaryHint(hint,renderLang);
   if(renderLang!==currentLang) return;

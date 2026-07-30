@@ -2779,6 +2779,7 @@ The report should include:
 4. **Relationship Patterns** - what types of intellectual relationships dominate (supports, contradicts, expands, etc.)
 5. **Emerging Insights** - what patterns or ideas stand out across the network
 6. **Knowledge Gaps** - isolated posts or missing connections worth noting
+7. **本日暗示** - end with a Traditional Chinese daily signal grounded in this report. Use the exact markdown header `## 本日暗示`, followed by 4 to 7 concise lines: a core signal, symbolic interpretation, keywords, and a closing sentence.
 
 Write in clear prose. Be specific about content patterns, not just numbers. Format with markdown headers.`,
         messages:[{
@@ -3099,9 +3100,15 @@ async function cmSaveReportAsNote(reportText){
     var title = 'Cloud Map Summary — ' + dateStr + ' ' + timeStr;
     var totalPosts = cmPosts.length;
     var totalLinks = cmPosts.reduce(function(s,p){ return s+(p.links||[]).length; }, 0);
+    var hintMatch = String(reportText || '').match(/##\s*本日暗示\s*([\s\S]*?)(?=\n##\s|$)/);
+    var dailyHint = hintMatch && hintMatch[1] ? hintMatch[1].trim() : '今日的暗示是：先穩住自己的中心，讓新的連結自然浮現。';
+    var reportWithHint = String(reportText || '').trim();
+    if(!hintMatch){
+      reportWithHint += '\n\n## 本日暗示\n\n' + dailyHint;
+    }
     var content = '## ' + title + '\n\n'
       + '**Posts:** ' + totalPosts + '  **Links:** ' + totalLinks + '\n\n'
-      + reportText;
+      + reportWithHint;
     var res = await fetch(POSTS_API+'/release-notes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
