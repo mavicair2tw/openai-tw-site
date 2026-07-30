@@ -830,8 +830,8 @@ body{font-size:calc(18px * var(--font-scale));}
       <!-- COMPOSE -->
       <section class="compose panel-shell" id="compose" style="position:relative">
         <div id="compose-overlay" style="display:none;position:absolute;inset:0;background:rgba(15,23,42,0.72);z-index:10;border-radius:inherit;backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;cursor:pointer;" onclick="showLoginModal()">
-          <div style="font-size:1.1rem;color:#fff;font-weight:600;letter-spacing:0.04em;">✦ Login to transmit</div>
-          <div style="font-size:0.78rem;color:rgba(255,255,255,0.6);">Click to sign in or register</div>
+          <div id="compose-login-title" style="font-size:1.1rem;color:#fff;font-weight:600;letter-spacing:0.04em;">✦ Login to transmit</div>
+          <div id="compose-login-desc" style="font-size:0.78rem;color:rgba(255,255,255,0.6);">Click to sign in or register</div>
         </div>
         <div class="compose-title">✦ Transmit a message to the cosmos</div>
         <div class="compose-row">
@@ -1009,9 +1009,43 @@ const CLOUD_I18N = {
   fr: {topics:'Sujets', hubs:'Hubs principaux', stats:'Statistiques du graphe', links:'Liens', connected:'Connectés', isolated:'Isolés', snapshot:'Instantané', belief:'✦ Croyance', god:'◈ Dieu', miracle:'✧ Miracle', discovery:'◉ Découverte'},
   de: {topics:'Themen', hubs:'Top-Hubs', stats:'Graph-Statistik', links:'Links', connected:'Verbunden', isolated:'Isoliert', snapshot:'Snapshot', belief:'✦ Glaube', god:'◈ Gott', miracle:'✧ Wunder', discovery:'◉ Entdeckung'}
 };
+const AUTH_I18N = {
+  en:{login:'Login',register:'Register',logout:'Logout',cancel:'Cancel',username:'Username',password:'Password',email:'Email',confirmPassword:'Confirm Password',enterUsername:'Enter username',enterPassword:'Enter password',chooseUsername:'Choose username',minPassword:'Min 6 characters',confirmPasswordPlaceholder:'Confirm password',registerHere:'Register here',loginHere:'Login here',loginPrompt:"Don't have an account?",registerPrompt:'Already have an account?',wall:'Please log in to access the forum',composeTitle:'✦ Login to transmit',composeDesc:'Click to sign in or register'},
+  'zh-TW':{login:'登入',register:'註冊',cancel:'取消',username:'使用者名稱',password:'密碼',email:'電子郵件',confirmPassword:'確認密碼',enterUsername:'輸入使用者名稱',enterPassword:'輸入密碼',chooseUsername:'選擇使用者名稱',minPassword:'至少 6 個字元',confirmPasswordPlaceholder:'再次輸入密碼',registerHere:'在此註冊',loginHere:'在此登入',loginPrompt:'還沒有帳號？',registerPrompt:'已經有帳號？',wall:'請先登入才能進入論壇',composeTitle:'✦ 登入後即可傳遞',composeDesc:'點擊登入或註冊'},
+  'zh-CN':{login:'登录',register:'注册',cancel:'取消',username:'用户名',password:'密码',email:'电子邮件',confirmPassword:'确认密码',enterUsername:'输入用户名',enterPassword:'输入密码',chooseUsername:'选择用户名',minPassword:'至少 6 个字符',confirmPasswordPlaceholder:'再次输入密码',registerHere:'在此注册',loginHere:'在此登录',loginPrompt:'还没有账号？',registerPrompt:'已经有账号？',wall:'请先登录才能进入论坛',composeTitle:'✦ 登录后即可传递',composeDesc:'点击登录或注册'},
+  ja:{login:'ログイン',register:'登録',cancel:'キャンセル',username:'ユーザー名',password:'パスワード',email:'メール',confirmPassword:'パスワード確認',enterUsername:'ユーザー名を入力',enterPassword:'パスワードを入力',chooseUsername:'ユーザー名を選択',minPassword:'6文字以上',confirmPasswordPlaceholder:'パスワードを再入力',registerHere:'登録はこちら',loginHere:'ログインはこちら',loginPrompt:'アカウントをお持ちでないですか？',registerPrompt:'アカウントをお持ちですか？',wall:'フォーラムにアクセスするにはログインしてください',composeTitle:'✦ ログインして送信',composeDesc:'ログインまたは登録をクリック'},
+  ko:{login:'로그인',register:'가입',cancel:'취소',username:'사용자 이름',password:'비밀번호',email:'이메일',confirmPassword:'비밀번호 확인',enterUsername:'사용자 이름 입력',enterPassword:'비밀번호 입력',chooseUsername:'사용자 이름 선택',minPassword:'6자 이상',confirmPasswordPlaceholder:'비밀번호 재입력',registerHere:'여기서 가입',loginHere:'여기서 로그인',loginPrompt:'계정이 없나요?',registerPrompt:'이미 계정이 있나요?',wall:'포럼에 접속하려면 로그인하세요',composeTitle:'✦ 로그인하여 전송',composeDesc:'로그인 또는 가입하려면 클릭하세요'},
+  es:{login:'Iniciar sesión',register:'Registrarse',cancel:'Cancelar',username:'Usuario',password:'Contraseña',email:'Correo electrónico',confirmPassword:'Confirmar contraseña',enterUsername:'Introduce tu usuario',enterPassword:'Introduce tu contraseña',chooseUsername:'Elige un usuario',minPassword:'Mínimo 6 caracteres',confirmPasswordPlaceholder:'Confirma la contraseña',registerHere:'Regístrate aquí',loginHere:'Inicia sesión aquí',loginPrompt:'¿No tienes una cuenta?',registerPrompt:'¿Ya tienes una cuenta?',wall:'Inicia sesión para acceder al foro',composeTitle:'✦ Inicia sesión para transmitir',composeDesc:'Haz clic para iniciar sesión o registrarte'},
+  fr:{login:'Connexion',register:"S'inscrire",cancel:'Annuler',username:"Nom d'utilisateur",password:'Mot de passe',email:'E-mail',confirmPassword:'Confirmer le mot de passe',enterUsername:"Entrez votre nom d'utilisateur",enterPassword:'Entrez votre mot de passe',chooseUsername:"Choisissez un nom d'utilisateur",minPassword:'6 caractères minimum',confirmPasswordPlaceholder:'Confirmez le mot de passe',registerHere:"Inscrivez-vous ici",loginHere:'Connectez-vous ici',loginPrompt:"Vous n'avez pas de compte ?",registerPrompt:'Vous avez déjà un compte ?',wall:'Connectez-vous pour accéder au forum',composeTitle:'✦ Connectez-vous pour transmettre',composeDesc:'Cliquez pour vous connecter ou vous inscrire'},
+  de:{login:'Anmelden',register:'Registrieren',cancel:'Abbrechen',username:'Benutzername',password:'Passwort',email:'E-Mail',confirmPassword:'Passwort bestätigen',enterUsername:'Benutzernamen eingeben',enterPassword:'Passwort eingeben',chooseUsername:'Benutzernamen wählen',minPassword:'Mindestens 6 Zeichen',confirmPasswordPlaceholder:'Passwort bestätigen',registerHere:'Hier registrieren',loginHere:'Hier anmelden',loginPrompt:'Noch kein Konto?',registerPrompt:'Bereits ein Konto?',wall:'Bitte anmelden, um auf das Forum zuzugreifen',composeTitle:'✦ Zum Senden anmelden',composeDesc:'Klicken, um sich anzumelden oder zu registrieren'}
+};
 
 function t(k){return(I18N[currentLang]&&I18N[currentLang][k])||I18N.en[k]||k}
 function cloudT(k){return(CLOUD_I18N[currentLang]&&CLOUD_I18N[currentLang][k])||CLOUD_I18N.en[k]||k}
+function authT(k){return(AUTH_I18N[currentLang]&&AUTH_I18N[currentLang][k])||AUTH_I18N.en[k]||k}
+function applyAuthLanguage(){
+  const textMap={
+    'compose-login-title':'composeTitle','compose-login-desc':'composeDesc','login-title':'login',
+    'login-username-label':'username','login-password-label':'password','login-submit':'login','login-cancel':'cancel',
+    'login-register-prompt':'loginPrompt','login-register-link':'registerHere','register-title':'register',
+    'register-username-label':'username','register-email-label':'email','register-password-label':'password',
+    'register-confirm-label':'confirmPassword','register-submit':'register','register-cancel':'cancel',
+    'register-login-prompt':'registerPrompt','register-login-link':'loginHere','auth-wall-message':'wall',
+    'auth-wall-login':'login','auth-wall-register':'register'
+  };
+  Object.entries(textMap).forEach(([id,key])=>{const el=document.getElementById(id);if(el)el.textContent=authT(key);});
+  const placeholders={loginUsername:'enterUsername',loginPassword:'enterPassword',registerUsername:'chooseUsername',registerEmail:'email',registerPassword:'minPassword',registerPasswordConfirm:'confirmPasswordPlaceholder'};
+  Object.entries(placeholders).forEach(([id,key])=>{const el=document.getElementById(id);if(el)el.placeholder=authT(key);});
+  const authNav=document.getElementById('authNav');
+  if(authNav){
+    const login=authNav.querySelector('[data-auth-label="login"]');
+    const register=authNav.querySelector('[data-auth-label="register"]');
+    const logout=authNav.querySelector('[data-auth-label="logout"]');
+    if(login) login.textContent=authT('login');
+    if(register) register.textContent=authT('register');
+    if(logout) logout.textContent=authT('logout')||'Logout';
+  }
+}
 function cacheKey(text, lang){ return `${lang}::${text}` }
 function getTranslatedText(text, lang=currentLang){
   if(!text) return '';
@@ -1718,6 +1752,7 @@ async function applyLanguage(lang){
     const el=document.getElementById(id);
     if(el) el.textContent=cloudT(key);
   });
+  applyAuthLanguage();
   renderContextSidebar();
   document.querySelector('.tagline').textContent=t('tagline');
   document.querySelector('.subtitle').textContent=t('subtitle');
@@ -3029,23 +3064,23 @@ function filterAndRender(){
 <!-- Auth Modals -->
 <div id="loginModal" class="modal">
   <div class="modal-content">
-    <h2>Login</h2>
+    <h2 id="login-title">Login</h2>
     <div class="form-group">
-      <label>Username</label>
+      <label id="login-username-label">Username</label>
       <input type="text" id="loginUsername" placeholder="Enter username">
     </div>
     <div class="form-group">
-      <label>Password</label>
+      <label id="login-password-label">Password</label>
       <input type="password" id="loginPassword" placeholder="Enter password">
     </div>
     <div id="loginError" class="error-message"></div>
     <div class="modal-buttons">
       <div class="modal-buttons-row">
-        <button class="btn-submit" onclick="handleLogin()">Login</button>
-        <button class="btn-cancel" onclick="hideLoginModal()">Cancel</button>
+        <button id="login-submit" class="btn-submit" onclick="handleLogin()">Login</button>
+        <button id="login-cancel" class="btn-cancel" onclick="hideLoginModal()">Cancel</button>
       </div>
       <div class="modal-register-link">
-        Don't have an account? <a onclick="hideLoginModal();showRegisterModal();">Register here</a>
+        <span id="login-register-prompt">Don't have an account?</span> <a id="login-register-link" onclick="hideLoginModal();showRegisterModal();">Register here</a>
       </div>
     </div>
   </div>
@@ -3053,31 +3088,31 @@ function filterAndRender(){
 
 <div id="registerModal" class="modal">
   <div class="modal-content">
-    <h2>Register</h2>
+    <h2 id="register-title">Register</h2>
     <div class="form-group">
-      <label>Username</label>
+      <label id="register-username-label">Username</label>
       <input type="text" id="registerUsername" placeholder="Choose username">
     </div>
     <div class="form-group">
-      <label>Email</label>
+      <label id="register-email-label">Email</label>
       <input type="email" id="registerEmail" placeholder="your@email.com">
     </div>
     <div class="form-group">
-      <label>Password</label>
+      <label id="register-password-label">Password</label>
       <input type="password" id="registerPassword" placeholder="Min 6 characters">
     </div>
     <div class="form-group">
-      <label>Confirm Password</label>
+      <label id="register-confirm-label">Confirm Password</label>
       <input type="password" id="registerPasswordConfirm" placeholder="Confirm password">
     </div>
     <div id="registerError" class="error-message"></div>
     <div class="modal-buttons">
       <div class="modal-buttons-row">
-        <button class="btn-submit" onclick="handleRegister()">Register</button>
-        <button class="btn-cancel" onclick="hideRegisterModal()">Cancel</button>
+        <button id="register-submit" class="btn-submit" onclick="handleRegister()">Register</button>
+        <button id="register-cancel" class="btn-cancel" onclick="hideRegisterModal()">Cancel</button>
       </div>
       <div class="modal-register-link">
-        Already have an account? <a onclick="hideRegisterModal();showLoginModal();">Login here</a>
+        <span id="register-login-prompt">Already have an account?</span> <a id="register-login-link" onclick="hideRegisterModal();showLoginModal();">Login here</a>
       </div>
     </div>
   </div>
@@ -3086,10 +3121,10 @@ function filterAndRender(){
 <div id="authWall" class="auth-wall">
   <div class="auth-wall-content">
     <h3>iBelieve</h3>
-    <p>Please log in to access the forum</p>
+    <p id="auth-wall-message">Please log in to access the forum</p>
     <div class="auth-wall-buttons">
-      <button class="btn-login" onclick="showLoginModal()">Login</button>
-      <button class="btn-register" onclick="showRegisterModal()">Register</button>
+      <button id="auth-wall-login" class="btn-login" onclick="showLoginModal()">Login</button>
+      <button id="auth-wall-register" class="btn-register" onclick="showRegisterModal()">Register</button>
     </div>
   </div>
 </div>
@@ -3116,11 +3151,11 @@ function filterAndRender(){
         <span>@<span id="username"></span></span>
         <button id="adminBtn" class="btn-admin">Admin</button>
         <button id="refreshBtn" class="btn-refresh" title="Refresh feed">⟳</button>
-        <button id="logoutBtn" class="btn-logout">Logout</button>
+        <button id="logoutBtn" class="btn-logout" data-auth-label="logout">${authT('logout')}</button>
       </div>
       <div id="notAuthStatus">
-        <button class="btn-login" onclick="showLoginModal()">Login</button>
-        <button class="btn-register" onclick="showRegisterModal()">Register</button>
+        <button class="btn-login" data-auth-label="login" onclick="showLoginModal()">${authT('login')}</button>
+        <button class="btn-register" data-auth-label="register" onclick="showRegisterModal()">${authT('register')}</button>
       </div>
     `;
     document.getElementById('refreshBtn')?.addEventListener('click', async () => {
