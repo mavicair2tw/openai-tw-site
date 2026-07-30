@@ -858,8 +858,8 @@ async function handleIBelieve(request, env, url) {
     if (!username || !password) return json({ error: "username and password required" }, 400, request);
     // Verify credentials against users table
     const user = await env.DB.prepare(
-      "SELECT id, username, password_hash, role FROM users WHERE username = ?"
-    ).bind(username).first();
+      "SELECT id, username, password_hash, role FROM users WHERE username = ? OR lower(email) = lower(?)"
+    ).bind(username, username).first();
     if (!user) return json({ error: "Invalid credentials" }, 401, request);
     // Simple hash check (bcrypt not available in Workers, use SHA-256 comparison)
     const encoder = new TextEncoder();
@@ -1346,8 +1346,8 @@ async function handleLogin(request, env) {
   const password = String(body.password || "");
   if (!username || !password) return json({ error: "username and password required" }, 400, request);
   const user = await env.DB.prepare(
-    "SELECT id, username, email, role, origin, avatar_color, created_at, password_hash FROM users WHERE username = ?"
-  ).bind(username).first();
+    "SELECT id, username, email, role, origin, avatar_color, created_at, password_hash FROM users WHERE username = ? OR lower(email) = lower(?)"
+  ).bind(username, username).first();
   if (!user) return json({ error: "Invalid credentials" }, 401, request);
   const encoder = new TextEncoder();
   const hashBuf = await crypto.subtle.digest("SHA-256", encoder.encode(password));
