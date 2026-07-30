@@ -1125,6 +1125,8 @@ __name(translateMany, "translateMany");
 
 function safeParse(raw) { try { const a=JSON.parse(raw||"[]"); return Array.isArray(a)?a:[]; } catch { return []; } }
 __name(safeParse, "safeParse");
+function safeJsonObject(raw) { try { const value=typeof raw === "string" ? JSON.parse(raw || "{}") : raw; return value && typeof value === "object" && !Array.isArray(value) ? value : {}; } catch { return {}; } }
+__name(safeJsonObject, "safeJsonObject");
 function normalizePosts(posts) { return posts.map(p=>({id:String(p?.id||crypto.randomUUID()),text:String(p?.text||""),time:String(p?.time||""),likeCount:Number(p?.likeCount||0),shareCount:Number(p?.shareCount||0),ip:String(p?.ip||""),region:String(p?.region||"")})); }
 __name(normalizePosts, "normalizePosts");
 function calcTotals(posts) { return {totalLike:posts.reduce((s,p)=>s+Number(p.likeCount||0),0),totalShare:posts.reduce((s,p)=>s+Number(p.shareCount||0),0)}; }
@@ -1393,9 +1395,9 @@ async function handleAdminUsers(request, env) {
   const denied = await requireAdminUser(request, env);
   if (denied) return denied;
   const rows = await env.DB.prepare(
-    "SELECT id, username, email, role, origin, avatar_color, created_at FROM users ORDER BY created_at DESC"
+    "SELECT id, username, email, role, origin, avatar_color, created_at, site_roles FROM users ORDER BY created_at DESC"
   ).all();
-  const users = (rows.results || []).map(u => ({ ...u, status: "active" }));
+  const users = (rows.results || []).map(u => ({ ...u, site_roles: safeJsonObject(u.site_roles), status: "active" }));
   return json({ users }, 200, request);
 }
 __name(handleAdminUsers, "handleAdminUsers");
@@ -1421,6 +1423,7 @@ async function handleAdminUserPatch(request, env, url) {
     if (body.email !== undefined) { fields.push("email = ?"); bindings.push(body.email); }
     if (body.role) { fields.push("role = ?"); bindings.push(body.role); }
     if (body.status) { fields.push("status = ?"); bindings.push(body.status); }
+    if (body.site_roles !== undefined) { fields.push("site_roles = ?"); bindings.push(JSON.stringify(body.site_roles || {})); }
     if (body.password) { fields.push("password_hash = ?"); bindings.push(await hashPasswordSha256(String(body.password))); }
     if (!fields.length) return json({ error: "nothing to update" }, 400, request);
     bindings.push(id);
