@@ -3150,6 +3150,9 @@ function filterAndRender(){
     } else {
     }
     setupAuthNav();
+    // Auth markup is declared after the main language script; apply the
+    // saved language once the login/register panels exist in the DOM.
+    if (typeof applyAuthLanguage === 'function') applyAuthLanguage();
   });
 
   function setupAuthNav() {
