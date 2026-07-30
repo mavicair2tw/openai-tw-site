@@ -1067,12 +1067,20 @@ function updateStats(){
 }
 function buildActivity(){
   var dc={success:'var(--good)',failed:'var(--danger)',running:'var(--info)',warning:'var(--warn)'};
+  if(!allLogs.length){
+    document.getElementById('activity-list').innerHTML='<div style="font-size:13px;color:var(--text-muted);padding:8px 0;">No live job telemetry available.</div>';
+    return;
+  }
   document.getElementById('activity-list').innerHTML=allLogs.slice(0,6).map(function(r){
     return '<div class="act-row"><div class="act-dot" style="background:'+dc[r.status]+';margin-top:4px;flex-shrink:0;"></div>'+
       '<div><div style="font-size:13px;">'+r.name+'</div><div class="act-time">'+fmtDate(r.started)+' &middot; '+r.status+'</div></div></div>';
   }).join('');
 }
 function buildHealth(){
+  if(!allLogs.length){
+    document.getElementById('health-list').innerHTML='<div style="font-size:13px;color:var(--text-muted);padding:8px 0;">No live job telemetry available.</div>';
+    return;
+  }
   var counts={};
   JOBS.forEach(function(j){counts[j]={ok:0,fail:0};});
   allLogs.forEach(function(l){if(counts[l.name]){if(l.status==='success')counts[l.name].ok++;else if(l.status==='failed')counts[l.name].fail++;}});
@@ -1775,7 +1783,8 @@ function switchTabByName(name){
 
 /* REFRESH */
 function refreshData(){
-  allLogs=genLogs(47);
+  // Job history is not exposed by the iBelieve Worker; do not fabricate statuses.
+  allLogs=[];
   updateStats(); buildActivity(); buildHealth(); applyFilters();
   var n=new Date();
   document.getElementById('ts').textContent=pad(n.getHours())+':'+pad(n.getMinutes())+':'+pad(n.getSeconds());
