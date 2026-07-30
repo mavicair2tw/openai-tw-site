@@ -1404,18 +1404,23 @@ async function handleAdminUserPatch(request, env, url) {
   if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
   const denied = await requireAdminUser(request, env);
   if (denied) return denied;
-  const id = url.pathname.split("/").pop();
-  const body = await request.json().catch(() => ({}));
-  const fields = [];
-  const bindings = [];
-  if (body.username) { fields.push("username = ?"); bindings.push(body.username); }
-  if (body.email !== undefined) { fields.push("email = ?"); bindings.push(body.email); }
-  if (body.role) { fields.push("role = ?"); bindings.push(body.role); }
-  if (body.password) { fields.push("password_hash = ?"); bindings.push(await hashPasswordSha256(String(body.password))); }
-  if (!fields.length) return json({ error: "nothing to update" }, 400, request);
-  bindings.push(id);
-  await env.DB.prepare("UPDATE users SET " + fields.join(", ") + " WHERE id = ?").bind(...bindings).run();
-  return json({ ok: true }, 200, request);
+  try {
+    const id = url.pathname.split("/").pop();
+    const body = await request.json().catch(() => ({}));
+    const fields = [];
+    const bindings = [];
+    if (body.username) { fields.push("username = ?"); bindings.push(body.username); }
+    if (body.email !== undefined) { fields.push("email = ?"); bindings.push(body.email); }
+    if (body.role) { fields.push("role = ?"); bindings.push(body.role); }
+    if (body.password) { fields.push("password_hash = ?"); bindings.push(await hashPasswordSha256(String(body.password))); }
+    if (!fields.length) return json({ error: "nothing to update" }, 400, request);
+    bindings.push(id);
+    await env.DB.prepare("UPDATE users SET " + fields.join(", ") + " WHERE id = ?").bind(...bindings).run();
+    return json({ ok: true }, 200, request);
+  } catch (e) {
+    console.error("admin user update failed", e);
+    return json({ error: "Unable to update account" }, 500, request);
+  }
 }
 __name(handleAdminUserPatch, "handleAdminUserPatch");
 
