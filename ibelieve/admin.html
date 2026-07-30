@@ -625,6 +625,12 @@ System info</div>
         <div id="cm-report-status" style="font-size:12px;color:var(--text-muted);margin-top:6px;display:none;"></div>
         <div id="cm-report-output" style="display:none;margin-top:12px;font-size:13px;line-height:1.8;color:var(--text);white-space:pre-wrap;background:var(--surface2);padding:16px;border-radius:8px;border:1px solid var(--border);max-height:500px;overflow-y:auto;"></div>
       </div>
+      <div class="card" style="margin-top:14px;">
+        <div class="card-title">Daily Comparison
+          <button onclick="cmCompareSummaries()" style="margin-left:10px;padding:4px 12px;font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);cursor:pointer;">Compare latest</button>
+        </div>
+        <div id="cm-comparison" style="font-size:12px;color:var(--text-muted);margin-top:8px;">Compare the latest two saved Cloud Map summaries.</div>
+      </div>
     </div>
 
 
@@ -2666,6 +2672,20 @@ function cmExportPNG(){
     canvas.toBlob(function(out){var dl=URL.createObjectURL(out),a=document.createElement('a');a.href=dl;a.download='ibelieve-cloud-map-'+new Date().toISOString().slice(0,10)+'.png';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(dl);},500);},'image/png');
   };
   img.onerror=function(){URL.revokeObjectURL(url);showToast('PNG export failed','red');}; img.src=url;
+}
+async function cmCompareSummaries(){
+  var out=document.getElementById('cm-comparison'); out.textContent='Loading summaries...';
+  try{
+    var data=await postsFetch('/release-notes?limit=50');
+    var notes=(data.notes||[]).filter(function(n){return n.version==='summary';}).sort(function(a,b){return String(b.created_at||b.release_date).localeCompare(String(a.created_at||a.release_date));});
+    if(notes.length<2){out.textContent='At least two saved summaries are required.';return;}
+    function metric(note,label){var m=String(note.content||'').match(new RegExp('\\*\\*'+label+'\\*\\*\\s*:?\\s*([\\d,]+)','i'));return m?Number(m[1].replace(/,/g,'')):null;}
+    var latest=notes[0], previous=notes[1];
+    var lp=metric(latest,'Posts'),pp=metric(previous,'Posts'),ll=metric(latest,'Links'),pl=metric(previous,'Links');
+    function delta(a,b){return a===null||b===null?'—':(a-b>=0?'+':'')+(a-b);}
+    out.innerHTML='<strong style="color:var(--text);">'+escHtml(latest.title||latest.release_date||'Latest')+'</strong> vs <strong style="color:var(--text);">'+escHtml(previous.title||previous.release_date||'Previous')+'</strong><br><br>'+
+      'Posts: '+(lp===null?'—':lp)+' ('+delta(lp,pp)+')<br>Links: '+(ll===null?'—':ll)+' ('+delta(ll,pl)+')';
+  }catch(e){out.textContent='Comparison failed: '+e.message;}
 }
 
 
