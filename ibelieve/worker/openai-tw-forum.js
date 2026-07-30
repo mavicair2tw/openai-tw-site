@@ -1390,6 +1390,8 @@ export { index_default as default };
 
 async function handleAdminUsers(request, env) {
   if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+  const denied = await requireAdminUser(request, env);
+  if (denied) return denied;
   const rows = await env.DB.prepare(
     "SELECT id, username, email, role, origin, avatar_color, created_at FROM users ORDER BY created_at DESC"
   ).all();
@@ -1400,6 +1402,8 @@ __name(handleAdminUsers, "handleAdminUsers");
 
 async function handleAdminUserPatch(request, env, url) {
   if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+  const denied = await requireAdminUser(request, env);
+  if (denied) return denied;
   const id = url.pathname.split("/").pop();
   const body = await request.json().catch(() => ({}));
   const fields = [];
@@ -1417,12 +1421,26 @@ __name(handleAdminUserPatch, "handleAdminUserPatch");
 
 async function handleAdminUserDelete(request, env, url) {
   if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+  const denied = await requireAdminUser(request, env);
+  if (denied) return denied;
   const id = url.pathname.split("/").pop();
   await env.DB.prepare("DELETE FROM users WHERE id = ?").bind(id).run();
   await env.DB.prepare("DELETE FROM trusted_devices WHERE user_id = ?").bind(id).run();
   return json({ ok: true }, 200, request);
 }
 __name(handleAdminUserDelete, "handleAdminUserDelete");
+
+async function requireAdminUser(request, env) {
+  const token = String(request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").trim();
+  if (!token) return json({ error: "authentication required" }, 401, request);
+  const now = Math.floor(Date.now() / 1000);
+  const device = await env.DB.prepare("SELECT role FROM trusted_devices WHERE token = ? AND expires_at > ?").bind(token, now).first();
+  const role = String(device?.role || "").toLowerCase();
+  if (!device || !["admin", "operator", "owner", "super admin"].includes(role)) return json({ error: "admin access required" }, 401, request);
+  await env.DB.prepare("UPDATE trusted_devices SET last_used_at = ? WHERE token = ?").bind(now, token).run();
+  return null;
+}
+__name(requireAdminUser, "requireAdminUser");
 
 async function handleAloha(request, env) {
   if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
