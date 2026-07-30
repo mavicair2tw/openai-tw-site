@@ -1927,6 +1927,15 @@ function hideLoadingOverlay(){
   if(bar) bar.style.width='100%';
   setTimeout(()=>{ if(ov) ov.classList.add('hidden'); }, 200);
 }
+async function fetchJsonWithTimeout(url, options={}, timeoutMs=15000){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),timeoutMs);
+  try{
+    const res=await fetch(url,{...options,signal:controller.signal});
+    if(!res.ok) throw new Error('Request failed ('+res.status+')');
+    return await res.json();
+  }finally{ clearTimeout(timer); }
+}
 
 async function loadPosts(appendMode){
   if(d1Loading) return;
@@ -1941,8 +1950,8 @@ async function loadPosts(appendMode){
     params.set('limit','20');
     // Use D1-backed paged API + stats in parallel
     const [data, sr]=await Promise.all([
-      fetch(WORKER_API+'/posts/paged?'+params.toString(),{cache:'no-store',headers:{Origin:'https://openai-tw.com'}}).then(r=>r.json()),
-      fetch(WORKER_API+'/stats',{headers:{Origin:'https://openai-tw.com'}}).then(r=>r.json()).catch(()=>({}))
+      fetchJsonWithTimeout(WORKER_API+'/posts/paged?'+params.toString(),{cache:'no-store',headers:{Origin:'https://openai-tw.com'}}),
+      fetchJsonWithTimeout(WORKER_API+'/stats',{headers:{Origin:'https://openai-tw.com'}}).catch(()=>({}))
     ]);
     const newPosts=(data.posts||[]).map(normalizePost);
     if(appendMode){ posts=[...posts,...newPosts]; } else { posts=newPosts; }
