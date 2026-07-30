@@ -1407,6 +1407,7 @@ async function handleAdminUserPatch(request, env, url) {
   if (body.username) { fields.push("username = ?"); bindings.push(body.username); }
   if (body.email !== undefined) { fields.push("email = ?"); bindings.push(body.email); }
   if (body.role) { fields.push("role = ?"); bindings.push(body.role); }
+  if (body.password) { fields.push("password_hash = ?"); bindings.push(await hashPasswordSha256(String(body.password))); }
   if (!fields.length) return json({ error: "nothing to update" }, 400, request);
   bindings.push(id);
   await env.DB.prepare("UPDATE users SET " + fields.join(", ") + " WHERE id = ?").bind(...bindings).run();
