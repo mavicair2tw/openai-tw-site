@@ -549,6 +549,8 @@ System info</div>
       <div class="card" style="margin-top:14px;">
         <div class="card-title">Graph View
           <button onclick="cmRenderGraph()" style="margin-left:10px;padding:3px 10px;font-size:11px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);cursor:pointer;color:var(--text);">⟳ Refresh</button>
+          <button onclick="cmExportJSON()" style="margin-left:6px;padding:3px 10px;font-size:11px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);cursor:pointer;color:var(--text);">⇩ JSON</button>
+          <button onclick="cmExportPNG()" style="margin-left:6px;padding:3px 10px;font-size:11px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);cursor:pointer;color:var(--text);">⇩ PNG</button>
           <span style="font-size:11px;color:var(--text-muted);margin-left:8px;">Click a node to select post</span>
         </div>
         <div id="cm-graph" style="width:100%;height:420px;background:var(--bg);border-radius:8px;border:1px solid var(--border);overflow:hidden;margin-top:8px;position:relative;">
@@ -564,6 +566,13 @@ System info</div>
               <div class="gp-select" onclick="cmStartGraphLink(cmGraphPopupId);cmCloseGraphPopup();" style="color:#f5c518;">&#x1F517; Link from here</div>
             </div>
           </div>
+        </div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:11px;color:var(--text-muted);">
+          <span><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#7c3aed;margin-right:4px;"></i>Belief</span>
+          <span><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#0891b2;margin-right:4px;"></i>God</span>
+          <span><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#db2777;margin-right:4px;"></i>Miracle</span>
+          <span><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#16a34a;margin-right:4px;"></i>Discovery</span>
+          <span style="margin-left:8px;">Line colors: related · supports · contradicts · expands · inspires</span>
         </div>
       </div>
 
@@ -2631,6 +2640,30 @@ function cmRenderGraph(){
 
   // Store sim reference for external stop
   cmGraphSim = sim;
+}
+
+function cmDownloadFile(name, type, content){
+  var blob=new Blob([content],{type:type});
+  var url=URL.createObjectURL(blob), a=document.createElement('a');
+  a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){URL.revokeObjectURL(url);},500);
+}
+function cmExportJSON(){
+  if(!cmPosts.length){showToast('No Cloud Map data to export','warn');return;}
+  cmDownloadFile('ibelieve-cloud-map-'+new Date().toISOString().slice(0,10)+'.json','application/json',JSON.stringify({exportedAt:new Date().toISOString(),posts:cmPosts},null,2));
+  showToast('Cloud Map JSON exported','green');
+}
+function cmExportPNG(){
+  var svg=document.querySelector('#cm-graph svg');
+  if(!svg){showToast('Render the graph before exporting PNG','warn');return;}
+  var source=new XMLSerializer().serializeToString(svg), blob=new Blob([source],{type:'image/svg+xml;charset=utf-8'});
+  var url=URL.createObjectURL(blob), img=new Image();
+  img.onload=function(){
+    var canvas=document.createElement('canvas'); canvas.width=svg.clientWidth||800; canvas.height=svg.clientHeight||420;
+    canvas.getContext('2d').drawImage(img,0,0); URL.revokeObjectURL(url);
+    canvas.toBlob(function(out){var dl=URL.createObjectURL(out),a=document.createElement('a');a.href=dl;a.download='ibelieve-cloud-map-'+new Date().toISOString().slice(0,10)+'.png';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(dl);},500);},'image/png');
+  };
+  img.onerror=function(){URL.revokeObjectURL(url);showToast('PNG export failed','red');}; img.src=url;
 }
 
 
