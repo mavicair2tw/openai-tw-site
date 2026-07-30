@@ -65,7 +65,14 @@ async function callOpenAI(env, system, user, maxTokens = 280) {
     data = await res.json();
   }
   if (!res.ok) throw new Error(`Text generation ${res.status}: ${data?.error?.message || "request failed"}`);
-  return data?.choices?.[0]?.message?.content?.trim() || null;
+  const content=data?.choices?.[0]?.message?.content;
+  if(typeof content==='string' && content.trim()) return content.trim();
+  if(Array.isArray(content)){
+    const text=content.map(part=>typeof part==='string'?part:(part?.text||'')).join('').trim();
+    if(text) return text;
+  }
+  if(typeof data?.output_text==='string' && data.output_text.trim()) return data.output_text.trim();
+  throw new Error('Text generation returned no content');
 }
 __name(callOpenAI, "callOpenAI");
 __name2(callOpenAI, "callOpenAI");
