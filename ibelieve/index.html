@@ -507,6 +507,8 @@ select.input{cursor:pointer;appearance:none;
 #ctx-summary-img:hover{filter:saturate(1.05) contrast(1.06);}
 .daily-summary-insight{padding:18px 24px 24px;color:var(--text-dim);font-family:var(--font-display);font-size:1.03rem;line-height:1.78;}
 .daily-summary-insight>div:first-child{font-family:var(--font-body);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+.daily-summary-signal-label{font-family:var(--font-body);font-size:.95rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;}
+.daily-summary-signal-body{font-size:1.12rem;line-height:1.82;color:var(--text-dim);}
 .context-sidebar .panel-shell{box-shadow:0 10px 28px rgba(0,0,0,.2);background:rgba(8,18,40,.72);}
 .context-sidebar{gap:12px;}
 @media(max-width:980px){
@@ -518,6 +520,8 @@ select.input{cursor:pointer;appearance:none;
   .daily-summary-heading h2{font-size:1.55rem;}
   #ctx-summary-img{max-height:300px;}
   .daily-summary-insight{font-size:1rem;}
+  .daily-summary-signal-label{font-size:.88rem;}
+  .daily-summary-signal-body{font-size:1.02rem;}
 }
 @media(prefers-reduced-motion:reduce){#ctx-summary-img{transition:none}.post{animation:none!important;transition:none!important}}
 </style>
@@ -595,12 +599,16 @@ body{font-size:18px;line-height:1.75;font-weight:400;}
 .reply-body{font-size:1rem;}
 .daily-summary-insight{font-size:1.25rem;}
 .daily-summary-insight>div:first-child{font-size:.82rem;}
+.daily-summary-signal-label{font-size:1rem;}
+.daily-summary-signal-body{font-size:1.2rem;}
 .context-sidebar .panel-shell{font-size:1rem;}
 @media(max-width:600px){
   body{font-size:16px;}
   .tagline{font-size:1.2rem;}
   .post-body{font-size:1.04rem;}
   .daily-summary-insight{font-size:1.08rem;}
+  .daily-summary-signal-label{font-size:.92rem;}
+  .daily-summary-signal-body{font-size:1.08rem;}
 }
 </style>
 <style id="sidebar-readability">
@@ -2438,8 +2446,8 @@ async function renderSummaryInsight(note){
   hint=await translateSummaryHint(hint,renderLang);
   if(renderLang!==currentLang) return;
   const hintLabels={en:"Today's Signal",'zh-TW':'本日暗示','zh-CN':'今日暗示',ja:'今日の暗示',ko:'오늘의 암시',es:'Señal de hoy',fr:'Message du jour',de:'Tagesimpuls'};
-  el.innerHTML='<div style="font-family:var(--font-body);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">'+(hintLabels[renderLang]||hintLabels.en)+'</div>'
-    +'<div style="font-size:13px;color:var(--text-dim);">'+esc(hint).replace(/\n+/g,'<br>')+'</div>';
+  el.innerHTML='<div class="daily-summary-signal-label">'+(hintLabels[renderLang]||hintLabels.en)+'</div>'
+    +'<div class="daily-summary-signal-body">'+esc(hint).replace(/\n+/g,'<br>')+'</div>';
   el.style.display='block';
 }
 
