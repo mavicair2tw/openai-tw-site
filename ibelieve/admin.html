@@ -494,7 +494,7 @@ System info</div>
           <option value="">All topics</option>
         </select>
         <select id="cm-link-filter" onchange="cmSearch()" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:13px;">
-          <option value="">All connections</option><option value="linked">With links</option><option value="isolated">Isolated</option>
+          <option value="">All connections</option><option value="linked">With links</option><option value="isolated">Isolated</option><option value="type:related">Related</option><option value="type:supports">Supports</option><option value="type:contradicts">Contradicts</option><option value="type:expands">Expands</option><option value="type:inspires">Inspires</option>
         </select>
         <span style="font-size:12px;color:var(--text-muted);" id="cm-status">Select a post to manage its connections</span>
       </div>
@@ -2248,7 +2248,9 @@ function cmSearch(){
   var filtered=cmPosts.filter(function(p){
     var hay=((p.agent||'')+' '+(p.topic||'')+' '+(p.body||'')).toLowerCase();
     var links=(p.links||[]).length+(p.backlinks||[]).length;
-    return (!q||hay.includes(q))&&(!topic||(p.topic||'').toLowerCase()===topic)&&(!linkState||(linkState==='linked'?links>0:links===0));
+    var type=linkState.indexOf('type:')===0?linkState.slice(5):'';
+    var hasType=!type||(p.links||[]).concat(p.backlinks||[]).some(function(l){return String(l.type||'related').toLowerCase()===type;});
+    return (!q||hay.includes(q))&&(!topic||(p.topic||'').toLowerCase()===topic)&&(!linkState||(linkState==='linked'?links>0:linkState==='isolated'?links===0:hasType));
   });
   cmRenderList(filtered);
 }
