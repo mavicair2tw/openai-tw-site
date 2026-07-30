@@ -35,6 +35,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 .btn-login:hover{background:var(--accent-dim);}
 .login-hint{font-size:11px;color:var(--text-muted);margin-top:10px;text-align:center;}
 .login-err{font-size:12px;color:var(--danger);margin-top:8px;display:none;text-align:center;}
+.login-reset-link{display:block;margin:12px auto 0;background:none;border:0;color:var(--info);font-size:11px;cursor:pointer;text-decoration:underline;}
 .shell{display:none;flex-direction:column;min-height:100vh;}
 .shell.visible{display:flex;}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;}
@@ -188,7 +189,30 @@ td{padding:10px 14px;vertical-align:middle;}
     </label>
     <button class="btn-login" onclick="doLogin()">Sign in</button>
     <div class="login-err" id="login-err"></div>
+    <button type="button" class="login-reset-link" onclick="showResetRequest()">Forgot password?</button>
 
+  </div>
+</div>
+
+<div id="reset-request-modal" class="login-wrap" style="display:none;position:fixed;inset:0;background:rgba(2,6,23,.86);z-index:100;">
+  <div class="login-card">
+    <div class="login-logo">Reset <span>password</span></div>
+    <div class="login-sub">Enter your admin username or email. If the account exists, we will send a one-time reset link.</div>
+    <div class="form-group"><label class="form-label">Username or email</label><input class="form-input" id="reset-identifier" type="text" autocomplete="username"></div>
+    <button class="btn-login" id="reset-request-btn" onclick="requestPasswordReset()">Send reset link</button>
+    <button type="button" class="login-reset-link" onclick="hideResetRequest()">Back to sign in</button>
+    <div class="login-err" id="reset-request-err"></div>
+  </div>
+</div>
+
+<div id="reset-password-modal" class="login-wrap" style="display:none;position:fixed;inset:0;background:rgba(2,6,23,.86);z-index:101;">
+  <div class="login-card">
+    <div class="login-logo">Set new <span>password</span></div>
+    <div class="login-sub">Choose a new password with at least 6 characters.</div>
+    <div class="form-group"><label class="form-label">New password</label><input class="form-input" id="reset-new-password" type="password" autocomplete="new-password"></div>
+    <div class="form-group"><label class="form-label">Confirm password</label><input class="form-input" id="reset-confirm-password" type="password" autocomplete="new-password"></div>
+    <button class="btn-login" id="reset-password-btn" onclick="submitPasswordReset()">Save new password</button>
+    <div class="login-err" id="reset-password-err"></div>
   </div>
 </div>
 
@@ -840,6 +864,44 @@ async function tryAutoLogin(){
     currentUser = null;
     return false;
   }
+}
+
+function showResetRequest(){
+  document.getElementById('reset-request-modal').style.display='flex';
+  document.getElementById('reset-request-err').style.display='none';
+  document.getElementById('reset-identifier').focus();
+}
+function hideResetRequest(){ document.getElementById('reset-request-modal').style.display='none'; }
+async function requestPasswordReset(){
+  var input=document.getElementById('reset-identifier'), btn=document.getElementById('reset-request-btn'), err=document.getElementById('reset-request-err');
+  var identifier=input.value.trim();
+  if(!identifier){err.textContent='Enter your username or email';err.style.display='block';return;}
+  btn.disabled=true; btn.textContent='Sending...'; err.style.display='none';
+  try{
+    var res=await fetch(WORKER_API+'/auth/request-reset',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({identifier})});
+    var data=await res.json().catch(function(){return{};});
+    if(!res.ok) throw new Error(data.error||'Unable to send reset link');
+    err.style.color='var(--good)'; err.textContent='If the account exists, a reset link has been sent.'; err.style.display='block';
+  }catch(e){err.style.color='var(--danger)';err.textContent=e.message;err.style.display='block';}
+  finally{btn.disabled=false;btn.textContent='Send reset link';}
+}
+async function submitPasswordReset(){
+  var token=new URLSearchParams(location.search).get('reset')||'';
+  var p=document.getElementById('reset-new-password').value, c=document.getElementById('reset-confirm-password').value;
+  var btn=document.getElementById('reset-password-btn'), err=document.getElementById('reset-password-err');
+  if(!token){err.textContent='Reset link is missing';err.style.display='block';return;}
+  if(p.length<6){err.textContent='Password must be at least 6 characters';err.style.display='block';return;}
+  if(p!==c){err.textContent='Passwords do not match';err.style.display='block';return;}
+  btn.disabled=true; btn.textContent='Saving...'; err.style.display='none';
+  try{
+    var res=await fetch(WORKER_API+'/auth/reset-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token,password:p})});
+    var data=await res.json().catch(function(){return{};});
+    if(!res.ok) throw new Error(data.error||'Unable to reset password');
+    document.getElementById('reset-password-modal').style.display='none';
+    history.replaceState({},'',location.pathname);
+    var loginErr=document.getElementById('login-err'); loginErr.style.color='var(--good)'; loginErr.textContent='Password reset. You can sign in now.'; loginErr.style.display='block';
+  }catch(e){err.style.color='var(--danger)';err.textContent=e.message;err.style.display='block';}
+  finally{btn.disabled=false;btn.textContent='Save new password';}
 }
 
 async function doLogin() {
@@ -3406,7 +3468,9 @@ function applyInitialAdminRoute(){
 
 // Try auto login on page load
 window.addEventListener('DOMContentLoaded', async ()=>{
-  var autoLoggedIn = await tryAutoLogin();
+  var hasResetToken = !!new URLSearchParams(location.search || '').get('reset');
+  if(hasResetToken) document.getElementById('reset-password-modal').style.display='flex';
+  var autoLoggedIn = hasResetToken ? false : await tryAutoLogin();
   if(autoLoggedIn) {
     dashLoadSummaryHero();
     applyInitialAdminRoute();

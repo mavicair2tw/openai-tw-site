@@ -20,6 +20,8 @@ var index_default = {
     if (url.pathname === "/api/ibelieve/auth/resend-verify" && request.method === "POST") return handleResendVerify(request, env);
     if (url.pathname === "/api/ibelieve/aloha" && request.method === "POST") return handleAloha(request, env);
     if (url.pathname === "/api/ibelieve/auth/login" && request.method === "POST") return handleLogin(request, env);
+    if (url.pathname === "/api/ibelieve/auth/request-reset" && request.method === "POST") return handlePasswordResetRequest(request, env);
+    if (url.pathname === "/api/ibelieve/auth/reset-password" && request.method === "POST") return handlePasswordReset(request, env);
     if (url.pathname === "/api/ibelieve/auth/me" && request.method === "GET") return handleMe(request, env);
     if (url.pathname === "/api/ibelieve/admin/users" && request.method === "GET") return handleAdminUsers(request, env);
     if (url.pathname.match(/^\/api\/ibelieve\/admin\/users\/[^/]+$/) && request.method === "PATCH") return handleAdminUserPatch(request, env, url);
@@ -1196,6 +1198,64 @@ async function sendVerificationEmail(email, username, token, env) {
   return { ok: true };
 }
 __name(sendVerificationEmail, "sendVerificationEmail");
+
+async function sendPasswordResetEmail(email, username, token, env) {
+  if (!env.RESEND_API_KEY) return { ok: false, error: "RESEND_API_KEY not configured" };
+  const resetUrl = "https://openai-tw.com/ibelieve/admin.html?reset=" + encodeURIComponent(token);
+  const safeName = String(username || "").replace(/[<>&\"']/g, "");
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { "Authorization": "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: "iBelieve <noreply@openai-tw.com>", to: email,
+      subject: "重設你的 iBelieve Admin 密碼",
+      html: `<div style="font-family:sans-serif;max-width:480px;margin:auto"><h2 style="color:#2563eb">重設 Admin 密碼</h2><p>Hi ${safeName}，請點擊下方連結設定新密碼：</p><a href="${resetUrl}" style="display:inline-block;padding:12px 24px;background:#2563eb;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold">重設密碼</a><p style="color:#888;font-size:13px;margin-top:24px">連結 30 分鐘內有效，完成後所有既有裝置登入會被撤銷。</p></div>`
+    })
+  });
+  if (!res.ok) return { ok: false, error: "Resend " + res.status };
+  return { ok: true };
+}
+__name(sendPasswordResetEmail, "sendPasswordResetEmail");
+
+async function handlePasswordResetRequest(request, env) {
+  if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+  const body = await request.json().catch(() => ({}));
+  const identifier = String(body.identifier || "").trim().toLowerCase();
+  if (!identifier) return json({ error: "username or email required" }, 400, request);
+  const user = await env.DB.prepare("SELECT id, username, email, role, status FROM users WHERE lower(username) = ? OR lower(email) = ?").bind(identifier, identifier).first();
+  // Always return the same response so account existence is not disclosed.
+  const generic = { ok: true, message: "If the account exists, a reset link has been sent." };
+  if (!user || String(user.status || "active").toLowerCase() !== "active" || !user.email) return json(generic, 200, request);
+  const rawToken = crypto.randomUUID() + crypto.randomUUID();
+  const tokenHash = await hashPasswordSha256(rawToken);
+  const now = Math.floor(Date.now() / 1000);
+  await env.DB.prepare("DELETE FROM password_reset_tokens WHERE user_id = ? OR expires_at <= ?").bind(String(user.id), now).run();
+  await env.DB.prepare("INSERT INTO password_reset_tokens (token_hash,user_id,expires_at,created_at) VALUES (?,?,?,?)").bind(tokenHash, String(user.id), now + 1800, now).run();
+  const sent = await sendPasswordResetEmail(user.email, user.username, rawToken, env);
+  if (!sent.ok) return json({ error: "Unable to send reset email" }, 502, request);
+  return json(generic, 200, request);
+}
+__name(handlePasswordResetRequest, "handlePasswordResetRequest");
+
+async function handlePasswordReset(request, env) {
+  if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
+  const body = await request.json().catch(() => ({}));
+  const token = String(body.token || "").trim();
+  const password = String(body.password || "");
+  if (!token || password.length < 6) return json({ error: "valid token and password of at least 6 characters required" }, 400, request);
+  const tokenHash = await hashPasswordSha256(token);
+  const now = Math.floor(Date.now() / 1000);
+  const row = await env.DB.prepare("SELECT token_hash,user_id FROM password_reset_tokens WHERE token_hash = ? AND used_at IS NULL AND expires_at > ?").bind(tokenHash, now).first();
+  if (!row) return json({ error: "reset link is invalid or expired" }, 400, request);
+  const passwordHash = await hashPasswordSha256(password);
+  await env.DB.batch([
+    env.DB.prepare("UPDATE users SET password_hash = ? WHERE id = ?").bind(passwordHash, row.user_id),
+    env.DB.prepare("UPDATE password_reset_tokens SET used_at = ? WHERE token_hash = ?").bind(now, tokenHash),
+    env.DB.prepare("DELETE FROM trusted_devices WHERE user_id = ?").bind(row.user_id)
+  ]);
+  return json({ ok: true, message: "Password reset successfully" }, 200, request);
+}
+__name(handlePasswordReset, "handlePasswordReset");
 
 async function handleRegister(request, env) {
   if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
