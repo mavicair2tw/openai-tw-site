@@ -1547,7 +1547,7 @@ async function apiFetch(path,opts){
   var h={'Content-Type':'application/json'};
   if(adminToken) h['Authorization']='Bearer '+adminToken;
   var r=await fetch(API+path,Object.assign({headers:h},opts));
-  if(!r.ok){var e=await r.json().catch(function(){return {};});throw new Error(e.message||'API '+r.status);}
+  if(!r.ok){var e=await r.json().catch(function(){return {};});throw new Error(e.error||e.message||'API '+r.status);}
   return r.json();
 }
 async function postsFetch(path,opts){
