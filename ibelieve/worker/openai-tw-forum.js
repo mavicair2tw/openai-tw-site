@@ -1221,21 +1221,32 @@ __name(sendPasswordResetEmail, "sendPasswordResetEmail");
 
 async function handlePasswordResetRequest(request, env) {
   if (!env.DB) return json({ error: "D1 not configured" }, 500, request);
-  const body = await request.json().catch(() => ({}));
-  const identifier = String(body.identifier || "").trim().toLowerCase();
-  if (!identifier) return json({ error: "username or email required" }, 400, request);
-  const user = await env.DB.prepare("SELECT id, username, email, role, status FROM users WHERE lower(username) = ? OR lower(email) = ?").bind(identifier, identifier).first();
-  // Always return the same response so account existence is not disclosed.
   const generic = { ok: true, message: "If the account exists, a reset link has been sent." };
-  if (!user || String(user.status || "active").toLowerCase() !== "active" || !user.email) return json(generic, 200, request);
-  const rawToken = crypto.randomUUID() + crypto.randomUUID();
-  const tokenHash = await hashPasswordSha256(rawToken);
-  const now = Math.floor(Date.now() / 1000);
-  await env.DB.prepare("DELETE FROM password_reset_tokens WHERE user_id = ? OR expires_at <= ?").bind(String(user.id), now).run();
-  await env.DB.prepare("INSERT INTO password_reset_tokens (token_hash,user_id,expires_at,created_at) VALUES (?,?,?,?)").bind(tokenHash, String(user.id), now + 1800, now).run();
-  const sent = await sendPasswordResetEmail(user.email, user.username, rawToken, env);
-  if (!sent.ok) return json({ error: "Unable to send reset email" }, 502, request);
-  return json(generic, 200, request);
+  let stage = "request";
+  try {
+    const body = await request.json().catch(() => ({}));
+    const identifier = String(body.identifier || "").trim().toLowerCase();
+    if (!identifier) return json({ error: "username or email required" }, 400, request);
+    stage = "lookup";
+    const user = await env.DB.prepare("SELECT id, username, email, role, status FROM users WHERE lower(username) = ? OR lower(email) = ?").bind(identifier, identifier).first();
+    // Always return the same response so account existence is not disclosed.
+    if (!user || String(user.status || "active").toLowerCase() !== "active" || !user.email) return json(generic, 200, request);
+    stage = "token";
+    const rawToken = crypto.randomUUID() + crypto.randomUUID();
+    const tokenHash = await hashPasswordSha256(rawToken);
+    const now = Math.floor(Date.now() / 1000);
+    stage = "cleanup";
+    await env.DB.prepare("DELETE FROM password_reset_tokens WHERE user_id = ? OR expires_at <= ?").bind(String(user.id), now).run();
+    stage = "insert";
+    await env.DB.prepare("INSERT INTO password_reset_tokens (token,user_id,email,expires_at,created_at) VALUES (?,?,?,?,?)").bind(tokenHash, String(user.id), String(user.email), now + 1800, now).run();
+    stage = "email";
+    const sent = await sendPasswordResetEmail(user.email, user.username, rawToken, env);
+    if (!sent.ok) return json({ error: "Unable to send reset email" }, 502, request);
+    return json(generic, 200, request);
+  } catch (e) {
+    console.error("password reset request failed", stage, e);
+    return json({ error: "Unable to process reset request" }, 500, request);
+  }
 }
 __name(handlePasswordResetRequest, "handlePasswordResetRequest");
 
@@ -1247,12 +1258,12 @@ async function handlePasswordReset(request, env) {
   if (!token || password.length < 6) return json({ error: "valid token and password of at least 6 characters required" }, 400, request);
   const tokenHash = await hashPasswordSha256(token);
   const now = Math.floor(Date.now() / 1000);
-  const row = await env.DB.prepare("SELECT token_hash,user_id FROM password_reset_tokens WHERE token_hash = ? AND used_at IS NULL AND expires_at > ?").bind(tokenHash, now).first();
+  const row = await env.DB.prepare("SELECT token,user_id FROM password_reset_tokens WHERE token = ? AND used_at IS NULL AND expires_at > ?").bind(tokenHash, now).first();
   if (!row) return json({ error: "reset link is invalid or expired" }, 400, request);
   const passwordHash = await hashPasswordSha256(password);
   await env.DB.batch([
     env.DB.prepare("UPDATE users SET password_hash = ? WHERE id = ?").bind(passwordHash, row.user_id),
-    env.DB.prepare("UPDATE password_reset_tokens SET used_at = ? WHERE token_hash = ?").bind(now, tokenHash),
+    env.DB.prepare("UPDATE password_reset_tokens SET used_at = ? WHERE token = ?").bind(now, tokenHash),
     env.DB.prepare("DELETE FROM trusted_devices WHERE user_id = ?").bind(row.user_id)
   ]);
   return json({ ok: true, message: "Password reset successfully" }, 200, request);
