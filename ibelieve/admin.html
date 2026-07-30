@@ -490,6 +490,12 @@ System info</div>
     <div id="panel-cloudmap" class="panel">
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
         <input class="search-inp" id="cm-search" placeholder="Search posts to connect..." oninput="cmSearch()" style="flex:1;max-width:300px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:13px;">
+        <select id="cm-topic-filter" onchange="cmSearch()" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:13px;">
+          <option value="">All topics</option>
+        </select>
+        <select id="cm-link-filter" onchange="cmSearch()" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:13px;">
+          <option value="">All connections</option><option value="linked">With links</option><option value="isolated">Isolated</option>
+        </select>
         <span style="font-size:12px;color:var(--text-muted);" id="cm-status">Select a post to manage its connections</span>
       </div>
 
@@ -2217,6 +2223,9 @@ async function cmInit(){
       };
     });
   }catch(e){showToast('Failed to load posts: '+e.message,'red');return;}
+  var topics=[...new Set(cmPosts.map(function(p){return p.topic;}).filter(Boolean))].sort();
+  var topicEl=document.getElementById('cm-topic-filter');
+  topicEl.innerHTML='<option value="">All topics</option>'+topics.map(function(t){return '<option value="'+escHtml(t)+'">'+escHtml(t)+'</option>';}).join('');
   cmRenderList(cmPosts);
   cmUpdateStats();
   cmPopulateLinkDropdown();
@@ -2224,9 +2233,13 @@ async function cmInit(){
 
 function cmSearch(){
   var q=(document.getElementById('cm-search').value||'').toLowerCase().trim();
+  var topic=(document.getElementById('cm-topic-filter').value||'').toLowerCase();
+  var linkState=document.getElementById('cm-link-filter').value||'';
   cmCurrentPage=1;
-  var filtered=!q?cmPosts:cmPosts.filter(function(p){
-    return (p.agent||'').toLowerCase().includes(q)||(p.body||'').toLowerCase().includes(q);
+  var filtered=cmPosts.filter(function(p){
+    var hay=((p.agent||'')+' '+(p.topic||'')+' '+(p.body||'')).toLowerCase();
+    var links=(p.links||[]).length+(p.backlinks||[]).length;
+    return (!q||hay.includes(q))&&(!topic||(p.topic||'').toLowerCase()===topic)&&(!linkState||(linkState==='linked'?links>0:links===0));
   });
   cmRenderList(filtered);
 }
