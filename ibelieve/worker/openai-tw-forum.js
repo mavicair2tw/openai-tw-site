@@ -41,6 +41,8 @@ var index_default = {
 };
 
 async function handleIBelieve(request, env, url) {
+  if (request.method === "POST" && url.pathname === "/api/ibelieve/auth/request-reset") return handlePasswordResetRequest(request, env);
+  if (request.method === "POST" && url.pathname === "/api/ibelieve/auth/reset-password") return handlePasswordReset(request, env);
   if (!env.FORUM_KV) return json({ error: "FORUM_KV not configured" }, 500, request);
   const path = url.pathname;
   const raw = await env.FORUM_KV.get(IBELIEVE_KEY);
