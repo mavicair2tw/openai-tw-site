@@ -793,13 +793,16 @@ function canAccessAdminPage(user){
   var siteRoles=(user&&user.site_roles&&typeof user.site_roles==='object')?user.site_roles:{};
   var adminSiteRole=String(siteRoles.admin||'').toLowerCase();
   if(role==='user') return false;
+  // iBelieve Worker users use the global role field; legacy shared accounts
+  // additionally provide site_roles.admin.
+  if(!Object.keys(siteRoles).length) return ['operator','admin','owner','super admin'].includes(role);
   return adminSiteRole==='operator' || adminSiteRole==='admin' || adminSiteRole==='owner' || adminSiteRole==='super admin';
 }
 
 async function fetchSharedAdminUser(token){
   var headers={};
   if(token) headers.Authorization='Bearer '+token;
-  var res=await fetch(TOKEN_API+'/auth/me', { headers: headers });
+  var res=await fetch(WORKER_API+'/auth/me', { headers: headers });
   var data=await res.json().catch(function(){ return {}; });
   if(!res.ok || !data || !data.user) throw new Error((data&&data.error)||'Failed to verify admin access');
   if(!canAccessAdminPage(data.user)) throw new Error('This account cannot access Admin page');
