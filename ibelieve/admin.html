@@ -1123,14 +1123,11 @@ var TOKEN_PERIODS=[
   {key:'all',label:'All',days:null}
 ];
 var TOKEN_PROVIDER_FILTERS=[
-  {key:'ALL',label:'All'},
-  {key:'GROK',label:'Grok'},
-  {key:'OPENAI',label:'OpenAI'},
-  {key:'GOOGLE',label:'Google'}
+  {key:'OPENAI',label:'OpenAI / Codex'}
 ];
 var tokenUsageCache=null;
 var tokenActivePeriod='all';
-var tokenProviderFilter='ALL';
+var tokenProviderFilter='OPENAI';
 var TOKEN_PRICING_USD_PER_1M={
   'gpt-5.1-codex': { input: 1.25, output: 10.0 },
   'gpt-5.4': { input: 2.5, output: 15.0 },
@@ -1431,7 +1428,7 @@ function renderTokenTable(summary){
   if(!summary.rows.length){
     var allPeriod=getTokenPeriodSummary('all');
     var allEventCount=getTokenProviderEventCount(allPeriod, tokenProviderFilter);
-    var message='No token usage found for this period.';
+    var message='No OpenAI/Codex token usage found for this period.';
     if(tokenActivePeriod!=='all' && allEventCount>0){
       message+=' Switch to All to see '+formatter.format(allEventCount)+' historical '+getTokenProviderLabel()+' events.';
     }
