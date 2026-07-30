@@ -1407,11 +1407,18 @@ async function handleAdminUserPatch(request, env, url) {
   try {
     const id = url.pathname.split("/").pop();
     const body = await request.json().catch(() => ({}));
+    if (body.username || body.email) {
+      const duplicate = await env.DB.prepare(
+        "SELECT id FROM users WHERE id <> ? AND (username = ? OR (? <> '' AND lower(email) = lower(?))) LIMIT 1"
+      ).bind(id, String(body.username || ""), String(body.email || ""), String(body.email || "")).first();
+      if (duplicate) return json({ error: "username or email is already in use" }, 409, request);
+    }
     const fields = [];
     const bindings = [];
     if (body.username) { fields.push("username = ?"); bindings.push(body.username); }
     if (body.email !== undefined) { fields.push("email = ?"); bindings.push(body.email); }
     if (body.role) { fields.push("role = ?"); bindings.push(body.role); }
+    if (body.status) { fields.push("status = ?"); bindings.push(body.status); }
     if (body.password) { fields.push("password_hash = ?"); bindings.push(await hashPasswordSha256(String(body.password))); }
     if (!fields.length) return json({ error: "nothing to update" }, 400, request);
     bindings.push(id);
