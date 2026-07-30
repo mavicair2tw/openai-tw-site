@@ -1125,6 +1125,7 @@ var TOKEN_PERIODS=[
 var TOKEN_PROVIDER_FILTERS=[
   {key:'OPENAI',label:'OpenAI / Codex'}
 ];
+var TOKEN_CODEX_MODELS=['gpt-5.6-luna','gpt-5.6-terra','gpt-5.6-sol'];
 var tokenUsageCache=null;
 var tokenActivePeriod='all';
 var tokenProviderFilter='OPENAI';
@@ -1239,7 +1240,13 @@ function getTokenProviderLabel(){
 function filterTokenPeriodSummary(summary){
   if(!summary) return { totals:{input_tokens:0,output_tokens:0,cached_tokens:0,total_tokens:0,total_cost_usd:0}, rows:[] };
   var rows=(summary.rows||[]).filter(function(row){
-    return tokenProviderFilter==='ALL' || String(row.provider||'OTHER').toUpperCase()===tokenProviderFilter;
+    if(tokenProviderFilter==='ALL') return true;
+    var provider=String(row.provider||'OTHER').toUpperCase();
+    var model=String(row.model||'').toLowerCase();
+    return provider===tokenProviderFilter || (tokenProviderFilter==='OPENAI' && (provider==='CODEX'||model.includes('gpt-')||model.includes('codex')));
+  });
+  if(tokenProviderFilter==='OPENAI') TOKEN_CODEX_MODELS.forEach(function(model){
+    if(!rows.some(function(row){return String(row.model||'').toLowerCase()===model;})) rows.push({provider:'OPENAI',model:model,operation:'chat',events:0,input_tokens:0,output_tokens:0,cached_tokens:0,total_tokens:0,total_cost_usd:0});
   });
   var totals={input_tokens:0,output_tokens:0,cached_tokens:0,total_tokens:0,total_cost_usd:0};
   rows.forEach(function(row){
