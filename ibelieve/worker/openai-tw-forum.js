@@ -944,7 +944,7 @@ async function handleIBelieve(request, env, url) {
       // Step 2: Generate image via Flux
       const imgResult = await env.AI.run(
         "@cf/black-forest-labs/flux-1-schnell",
-        { prompt: imagePromptText, num_steps: 4, width: 1024, height: 1024 }
+        { prompt: imagePromptText }
       );
       if (!imgResult || !imgResult.image) return json({ ok: false, error: "image generation failed" }, 500, request);
       // Step 3: Upload to R2

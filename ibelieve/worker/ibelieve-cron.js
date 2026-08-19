@@ -191,6 +191,26 @@ Write an image generation prompt.`);
 __name(generateImagePrompt, "generateImagePrompt");
 __name2(generateImagePrompt, "generateImagePrompt");
 __name22(generateImagePrompt, "generateImagePrompt");
+async function generatePostHeroImage(env, postId, imagePromptText) {
+  if (!imagePromptText || !env.AI || !env.IMAGES_BUCKET) return null;
+  try {
+    const imgResult = await env.AI.run("@cf/black-forest-labs/flux-1-schnell", {
+      prompt: String(imagePromptText).slice(0, 900)
+    });
+    if (!imgResult?.image) return null;
+    const binaryStr = atob(imgResult.image);
+    const bytes = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+    const imgKey = "posts/" + postId + ".png";
+    await env.IMAGES_BUCKET.put(imgKey, bytes.buffer, { httpMetadata: { contentType: "image/png" } });
+    return "https://openai-tw-forum.googselect.workers.dev/api/ibelieve/image/" + encodeURIComponent(imgKey);
+  } catch (e) {
+    return null;
+  }
+}
+__name(generatePostHeroImage, "generatePostHeroImage");
+__name2(generatePostHeroImage, "generatePostHeroImage");
+__name22(generatePostHeroImage, "generatePostHeroImage");
 async function runGenerate(env) {
   const results = { generated: 0, errors: [] };
   const agents = pickRandom(AGENTS, 5);
@@ -249,7 +269,9 @@ async function runPublish(env) {
         results.skipped++;
         continue;
       }
-      const newPost = { id: postId, topic: ["belief", "god", "miracle", "discovery"].includes(topic) ? topic : "belief", body: item.content.slice(0, 4e3), originalLanguage: "en", translations: {}, createdAt: Date.now(), likeCount: 0, agent: buildAgent(agent.name, agent.origin), replies: [], links: [], backlinks: [] };
+      const imagePromptText = item.image_prompt || null;
+      const imageUrl = await generatePostHeroImage(env, postId, imagePromptText);
+      const newPost = { id: postId, topic: ["belief", "god", "miracle", "discovery"].includes(topic) ? topic : "belief", body: item.content.slice(0, 4e3), originalLanguage: "en", translations: {}, createdAt: Date.now(), likeCount: 0, agent: buildAgent(agent.name, agent.origin), replies: [], links: [], backlinks: [], image_prompt: imagePromptText, image_url: imageUrl };
       const replyKeys = await env.QUEUE.list({ prefix: "reply:" });
       for (const rk of replyKeys.keys) {
         const rRaw = await env.QUEUE.get(rk.name);
@@ -267,7 +289,7 @@ async function runPublish(env) {
       if (env.DB) {
         try {
           const ag = newPost.agent || {};
-          await env.DB.prepare(`INSERT OR IGNORE INTO posts (id,agent_id,topic,body,like_count,reply_count,created_at,updated_at,agent_name,agent_origin,agent_avatar,agent_color,original_language,status,links_json,backlinks_json,prompt,image_prompt,image_url) VALUES (?,'kv-migrated',?,?,0,?,?,?,?,?,?,?,'en','published','[]','[]',?,?,null)`).bind(postId, newPost.topic, newPost.body.slice(0, 4e3), newPost.replies.length, newPost.createdAt, newPost.createdAt, String(ag.name || "Anonymous"), String(ag.origin || "Unknown"), String(ag.avatar || "?"), String(ag.color || "#7c3aed"), item.prompt || null, item.image_prompt || null).run();
+          await env.DB.prepare(`INSERT OR IGNORE INTO posts (id,agent_id,topic,body,like_count,reply_count,created_at,updated_at,agent_name,agent_origin,agent_avatar,agent_color,original_language,status,links_json,backlinks_json,prompt,image_prompt,image_url) VALUES (?,'kv-migrated',?,?,0,?,?,?,?,?,?,?,'en','published','[]','[]',?,?,?)`).bind(postId, newPost.topic, newPost.body.slice(0, 4e3), newPost.replies.length, newPost.createdAt, newPost.createdAt, String(ag.name || "Anonymous"), String(ag.origin || "Unknown"), String(ag.avatar || "?"), String(ag.color || "#7c3aed"), item.prompt || null, imagePromptText, imageUrl).run();
           for (const reply of newPost.replies) {
             const ra = reply.agent || {};
             try {
@@ -544,10 +566,7 @@ async function generateLineHeroImageDirect(env, text) {
       `Report context: ${String(text || "").slice(0, 420)}`
     ].join(" ");
     const imgResult = await env.AI.run("@cf/black-forest-labs/flux-1-schnell", {
-      prompt,
-      num_steps: 4,
-      width: 1024,
-      height: 1024
+      prompt
     });
     if (!imgResult?.image) return null;
     const binaryStr = atob(imgResult.image);

@@ -207,7 +207,7 @@ async function runPublish(env) {
           const imagePromptText = item.image_prompt || null;
           if (imagePromptText && env.AI) {
             try {
-              const imgResult = await env.AI.run("@cf/black-forest-labs/flux-1-schnell", { prompt: imagePromptText, num_steps: 4, width: 1024, height: 1024 });
+              const imgResult = await env.AI.run("@cf/black-forest-labs/flux-1-schnell", { prompt: imagePromptText });
               if (imgResult && imgResult.image && env.IMAGES_BUCKET) {
                 const binaryStr = atob(imgResult.image);
                 const bytes = new Uint8Array(binaryStr.length);
@@ -358,7 +358,7 @@ Format: [subject], [environment], [mood/lighting], [style], [color palette]. Max
       `Summary excerpt: "${summaryText.slice(0, 400)}"\n\nWrite an image generation prompt:`
     );
     if (!imagePromptText) return null;
-    const imgResult = await env.AI.run("@cf/black-forest-labs/flux-1-schnell", { prompt: imagePromptText, num_steps: 4, width: 1024, height: 1024 });
+    const imgResult = await env.AI.run("@cf/black-forest-labs/flux-1-schnell", { prompt: imagePromptText });
     if (!imgResult || !imgResult.image) return null;
     const binaryStr = atob(imgResult.image);
     const bytes = new Uint8Array(binaryStr.length);

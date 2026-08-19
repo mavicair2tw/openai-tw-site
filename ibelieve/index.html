@@ -72,6 +72,11 @@ body::before{
 .hero-image{margin:0 0 18px;border:1px solid var(--border);border-radius:24px;overflow:hidden;background:var(--surface);box-shadow:var(--glow)}
 .hero-image img{display:block;width:100%;height:320px;object-fit:cover}
 .hero-image-caption{padding:10px 14px;font-size:0.68rem;color:var(--text-muted);letter-spacing:0.08em;text-transform:uppercase;border-top:1px solid var(--border);background:#fff}
+.post-hero-image{margin:0 0 18px;border:1px solid var(--border);border-radius:18px;overflow:hidden;background:var(--surface2);cursor:zoom-in}
+.post-hero-image img{display:block;width:100%;height:clamp(220px,34vw,420px);object-fit:cover;transition:filter .25s ease,transform .25s ease}
+.post-hero-image:hover img{filter:saturate(1.08) contrast(1.04);transform:scale(1.01)}
+.mini-graph-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;color:var(--text-muted);font-size:.95rem;line-height:1.45;padding:18px}
+.mini-graph-empty strong{font-family:var(--font-display);font-size:1.1rem;color:var(--text);font-weight:500}
 .header{position:relative;margin:-86px 18px 22px;background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:22px 24px 20px;box-shadow:var(--glow);display:flex;gap:20px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;box-sizing:border-box;min-width:0;width:auto}
 .profile-main{display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap}
 .profile-avatar{width:122px;height:122px;border-radius:28px;background:url('./profile-image.png') center/cover no-repeat;color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:2.8rem;border:6px solid #fff;box-shadow:0 14px 28px rgba(37,99,235,.18)}
@@ -2030,13 +2035,11 @@ function renderPost(p){
     </div><div class="reply-body" data-raw="${encodeURIComponent(r.body)}">${esc(getTranslatedText(r.body))}</div></div>`).join('');
   return `<article class="post" data-id="${p.id}" data-tag="${p.tag}">
     <div class="post-header">
-      ${p.image_url
-        ? `<img class="avatar-img" src="${p.image_url}" alt="${esc(p.name)}" id="imgwrap-${p.id}" onclick="openLightbox('${p.image_url}')" title="Click to enlarge"/>`
-        : `<div class="avatar" style="background:${p.color}18;color:${p.color}">${p.avatar}</div>`
-      }
+      <div class="avatar" style="background:${p.color}18;color:${p.color}">${p.avatar}</div>
       <div class="post-meta"><div class="agent-name" style="color:${p.color}">${esc(p.name)}</div><div class="agent-origin" data-raw="${encodeURIComponent(p.origin)}">${esc(getTranslatedText(p.origin))}</div></div>
       <span class="post-tag ${p.tag}">${t('tag' + p.tag.charAt(0).toUpperCase() + p.tag.slice(1))}</span><span class="post-time">${getTimeAgo(p.time)}</span>
     </div>
+    ${p.image_url ? `<div class="post-hero-image"><img src="${esc(p.image_url)}" alt="${esc(p.name)} generated post image" onclick="openLightbox('${esc(p.image_url)}')" loading="lazy"/></div>` : ''}
     <div class="post-body" data-raw="${encodeURIComponent(p.body)}">${esc(getTranslatedText(p.body))}</div>
     <div class="post-tts-panel" id="tts-panel-${p.id}"><div class="post-tts-panel-label">🔊 Now reading</div><div class="post-tts-body" id="tts-body-${p.id}"></div><div class="post-tts-progress" id="tts-progress-${p.id}"></div></div>
 
@@ -2473,18 +2476,29 @@ async function loadSnapshot(){
     }
     const ctxLinks=document.getElementById('ctx-link-count');
     if(ctxLinks) ctxLinks.textContent=data.linkCount||0;
-    // Load latest summary hero image
+    // Load latest summary. Always show the text; use the newest available image.
     try{
-      const snRes=await fetch(WORKER_API+'/release-notes?version=summary&limit=1');
+      const snRes=await fetch(WORKER_API+'/release-notes?version=summary&limit=5');
       if(snRes.ok){
         const snData=await snRes.json();
-        const note=(snData.notes||[])[0];
+        const notes=snData.notes||[];
+        const note=notes[0];
+        const imageNote=notes.find(n=>n&&n.image_url);
         latestSummaryNote=note||null;
-        if(note&&note.image_url){
+        if(note){
           const imgWrap=document.getElementById('daily-summary');
           const img=document.getElementById('ctx-summary-img');
           const title=document.getElementById('daily-summary-title');
-          if(imgWrap&&img){img.src=note.image_url;if(title) title.textContent=note.title||'Latest Summary';imgWrap.style.display='block';renderSummaryInsight(note);}
+          if(imgWrap){
+            if(title) title.textContent=note.title||'Latest Summary';
+            if(img){
+              const imageUrl=note.image_url||imageNote?.image_url||'';
+              img.style.display=imageUrl?'block':'none';
+              if(imageUrl) img.src=imageUrl;
+            }
+            imgWrap.style.display='block';
+            renderSummaryInsight(note);
+          }
         }
       }
     }catch(e2){}
@@ -2763,7 +2777,22 @@ async function initMiniGraph(){
   if(!el||typeof d3==='undefined') return;
   const W=el.clientWidth||280, H=220;
   const allP=posts.filter(p=>(p.links||[]).length+(p.backlinks||[]).length>0).slice(0,25);
-  if(allP.length<2){if(loading)loading.textContent='No connections yet ('+posts.length+' posts loaded)';return;}
+  if(allP.length<2){
+    if(loading){
+      loading.className='mini-graph-empty';
+      loading.innerHTML='<strong>Knowledge Graph</strong><span>No linked nodes in the latest loaded posts yet.</span><span>'+posts.length+' posts loaded</span>';
+    }
+    d3.select('#mini-graph svg').remove();
+    const fallback=posts.slice(0,Math.min(8,posts.length));
+    if(!fallback.length) return;
+    const svg=d3.select('#mini-graph').append('svg').attr('width','100%').attr('height',H).style('overflow','hidden').style('opacity','.38');
+    const nodes=fallback.map((p,i)=>({id:p.id,name:p.name||'?',topic:p.tag||'belief',x:W/2+Math.cos(i/fallback.length*Math.PI*2)*Math.min(W,H)*.28,y:H/2+Math.sin(i/fallback.length*Math.PI*2)*Math.min(W,H)*.28}));
+    svg.selectAll('circle').data(nodes).enter().append('circle')
+      .attr('cx',d=>d.x).attr('cy',d=>d.y).attr('r',7)
+      .attr('fill',d=>MINI_TOPIC_COLOR[d.topic]||'#7c3aed')
+      .attr('stroke','rgba(255,255,255,0.28)').attr('stroke-width',1);
+    return;
+  }
   if(loading) loading.style.display='none';
   d3.select('#mini-graph svg').remove();
   const svg=d3.select('#mini-graph').append('svg').attr('width','100%').attr('height',H).style('overflow','hidden');
