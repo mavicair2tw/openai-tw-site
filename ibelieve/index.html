@@ -2633,7 +2633,8 @@ function gmInit(){
   }
   const allConnected=posts.filter(p=>(p.links||[]).length+(p.backlinks||[]).length>0);
   if(!allConnected.length){
-    document.getElementById('gm-loading').textContent='No connections yet.';
+    gmRootId=null;
+    gmBuild();
     return;
   }
   if(!gmRootId){
@@ -2648,7 +2649,7 @@ function gmInit(){
 function gmAutoHub(){
   if(!posts||!posts.length) return;
   const allConnected=posts.filter(p=>(p.links||[]).length+(p.backlinks||[]).length>0);
-  if(!allConnected.length) return;
+  if(!allConnected.length){ gmRootId=null; gmBuild(); return; }
   gmRootId=allConnected.slice().sort((a,b)=>
     ((b.links||[]).length+(b.backlinks||[]).length)-((a.links||[]).length+(a.backlinks||[]).length)
   )[0].id;
@@ -2656,10 +2657,62 @@ function gmAutoHub(){
 }
 
 function gmBuild(){
-  if(!posts||!posts.length||!gmRootId) return;
+  if(!posts||!posts.length) return;
   const maxDepth=parseInt(document.getElementById('gm-depth').value)||3;
   const allConnected=posts.filter(p=>(p.links||[]).length+(p.backlinks||[]).length>0);
   const postMap=new Map(posts.map(p=>[p.id,p]));
+  if(!allConnected.length || !gmRootId){
+    const fallback=posts.slice(0,Math.min(32,posts.length));
+    const nodes=fallback.map((p,i)=>{
+      const name=(p.agent&&p.agent.name)||p.name||'?';
+      const topic=(p.tag||p.topic||'belief').toLowerCase();
+      return {id:p.id,name,topic,body:(p.body||'').slice(0,80),degree:0,index:i};
+    });
+    const statsEl=document.getElementById('gm-stats');
+    if(statsEl) statsEl.textContent=nodes.length+' nodes · 0 links';
+    const loading=document.getElementById('gm-loading');
+    if(loading){
+      loading.className='mini-graph-empty';
+      loading.style.display='flex';
+      loading.innerHTML='<strong>No graph links yet</strong><span>Showing recent posts as unlinked nodes. Run Cloud Map auto-link to create relationships.</span>';
+    }
+    document.getElementById('gm-info').style.display='none';
+    const canvas=document.getElementById('gm-canvas');
+    d3.select('#gm-canvas svg').remove();
+    const W=canvas.clientWidth||900, H=canvas.clientHeight||520;
+    gmSvg=d3.select('#gm-canvas').append('svg').attr('width','100%').attr('height','100%').style('opacity','.82');
+    gmZoomBehavior=d3.zoom().scaleExtent([.05,5]).on('zoom',e=>gmG.attr('transform',e.transform));
+    gmSvg.call(gmZoomBehavior);
+    gmG=gmSvg.append('g');
+    gmSim=d3.forceSimulation(nodes)
+      .force('charge',d3.forceManyBody().strength(-180))
+      .force('center',d3.forceCenter(W/2,H/2))
+      .force('collision',d3.forceCollide(22));
+    const node=gmG.append('g').selectAll('g').data(nodes).enter().append('g')
+      .attr('cursor','pointer')
+      .call(d3.drag().on('start',(e,d)=>{ if(!e.active) gmSim.alphaTarget(.3).restart(); d.fx=d.x; d.fy=d.y; })
+        .on('drag',(e,d)=>{ d.fx=e.x; d.fy=e.y; })
+        .on('end',(e,d)=>{ if(!e.active) gmSim.alphaTarget(0); d.fx=null; d.fy=null; }))
+      .on('click',(e,d)=>{
+        document.getElementById('gm-info').style.display='block';
+        document.getElementById('gm-info-name').textContent=d.name;
+        document.getElementById('gm-info-topic').textContent=d.topic;
+        document.getElementById('gm-info-deg').textContent='0';
+        document.getElementById('gm-info-body').textContent='"'+d.body+'…"';
+      });
+    node.append('circle')
+      .attr('r',14)
+      .attr('fill',d=>GM_TOPIC_COLOR[d.topic]||'#7c3aed')
+      .attr('fill-opacity',.78)
+      .attr('stroke','rgba(255,255,255,0.2)')
+      .attr('stroke-width',1);
+    node.append('text').text(d=>d.name.slice(0,12))
+      .attr('dy',25).attr('text-anchor','middle')
+      .attr('fill','rgba(255,255,255,0.65)').attr('font-size','10px').attr('pointer-events','none');
+    gmSim.on('tick',()=>{ node.attr('transform',d=>'translate('+Math.max(20,Math.min(W-20,d.x))+','+Math.max(24,Math.min(H-24,d.y))+')'); });
+    setTimeout(()=>gmSim.stop(),3500);
+    return;
+  }
 
   // BFS from root
   const visited=new Set(), nodes=[], links=[];
