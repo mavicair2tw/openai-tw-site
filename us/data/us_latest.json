@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-05T08:32:50.115032+08:00",
+  "updatedAt": "2026-09-07T08:36:25.534752+08:00",
   "timezone": "Asia/Taipei",
   "market": "US",
   "items": [
@@ -8,8 +8,8 @@
       "symbol": "TSM",
       "type": "Stock",
       "price": 428.58,
-      "change": 13.08,
-      "changePercent": 3.15,
+      "change": 11.57,
+      "changePercent": 2.77,
       "trend": [
         {
           "time": "22:00",
@@ -114,8 +114,8 @@
       "symbol": "GOOG",
       "type": "Stock",
       "price": 335.27,
-      "change": 1.49,
-      "changePercent": 0.45,
+      "change": -3.81,
+      "changePercent": -1.12,
       "trend": [
         {
           "time": "22:00",
@@ -220,8 +220,8 @@
       "symbol": "AMD",
       "type": "Stock",
       "price": 477.45,
-      "change": 20.39,
-      "changePercent": 4.46,
+      "change": 21.29,
+      "changePercent": 4.67,
       "trend": [
         {
           "time": "22:00",
@@ -326,8 +326,8 @@
       "symbol": "NVDA",
       "type": "Stock",
       "price": 230.35,
-      "change": 5.93,
-      "changePercent": 2.64,
+      "change": 1.9,
+      "changePercent": 0.83,
       "trend": [
         {
           "time": "22:00",
@@ -432,8 +432,8 @@
       "symbol": "TSLA",
       "type": "Stock",
       "price": 353.95,
-      "change": -3.06,
-      "changePercent": -0.86,
+      "change": -22.42,
+      "changePercent": -5.96,
       "trend": [
         {
           "time": "22:00",
@@ -749,21 +749,21 @@
       "label": "比特幣",
       "symbol": "BTC-USD",
       "type": "Crypto",
-      "price": 79695.17,
-      "change": -1576.57,
-      "changePercent": -1.94,
+      "price": 80169.38,
+      "change": 345.52,
+      "changePercent": 0.43,
       "trend": [
         {
           "time": "08:00",
-          "close": 79682.98
+          "close": 80331.05
         },
         {
           "time": "08:15",
-          "close": 79672.81
+          "close": 80199.46
         },
         {
           "time": "08:30",
-          "close": 79695.17
+          "close": 80169.38
         }
       ]
     },
@@ -771,107 +771,10 @@
       "label": "黃金期貨",
       "symbol": "GC=F",
       "type": "Commodity",
-      "price": 4477.2,
-      "change": -14.5,
-      "changePercent": -0.32,
-      "trend": [
-        {
-          "time": "23:00",
-          "close": 4490.3
-        },
-        {
-          "time": "23:15",
-          "close": 4487.0
-        },
-        {
-          "time": "23:30",
-          "close": 4490.1
-        },
-        {
-          "time": "23:45",
-          "close": 4483.3
-        },
-        {
-          "time": "00:00",
-          "close": 4486.2
-        },
-        {
-          "time": "00:15",
-          "close": 4481.6
-        },
-        {
-          "time": "00:30",
-          "close": 4485.4
-        },
-        {
-          "time": "00:45",
-          "close": 4483.6
-        },
-        {
-          "time": "01:00",
-          "close": 4481.2
-        },
-        {
-          "time": "01:15",
-          "close": 4476.0
-        },
-        {
-          "time": "01:30",
-          "close": 4464.5
-        },
-        {
-          "time": "01:45",
-          "close": 4464.0
-        },
-        {
-          "time": "02:00",
-          "close": 4467.1
-        },
-        {
-          "time": "02:15",
-          "close": 4472.6
-        },
-        {
-          "time": "02:30",
-          "close": 4470.5
-        },
-        {
-          "time": "02:45",
-          "close": 4471.3
-        },
-        {
-          "time": "03:00",
-          "close": 4476.5
-        },
-        {
-          "time": "03:15",
-          "close": 4482.8
-        },
-        {
-          "time": "03:30",
-          "close": 4483.9
-        },
-        {
-          "time": "03:45",
-          "close": 4482.0
-        },
-        {
-          "time": "04:00",
-          "close": 4478.8
-        },
-        {
-          "time": "04:15",
-          "close": 4477.3
-        },
-        {
-          "time": "04:30",
-          "close": 4477.4
-        },
-        {
-          "time": "04:45",
-          "close": 4477.2
-        }
-      ]
+      "price": null,
+      "change": null,
+      "changePercent": null,
+      "trend": []
     }
   ]
 }
