@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-25T09:05:34.309416+08:00",
+  "updatedAt": "2026-09-25T19:10:53.252850+08:00",
   "timezone": "Asia/Taipei",
   "dataDate": "2026-09-24",
   "source": {
@@ -12,7 +12,7 @@
     "name": "TWSE",
     "open": "09:00",
     "close": "13:30",
-    "isTradingWindow": true
+    "isTradingWindow": false
   },
   "items": [
     {
