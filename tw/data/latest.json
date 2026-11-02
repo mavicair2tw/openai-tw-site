@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-02T10:01:00.126709+08:00",
+  "updatedAt": "2026-11-02T22:47:17.326773+08:00",
   "timezone": "Asia/Taipei",
   "dataDate": "2026-11-02",
   "source": {
@@ -12,16 +12,16 @@
     "name": "TWSE",
     "open": "09:00",
     "close": "13:30",
-    "isTradingWindow": true
+    "isTradingWindow": false
   },
   "items": [
     {
       "label": "加權指數",
       "symbol": "^TWII",
       "type": "Index",
-      "price": 44647.67,
-      "change": -564.16,
-      "changePercent": -1.25,
+      "price": 44920.14,
+      "change": -291.69,
+      "changePercent": -0.65,
       "currency": "TWD",
       "trend": [
         {
@@ -29,107 +29,131 @@
           "close": 45211.83
         },
         {
-          "time": "10:00",
-          "close": 44647.67
+          "time": "13:33",
+          "close": 44920.14
         }
       ],
-      "timestamp": "2026-11-02T10:00:10+08:00"
+      "timestamp": "2026-11-02T13:33:00+08:00"
     },
     {
       "label": "台積電",
       "symbol": "2330.TW",
       "type": "Stock",
-      "price": null,
-      "change": null,
-      "changePercent": null,
+      "price": 2330.0,
+      "change": -40.0,
+      "changePercent": -1.69,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
           "close": 2370.0
+        },
+        {
+          "time": "13:30",
+          "close": 2330.0
         }
       ],
-      "timestamp": "2026-11-02T10:00:50+08:00"
+      "timestamp": "2026-11-02T13:30:00+08:00"
     },
     {
       "label": "富邦科技",
       "symbol": "0052.TW",
       "type": "ETF",
-      "price": null,
-      "change": null,
-      "changePercent": null,
+      "price": 60.3,
+      "change": -0.5,
+      "changePercent": -0.82,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
           "close": 60.8
+        },
+        {
+          "time": "13:30",
+          "close": 60.3
         }
       ],
-      "timestamp": "2026-11-02T09:59:59+08:00"
+      "timestamp": "2026-11-02T13:30:00+08:00"
     },
     {
       "label": "元大台灣50",
       "symbol": "0050.TW",
       "type": "ETF",
-      "price": null,
-      "change": null,
-      "changePercent": null,
+      "price": 104.1,
+      "change": -0.85,
+      "changePercent": -0.81,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
           "close": 104.95
+        },
+        {
+          "time": "13:30",
+          "close": 104.1
         }
       ],
-      "timestamp": "2026-11-02T10:00:09+08:00"
+      "timestamp": "2026-11-02T13:30:00+08:00"
     },
     {
       "label": "凱基台灣TOP50",
       "symbol": "009816.TW",
       "type": "ETF",
-      "price": null,
-      "change": null,
-      "changePercent": null,
+      "price": 15.56,
+      "change": -0.11,
+      "changePercent": -0.7,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
           "close": 15.67
+        },
+        {
+          "time": "13:30",
+          "close": 15.56
         }
       ],
-      "timestamp": "2026-11-02T10:00:49+08:00"
+      "timestamp": "2026-11-02T13:30:00+08:00"
     },
     {
       "label": "群益台灣精選高息",
       "symbol": "00919.TW",
       "type": "ETF",
-      "price": null,
-      "change": null,
-      "changePercent": null,
+      "price": 32.48,
+      "change": -0.11,
+      "changePercent": -0.34,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
           "close": 32.59
+        },
+        {
+          "time": "13:30",
+          "close": 32.48
         }
       ],
-      "timestamp": "2026-11-02T10:00:09+08:00"
+      "timestamp": "2026-11-02T13:30:00+08:00"
     },
     {
       "label": "國泰數位支付服務",
       "symbol": "00909.TW",
       "type": "ETF",
-      "price": null,
-      "change": null,
-      "changePercent": null,
+      "price": 38.36,
+      "change": -0.36,
+      "changePercent": -0.93,
       "currency": "TWD",
       "trend": [
         {
           "time": "前收",
           "close": 38.72
+        },
+        {
+          "time": "13:30",
+          "close": 38.36
         }
       ],
-      "timestamp": "2026-11-02T10:00:04+08:00"
+      "timestamp": "2026-11-02T13:30:00+08:00"
     }
   ]
 }
